@@ -128,7 +128,7 @@ const Register = () => {
 
           <p className="text-lg text-black mt-3">
             If you have an account you can{" "}
-            <Link href="">
+            <Link href="/login">
               <span className="text-lg text-primary font-medium">
                 logIn here
               </span>
