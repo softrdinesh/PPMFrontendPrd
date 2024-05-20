@@ -16,6 +16,7 @@ import axios from "axios";
 import { Icon } from "@iconify/react";
 import "dotenv/config";
 // import { Google } from "@icons-pack/react-simple-icons";
+
 const Register = () => {
   const [selectedKeys, setSelectedKeys] = useState(new Set(["Select size"]));
   const [selectedCountry, setSelectedCountry] = useState(
@@ -25,14 +26,17 @@ const Register = () => {
   const [keepSelected, setKeepSelected] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const onKeepUpdate = () => setKeepSelected(!keepSelected);
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword(!showConfirmPassword);
+
   const selectedValue = useMemo(
     () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
     [selectedKeys]
   );
+
   const getCountryList = async () => {
     try {
       const response = await axios.get(
@@ -46,6 +50,7 @@ const Register = () => {
       // setError("Error posting data");
     }
   };
+
   const orgSizeList = [
     {
       size: "1-19",
@@ -69,6 +74,7 @@ const Register = () => {
       size: "1500+",
     },
   ];
+
   const {
     register,
     handleSubmit,
@@ -91,82 +97,62 @@ const Register = () => {
     // setLoginButton(true);
     console.log("on submit data->", data);
     return;
-    const body = {
-      // name: data?.name,
-    };
-    await contactUsAPI(body).then(() => {
-      reset();
-      setLoginButton(false);
-    });
+    // const body = {
+    //   // name: data?.name,
+    // };
+    // await contactUsAPI(body).then(() => {
+    //   reset();
+    //   setLoginButton(false);
+    // });
   };
 
   useEffect(() => {
     getCountryList();
   }, []);
+
   return (
     <div className="bg-white min-h-screen">
-      {/* <p
-        className="text-center bg-red-500 "
-        style={{ textTransform: "capitalize" }}
-      >
-        register
-      </p> */}
       <Image
         src={links.ImgAuthBanner}
-        style={{
-          height: 400,
-          width: "80%",
-        }}
+        className="w-full h-96 object-cover"
         alt="Picture of the author"
       />
-      <div className="container mx-auto mt-3 flex flex-wrap flex-row justify-between ">
+      <div className="container mx-auto mt-3 flex flex-wrap justify-between px-4">
         {/* left side */}
-        <div>
-          <h1 className="text-48 black  font-bold text-black">Register to</h1>
-          <h2 className="text-48 font-bold text-primary">Manage</h2>
-          <h3 className="text-48 font-bold text-black mb-8">
-            the new experience
-          </h3>
-          <div>
-            <p className="custom-20 text-black">
-              If you have an account
-              <br /> you can{" "}
-              <Link href="">
-                <span className="text-20 text-primary font-medium">
-                  logIn here
-                </span>
-              </Link>
-            </p>
-          </div>
+        <div className="w-full lg:w-1/2">
+          <h1 className="text-4xl font-bold text-black">
+            Register to{" "}
+            <span className="text-4xl font-bold text-primary">Manage</span> the
+            new experience
+          </h1>
+
+          <p className="text-lg text-black mt-3">
+            If you have an account you can{" "}
+            <Link href="">
+              <span className="text-lg text-primary font-medium">
+                logIn here
+              </span>
+            </Link>
+          </p>
         </div>
         {/* right side */}
-        <div
-          className="w-[600px] rounded-md bg-white border px-12 py-5 my-0 border border-borderColor"
-          style={{
-            position: "absolute",
-            right: "10%",
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: "600px",
-          }}
-        >
-          <p className="text-black text-center font-bold text-32">
+        <div className="w-full lg:w-1/2 rounded-md bg-white border px-4 lg:px-6 py-5 mt-10 lg:mt-0 border-borderColor">
+          <p className="text-black text-center font-bold text-2xl">
             Welcome to smarTScrum
           </p>
-          <p className="text-center font-normal text-16 text-darkGrayishBlue mt-3">
+          <p className="text-center font-normal text-base text-darkGrayishBlue mt-3">
             A Warm welcome <br /> to the new era of the project management
             application
           </p>
-          <div className="container mt-8">
+          <div className="mt-8">
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="flex flex-row gap-5 w-[100%]">
+              <div className="flex flex-col lg:flex-row gap-5">
                 {/* first name */}
                 <div className="flex-1">
-                  <label className="text-12 font-bold">
+                  <label className="text-sm font-bold">
                     {strings.firstNameLabel}
                     <span className="text-darkRed">*</span>
                   </label>
-
                   <input
                     {...register("firstName", {
                       required: strings.firstNamePh,
@@ -176,21 +162,20 @@ const Register = () => {
                     })}
                     data-testid={"firstName"}
                     type="input"
-                    className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-14 font-normal border-inputBorderColor"
+                    className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                     id="firstName"
                     placeholder={strings.firstNamePh}
                     name="firstName"
                   />
-                  <span className="text-darkRed text-12 font-normal">
+                  <span className="text-darkRed text-sm font-normal">
                     {errors.firstName?.message}
                   </span>
                 </div>
                 {/* last name */}
-                <div className="flex-1 ">
-                  <label className="text-12 font-bold">
+                <div className="flex-1">
+                  <label className="text-sm font-bold">
                     {strings.lastNameLabel}
                   </label>
-
                   <input
                     {...register("lastName", {
                       maxLength: {
@@ -199,7 +184,7 @@ const Register = () => {
                     })}
                     data-testid={"lastName"}
                     type="input"
-                    className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-14 font-normal border-inputBorderColor"
+                    className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                     id="lastName"
                     placeholder={strings.lastNamePh}
                     name="lastName"
@@ -208,10 +193,9 @@ const Register = () => {
               </div>
               {/* email */}
               <div className="mt-3">
-                <label className="text-12 font-bold">
+                <label className="text-sm font-bold">
                   {strings.emailLabel} <span className="text-darkRed">*</span>
                 </label>
-
                 <input
                   {...register("email", {
                     required: strings.emailReq,
@@ -225,22 +209,21 @@ const Register = () => {
                   })}
                   data-testid={"email"}
                   type="input"
-                  className=" w-full border rounded-md  px-4 py-2 mt-1  text-darkGray text-14 font-normal border-inputBorderColor"
+                  className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                   id="email"
                   placeholder={strings.emailPh}
                   name="email"
                 />
-
-                <span className="text-darkRed text-12 font-normal">
+                <span className="text-darkRed text-sm font-normal">
                   {errors.email?.message}
                 </span>
               </div>
               {/* password */}
               <div className="mt-3">
-                <label className="text-12 font-bold">
+                <label className="text-sm font-bold">
                   {strings.passLabel} <span className="text-darkRed">*</span>
                 </label>
-                <div>
+                <div className="relative">
                   <input
                     {...register("password", {
                       required: strings.passLabelReq,
@@ -255,17 +238,13 @@ const Register = () => {
                     })}
                     data-testid={"password"}
                     type={showPassword ? "text" : "password"}
-                    className="flex w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-14 font-normal border-inputBorderColor"
+                    className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                     id="password"
                     placeholder={strings.passLabelPh}
                     name="password"
                   />
                   <span
-                    className="absolute"
-                    style={{
-                      right: "10%",
-                      marginTop: -25,
-                    }}
+                    className="absolute top-3 right-4 cursor-pointer"
                     onClick={togglePasswordVisibility}
                   >
                     <Icon
@@ -274,19 +253,17 @@ const Register = () => {
                     />
                   </span>
                 </div>
-                <span className="text-darkRed text-12 font-normal">
+                <span className="text-darkRed text-sm font-normal">
                   {errors.password?.message}
                 </span>
               </div>
-
               {/* confirm password */}
-
               <div className="mt-3">
-                <label className="text-12 font-bold">
+                <label className="text-sm font-bold">
                   {strings.confirmPassLabel}
-                  <span className="text-darkRed"> *</span>
+                  <span className="text-darkRed">*</span>
                 </label>
-                <div>
+                <div className="relative">
                   <input
                     {...register("confirmPassword", {
                       required: strings.confirmPassLabelReq,
@@ -299,17 +276,13 @@ const Register = () => {
                     })}
                     data-testid={"confirmPassword"}
                     type={showConfirmPassword ? "text" : "password"}
-                    className="flex w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-14 font-normal border-inputBorderColor"
+                    className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                     id="confirmPassword"
                     placeholder={strings.confirmPassLabelPh}
                     name="confirmPassword"
                   />
                   <span
-                    className="absolute"
-                    style={{
-                      right: "10%",
-                      marginTop: -25,
-                    }}
+                    className="absolute top-3 right-4 cursor-pointer"
                     onClick={toggleConfirmPasswordVisibility}
                   >
                     <Icon
@@ -318,17 +291,15 @@ const Register = () => {
                     />
                   </span>
                 </div>
-                <span className="text-darkRed text-12 font-normal">
+                <span className="text-darkRed text-sm font-normal">
                   {errors.confirmPassword?.message}
                 </span>
               </div>
-
               {/* organization name */}
               <div className="mt-3">
-                <label className="text-12 font-bold">
+                <label className="text-sm font-bold">
                   {strings.orgNameLabel} <span className="text-darkRed">*</span>
                 </label>
-
                 <input
                   {...register("organizationName", {
                     required: strings.orgNameReq,
@@ -338,23 +309,21 @@ const Register = () => {
                   })}
                   data-testid={"organizationName"}
                   type="input"
-                  className=" w-full border rounded-md  px-4 py-2 mt-1  text-darkGray text-14 font-normal border-inputBorderColor"
+                  className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                   id="organizationName"
                   placeholder={strings.orgNamePh}
                   name="organizationName"
                 />
-
-                <span className="text-darkRed text-12 font-normal">
+                <span className="text-darkRed text-sm font-normal">
                   {errors.organizationName?.message}
                 </span>
               </div>
               {/* organization address */}
               <div className="mt-3">
-                <label className="text-12 font-bold">
+                <label className="text-sm font-bold">
                   {strings.orgAddressLabel}
                   <span className="text-darkRed">*</span>
                 </label>
-
                 <input
                   {...register("organizationAddress", {
                     required: strings.orgAddressReq,
@@ -364,29 +333,27 @@ const Register = () => {
                   })}
                   data-testid={"organizationAddress"}
                   type="input"
-                  className=" w-full border rounded-md  px-4 py-2 mt-1 text-darkGray text-14 font-normal border-inputBorderColor"
+                  className="w-full border rounded-md px-4 py-2 mt-1 text-darkGray text-sm font-normal border-inputBorderColor"
                   id="organizationAddress"
                   placeholder={strings.orgAddressPh}
                   name="organizationAddress"
                 />
-
-                <span className="text-darkRed text-12 font-normal">
+                <span className="text-darkRed text-sm font-normal">
                   {errors.organizationAddress?.message}
                 </span>
               </div>
-
               {/* organization size dropdown */}
-              <div className="mt-3 col-12  flex flex-row gap-5 w-[100%]">
-                <div>
-                  <label className="text-12 font-bold">
+              <div className="mt-3 flex flex-col lg:flex-row gap-5">
+                <div className="flex-1">
+                  <label className="text-sm font-bold">
                     {strings.orgDropdownLabel}
-                    <span className="text-darkRed"> *</span>
+                    <span className="text-darkRed">*</span>
                   </label>
-                  <Dropdown style={{}}>
-                    <DropdownTrigger className=" mt-1">
+                  <Dropdown>
+                    <DropdownTrigger className="mt-1">
                       <Button
                         variant="bordered"
-                        className="w-[100%] bg-primary text-white font-normal capitalize"
+                        className="w-full bg-primary text-white font-normal capitalize"
                       >
                         {selectedValue}
                       </Button>
@@ -411,18 +378,18 @@ const Register = () => {
                   </Dropdown>
                 </div>
                 {/* country dropdown */}
-                <div className="">
-                  <label className="text-12 font-bold">
+                <div className="flex-1">
+                  <label className="text-sm font-bold">
                     {strings.countryLable}
-                    <span className="text-darkRed"> *</span>
+                    <span className="text-darkRed">*</span>
                   </label>
-                  <Dropdown className="w-1/2 " style={{}}>
-                    <DropdownTrigger className="w-1/2 mt-1">
+                  <Dropdown>
+                    <DropdownTrigger className="mt-1">
                       <Button
                         variant="bordered"
-                        className="w-[100%] bg-primary text-white font-normal capitalize"
+                        className="w-full bg-primary text-white font-normal capitalize"
                       >
-                        {selectedCountry}
+                        {Array.from(selectedCountry).join(", ")}
                       </Button>
                     </DropdownTrigger>
                     <DropdownMenu
@@ -446,35 +413,37 @@ const Register = () => {
                   </Dropdown>
                 </div>
               </div>
-              <div className="mt-3 ">
+              <div className="mt-3 flex items-start">
                 <Checkbox
                   radius="sm"
                   isSelected={keepSelected}
                   onValueChange={setKeepSelected}
-                >
-                  <p className="ml-1 text-14 font-normal text-darkGray">
+                  // className="mr-2"
+                />
+                <div>
+                  <p className="text-sm font-normal text-darkGray mb-1">
                     Keep me updated about the new features and upcoming
                     improvements (by doing this you accept the
                     <span className="text-primary"> terms</span> and{" "}
                     <span className="text-primary">the privacy policy</span>
                     ).
                   </p>
-                </Checkbox>
+                </div>
               </div>
-              {/* bottom view */}
 
+              {/* bottom view */}
               <Button
                 onClick={() => {
                   // Handle Google Sign-In logic here
                 }}
-                className="text-48 p-2 border rounded-md mt-3 bg-primary w-full font-medium text-white text-center items-center "
+                className="text-xl p-2 border rounded-md mt-3 bg-primary w-full font-medium text-white text-center items-center"
               >
                 Let’s Start
               </Button>
-              <p className="text-primary text-center text-14 font-medium my-1">
+              <p className="text-primary text-center text-sm font-medium my-1">
                 or
               </p>
-              <div className="flex  justify-center items-center">
+              <div className="flex justify-center items-center">
                 <Button
                   onClick={() => {
                     // Handle Google Sign-In logic here
@@ -483,7 +452,7 @@ const Register = () => {
                       "_self"
                     );
                   }}
-                  className="bg-white border border-primary "
+                  className="bg-white border border-primary"
                   startContent={
                     <Image
                       src={links.ImgGoogle}
@@ -492,9 +461,9 @@ const Register = () => {
                         width: 25,
                         borderRadius: 50,
                       }}
-                      alt="Picture of the author"
+                      alt="Google logo"
                     />
-                  } // Render the image as end content
+                  }
                 >
                   Continue with Google
                 </Button>
