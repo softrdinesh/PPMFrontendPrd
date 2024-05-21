@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <>
       <Login />
-      <Register />
+      {/* <Register /> */}
     </>
     // <main
     //   className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
