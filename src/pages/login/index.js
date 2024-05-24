@@ -1,14 +1,18 @@
+import { useState } from "react";
 import Image from "next/image";
-import { links } from "@constants/config";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { strings } from "@strings";
+import toast from "react-hot-toast";
 import { Button, Checkbox } from "@nextui-org/react";
-import { useState } from "react";
 import { Icon } from "@iconify/react";
-import "dotenv/config";
+
+import { strings } from "@strings";
+import { links } from "@constants/config";
+import { userLogin } from "src/utils/apiService";
+import { Loader } from "@components/Loader/Loader";
 
 const Login = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [keepSelected, setKeepSelected] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -19,7 +23,6 @@ const Login = () => {
     handleSubmit,
     reset,
     formState: { errors },
-    getValues,
   } = useForm({
     defaultValues: {
       email: "",
@@ -28,20 +31,37 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-    // setLoginButton(true);
-    console.log("on submit data->", data);
-    return;
-    // const body = {
-    //   // name: data?.name,
-    // };
-    // await contactUsAPI(body).then(() => {
-    //   reset();
-    //   setLoginButton(false);
-    // });
+    setIsLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const body = {
+          email: data.email,
+          password: data.password,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        try {
+          const response = await userLogin(body);
+          toast.success(response?.message ?? strings.loginSuccess);
+          setIsLoading(false);
+          reset();
+        } catch (error) {
+          setIsLoading(false);
+          toast.error(error.message ?? strings.loginError);
+        }
+      },
+      (error) => {
+        setIsLoading(false);
+        toast.error(strings.geoLocationError);
+      }
+    );
   };
 
   return (
     <div className="bg-white min-h-screen">
+      {isLoading && <Loader />}
+
       <Image
         src={links.ImgAuthBanner}
         className="w-full h-96 object-cover"
@@ -160,9 +180,7 @@ const Login = () => {
               {/* bottom view */}
               <div className="flex justify-center">
                 <Button
-                  onClick={() => {
-                    // Handle Google Sign-In logic here
-                  }}
+                  type="submit"
                   className="text-xl p-2 border rounded-md bg-primary w-full  font-medium text-white text-center items-center mt-3"
                 >
                   Log in

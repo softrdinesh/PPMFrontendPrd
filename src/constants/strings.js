@@ -26,4 +26,9 @@ export const strings = {
   orgDropdownLabel: "Organization employees size",
   countryLable: "Select your country",
   orgSizeLable: "Select organization size",
+  createUserSuccess: "User created successfully",
+  createUserError: "Error while creating user",
+  loginSuccess: "User login successfully",
+  loginError: "Error while user login",
+  geoLocationError: "Error while fetch geolocation",
 };

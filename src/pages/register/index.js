@@ -1,8 +1,10 @@
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { links } from "@constants/config";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { strings } from "@strings";
+import toast from "react-hot-toast";
+import { Icon } from "@iconify/react";
+import "dotenv/config";
 import {
   Dropdown,
   DropdownTrigger,
@@ -11,42 +13,39 @@ import {
   Button,
   Checkbox,
 } from "@nextui-org/react";
-import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import { Icon } from "@iconify/react";
-import "dotenv/config";
-// import { Google } from "@icons-pack/react-simple-icons";
+
+import { Loader } from "../../components/Loader/Loader";
+import { createUser, fetchCountryList } from "../../utils/apiService";
+import { strings } from "@strings";
+import { links } from "@constants/config";
 
 const Register = () => {
-  const [selectedKeys, setSelectedKeys] = useState(new Set(["Select size"]));
-  const [selectedCountry, setSelectedCountry] = useState(
-    new Set(["Select country"])
-  );
-  const [countryList, setCountryList] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedOrgSize, setSelectedOrgSize] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState([]);
+  const [countryList, setCountryList] = useState([]);
   const [keepSelected, setKeepSelected] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const onKeepUpdate = () => setKeepSelected(!keepSelected);
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
   const selectedValue = useMemo(
-    () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-    [selectedKeys]
+    () => Array.from(selectedOrgSize).join(", ").replaceAll("_", " "),
+    [selectedOrgSize]
   );
 
   const getCountryList = async () => {
+    setIsLoading(true);
     try {
-      const response = await axios.get(
-        "https://profound-corgi-expert.ngrok-free.app/api/country"
-      );
-      console.log("country res-->", await response);
-      console.log("country res.data-->", await response.data.data);
-      setCountryList(response.data.data);
+      const response = await fetchCountryList();
+      setCountryList(response.data);
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error fetch data:", error.message);
+      setIsLoading(false);
+      // console.error("Error while fetch country list =>", error);
       // setError("Error posting data");
     }
   };
@@ -81,6 +80,7 @@ const Register = () => {
     reset,
     formState: { errors },
     getValues,
+    setValue,
   } = useForm({
     defaultValues: {
       firstName: "",
@@ -90,28 +90,53 @@ const Register = () => {
       confirmPassword: "",
       organizationName: "",
       organizationAddress: "",
+      country: selectedCountry,
     },
   });
 
   const onSubmit = async (data) => {
-    // setLoginButton(true);
-    console.log("on submit data->", data);
-    return;
-    // const body = {
-    //   // name: data?.name,
-    // };
-    // await contactUsAPI(body).then(() => {
-    //   reset();
-    //   setLoginButton(false);
-    // });
-  };
+    setIsLoading(true);
+    // console.log("on submit data->", data);
+    // console.log("selectedOrgSize!!->", selectedOrgSize);
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const body = {
+        name: data?.firstName + data?.lastName,
+        email: data?.email,
+        password: data?.password,
+        countryID: selectedCountry,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        address: data?.organizationAddress,
+        organizationName: data?.organizationName,
+        organizationSize: selectedOrgSize, // TODO:: need to change
+      };
 
+      try {
+        const response = await createUser(body);
+        toast.success(response.data.message ?? strings.createUserSuccess);
+        setIsLoading(false);
+        reset();
+      } catch (error) {
+        setIsLoading(false);
+        toast.error(error.message ?? strings.createUserError);
+      }
+    });
+  };
+  const onCountryChange = (event) => {
+    // console.log("event.target.value-->", event.target.value);
+    setSelectedCountry(event.target.value);
+  };
+  const onOrgSizeChange = (event) => {
+    // console.log("event.target.valueaaaa-->", event.target.value);
+    setSelectedOrgSize(event.target.value);
+  };
   useEffect(() => {
     getCountryList();
   }, []);
 
   return (
     <div className="bg-white min-h-screen">
+      {isLoading && <Loader />}
       <Image
         src={links.ImgAuthBanner}
         className="w-full h-96 object-cover"
@@ -349,33 +374,18 @@ const Register = () => {
                     {strings.orgDropdownLabel}
                     <span className="text-darkRed">*</span>
                   </label>
-                  <Dropdown>
-                    <DropdownTrigger className="mt-1">
-                      <Button
-                        variant="bordered"
-                        className="w-full bg-primary text-white font-normal capitalize"
-                      >
-                        {selectedValue}
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label="Dynamic Actions"
-                      selectionMode="single"
-                      selectedKeys={selectedKeys}
-                      onSelectionChange={setSelectedKeys}
-                      items={orgSizeList}
-                      style={{ maxHeight: "300px", overflowY: "auto" }}
-                    >
-                      {(item) => {
-                        item.key = item.size;
-                        return (
-                          <DropdownItem key={item.key}>
-                            {item.size}
-                          </DropdownItem>
-                        );
-                      }}
-                    </DropdownMenu>
-                  </Dropdown>
+                  <select
+                    value={selectedOrgSize}
+                    onChange={onOrgSizeChange}
+                    className="mt-1 p-2 border border rounded-md w-full bg-primary text-white font-medium "
+                  >
+                    <option value="">Select size</option>
+                    {orgSizeList.map((item) => (
+                      <option key={item.size} value={item.size}>
+                        {item.size}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {/* country dropdown */}
                 <div className="flex-1">
@@ -383,34 +393,18 @@ const Register = () => {
                     {strings.countryLable}
                     <span className="text-darkRed">*</span>
                   </label>
-                  <Dropdown>
-                    <DropdownTrigger className="mt-1">
-                      <Button
-                        variant="bordered"
-                        className="w-full bg-primary text-white font-normal capitalize"
-                      >
-                        {Array.from(selectedCountry).join(", ")}
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label="Dynamic Actions"
-                      selectionMode="single"
-                      selectedKeys={selectedCountry}
-                      onSelectionChange={setSelectedCountry}
-                      items={countryList}
-                      style={{ maxHeight: "300px", overflowY: "auto" }}
-                    >
-                      {(item) => {
-                        // console.log("iten0>", item);
-                        item.key = item.Name;
-                        return (
-                          <DropdownItem key={item.key}>
-                            {item.Name}
-                          </DropdownItem>
-                        );
-                      }}
-                    </DropdownMenu>
-                  </Dropdown>
+                  <select
+                    value={selectedCountry}
+                    onChange={onCountryChange}
+                    className="mt-1 p-2 border border rounded-md w-full bg-primary text-white font-medium "
+                  >
+                    <option value="">Select country</option>
+                    {countryList.map((country) => (
+                      <option key={country.ID} value={country.ID}>
+                        {country.Name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="mt-3 flex items-start">
@@ -433,8 +427,9 @@ const Register = () => {
 
               {/* bottom view */}
               <Button
+                type="submit"
                 onClick={() => {
-                  // Handle Google Sign-In logic here
+                  onSubmit();
                 }}
                 className="text-xl p-2 border rounded-md mt-3 bg-primary w-full font-medium text-white text-center items-center"
               >
