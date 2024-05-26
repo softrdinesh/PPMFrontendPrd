@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getAuthToken, getRefreshToken, getUserDetail } from "./auth"; // You need to implement these functions based on your auth logic
 const api = axios.create({
-  baseURL: process.env.API_URL, // Ensure this is set in your .env file
+  baseURL: `${process.env.API_URL}/api`, // Ensure this is set in your .env file
   headers: {
     "Content-Type": "application/json",
   },

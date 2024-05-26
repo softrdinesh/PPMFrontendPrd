@@ -43,12 +43,10 @@ const Login = () => {
         };
         try {
           const response = await userLogin(body);
-          toast.success(response?.message ?? strings.loginSuccess);
           setIsLoading(false);
           reset();
         } catch (error) {
           setIsLoading(false);
-          toast.error(error.message ?? strings.loginError);
         }
       },
       (error) => {

@@ -2,17 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import { Icon } from "@iconify/react";
 import "dotenv/config";
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Button,
-  Checkbox,
-} from "@nextui-org/react";
+import { Button, Checkbox } from "@nextui-org/react";
 
 import { Loader } from "../../components/Loader/Loader";
 import { createUser, fetchCountryList } from "../../utils/apiService";
@@ -32,11 +24,6 @@ const Register = () => {
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
-  const selectedValue = useMemo(
-    () => Array.from(selectedOrgSize).join(", ").replaceAll("_", " "),
-    [selectedOrgSize]
-  );
-
   const getCountryList = async () => {
     setIsLoading(true);
     try {
@@ -45,8 +32,6 @@ const Register = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      // console.error("Error while fetch country list =>", error);
-      // setError("Error posting data");
     }
   };
 
@@ -96,8 +81,6 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    // console.log("on submit data->", data);
-    // console.log("selectedOrgSize!!->", selectedOrgSize);
     navigator.geolocation.getCurrentPosition(async (position) => {
       const body = {
         name: data?.firstName + data?.lastName,
@@ -108,17 +91,15 @@ const Register = () => {
         longitude: position.coords.longitude,
         address: data?.organizationAddress,
         organizationName: data?.organizationName,
-        organizationSize: selectedOrgSize, // TODO:: need to change
+        organizationSize: selectedOrgSize,
       };
 
       try {
         const response = await createUser(body);
-        toast.success(response.data.message ?? strings.createUserSuccess);
         setIsLoading(false);
         reset();
       } catch (error) {
         setIsLoading(false);
-        toast.error(error.message ?? strings.createUserError);
       }
     });
   };

@@ -1,3 +1,4 @@
+import { strings } from "@strings";
 import api from "./api";
 
 // Example for handling normal API request
@@ -15,9 +16,10 @@ export const fetchCountryList = async () => {
 export const createUser = async (userData) => {
   try {
     const response = await api.post("/signup", userData);
+    toast.success(response.data.message ?? strings.createUserSuccess);
     return response;
   } catch (error) {
-    // console.error("Error creating user:", error);
+    toast.error(error.message ?? strings.createUserError);
     throw error;
   }
 };
@@ -26,9 +28,10 @@ export const userLogin = async (userData) => {
   try {
     const response = await api.post("/login", userData);
     localStorage.setItem("userDetail", JSON.stringify(response.data.data));
+    toast.success(response?.data?.message ?? strings.loginSuccess);
     return response.data;
   } catch (error) {
-    // console.error("Error while user login:", error);
+    toast.error(error.message ?? strings.loginError);
     throw error;
   }
 };
