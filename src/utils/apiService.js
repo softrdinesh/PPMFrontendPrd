@@ -1,5 +1,6 @@
 import { strings } from "@strings";
 import api from "./api";
+import toast from "react-hot-toast";
 
 // Example for handling normal API request
 export const fetchCountryList = async () => {
@@ -11,26 +12,42 @@ export const fetchCountryList = async () => {
     throw error;
   }
 };
+export const getLoginSuccess = async () => {
+  try {
+    const response = await api.get("/login/success");
+    console.log("getLoginSuccess -->", response);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching login success :", error);
+    throw error;
+  }
+};
 
 // Example for handling API request with body data
 export const createUser = async (userData) => {
+  console.log("createUser api body-->", userData);
   try {
     const response = await api.post("/signup", userData);
     toast.success(response.data.message ?? strings.createUserSuccess);
-    return response;
+    console.log("signup page res-->", response.data);
+    return response.data;
   } catch (error) {
-    toast.error(error.message ?? strings.createUserError);
+    toast.error(error.response.data.message ?? strings.createUserError);
+    console.log("signup page error-->", error);
     throw error;
   }
 };
 
 export const userLogin = async (userData) => {
+  console.log("userLogin body inside api service ->", userData);
   try {
     const response = await api.post("/login", userData);
+    console.log("login response--->", response.data.data);
     localStorage.setItem("userDetail", JSON.stringify(response.data.data));
     toast.success(response?.data?.message ?? strings.loginSuccess);
-    return response.data;
+    return response;
   } catch (error) {
+    console.log("userLogin api service error->", error);
     toast.error(error.message ?? strings.loginError);
     throw error;
   }

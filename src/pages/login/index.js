@@ -10,6 +10,8 @@ import { strings } from "@strings";
 import { links } from "@constants/config";
 import { userLogin } from "src/utils/apiService";
 import { Loader } from "@components/Loader/Loader";
+import { route } from "@constants/route";
+import Router from "next/router";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,8 +43,13 @@ const Login = () => {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
+        console.log("user login api body-->", body);
         try {
           const response = await userLogin(body);
+          console.log("user login response-->", response);
+          if (response.status) {
+            Router.push(route.dashboard);
+          }
           setIsLoading(false);
           reset();
         } catch (error) {

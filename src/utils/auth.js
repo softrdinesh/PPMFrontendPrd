@@ -2,6 +2,7 @@
 const parseUserDetail = () => {
   if (typeof window !== "undefined") {
     const data = localStorage.getItem("userDetail");
+    console.log("JSON.parse(data)-->", JSON.parse(data));
     return data ? JSON.parse(data) : null;
   }
   return null;
@@ -14,6 +15,7 @@ export const getUserDetail = () => {
 
 // Function to get auth token
 export const getAuthToken = () => {
+  console.log("parseUserDetail-->", parseUserDetail());
   return parseUserDetail()?.token ?? null;
 };
 

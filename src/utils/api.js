@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAuthToken, getRefreshToken, getUserDetail } from "./auth"; // You need to implement these functions based on your auth logic
+import { getAuthToken, getRefreshToken } from "./auth"; // You need to implement these functions based on your auth logic
 const api = axios.create({
   baseURL: `${process.env.API_URL}/api`, // Ensure this is set in your .env file
   headers: {
@@ -11,6 +11,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = getAuthToken();
+    console.log("request token-->", token);
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }

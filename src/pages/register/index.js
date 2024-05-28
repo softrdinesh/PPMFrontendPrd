@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -10,8 +10,13 @@ import { Loader } from "../../components/Loader/Loader";
 import { createUser, fetchCountryList } from "../../utils/apiService";
 import { strings } from "@strings";
 import { links } from "@constants/config";
+import { AuthContext } from "src/context/authContext";
+import { Router } from "next/router";
+import { route } from "@constants/route";
 
 const Register = () => {
+  const { user, loading, login } = useContext(AuthContext);
+
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOrgSize, setSelectedOrgSize] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState([]);
@@ -78,7 +83,15 @@ const Register = () => {
       country: selectedCountry,
     },
   });
-
+  // setvalues when comeback from google signup
+  useEffect(() => {
+    if (user) {
+      let data = user?.userData;
+      setValue("firstName", data?.Name || "");
+      setValue("email", data?.Email || "");
+      // Add other fields as necessary
+    }
+  }, [user, setValue]);
   const onSubmit = async (data) => {
     setIsLoading(true);
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -96,6 +109,9 @@ const Register = () => {
 
       try {
         const response = await createUser(body);
+        if (response.status) {
+          Router.push(route.dashboard);
+        }
         setIsLoading(false);
         reset();
       } catch (error) {
@@ -172,6 +188,7 @@ const Register = () => {
                     id="firstName"
                     placeholder={strings.firstNamePh}
                     name="firstName"
+                    readOnly={user?.userData?.Name != ""}
                   />
                   <span className="text-darkRed text-sm font-normal">
                     {errors.firstName?.message}
@@ -194,6 +211,7 @@ const Register = () => {
                     id="lastName"
                     placeholder={strings.lastNamePh}
                     name="lastName"
+                    readOnly={user?.userData?.Name != ""}
                   />
                 </div>
               </div>
@@ -219,6 +237,7 @@ const Register = () => {
                   id="email"
                   placeholder={strings.emailPh}
                   name="email"
+                  readOnly={user?.userData?.Email != ""}
                 />
                 <span className="text-darkRed text-sm font-normal">
                   {errors.email?.message}
@@ -409,9 +428,9 @@ const Register = () => {
               {/* bottom view */}
               <Button
                 type="submit"
-                onClick={() => {
-                  onSubmit();
-                }}
+                // onClick={() => {
+                //   onSubmit();
+                // }}
                 className="text-xl p-2 border rounded-md mt-3 bg-primary w-full font-medium text-white text-center items-center"
               >
                 Let’s Start
