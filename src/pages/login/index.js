@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -8,16 +8,14 @@ import { Icon } from "@iconify/react";
 
 import { strings } from "@strings";
 import { links } from "@constants/config";
-import { userLogin } from "src/utils/apiService";
 import { Loader } from "@components/Loader/Loader";
-import { route } from "@constants/route";
-import Router from "next/router";
+import { AuthContext } from "src/context/authContext";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [keepSelected, setKeepSelected] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  const { login } = useContext(AuthContext);
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const {
@@ -45,11 +43,12 @@ const Login = () => {
         };
         console.log("user login api body-->", body);
         try {
-          const response = await userLogin(body);
-          console.log("user login response-->", response);
-          if (response.status) {
-            Router.push(route.dashboard);
-          }
+          await login(body); // Calls handleLogin in AuthContext
+          // const response = await userLogin(body);
+          // console.log("user login response-->", response);
+          // if (response.status) {
+          //   Router.push(route.dashboard);
+          // }
           setIsLoading(false);
           reset();
         } catch (error) {

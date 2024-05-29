@@ -15,7 +15,7 @@ import { Router } from "next/router";
 import { route } from "@constants/route";
 
 const Register = () => {
-  const { user, loading, login } = useContext(AuthContext);
+  const { setUser, googleUserData } = useContext(AuthContext);
 
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOrgSize, setSelectedOrgSize] = useState([]);
@@ -84,14 +84,19 @@ const Register = () => {
     },
   });
   // setvalues when comeback from google signup
+
   useEffect(() => {
-    if (user) {
-      let data = user?.userData;
-      setValue("firstName", data?.Name || "");
-      setValue("email", data?.Email || "");
-      // Add other fields as necessary
+    if (googleUserData) {
+      const { Name, Email } = googleUserData.userData;
+
+      const [firstName, ...rest] = Name.split(" ");
+      const lastName = rest.join(" ");
+
+      setValue("firstName", firstName || "");
+      setValue("lastName", lastName || "");
+      setValue("email", Email || "");
     }
-  }, [user, setValue]);
+  }, [googleUserData, setValue]);
   const onSubmit = async (data) => {
     setIsLoading(true);
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -110,6 +115,7 @@ const Register = () => {
       try {
         const response = await createUser(body);
         if (response.status) {
+          setUser(response.data);
           Router.push(route.dashboard);
         }
         setIsLoading(false);
@@ -188,7 +194,10 @@ const Register = () => {
                     id="firstName"
                     placeholder={strings.firstNamePh}
                     name="firstName"
-                    readOnly={user?.userData?.Name != ""}
+                    readOnly={
+                      googleUserData != null &&
+                      googleUserData?.userData?.Name != ""
+                    }
                   />
                   <span className="text-darkRed text-sm font-normal">
                     {errors.firstName?.message}
@@ -211,7 +220,10 @@ const Register = () => {
                     id="lastName"
                     placeholder={strings.lastNamePh}
                     name="lastName"
-                    readOnly={user?.userData?.Name != ""}
+                    readOnly={
+                      googleUserData != null &&
+                      googleUserData?.userData?.Name != ""
+                    }
                   />
                 </div>
               </div>
@@ -237,7 +249,10 @@ const Register = () => {
                   id="email"
                   placeholder={strings.emailPh}
                   name="email"
-                  readOnly={user?.userData?.Email != ""}
+                  readOnly={
+                    googleUserData != null &&
+                    googleUserData?.userData?.Email != ""
+                  }
                 />
                 <span className="text-darkRed text-sm font-normal">
                   {errors.email?.message}

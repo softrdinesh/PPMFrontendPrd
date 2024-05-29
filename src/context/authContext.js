@@ -1,128 +1,134 @@
-// ** React Imports
 import { createContext, useEffect, useState } from "react";
-
-// ** Next Import
 import { useRouter } from "next/router";
-import toast from "react-hot-toast";
 import axios from "axios";
+import { getAuthToken } from "src/utils/auth";
 import { route } from "@constants/route";
-import { getAuthToken, getUserDetail } from "src/utils/auth";
 
-// ** Config
-
-// ** Defaults
 const defaultProvider = {
   user: null,
   loading: true,
+  googleUserData: null,
+  setGoogleUserData: () => null,
   setUser: () => null,
   setLoading: () => Boolean,
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
 };
+
 const AuthContext = createContext(defaultProvider);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(defaultProvider.user);
   const [loading, setLoading] = useState(defaultProvider.loading);
-  const [recallApi, setRecallApi] = useState("");
-
-  // ** Hooks
+  const [googleUserData, setGoogleUserData] = useState(
+    defaultProvider.googleUserData
+  );
   const router = useRouter();
 
-  const removeLocalStorageData = async () => {
-    localStorage.removeItem("userDetail");
-    router.push("/login");
-  };
   const checkLoginSuccess = async () => {
-    console.log("2");
     setLoading(true);
     try {
       const response = await axios.get(
         process.env.API_URL + "/auth/login/success",
         { withCredentials: true }
       );
-      if (response?.data?.status) {
-        //   toast.success(response?.data?.message);
-        console.log("auth login sucess->>", response?.data);
-        if (!response?.data?.data?.isVerified) {
-          router.push(route.register);
-        }
-        //
-        setUser(response?.data?.data);
-        setLoading(false);
+
+      if (!response?.data?.data?.isVerified) {
+        setGoogleUserData(response.data.data);
+        router.push(route.register);
       }
+      if (response?.data?.data?.isVerified) {
+        setLoading(false);
+        setUser(response.data.data);
+      }
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       verifyToken();
-      console.log("error :", error);
       router.replace("/login");
     }
   };
+  const removeLocalStorageData = async () => {
+    setUser(null);
+    setGoogleUserData(null);
+    router.push("/login");
+  };
   const verifyToken = async () => {
     const storedToken = getAuthToken();
-
-    console.log("1");
     try {
-      if (storedToken != null) {
-        // verify token api
+      if (storedToken) {
         setLoading(true);
-        await axios
+        const response = await axios
           .get(process.env.API_URL + "/api/verify-token", {
             headers: {
-              Accept: "application/json",
               Authorization: `Bearer ${storedToken}`,
             },
           })
           .then(async (res) => {
-            console.log("@@@@@->", res);
-            let responseData = res.data.userData;
-            console.log("verify token res @@ ->", res.data.userData);
+            // console.log("verify token res->", res);
+            let responseData = res.data.data;
             setLoading(false);
             setUser({
               ...responseData,
             });
           })
           .catch((e) => {
-            console.log("verify token error -->", error);
+            // console.log("verify token error -->", error);
             setLoading(false);
-            //   handleLogout()
+            removeLocalStorageData();
           });
       } else {
-        console.log("3");
         removeLocalStorageData();
-        setUser(null);
         setLoading(false);
       }
     } catch (error) {
-      console.log("verify token error->", error);
-
       setLoading(false);
+      removeLocalStorageData();
     }
   };
+
   useEffect(() => {
     const storedToken = getAuthToken();
-    console.log("storedToken !!=>", storedToken);
-
-    if (storedToken == null) {
+    if (!storedToken) {
       checkLoginSuccess();
     } else {
       verifyToken();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recallApi]);
+  }, []);
 
-  const handleLogin = async (params, errorCallback) => {};
+  const handleLogin = async (params) => {
+    try {
+      // const response = await axios.post(
+      //   process.env.API_URL + "/api/login",
+      //   params
+      // );
+      const response = await userLogin(params);
+      // console.log("handle login response -->", response.data);
+      if (response.data.status) {
+        // setAuthToken(response.data.data.token); // Save token to localStorage
+        setUser(response.data.data); // Set user in context
+        localStorage.setItem("userDetail", JSON.stringify(response.data.data));
+        setLoading(false);
+        router.push(route.dashboard);
+      }
+    } catch (error) {
+      // console.log("Login error:", error);
+    }
+  };
 
   const handleLogout = async () => {
     setUser(null);
     setLoading(false);
-    window.localStorage.removeItem("userDetail");
+    setGoogleUserData(null);
+    localStorage.removeItem("userDetail");
     router.push("/login");
   };
 
   const values = {
     user,
     loading,
+    googleUserData,
+    setGoogleUserData,
     setUser,
     setLoading,
     login: handleLogin,
