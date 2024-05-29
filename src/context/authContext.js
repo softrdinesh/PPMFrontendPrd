@@ -45,13 +45,13 @@ const AuthProvider = ({ children }) => {
     } catch (error) {
       setLoading(false);
       verifyToken();
-      router.replace("/login");
+      router.replace(route.login);
     }
   };
   const removeLocalStorageData = async () => {
     setUser(null);
     setGoogleUserData(null);
-    router.push("/login");
+    router.push(route.login);
   };
   const verifyToken = async () => {
     const storedToken = getAuthToken();
@@ -121,7 +121,7 @@ const AuthProvider = ({ children }) => {
     setLoading(false);
     setGoogleUserData(null);
     localStorage.removeItem("userDetail");
-    router.push("/login");
+    router.push(route.login);
   };
 
   const values = {
