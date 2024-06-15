@@ -4,6 +4,7 @@ import { Button } from "@nextui-org/react";
 import { useRouter } from "next/router";
 import { AuthContext } from "src/context/authContext";
 import { getUserDetail } from "src/utils/auth";
+import { route } from "@constants/route";
 
 export default function index() {
   const router = useRouter();
@@ -17,6 +18,32 @@ export default function index() {
           Welcome your email id is:
           <span className="font-bold text-white "> {userDetail?.email}</span>
         </p>
+      </div>
+      <div className="flex justify-center">
+        <Button
+          // type="submit"
+          className="text-xl border  border-white rounded-md bg-primary w-1/2 font-medium text-white text-center items-center mt-4"
+          onClick={() => {
+            // window.localStorage.removeItem("userDetail");
+            router.push(route.demo);
+            // setUser(null);
+          }}
+        >
+          Go To Demo
+        </Button>
+      </div>
+      <div className="flex justify-center">
+        <Button
+          // type="submit"
+          className="text-xl border  border-white rounded-md bg-primary w-1/2 font-medium text-white text-center items-center mt-4"
+          onClick={() => {
+            // window.localStorage.removeItem("userDetail");
+            router.push(route.inlineRow);
+            // setUser(null);
+          }}
+        >
+          Inline Row Example
+        </Button>
       </div>
       <div className="flex justify-center">
         <Button
