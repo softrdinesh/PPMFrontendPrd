@@ -5,4 +5,5 @@ export const route = {
   demo: "/demo",
   inlineRow: "/inlineRow",
   inlineCell: "/inlineCell",
+  inlineTable: "/inlineTable",
 };

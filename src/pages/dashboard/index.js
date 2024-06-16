@@ -34,7 +34,6 @@ export default function index() {
       </div>
       <div className="flex justify-center">
         <Button
-          // type="submit"
           className="text-xl border  border-white rounded-md bg-primary w-1/2 font-medium text-white text-center items-center mt-4"
           onClick={() => {
             router.push(route.inlineRow);
@@ -51,6 +50,16 @@ export default function index() {
           }}
         >
           Inline Cell Example
+        </Button>
+      </div>
+      <div className="flex justify-center">
+        <Button
+          className="text-xl border  border-white rounded-md bg-primary w-1/2 font-medium text-white text-center items-center mt-4"
+          onClick={() => {
+            router.push(route.inlineTable);
+          }}
+        >
+          Inline Table Example
         </Button>
       </div>
       <div className="flex justify-center">
