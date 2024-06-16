@@ -34,27 +34,6 @@ export const fakeData = [
     email: "Ericka_Mueller52@yahoo.com",
     state: "Colorado",
   },
-  {
-    id: "wzxj9m",
-    firstName: "Mckenna",
-    lastName: "Friesen",
-    email: "Veda_Feeney@yahoo.com",
-    state: "New York",
-  },
-  {
-    id: "21dwtz",
-    firstName: "Wyman",
-    lastName: "Jast",
-    email: "Melvin.Pacocha@yahoo.com",
-    state: "Montana",
-  },
-  {
-    id: "o8oe4k",
-    firstName: "Janick",
-    lastName: "Willms",
-    email: "Delfina12@gmail.com",
-    state: "Nebraska",
-  },
 ];
 
 //50 us states array

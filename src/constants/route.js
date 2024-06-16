@@ -4,4 +4,5 @@ export const route = {
   dashboard: "/dashboard",
   demo: "/demo",
   inlineRow: "/inlineRow",
+  inlineCell: "/inlineCell",
 };

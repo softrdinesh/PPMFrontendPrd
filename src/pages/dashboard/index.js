@@ -12,7 +12,7 @@ export default function index() {
   const userDetail = getUserDetail();
 
   return (
-    <div className="bg-primary h-[240px]">
+    <div className="bg-primary h-auto py-2">
       <div className="flex flex-1 bg-primary justify-center items-center  mt-5">
         <p className="text-white">
           Welcome your email id is:
@@ -37,12 +37,20 @@ export default function index() {
           // type="submit"
           className="text-xl border  border-white rounded-md bg-primary w-1/2 font-medium text-white text-center items-center mt-4"
           onClick={() => {
-            // window.localStorage.removeItem("userDetail");
             router.push(route.inlineRow);
-            // setUser(null);
           }}
         >
           Inline Row Example
+        </Button>
+      </div>
+      <div className="flex justify-center">
+        <Button
+          className="text-xl border  border-white rounded-md bg-primary w-1/2 font-medium text-white text-center items-center mt-4"
+          onClick={() => {
+            router.push(route.inlineCell);
+          }}
+        >
+          Inline Cell Example
         </Button>
       </div>
       <div className="flex justify-center">

@@ -4,7 +4,14 @@ import {
   // createRow,
   useMaterialReactTable,
 } from "material-react-table";
-import { Box, Button, IconButton, Tooltip } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import {
   QueryClient,
   QueryClientProvider,
@@ -13,11 +20,12 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { fakeData, usStates } from "../../json/makeData";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const InlineRow = () => {
+const InlineCell = () => {
   const [validationErrors, setValidationErrors] = useState({});
+  //keep track of rows that have been edited
+  const [editedUsers, setEditedUsers] = useState({});
 
   const columns = useMemo(
     () => [
@@ -30,63 +38,84 @@ const InlineRow = () => {
       {
         accessorKey: "firstName",
         header: "First Name",
-        muiEditTextFieldProps: {
+        muiEditTextFieldProps: ({ cell, row }) => ({
+          type: "text",
           required: true,
-          error: !!validationErrors?.firstName,
-          helperText: validationErrors?.firstName,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
+          error: !!validationErrors?.[cell.id],
+          helperText: validationErrors?.[cell.id],
+          //store edited user in state to be saved later
+          onBlur: (event) => {
+            const validationError = !validateRequired(event.currentTarget.value)
+              ? "Required"
+              : undefined;
             setValidationErrors({
               ...validationErrors,
-              firstName: undefined,
-            }),
-          //optionally add validation checking for onBlur or onChange
-        },
+              [cell.id]: validationError,
+            });
+            setEditedUsers({ ...editedUsers, [row.id]: row.original });
+          },
+        }),
       },
       {
         accessorKey: "lastName",
         header: "Last Name",
-        muiEditTextFieldProps: {
+        muiEditTextFieldProps: ({ cell, row }) => ({
+          type: "text",
           required: true,
-          error: !!validationErrors?.lastName,
-          helperText: validationErrors?.lastName,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
+          error: !!validationErrors?.[cell.id],
+          helperText: validationErrors?.[cell.id],
+          //store edited user in state to be saved later
+          onBlur: (event) => {
+            const validationError = !validateRequired(event.currentTarget.value)
+              ? "Required"
+              : undefined;
             setValidationErrors({
               ...validationErrors,
-              lastName: undefined,
-            }),
-        },
+              [cell.id]: validationError,
+            });
+            setEditedUsers({ ...editedUsers, [row.id]: row.original });
+          },
+        }),
       },
       {
         accessorKey: "email",
         header: "Email",
-        muiEditTextFieldProps: {
+        muiEditTextFieldProps: ({ cell, row }) => ({
           type: "email",
           required: true,
-          error: !!validationErrors?.email,
-          helperText: validationErrors?.email,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
+          error: !!validationErrors?.[cell.id],
+          helperText: validationErrors?.[cell.id],
+          //store edited user in state to be saved later
+          onBlur: (event) => {
+            const validationError = !validateEmail(event.currentTarget.value)
+              ? "Incorrect Email Format"
+              : undefined;
             setValidationErrors({
               ...validationErrors,
-              email: undefined,
-            }),
-        },
+              [cell.id]: validationError,
+            });
+            setEditedUsers({ ...editedUsers, [row.id]: row.original });
+          },
+        }),
       },
       {
         accessorKey: "state",
         header: "State",
         editVariant: "select",
         editSelectOptions: usStates,
-        muiEditTextFieldProps: {
+        muiEditTextFieldProps: ({ row }) => ({
           select: true,
           error: !!validationErrors?.state,
           helperText: validationErrors?.state,
-        },
+          onChange: (event) =>
+            setEditedUsers({
+              ...editedUsers,
+              [row.id]: { ...row.original, state: event.target.value },
+            }),
+        }),
       },
     ],
-    [validationErrors]
+    [editedUsers, validationErrors]
   );
 
   //call CREATE hook
@@ -100,8 +129,8 @@ const InlineRow = () => {
     isLoading: isLoadingUsers,
   } = useGetUsers();
   //call UPDATE hook
-  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
+  const { mutateAsync: updateUsers, isPending: isUpdatingUsers } =
+    useUpdateUsers();
   //call DELETE hook
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
@@ -119,15 +148,10 @@ const InlineRow = () => {
   };
 
   //UPDATE action
-  const handleSaveUser = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-    await updateUser(values);
-    table.setEditingRow(null); //exit editing mode
+  const handleSaveUsers = async () => {
+    if (Object.values(validationErrors).some((error) => !!error)) return;
+    await updateUsers(Object.values(editedUsers));
+    setEditedUsers({});
   };
 
   //DELETE action
@@ -141,8 +165,12 @@ const InlineRow = () => {
     columns,
     data: fetchedUsers,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
-    editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
+    editDisplayMode: "cell", // ('modal', 'row', 'table', and 'custom' are also available)
+    enableCellActions: true,
+    enableClickToCopy: "context-menu",
+    enableColumnPinning: true,
     enableEditing: true,
+    enableRowActions: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
@@ -157,20 +185,31 @@ const InlineRow = () => {
     },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
-    onEditingRowCancel: () => setValidationErrors({}),
-    onEditingRowSave: handleSaveUser,
-    renderRowActions: ({ row, table }) => (
+    renderRowActions: ({ row }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        <Tooltip title="Edit">
-          <IconButton onClick={() => table.setEditingRow(row)}>
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
         <Tooltip title="Delete">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
+      </Box>
+    ),
+    renderBottomToolbarCustomActions: () => (
+      <Box sx={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <Button
+          color="success"
+          variant="contained"
+          onClick={handleSaveUsers}
+          disabled={
+            Object.keys(editedUsers).length === 0 ||
+            Object.values(validationErrors).some((error) => !!error)
+          }
+        >
+          {isUpdatingUsers ? <CircularProgress size={25} /> : "Save"}
+        </Button>
+        {Object.values(validationErrors).some((error) => !!error) && (
+          <Typography color="error">Fix errors before submitting</Typography>
+        )}
       </Box>
     ),
     renderTopToolbarCustomActions: ({ table }) => (
@@ -191,7 +230,7 @@ const InlineRow = () => {
     ),
     state: {
       isLoading: isLoadingUsers,
-      isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
+      isSaving: isCreatingUser || isUpdatingUsers || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
@@ -237,20 +276,21 @@ function useGetUsers() {
 }
 
 //UPDATE hook (put user in api)
-function useUpdateUser() {
+function useUpdateUsers() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (user) => {
+    mutationFn: async (users) => {
       //send api update request here
       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
       return Promise.resolve();
     },
     //client side optimistic update
-    onMutate: (newUserInfo) => {
+    onMutate: (newUsers) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-        )
+        prevUsers?.map((user) => {
+          const newUser = newUsers.find((u) => u.id === user.id);
+          return newUser ? newUser : user;
+        })
       );
     },
     // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -281,7 +321,7 @@ const queryClient = new QueryClient();
 const ExampleWithProviders = () => (
   //Put this with your other react-query providers near root of your app
   <QueryClientProvider client={queryClient}>
-    <InlineRow />
+    <InlineCell />
   </QueryClientProvider>
 );
 
