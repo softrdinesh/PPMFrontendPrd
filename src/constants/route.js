@@ -6,4 +6,5 @@ export const route = {
   inlineRow: "/inlineRow",
   inlineCell: "/inlineCell",
   inlineTable: "/inlineTable",
+  inlineTree: "/inlineTree",
 };

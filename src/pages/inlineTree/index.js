@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 import {
   MaterialReactTable,
-  // createRow,
+  createRow,
   useMaterialReactTable,
 } from "material-react-table";
 import {
   Box,
   Button,
-  CircularProgress,
   IconButton,
   Tooltip,
-  Typography,
+  darken,
+  lighten,
 } from "@mui/material";
 import {
   QueryClient,
@@ -20,12 +20,13 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { fakeData, usStates } from "./makeData";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const InlineCell = () => {
+const Example = () => {
+  const [creatingRowIndex, setCreatingRowIndex] = useState();
   const [validationErrors, setValidationErrors] = useState({});
-  //keep track of rows that have been edited
-  const [editedUsers, setEditedUsers] = useState({});
 
   const columns = useMemo(
     () => [
@@ -38,84 +39,62 @@ const InlineCell = () => {
       {
         accessorKey: "firstName",
         header: "First Name",
-        muiEditTextFieldProps: ({ cell, row }) => ({
-          type: "text",
+        muiEditTextFieldProps: {
           required: true,
-          error: !!validationErrors?.[cell.id],
-          helperText: validationErrors?.[cell.id],
-          //store edited user in state to be saved later
-          onBlur: (event) => {
-            const validationError = !validateRequired(event.currentTarget.value)
-              ? "Required"
-              : undefined;
+          error: !!validationErrors?.firstName,
+          helperText: validationErrors?.firstName,
+          //remove any previous validation errors when user focuses on the input
+          onFocus: () =>
             setValidationErrors({
               ...validationErrors,
-              [cell.id]: validationError,
-            });
-            setEditedUsers({ ...editedUsers, [row.id]: row.original });
-          },
-        }),
+              firstName: undefined,
+            }),
+          //optionally add validation checking for onBlur or onChange
+        },
       },
       {
         accessorKey: "lastName",
         header: "Last Name",
-        muiEditTextFieldProps: ({ cell, row }) => ({
-          type: "text",
+        muiEditTextFieldProps: {
           required: true,
-          error: !!validationErrors?.[cell.id],
-          helperText: validationErrors?.[cell.id],
-          //store edited user in state to be saved later
-          onBlur: (event) => {
-            const validationError = !validateRequired(event.currentTarget.value)
-              ? "Required"
-              : undefined;
+          error: !!validationErrors?.lastName,
+          helperText: validationErrors?.lastName,
+          //remove any previous validation errors when user focuses on the input
+          onFocus: () =>
             setValidationErrors({
               ...validationErrors,
-              [cell.id]: validationError,
-            });
-            setEditedUsers({ ...editedUsers, [row.id]: row.original });
-          },
-        }),
+              lastName: undefined,
+            }),
+        },
       },
       {
-        accessorKey: "email",
-        header: "Email",
-        muiEditTextFieldProps: ({ cell, row }) => ({
-          type: "email",
+        accessorKey: "city",
+        header: "City",
+        muiEditTextFieldProps: {
           required: true,
-          error: !!validationErrors?.[cell.id],
-          helperText: validationErrors?.[cell.id],
-          //store edited user in state to be saved later
-          onBlur: (event) => {
-            const validationError = !validateEmail(event.currentTarget.value)
-              ? "Incorrect Email Format"
-              : undefined;
+          error: !!validationErrors?.city,
+          helperText: validationErrors?.city,
+          //remove any previous validation errors when user focuses on the input
+          onFocus: () =>
             setValidationErrors({
               ...validationErrors,
-              [cell.id]: validationError,
-            });
-            setEditedUsers({ ...editedUsers, [row.id]: row.original });
-          },
-        }),
+              city: undefined,
+            }),
+        },
       },
       {
         accessorKey: "state",
         header: "State",
         editVariant: "select",
         editSelectOptions: usStates,
-        muiEditTextFieldProps: ({ row }) => ({
+        muiEditTextFieldProps: {
           select: true,
           error: !!validationErrors?.state,
           helperText: validationErrors?.state,
-          onChange: (event) =>
-            setEditedUsers({
-              ...editedUsers,
-              [row.id]: { ...row.original, state: event.target.value },
-            }),
-        }),
+        },
       },
     ],
-    [editedUsers, validationErrors]
+    [validationErrors]
   );
 
   //call CREATE hook
@@ -129,29 +108,34 @@ const InlineCell = () => {
     isLoading: isLoadingUsers,
   } = useGetUsers();
   //call UPDATE hook
-  const { mutateAsync: updateUsers, isPending: isUpdatingUsers } =
-    useUpdateUsers();
+  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
+    useUpdateUser();
   //call DELETE hook
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
 
   //CREATE action
-  const handleCreateUser = async ({ values, table }) => {
+  const handleCreateUser = async ({ values, row, table }) => {
     const newValidationErrors = validateUser(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
     }
     setValidationErrors({});
-    await createUser(values);
+    await createUser({ ...values, managerId: row.original.managerId });
     table.setCreatingRow(null); //exit creating mode
   };
 
   //UPDATE action
-  const handleSaveUsers = async () => {
-    if (Object.values(validationErrors).some((error) => !!error)) return;
-    await updateUsers(Object.values(editedUsers));
-    setEditedUsers({});
+  const handleSaveUser = async ({ values, table }) => {
+    const newValidationErrors = validateUser(values);
+    if (Object.values(newValidationErrors).some((error) => error)) {
+      setValidationErrors(newValidationErrors);
+      return;
+    }
+    setValidationErrors({});
+    await updateUser(values);
+    table.setEditingRow(null); //exit editing mode
   };
 
   //DELETE action
@@ -165,12 +149,11 @@ const InlineCell = () => {
     columns,
     data: fetchedUsers,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
-    editDisplayMode: "cell", // ('modal', 'row', 'table', and 'custom' are also available)
-    enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
     enableColumnPinning: true,
     enableEditing: true,
-    enableRowActions: true,
+    enableExpanding: true,
+    positionCreatingRow: creatingRowIndex, //index where new row is inserted before
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
@@ -183,54 +166,78 @@ const InlineCell = () => {
         minHeight: "500px",
       },
     },
+    muiTableBodyRowProps: ({ row }) => ({
+      //conditional styling based on row depth
+      sx: (theme) => ({
+        backgroundColor: darken(
+          lighten(theme.palette.background.paper, 0.1),
+          row.depth * (theme.palette.mode === "dark" ? 0.2 : 0.1)
+        ),
+      }),
+    }),
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
-    renderRowActions: ({ row }) => (
+    onEditingRowCancel: () => setValidationErrors({}),
+    onEditingRowSave: handleSaveUser,
+    renderRowActions: ({ row, staticRowIndex, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={() => table.setEditingRow(row)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Delete">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-      </Box>
-    ),
-    renderBottomToolbarCustomActions: () => (
-      <Box sx={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-        <Button
-          color="success"
-          variant="contained"
-          onClick={handleSaveUsers}
-          disabled={
-            Object.keys(editedUsers).length === 0 ||
-            Object.values(validationErrors).some((error) => !!error)
-          }
-        >
-          {isUpdatingUsers ? <CircularProgress size={25} /> : "Save"}
-        </Button>
-        {Object.values(validationErrors).some((error) => !!error) && (
-          <Typography color="error">Fix errors before submitting</Typography>
-        )}
+        <Tooltip title="Add Subordinate">
+          <IconButton
+            onClick={() => {
+              setCreatingRowIndex((staticRowIndex || 0) + 1);
+              table.setCreatingRow(
+                createRow(
+                  table,
+                  {
+                    id: null,
+                    firstName: "",
+                    lastName: "",
+                    city: "",
+                    state: "",
+                    managerId: row.id,
+                    subRows: [],
+                  },
+                  -1,
+                  row.depth + 1
+                )
+              );
+            }}
+          >
+            <PersonAddAltIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
+        startIcon={<PersonAddAltIcon />}
         variant="contained"
         onClick={() => {
-          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
+          setCreatingRowIndex(table.getRowModel().rows.length); //create new row at bottom of table
+          table.setCreatingRow(true);
         }}
       >
         Create New User
       </Button>
     ),
+    initialState: {
+      columnPinning: { left: ["mrt-row-actions"], right: [] },
+      expanded: true,
+      pagination: { pageSize: 20, pageIndex: 0 },
+    },
     state: {
       isLoading: isLoadingUsers,
-      isSaving: isCreatingUser || isUpdatingUsers || isDeletingUser,
+      isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
@@ -244,19 +251,35 @@ function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
+      console.info("create user", user);
       //send api update request here
       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
       return Promise.resolve();
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
-      queryClient.setQueryData(["users"], (prevUsers) => [
-        ...prevUsers,
-        {
-          ...newUserInfo,
-          id: (Math.random() + 1).toString(36).substring(7),
-        },
-      ]);
+      queryClient.setQueryData(["users"], (_prevUsers) => {
+        const prevUsers = JSON.parse(JSON.stringify(_prevUsers));
+        newUserInfo.subRows = [];
+        if (newUserInfo.managerId) {
+          const manager = findUserInTree(newUserInfo.managerId, prevUsers);
+          if (manager) {
+            manager.subRows = [
+              ...(manager.subRows || []),
+              {
+                ...newUserInfo,
+                id: `${manager.id}.${(manager.subRows?.length || 0) + 1}`,
+              },
+            ];
+          }
+        } else {
+          prevUsers.push({
+            ...newUserInfo,
+            id: `${prevUsers.length + 1}`,
+          });
+        }
+        return [...prevUsers];
+      });
     },
     // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
   });
@@ -276,22 +299,22 @@ function useGetUsers() {
 }
 
 //UPDATE hook (put user in api)
-function useUpdateUsers() {
+function useUpdateUser() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (users) => {
+    mutationFn: async (user) => {
+      console.info("update user", user);
       //send api update request here
       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
       return Promise.resolve();
     },
     //client side optimistic update
-    onMutate: (newUsers) => {
-      queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.map((user) => {
-          const newUser = newUsers.find((u) => u.id === user.id);
-          return newUser ? newUser : user;
-        })
-      );
+    onMutate: (newUserInfo) => {
+      queryClient.setQueryData(["users"], (prevUsers) => {
+        let user = findUserInTree(newUserInfo.id, prevUsers);
+        user = { ...user, ...newUserInfo };
+        return [...prevUsers];
+      });
     },
     // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
   });
@@ -302,15 +325,29 @@ function useDeleteUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (userId) => {
+      console.info("delete user", userId);
       //send api update request here
       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
       return Promise.resolve();
     },
     //client side optimistic update
     onMutate: (userId) => {
-      queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId)
-      );
+      queryClient.setQueryData(["users"], (prevUsers) => {
+        const newUsers = JSON.parse(JSON.stringify(prevUsers));
+        //remove user
+        const user = findUserInTree(userId, newUsers);
+        if (user) {
+          const manager = findUserInTree(user.managerId, newUsers);
+          if (manager) {
+            manager.subRows = manager.subRows?.filter(
+              (subUser) => subUser.id !== user.id
+            );
+          } else {
+            return newUsers.filter((user) => user.id !== userId);
+          }
+        }
+        return [...newUsers];
+      });
     },
     // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
   });
@@ -321,20 +358,13 @@ const queryClient = new QueryClient();
 const ExampleWithProviders = () => (
   //Put this with your other react-query providers near root of your app
   <QueryClientProvider client={queryClient}>
-    <InlineCell />
+    <Example />
   </QueryClientProvider>
 );
 
 export default ExampleWithProviders;
 
 const validateRequired = (value) => !!value.length;
-const validateEmail = (email) =>
-  !!email.length &&
-  email
-    .toLowerCase()
-    .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
 
 function validateUser(user) {
   return {
@@ -342,6 +372,18 @@ function validateUser(user) {
       ? "First Name is Required"
       : "",
     lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
-    email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
   };
+}
+
+function findUserInTree(managerId, users) {
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].id === managerId) {
+      return users[i];
+    }
+    if (users[i].subRows) {
+      const found = findUserInTree(managerId, users[i].subRows);
+      if (found) return found;
+    }
+  }
+  return null;
 }

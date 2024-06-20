@@ -19,7 +19,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { fakeData, usStates } from "../../json/makeData";
+import { fakeData, usStates } from "./makeData";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const InlineTable = () => {
