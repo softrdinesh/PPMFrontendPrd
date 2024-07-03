@@ -16,15 +16,16 @@
     "format": "prettier --write \"src/**/*.{js,jsx}\""
   },
   "dependencies": {
+    "@babel/eslint-parser": "7.23.10",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.4",
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.11.5",
+    "@iconify/react": "^5.0.1",
     "@mui/lab": "^5.0.0-alpha.168",
     "@mui/material": "5.11.13",
     "@popperjs/core": "^2.11.8",
     "apexcharts-clevision": "3.28.5",
-    "@babel/eslint-parser": "7.23.10",
     "clsx": "^2.1.1",
     "eslint-plugin-react": "^7.34.3",
     "mdi-material-ui": "^7.9.1",

@@ -87,7 +87,6 @@ const VerticalNavLink = ({
     <ListItem
       disablePadding
       className='nav-link'
-      disabled={item?.disabled || false}
       sx={{
         mt: 1.5,
         transition: 'padding .25s ease-in-out',

@@ -4,6 +4,7 @@ const themeConfig = {
   mode: 'light' /* light | dark */,
   contentWidth: 'boxed' /* full | boxed */,
   // ** Routing Configs
+  navSubItemIcon: 'mdi:circle' /* Icon */,
   routingLoader: true /* true | false */,
   // ** Navigation (Menu) Configs
   menuTextTruncate: true /* true | false */,

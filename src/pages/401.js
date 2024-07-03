@@ -1,16 +1,16 @@
 // ** Next Import
-import Link from 'next/link'
 
 // ** MUI Components
-import Button from '@mui/material/Button'
-import { styled } from '@mui/material/styles'
-import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 
 // ** Layout Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
+import Router from 'next/router'
 import FooterIllustrations from 'src/views/pages/misc/FooterIllustrations'
 
 // ** Styled Components
@@ -46,11 +46,10 @@ const Error401 = () => {
           <Typography variant='body2'>You don&prime;t have permission to access this page. Go Home!</Typography>
         </BoxWrapper>
         <Img height='487' alt='error-illustration' src='/images/pages/401.png' />
-        <Link passHref href='/'>
-          <Button component='a' variant='contained' sx={{ px: 5.5 }}>
-            Back to Home
-          </Button>
-        </Link>
+
+        <Button variant='contained' sx={{ px: 5.5 }} onClick={() => Router.push('/')}>
+          Back to Home
+        </Button>
       </Box>
       <FooterIllustrations />
     </Box>

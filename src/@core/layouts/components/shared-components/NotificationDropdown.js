@@ -1,22 +1,23 @@
 // ** React Imports
-import { useState, Fragment } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 
 // ** MUI Imports
-import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
-import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
-import { styled } from '@mui/material/styles'
-import useMediaQuery from '@mui/material/useMediaQuery'
-import MuiMenu from '@mui/material/Menu'
 import MuiAvatar from '@mui/material/Avatar'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Chip from '@mui/material/Chip'
+import IconButton from '@mui/material/IconButton'
+import MuiMenu from '@mui/material/Menu'
 import MuiMenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 // ** Icons Imports
-import BellOutline from 'mdi-material-ui/BellOutline'
 
 // ** Third Party Components
+import { Icon } from '@iconify/react'
+import { Badge } from '@mui/material'
 import PerfectScrollbarComponent from 'react-perfect-scrollbar'
 
 // ** Styled Menu component
@@ -82,6 +83,7 @@ const MenuItemSubtitle = styled(Typography)({
 const NotificationDropdown = () => {
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
+  const [animate, setStartAnimate] = useState(false)
 
   // ** Hook
   const hidden = useMediaQuery(theme => theme.breakpoints.down('lg'))
@@ -104,10 +106,27 @@ const NotificationDropdown = () => {
     }
   }
 
+  useEffect(() => {
+    setStartAnimate(true)
+    setTimeout(() => {
+      setStartAnimate(false)
+    }, 2000)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Fragment>
       <IconButton color='inherit' aria-haspopup='true' onClick={handleDropdownOpen} aria-controls='customized-menu'>
-        <BellOutline />
+        <Badge
+          color='error'
+          variant='dot'
+          invisible={true}
+          sx={{
+            '& .MuiBadge-badge': { top: 4, right: 4, boxShadow: theme => `0 0 0 2px ${theme.palette.background.paper}` }
+          }}
+        >
+          <Icon icon='mdi:bell-outline' id='notificationmenu' className={animate ? 'bell' : ''} />
+        </Badge>
       </IconButton>
       <Menu
         anchorEl={anchorEl}

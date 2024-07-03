@@ -37,6 +37,7 @@ import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
+import Router from 'next/router'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -193,7 +194,7 @@ const RegisterPage = () => {
               label={
                 <Fragment>
                   <span>I agree to </span>
-                  <Link href='/' passHref>
+                  <Link href='/'>
                     <LinkStyled onClick={e => e.preventDefault()}>privacy policy & terms</LinkStyled>
                   </Link>
                 </Fragment>
@@ -207,35 +208,30 @@ const RegisterPage = () => {
                 Already have an account?
               </Typography>
               <Typography variant='body2'>
-                <Link passHref href='/pages/login'>
+                <Link href='/login'>
                   <LinkStyled>Sign in instead</LinkStyled>
                 </Link>
               </Typography>
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Link href='/' passHref>
-                <IconButton component='a' onClick={e => e.preventDefault()}>
-                  <Facebook sx={{ color: '#497ce2' }} />
-                </IconButton>
-              </Link>
-              <Link href='/' passHref>
-                <IconButton component='a' onClick={e => e.preventDefault()}>
-                  <Twitter sx={{ color: '#1da1f2' }} />
-                </IconButton>
-              </Link>
-              <Link href='/' passHref>
-                <IconButton component='a' onClick={e => e.preventDefault()}>
-                  <Github
-                    sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : theme.palette.grey[300]) }}
-                  />
-                </IconButton>
-              </Link>
-              <Link href='/' passHref>
-                <IconButton component='a' onClick={e => e.preventDefault()}>
-                  <Google sx={{ color: '#db4437' }} />
-                </IconButton>
-              </Link>
+              <IconButton onClick={() => Router.push('/')}>
+                <Facebook sx={{ color: '#497ce2' }} />
+              </IconButton>
+
+              <IconButton onClick={() => Router.push('/')}>
+                <Twitter sx={{ color: '#1da1f2' }} />
+              </IconButton>
+
+              <IconButton onClick={() => Router.push('/')}>
+                <Github
+                  sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : theme.palette.grey[300]) }}
+                />
+              </IconButton>
+
+              <IconButton onClick={() => Router.push('/')}>
+                <Google sx={{ color: '#db4437' }} />
+              </IconButton>
             </Box>
           </form>
         </CardContent>
