@@ -4,7 +4,7 @@ module.exports = {
     es6: true,
     browser: true
   },
-
+  parser: 'babel-eslint',
   extends: ['next/core-web-vitals', 'prettier'],
   parserOptions: {
     ecmaVersion: 11,
@@ -17,7 +17,6 @@ module.exports = {
     }
   },
   rules: {
-    'no-unused-vars': 'error',
     'react/react-in-jsx-scope': 'off',
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
     'react/display-name': 'off',

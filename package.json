@@ -8,12 +8,14 @@
     "url": "https://themeselection.com/"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4050",
     "build": "next build",
+    "pull": "git pull origin dev",
     "start": "next start",
     "export": "next export",
     "lint": "eslint --fix \"src/**/*.{js,jsx}\"",
-    "format": "prettier --write \"src/**/*.{js,jsx}\""
+    "format": "prettier --write \"src/**/*.{js,jsx}\"",
+    "build:icons": "node src/iconify-bundle/bundle-icons-react.js"
   },
   "dependencies": {
     "@babel/eslint-parser": "7.23.10",
@@ -26,9 +28,12 @@
     "@mui/material": "5.11.13",
     "@popperjs/core": "^2.11.8",
     "apexcharts-clevision": "3.28.5",
+    "axios": "1.6.7",
+    "axios-mock-adapter": "1.22.0",
     "clsx": "^2.1.1",
     "eslint-plugin-react": "^7.34.3",
     "mdi-material-ui": "^7.9.1",
+    "moment": "^2.29.4",
     "next": "14.2.4",
     "nprogress": "^0.2.0",
     "react": "18.3.1",
@@ -36,7 +41,8 @@
     "react-datepicker": "^7.2.0",
     "react-dom": "18.3.1",
     "react-perfect-scrollbar": "^1.5.8",
-    "react-popper": "^2.3.0"
+    "react-popper": "^2.3.0",
+    "react-query": "^3.39.3"
   },
   "devDependencies": {
     "eslint": "8.57.0",
