@@ -1,28 +1,10 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      // "@styles-page/*": ["src/styles-page/*"],
-      // "@styles-layout/*": ["src/styles-layout/*"],
-      "@store/*": ["src/store/*"],
-      "@pages/*": ["src/pages/*"],
-      "@strings": ["src/constants/strings"],
-      "@patterns": ["src/constants/patterns"],
-      "@routes": ["src/constants/routes"],
-      "@colors": ["src/constants/colors"],
-      "@constants/*": ["src/constants/*"],
-      "@endpoints/*": ["src/utils/endpoints/*"],
-      "@configs/*": ["src/configs/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@utils/*": ["src/@core/utils/*"],
-      "@components/*": ["src/components/*"],
-      "@config": ["./config"],
-      // "@styles/*": ["./src/styles/*"],
-      "@image-path/*": ["./public/*"],
-      "@json/*": ["./json/*"]
-    }
+    "baseUrl": "."
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
 // to open new chrome tab while using ngrok
 // open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
