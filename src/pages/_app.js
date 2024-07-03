@@ -12,6 +12,8 @@ import { CacheProvider } from '@emotion/react'
 import themeConfig from 'src/configs/themeConfig'
 
 // ** Component Imports
+import AuthGuard from 'src/@core/components/auth/AuthGuard'
+import GuestGuard from 'src/@core/components/auth/GuestGuard'
 import UserLayout from 'src/layouts/UserLayout'
 import ThemeComponent from 'src/@core/theme/ThemeComponent'
 
@@ -42,12 +44,25 @@ if (themeConfig.routingLoader) {
   })
 }
 
+const Guard = ({ children, authGuard, guestGuard }) => {
+  if (guestGuard) {
+    return <GuestGuard fallback={<Spinner />}>{children}</GuestGuard>
+  } else if (!guestGuard && !authGuard) {
+    return <>{children}</>
+  } else {
+    return <AuthGuard fallback={<Spinner />}>{children}</AuthGuard>
+  }
+}
+
 // ** Configure JSS & ClassName
 const App = props => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
 
   // Variables
   const getLayout = Component.getLayout ?? (page => <UserLayout>{page}</UserLayout>)
+  const authGuard = Component?.authGuard ?? true
+  const guestGuard = Component?.guestGuard ?? false
+
 
   return (
     <CacheProvider value={emotionCache}>
@@ -64,7 +79,12 @@ const App = props => {
       <SettingsProvider>
         <SettingsConsumer>
           {({ settings }) => {
-            return <ThemeComponent settings={settings}>{getLayout(<Component {...pageProps} />)}</ThemeComponent>
+            return <ThemeComponent settings={settings}>
+               <Guard authGuard={authGuard} guestGuard={guestGuard}>
+              {getLayout(<Component {...pageProps} />)}
+              </Guard>
+              </ThemeComponent>
+            
           }}
         </SettingsConsumer>
       </SettingsProvider>
