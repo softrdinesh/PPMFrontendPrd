@@ -101,17 +101,17 @@ const UserDropdown = () => {
           </Box>
         </Box>
         <Divider sx={{ mt: 0, mb: 1 }} />
-        <MenuItem onClick={() => handleDropdownClose()}>
+        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
           <Box sx={styles}>
             <IconifyIcon icon={'mdi:account-outline'} />
             <Typography>Profile</Typography>
           </Box>
         </MenuItem>
 
-        <MenuItem onClick={() => handleDropdownClose('/pages/login')}>
+        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/login')}>
           <Box sx={styles}>
             <IconifyIcon icon={'ic:round-logout'} />
-            <Typography> Logout</Typography>
+            <Typography>Logout</Typography>
           </Box>
         </MenuItem>
       </Menu>

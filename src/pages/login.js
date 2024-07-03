@@ -23,12 +23,6 @@ import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
 
 // ** Icons Imports
-import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
-import EyeOutline from 'mdi-material-ui/EyeOutline'
-import Facebook from 'mdi-material-ui/Facebook'
-import Github from 'mdi-material-ui/Github'
-import Google from 'mdi-material-ui/Google'
-import Twitter from 'mdi-material-ui/Twitter'
 
 // ** Configs
 import themeConfig from 'src/configs/themeConfig'
@@ -37,6 +31,7 @@ import themeConfig from 'src/configs/themeConfig'
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
+import IconifyIcon from 'src/@core/components/icon'
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
 
 // ** Styled Components
@@ -122,7 +117,11 @@ const LoginPage = () => {
                       onMouseDown={handleMouseDownPassword}
                       aria-label='toggle password visibility'
                     >
-                      {values.showPassword ? <EyeOutline /> : <EyeOffOutline />}
+                      {values.showPassword ? (
+                        <IconifyIcon icon={'mdi:eye-outline'} />
+                      ) : (
+                        <IconifyIcon icon={'mdi:eye-off-outline'} />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 }
@@ -156,30 +155,7 @@ const LoginPage = () => {
               </Typography>
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Link href='/'>
-                <IconButton onClick={e => e.preventDefault()}>
-                  <Facebook sx={{ color: '#497ce2' }} />
-                </IconButton>
-              </Link>
-              <Link href='/'>
-                <IconButton onClick={e => e.preventDefault()}>
-                  <Twitter sx={{ color: '#1da1f2' }} />
-                </IconButton>
-              </Link>
-              <Link href='/'>
-                <IconButton onClick={e => e.preventDefault()}>
-                  <Github
-                    sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : theme.palette.grey[300]) }}
-                  />
-                </IconButton>
-              </Link>
-              <Link href='/'>
-                <IconButton onClick={e => e.preventDefault()}>
-                  <Google sx={{ color: '#db4437' }} />
-                </IconButton>
-              </Link>
-            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}></Box>
           </form>
         </CardContent>
       </Card>
