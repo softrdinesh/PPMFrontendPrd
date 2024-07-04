@@ -221,5 +221,6 @@ const RegisterPage = () => {
   )
 }
 RegisterPage.getLayout = page => <BlankLayout>{page}</BlankLayout>
+LoginPage.guestGuard = true
 
 export default RegisterPage
