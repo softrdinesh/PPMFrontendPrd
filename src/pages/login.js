@@ -36,6 +36,7 @@ import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
 import { Controller, useForm } from 'react-hook-form'
 import { pattern } from '@patterns'
 import { useAuth } from 'src/hooks/useAuth'
+import { CircularProgress } from '@mui/material'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -74,12 +75,16 @@ const LoginPage = () => {
     setShowPassword(!showPassword)
   }
 
-  const onSubmit = data => {
+  const onSubmit = async data => {
     const body = {
       ...data,
       ...location
     }
     setIsLoggingIn(true)
+    await auth.login(body).catch(err => {
+      console.log('ERROR', err)
+    })
+    setIsLoggingIn(false)
   }
 
   useEffect(() => {
@@ -202,8 +207,15 @@ const LoginPage = () => {
 
               {/* <LinkStyled href='/'>Forgot Password?</LinkStyled> */}
             </Box>
-            <Button fullWidth size='large' variant='contained' sx={{ marginBottom: 7 }} type='submit'>
-              Login
+            <Button
+              fullWidth
+              size='large'
+              variant='contained'
+              sx={{ marginBottom: 7 }}
+              type='submit'
+              disabled={isLoggingIn}
+            >
+              {isLoggingIn ? <CircularProgress size={22} /> : 'Login'}
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
               <Typography variant='body2' sx={{ marginRight: 2 }}>

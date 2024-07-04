@@ -10,7 +10,6 @@ import { useAuth } from 'src/hooks/useAuth'
 const GuestGuard = props => {
   const { children, fallback } = props
   const auth = useAuth()
-  console.log('auth :', auth)
   const router = useRouter()
   useEffect(() => {
     if (!router.isReady) {

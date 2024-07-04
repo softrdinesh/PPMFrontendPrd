@@ -3,7 +3,7 @@ import { createContext, useEffect, useState } from 'react'
 
 // ** Next Import
 import { useRouter } from 'next/router'
- 
+
 // ** Axios
 import axios from 'axios'
 
@@ -12,18 +12,17 @@ import authConfig from 'src/configs/auth'
 import { authentication } from 'src/utils/endpoints/authentication'
 
 // import toast from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { userLogin } from 'src/services/login'
 
 // ** Defaults
 const defaultProvider = {
   user: null,
   loading: false,
-  permissionData: null,
   setUser: () => null,
   setLoading: () => Boolean,
   login: () => Promise.resolve(),
-  logout: () => Promise.resolve(),
-  setPermissionData: () => null
+  logout: () => Promise.resolve()
 }
 const AuthContext = createContext(defaultProvider)
 
@@ -31,7 +30,6 @@ const AuthProvider = ({ children }) => {
   // ** States
   const [user, setUser] = useState(defaultProvider.user)
   const [loading, setLoading] = useState(defaultProvider.loading)
-  const [permissionData, setPermissionData] = useState(defaultProvider.permissionData)
 
   // ** Hooks
   const router = useRouter()
@@ -52,7 +50,6 @@ const AuthProvider = ({ children }) => {
               let responseData = res?.data?.data
 
               setLoading(false)
-              setPermissionData(responseData.permission)
               setUser({ ...responseData, role: responseData.role_id })
             })
             .catch(() => {
@@ -72,25 +69,22 @@ const AuthProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleLogin = (params, errorCallback) => {
-    return userLogin(params)
-      .then(res => {
-        let responseData = res?.data
+  const handleLogin = async (params, errorCallback) => {
+    try {
+      const res = await userLogin(params)
+      let responseData = res?.data
 
-        setPermissionData(responseData.permission)
-        setUser({ ...responseData, role: responseData?.role_id })
+      setUser({ ...responseData, role: responseData?.role_id })
 
-        // ** redirection based on previous path
-        const returnUrl = router.query.returnUrl
-        const redirectURL = returnUrl && returnUrl !== '/login' ? returnUrl : '/dashboard'
-        router.replace(redirectURL)
-
-        return res
-      })
-      .catch(err => {
-        // toast.error(err?.response?.data?.message ?? 'Login Failed')
-        if (errorCallback) errorCallback(err)
-      })
+      // ** redirection based on previous path
+      const returnUrl = router.query.returnUrl
+      const redirectURL = returnUrl && returnUrl !== '/login' ? returnUrl : '/dashboard'
+      router.replace(redirectURL)
+      return res
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Login Failed')
+      if (errorCallback) errorCallback(err)
+    }
   }
 
   const removeLocalStorageData = () => {
@@ -112,10 +106,8 @@ const AuthProvider = ({ children }) => {
 
   const values = {
     user,
-    permissionData,
     loading,
     setUser,
-    setPermissionData,
     setLoading,
     login: handleLogin,
     logout: handleLogout
