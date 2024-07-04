@@ -4,7 +4,7 @@ import authConfig from 'src/configs/auth'
 import { callApi } from '../utils/api-utils'
 import { authentication } from '../utils/endpoints/authentication'
 
-export const userLogin = body => {
+export const userLogin = async body => {
   return callApi({ uriEndPoint: authentication.login, body })
     .then(res => {
       if (res.statusCode === 200) {
@@ -25,7 +25,7 @@ export const userLogin = body => {
     })
 }
 
-export const verifyToken = () => {
+export const verifyToken = async () => {
   return callApi({ uriEndPoint: authentication.verifyToken })
     .then(res => {
       return res
@@ -35,7 +35,7 @@ export const verifyToken = () => {
     })
 }
 
-export const refreshToken = body => {
+export const refreshToken = async body => {
   return Axios({
     method: authentication.refreshToken.method,
     url: process.env.NEXT_PUBLIC_API_URL + authentication.refreshToken.uri,
@@ -52,7 +52,7 @@ export const refreshToken = body => {
     })
 }
 
-export const permissionList = () => {
+export const permissionList = async () => {
   return callApi({ uriEndPoint: authentication.getPermissions })
     .then(res => {
       return res

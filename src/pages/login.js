@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
@@ -33,6 +33,10 @@ import BlankLayout from 'src/@core/layouts/BlankLayout'
 // ** Demo Imports
 import IconifyIcon from 'src/@core/components/icon'
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
+import { Controller, useForm } from 'react-hook-form'
+import { pattern } from '@patterns'
+import { useAuth } from 'src/hooks/useAuth'
+import { CircularProgress } from '@mui/material'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -52,27 +56,59 @@ const FormControlLabel = styled(MuiFormControlLabel)(({ theme }) => ({
   }
 }))
 
+const defaultValues = {
+  email: process?.env?.NODE_ENV === 'development' ? 'samad.saiyed.ss@gmail.com' : '',
+  password: process?.env?.NODE_ENV === 'development' ? 'Abc223133' : ''
+}
+
 const LoginPage = () => {
   // ** State
-  const [values, setValues] = useState({
-    password: '',
-    showPassword: false
-  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [location, setLocation] = useState()
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
 
-  // ** Hook
-  const router = useRouter()
+  // ** Hooks
+  const auth = useAuth()
 
-  const handleChange = prop => event => {
-    setValues({ ...values, [prop]: event.target.value })
-  }
+  const {
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm({ defaultValues })
 
   const handleClickShowPassword = () => {
-    setValues({ ...values, showPassword: !values.showPassword })
+    setShowPassword(!showPassword)
   }
 
-  const handleMouseDownPassword = event => {
-    event.preventDefault()
+  const onSubmit = async data => {
+    const body = {
+      ...data,
+      ...location
+    }
+    setIsLoggingIn(true)
+    await auth.login(body).catch(err => {
+      console.log('ERROR', err)
+    })
+    setIsLoggingIn(false)
   }
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const latitude = position.coords.latitude
+        const longitude = position.coords.longitude
+        setLocation({ latitude, longitude })
+      },
+      error => {
+        console.error('Error getting location:', error)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    )
+  }, [])
 
   return (
     <Box className='content-center'>
@@ -99,32 +135,67 @@ const LoginPage = () => {
             </Typography>
             <Typography variant='body2'>Please sign-in to your account and start the adventure</Typography>
           </Box>
-          <form noValidate autoComplete='off' onSubmit={e => e.preventDefault()}>
-            <TextField autoFocus fullWidth id='email' label='Email' sx={{ marginBottom: 4 }} />
+          <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+            {/* Email */}
             <FormControl fullWidth>
-              <InputLabel htmlFor='auth-login-password'>Password</InputLabel>
-              <OutlinedInput
-                label='Password'
-                value={values.password}
-                id='auth-login-password'
-                onChange={handleChange('password')}
-                type={values.showPassword ? 'text' : 'password'}
-                endAdornment={
-                  <InputAdornment position='end'>
-                    <IconButton
-                      edge='end'
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      aria-label='toggle password visibility'
-                    >
-                      {values.showPassword ? (
-                        <IconifyIcon icon={'mdi:eye-outline'} />
-                      ) : (
-                        <IconifyIcon icon={'mdi:eye-off-outline'} />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                }
+              <Controller
+                name='email'
+                control={control}
+                rules={{
+                  required: 'Please enter a email',
+                  pattern: { value: pattern.email, message: 'Please enter a valid email' }
+                }}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <TextField
+                    autoFocus
+                    value={value}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    error={Boolean(errors?.email)}
+                    helperText={Boolean(errors?.email) && errors?.email?.message}
+                    fullWidth
+                    id='email'
+                    label='Email'
+                    sx={{ marginBottom: 4 }}
+                  />
+                )}
+              />
+            </FormControl>
+
+            {/* Password */}
+            <FormControl fullWidth>
+              <Controller
+                name='password'
+                control={control}
+                rules={{ required: 'Please enter a password' }}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    label='Password'
+                    value={value}
+                    id='auth-login-password'
+                    error={Boolean(errors?.password)}
+                    onChange={onChange}
+                    helperText={Boolean(errors?.password) && errors?.password?.message}
+                    type={showPassword ? 'text' : 'password'}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton
+                            edge='end'
+                            onClick={handleClickShowPassword}
+                            aria-label='toggle password visibility'
+                          >
+                            {showPassword ? (
+                              <IconifyIcon icon={'mdi:eye-outline'} color={Boolean(errors?.password) && 'red'} />
+                            ) : (
+                              <IconifyIcon icon={'mdi:eye-off-outline'} color={Boolean(errors?.password) && 'red'} />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                )}
               />
             </FormControl>
             <Box
@@ -139,16 +210,17 @@ const LoginPage = () => {
             >
               <FormControlLabel control={<Checkbox />} label='Remember Me' />
 
-              <LinkStyled href='/'>Forgot Password?</LinkStyled>
+              {/* <LinkStyled href='/'>Forgot Password?</LinkStyled> */}
             </Box>
             <Button
               fullWidth
               size='large'
               variant='contained'
               sx={{ marginBottom: 7 }}
-              onClick={() => router.push('/')}
+              type='submit'
+              disabled={isLoggingIn}
             >
-              Login
+              {isLoggingIn ? <CircularProgress size={22} /> : 'Login'}
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
               <Typography variant='body2' sx={{ marginRight: 2 }}>

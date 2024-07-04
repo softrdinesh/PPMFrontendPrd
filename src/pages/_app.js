@@ -14,9 +14,9 @@ import themeConfig from 'src/configs/themeConfig'
 // ** Component Imports
 import AuthGuard from 'src/@core/components/auth/AuthGuard'
 import GuestGuard from 'src/@core/components/auth/GuestGuard'
-import UserLayout from 'src/layouts/UserLayout'
 import Spinner from 'src/@core/components/spinner'
 import ThemeComponent from 'src/@core/theme/ThemeComponent'
+import UserLayout from 'src/layouts/UserLayout'
 
 // ** Contexts
 import { SettingsConsumer, SettingsProvider } from 'src/@core/context/settingsContext'
@@ -28,9 +28,20 @@ import { createEmotionCache } from 'src/@core/utils/create-emotion-cache'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 
 // ** Global css styles
+import { Toaster } from 'react-hot-toast'
+import { QueryClient, QueryClientProvider } from 'react-query'
+import ReactHotToast from 'src/@core/styles/libs/react-hot-toast'
+import { AuthProvider } from 'src/context/auth-context'
 import '../../styles/globals.css'
 
+const queryClient = new QueryClient()
+
 const clientSideEmotionCache = createEmotionCache()
+
+// ** Toast Options
+const toastOptions = {
+  position: 'top-right'
+}
 
 // ** Pace Loader
 if (themeConfig.routingLoader) {
@@ -75,20 +86,26 @@ const App = props => {
         <meta name='keywords' content='Material Design, MUI, Admin Template, React Admin Template' />
         <meta name='viewport' content='initial-scale=1, width=device-width' />
       </Head>
-
-      <SettingsProvider>
-        <SettingsConsumer>
-          {({ settings }) => {
-            return (
-              <ThemeComponent settings={settings}>
-                <Guard authGuard={authGuard} guestGuard={guestGuard}>
-                  {getLayout(<Component {...pageProps} />)}
-                </Guard>
-              </ThemeComponent>
-            )
-          }}
-        </SettingsConsumer>
-      </SettingsProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <SettingsProvider>
+            <SettingsConsumer>
+              {({ settings }) => {
+                return (
+                  <ThemeComponent settings={settings}>
+                    <Guard authGuard={authGuard} guestGuard={guestGuard}>
+                      {getLayout(<Component {...pageProps} />)}
+                    </Guard>
+                    <ReactHotToast>
+                      <Toaster position={settings?.toastPosition} />
+                    </ReactHotToast>
+                  </ThemeComponent>
+                )
+              }}
+            </SettingsConsumer>
+          </SettingsProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </CacheProvider>
   )
 }

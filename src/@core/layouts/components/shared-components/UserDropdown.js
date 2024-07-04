@@ -16,6 +16,7 @@ import { styled } from '@mui/material/styles'
 
 // ** Icons Imports
 import IconifyIcon from 'src/@core/components/icon'
+import { useAuth } from 'src/hooks/useAuth'
 
 // ** Styled Components
 const BadgeContentSpan = styled('span')(({ theme }) => ({
@@ -32,16 +33,19 @@ const UserDropdown = () => {
 
   // ** Hooks
   const router = useRouter()
+  const auth = useAuth()
+  console.log('auth :', auth?.user)
 
   const handleDropdownOpen = event => {
     setAnchorEl(event.currentTarget)
   }
 
-  const handleDropdownClose = url => {
-    if (url) {
-      router.push(url)
-    }
+  const handleDropdownClose = () => {
     setAnchorEl(null)
+  }
+
+  const handleLogout = () => {
+    auth?.logout()
   }
 
   const styles = {
@@ -78,7 +82,7 @@ const UserDropdown = () => {
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => handleDropdownClose()}
+        onClose={handleDropdownClose}
         sx={{ '& .MuiMenu-paper': { width: 230, marginTop: 4 } }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -93,22 +97,19 @@ const UserDropdown = () => {
               <Avatar alt='John Doe' src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
             </Badge>
             <Box sx={{ display: 'flex', marginLeft: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>John Doe</Typography>
-              <Typography variant='body2' sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
-                Admin
-              </Typography>
+              <Typography sx={{ fontWeight: 600 }}>{auth?.user?.userData?.Name ?? 'John Doe'}</Typography>
             </Box>
           </Box>
         </Box>
         <Divider sx={{ mt: 0, mb: 1 }} />
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
+        <MenuItem sx={{ p: 0 }} onClick={handleDropdownClose}>
           <Box sx={styles}>
             <IconifyIcon icon={'mdi:account-outline'} />
             <Typography>Profile</Typography>
           </Box>
         </MenuItem>
 
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/login')}>
+        <MenuItem sx={{ p: 0 }} onClick={handleLogout}>
           <Box sx={styles}>
             <IconifyIcon icon={'ic:round-logout'} />
             <Typography>Logout</Typography>
