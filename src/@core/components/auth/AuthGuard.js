@@ -16,6 +16,10 @@ const AuthGuard = props => {
       if (!router.isReady) {
         return
       }
+      if (auth.user && router.route === '/') {
+        const homeRoute = '/dashboard'
+        router.replace(homeRoute)
+      }
       if (auth.user === null && !window.localStorage.getItem('userData')) {
         if (router.asPath !== '/') {
           router.replace({
