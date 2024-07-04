@@ -15,6 +15,7 @@ import themeConfig from 'src/configs/themeConfig'
 import AuthGuard from 'src/@core/components/auth/AuthGuard'
 import GuestGuard from 'src/@core/components/auth/GuestGuard'
 import UserLayout from 'src/layouts/UserLayout'
+import Spinner from 'src/@core/components/spinner'
 import ThemeComponent from 'src/@core/theme/ThemeComponent'
 
 // ** Contexts
