@@ -56,6 +56,11 @@ const FormControlLabel = styled(MuiFormControlLabel)(({ theme }) => ({
   }
 }))
 
+const defaultValues = {
+  email: process?.env?.NODE_ENV === 'development' ? 'samad.saiyed.ss@gmail.com' : '',
+  password: process?.env?.NODE_ENV === 'development' ? 'Abc223133' : ''
+}
+
 const LoginPage = () => {
   // ** State
   const [showPassword, setShowPassword] = useState(false)
@@ -69,7 +74,7 @@ const LoginPage = () => {
     handleSubmit,
     control,
     formState: { errors }
-  } = useForm({ defaultValues: { email: 'samad.saiyed.ss@gmail.com', password: 'Abc@223133' } })
+  } = useForm({ defaultValues })
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword)
