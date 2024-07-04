@@ -64,7 +64,6 @@ const App = props => {
   const authGuard = Component?.authGuard ?? true
   const guestGuard = Component?.guestGuard ?? false
 
-
   return (
     <CacheProvider value={emotionCache}>
       <Head>
@@ -80,12 +79,13 @@ const App = props => {
       <SettingsProvider>
         <SettingsConsumer>
           {({ settings }) => {
-            return <ThemeComponent settings={settings}>
-               <Guard authGuard={authGuard} guestGuard={guestGuard}>
-              {getLayout(<Component {...pageProps} />)}
-              </Guard>
+            return (
+              <ThemeComponent settings={settings}>
+                <Guard authGuard={authGuard} guestGuard={guestGuard}>
+                  {getLayout(<Component {...pageProps} />)}
+                </Guard>
               </ThemeComponent>
-            
+            )
           }}
         </SettingsConsumer>
       </SettingsProvider>

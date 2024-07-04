@@ -39,7 +39,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '28rem' }
 }))
 
-const LinkStyled = styled('a')(({ theme }) => ({
+const LinkStyled = styled(Link)(({ theme }) => ({
   fontSize: '0.875rem',
   textDecoration: 'none',
   color: theme.palette.primary.main
@@ -78,8 +78,8 @@ const LoginPage = () => {
     <Box className='content-center'>
       <Card sx={{ zIndex: 1 }}>
         <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
-          <Box sx={{ mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* <Logo/> */}
+          {/* <Box sx={{ mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            
             <Typography
               variant='h6'
               sx={{
@@ -92,7 +92,7 @@ const LoginPage = () => {
             >
               {themeConfig.templateName}
             </Typography>
-          </Box>
+          </Box> */}
           <Box sx={{ mb: 6 }}>
             <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
               Welcome to {themeConfig.templateName}! 👋🏻
@@ -128,12 +128,18 @@ const LoginPage = () => {
               />
             </FormControl>
             <Box
-              sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}
+              sx={{
+                mt: 2,
+                mb: 4,
+                display: 'flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between'
+              }}
             >
               <FormControlLabel control={<Checkbox />} label='Remember Me' />
-              <Link href='/'>
-                <LinkStyled onClick={e => e.preventDefault()}>Forgot Password?</LinkStyled>
-              </Link>
+
+              <LinkStyled href='/'>Forgot Password?</LinkStyled>
             </Box>
             <Button
               fullWidth
@@ -149,9 +155,7 @@ const LoginPage = () => {
                 New on our platform?
               </Typography>
               <Typography variant='body2'>
-                <Link passHref href='/register'>
-                  <LinkStyled>Create an account</LinkStyled>
-                </Link>
+                <LinkStyled href='/register'>Create an account</LinkStyled>
               </Typography>
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>

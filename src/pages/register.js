@@ -38,7 +38,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '28rem' }
 }))
 
-const LinkStyled = styled('a')(({ theme }) => ({
+const LinkStyled = styled(Link)(({ theme }) => ({
   fontSize: '0.875rem',
   textDecoration: 'none',
   color: theme.palette.primary.main
@@ -192,9 +192,8 @@ const RegisterPage = () => {
               label={
                 <Fragment>
                   <span>I agree to </span>
-                  <Link href='/'>
-                    <LinkStyled onClick={e => e.preventDefault()}>privacy policy & terms</LinkStyled>
-                  </Link>
+
+                  <LinkStyled href='/'>privacy policy & terms</LinkStyled>
                 </Fragment>
               }
             />
@@ -206,9 +205,7 @@ const RegisterPage = () => {
                 Already have an account?
               </Typography>
               <Typography variant='body2'>
-                <Link href='/login'>
-                  <LinkStyled>Sign in instead</LinkStyled>
-                </Link>
+                <LinkStyled href='/login'>Sign in instead</LinkStyled>
               </Typography>
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>
@@ -220,6 +217,6 @@ const RegisterPage = () => {
   )
 }
 RegisterPage.getLayout = page => <BlankLayout>{page}</BlankLayout>
-LoginPage.guestGuard = true
+RegisterPage.guestGuard = true
 
 export default RegisterPage
