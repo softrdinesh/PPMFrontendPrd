@@ -74,7 +74,7 @@ const AuthProvider = ({ children }) => {
         })
         .then(res => {
           const responseValue = res?.data
-          if (responseValue?.status) {
+          if (responseValue?.status && responseValue.data?.isVerified) {
             window.localStorage.removeItem(authConfig.loginWithGoogle)
             localStorage.setItem(authConfig.storageTokenKeyName, responseValue.data.token)
             localStorage.setItem(authConfig.storageUId, responseValue.data.id)
