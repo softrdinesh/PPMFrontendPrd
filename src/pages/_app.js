@@ -15,6 +15,7 @@ import themeConfig from 'src/configs/themeConfig'
 import AuthGuard from 'src/@core/components/auth/AuthGuard'
 import GuestGuard from 'src/@core/components/auth/GuestGuard'
 import UserLayout from 'src/layouts/UserLayout'
+import Spinner from 'src/@core/components/spinner'
 import ThemeComponent from 'src/@core/theme/ThemeComponent'
 
 // ** Contexts
@@ -63,7 +64,6 @@ const App = props => {
   const authGuard = Component?.authGuard ?? true
   const guestGuard = Component?.guestGuard ?? false
 
-
   return (
     <CacheProvider value={emotionCache}>
       <Head>
@@ -79,12 +79,13 @@ const App = props => {
       <SettingsProvider>
         <SettingsConsumer>
           {({ settings }) => {
-            return <ThemeComponent settings={settings}>
-               <Guard authGuard={authGuard} guestGuard={guestGuard}>
-              {getLayout(<Component {...pageProps} />)}
-              </Guard>
+            return (
+              <ThemeComponent settings={settings}>
+                <Guard authGuard={authGuard} guestGuard={guestGuard}>
+                  {getLayout(<Component {...pageProps} />)}
+                </Guard>
               </ThemeComponent>
-            
+            )
           }}
         </SettingsConsumer>
       </SettingsProvider>
