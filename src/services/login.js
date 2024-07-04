@@ -1,16 +1,15 @@
 /* eslint-disable no-console */
 import Axios from 'axios'
-import authConfig from 'src/configs/auth'
 import { callApi } from '../utils/api-utils'
 import { authentication } from '../utils/endpoints/authentication'
+import { authConfig } from '@configs/auth'
 
 export const userLogin = async body => {
   return callApi({ uriEndPoint: authentication.login, body })
     .then(res => {
       if (res.statusCode === 200) {
         localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
-        localStorage.setItem(authConfig.storageUId, res.data.id)
-        localStorage.setItem(authConfig.storageRoleName, res.data.name)
+        localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
         localStorage.setItem('userData', JSON.stringify(res.data))
 
         return res

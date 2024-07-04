@@ -8,17 +8,18 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 
 // ** Config
-import authConfig from 'src/configs/auth'
+import { authConfig } from '@configs/auth'
 import { authentication } from 'src/utils/endpoints/authentication'
 
 // import toast from 'react-hot-toast'
 import toast from 'react-hot-toast'
 import { userLogin } from 'src/services/login'
+import { routes } from '@routes'
 
 // ** Defaults
 const defaultProvider = {
   user: null,
-  loading: false,
+  loading: true,
   setUser: () => null,
   setLoading: () => Boolean,
   login: () => Promise.resolve(),
@@ -30,42 +31,77 @@ const AuthProvider = ({ children }) => {
   // ** States
   const [user, setUser] = useState(defaultProvider.user)
   const [loading, setLoading] = useState(defaultProvider.loading)
+  console.log('loading :', loading)
 
   // ** Hooks
   const router = useRouter()
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
-        if (storedToken) {
-          setLoading(true)
-          await axios
-            .get(process.env.NEXT_PUBLIC_API_URL + authentication.verifyToken.uri, {
-              headers: {
-                Authorization: `Bearer ${storedToken}`
-              }
-            })
-            .then(async res => {
-              let responseData = res?.data?.data
+  const verifyToken = async () => {
+    try {
+      const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
+      if (storedToken) {
+        setLoading(true)
+        await axios
+          .get(process.env.NEXT_PUBLIC_API_URL + authentication.verifyToken.uri, {
+            headers: {
+              Authorization: `Bearer ${storedToken}`
+            }
+          })
+          .then(async res => {
+            let responseData = res?.data?.data
 
-              setLoading(false)
-              setUser({ ...responseData, role: responseData.role_id })
-            })
-            .catch(() => {
-              setLoading(false)
-              handleLogout()
-            })
-        } else {
-          removeLocalStorageData()
-          setUser(null)
-          setLoading(false)
-        }
-      } catch (error) {
-        setLoading(false)
+            setLoading(false)
+            setUser(responseData)
+          })
+          .catch(() => {
+            setLoading(false)
+            handleLogout()
+          })
+      } else {
+        handleLogout()
       }
+    } catch (error) {
+      setLoading(false)
     }
-    initAuth()
+  }
+
+  const googleLogin = async () => {
+    try {
+      setLoading(true)
+      axios
+        .get(process.env.NEXT_PUBLIC_API_URL + authentication.googleLoginSuccess.uri, {
+          withCredentials: true
+        })
+        .then(res => {
+          const responseValue = res?.data
+          if (responseValue?.status) {
+            window.localStorage.removeItem(authConfig.loginWithGoogle)
+            localStorage.setItem(authConfig.storageTokenKeyName, responseValue.data.token)
+            localStorage.setItem(authConfig.storageUId, responseValue.data.id)
+            localStorage.setItem('userData', JSON.stringify(responseValue.data))
+            setUser(responseValue?.data)
+            router.replace(routes.dashboard)
+            setLoading(false)
+          } else {
+            throw Error('Failed to verify google login')
+          }
+        })
+        .catch(err => {
+          console.error('err :', err)
+          verifyToken()
+        })
+    } catch (error) {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const isLoggedInWithGoogle = localStorage.getItem(authConfig.loginWithGoogle)
+    if (isLoggedInWithGoogle) {
+      googleLogin()
+    } else {
+      verifyToken()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -74,7 +110,7 @@ const AuthProvider = ({ children }) => {
       const res = await userLogin(params)
       let responseData = res?.data
 
-      setUser({ ...responseData, role: responseData?.role_id })
+      setUser(responseData)
 
       // ** redirection based on previous path
       const returnUrl = router.query.returnUrl
@@ -87,20 +123,13 @@ const AuthProvider = ({ children }) => {
     }
   }
 
-  const removeLocalStorageData = () => {
-    localStorage.removeItem(authConfig.storageLoginUserData)
-    localStorage.removeItem(authConfig.storageTokenKeyName)
-    localStorage.removeItem(authConfig.storageUId)
-    localStorage.removeItem(authConfig.storageRoleName)
-  }
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setUser(null)
     setLoading(false)
+    window.localStorage.removeItem(authConfig.loginWithGoogle)
     window.localStorage.removeItem(authConfig.storageLoginUserData)
     window.localStorage.removeItem(authConfig.storageTokenKeyName)
     window.localStorage.removeItem(authConfig.storageUId)
-    window.localStorage.removeItem(authConfig.storageRoleName)
     router.push('/login')
   }
 

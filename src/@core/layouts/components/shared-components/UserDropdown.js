@@ -34,7 +34,6 @@ const UserDropdown = () => {
   // ** Hooks
   const router = useRouter()
   const auth = useAuth()
-  console.log('auth :', auth?.user)
 
   const handleDropdownOpen = event => {
     setAnchorEl(event.currentTarget)

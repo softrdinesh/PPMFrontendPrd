@@ -37,6 +37,9 @@ import { Controller, useForm } from 'react-hook-form'
 import { pattern } from '@patterns'
 import { useAuth } from 'src/hooks/useAuth'
 import { CircularProgress } from '@mui/material'
+import { routes } from '@routes'
+import { authentication } from '@endpoints/authentication'
+import { authConfig } from '@configs/auth'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -110,25 +113,16 @@ const LoginPage = () => {
     )
   }, [])
 
+  const handleGoogleSignin = () => {
+    window?.localStorage?.setItem(authConfig.loginWithGoogle, true)
+    const redirectUri = process.env.NEXT_PUBLIC_API_URL + authentication.googleLogin?.uri
+    window?.open(redirectUri, '_self')
+  }
+
   return (
     <Box className='content-center'>
       <Card sx={{ zIndex: 1 }}>
         <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
-          {/* <Box sx={{ mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            
-            <Typography
-              variant='h6'
-              sx={{
-                ml: 3,
-                lineHeight: 1,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                fontSize: '1.5rem !important'
-              }}
-            >
-              {themeConfig.templateName}
-            </Typography>
-          </Box> */}
           <Box sx={{ mb: 6 }}>
             <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
               Welcome to {themeConfig.templateName}! 👋🏻
@@ -227,17 +221,22 @@ const LoginPage = () => {
                 New on our platform?
               </Typography>
               <Typography variant='body2'>
-                <LinkStyled href='/register'>Create an account</LinkStyled>
+                <LinkStyled href={routes.register}>Create an account</LinkStyled>
               </Typography>
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}></Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button type='button' className='login-with-google-btn' onClick={handleGoogleSignin}>
+                Sign in with Google
+              </button>
+            </Box>
           </form>
         </CardContent>
       </Card>
     </Box>
   )
 }
+
 LoginPage.getLayout = page => <BlankLayout>{page}</BlankLayout>
 LoginPage.guestGuard = true
 

@@ -8,8 +8,8 @@ import Chip from '@mui/material/Chip'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
-import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
+import Typography from '@mui/material/Typography'
 
 // ** Configs Import
 import themeConfig from 'src/configs/themeConfig'
@@ -68,6 +68,7 @@ const VerticalNavLink = ({
 
   // ** Vars
   const { navCollapsed } = settings
+  console.log('navCollapsed :', navCollapsed)
   const icon = parent && !item?.icon ? themeConfig.navSubItemIcon : item.icon
 
   const isNavLinkActive = () => {
@@ -87,6 +88,7 @@ const VerticalNavLink = ({
     <ListItem
       disablePadding
       className='nav-link'
+      disabled={item?.disabled || false}
       sx={{
         mt: 1.5,
         transition: 'padding .25s ease-in-out',
@@ -118,6 +120,7 @@ const VerticalNavLink = ({
         {isSubToSub ? null : (
           <ListItemIcon
             sx={{
+              minWidth: 30,
               transition: 'margin .25s ease-in-out',
               color: parent ? 'text.secondary' : 'text.primary',
               ...(navCollapsed && !navHover ? { mr: 0 } : { mr: 2 }),

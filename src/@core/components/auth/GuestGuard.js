@@ -6,6 +6,7 @@ import { useRouter } from 'next/router'
 
 // ** Hooks Import
 import { useAuth } from 'src/hooks/useAuth'
+import { routes } from '@routes'
 
 const GuestGuard = props => {
   const { children, fallback } = props
@@ -20,7 +21,12 @@ const GuestGuard = props => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.route])
+
   if (auth.loading) {
+    return fallback
+  }
+
+  if (auth.user && (router?.route === routes.login || router?.route === routes.register)) {
     return fallback
   }
 

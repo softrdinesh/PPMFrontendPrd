@@ -4,12 +4,12 @@
  */
 
 import Axios from 'axios'
-import authConfig from 'src/configs/auth'
 import queryString from 'querystring'
 import { refreshToken } from 'src/services/login'
 
 // ** Moment
 import moment from 'moment'
+import { authConfig } from '@configs/auth'
 
 const showLogs = false
 
@@ -25,14 +25,12 @@ const checkTokenExpired = async () => {
     localStorage.setItem('userData', JSON.stringify(newRefreshToken.data))
     localStorage.setItem(authConfig.storageTokenKeyName, newRefreshToken.data.token)
     localStorage.setItem(authConfig.storageUId, newRefreshToken.data.u_id)
-    localStorage.setItem(authConfig.storageRoleName, newRefreshToken.data.role_name)
 
     return newRefreshToken.data.token
   } else {
     localStorage.removeItem('userData')
     localStorage.removeItem(authConfig.storageTokenKeyName)
     localStorage.removeItem(authConfig.storageUId)
-    localStorage.removeItem(authConfig.storageRoleName)
     window.location.href = '/login'
 
     return null

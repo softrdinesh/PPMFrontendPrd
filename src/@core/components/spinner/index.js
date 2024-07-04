@@ -9,8 +9,6 @@ import classes from './spinner.module.css'
 import ppmLogo from '@images/apple-touch-icon.png'
 
 const FallbackSpinner = ({ sx }) => {
-  // ** Hook
-
   return (
     <Box
       sx={{
