@@ -24,6 +24,26 @@ export const userLogin = async body => {
     })
 }
 
+export const userRegister = async body => {
+  return callApi({ uriEndPoint: authentication.register, body })
+    .then(res => {
+      if (res.statusCode === 201) {
+        localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
+        localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
+        localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(res.data))
+
+        return res
+      } else {
+        delete res.data
+
+        return res
+      }
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
 export const verifyToken = async () => {
   return callApi({ uriEndPoint: authentication.verifyToken })
     .then(res => {

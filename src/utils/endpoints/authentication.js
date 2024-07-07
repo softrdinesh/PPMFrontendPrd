@@ -5,6 +5,10 @@ export const authentication = {
     ...defaults.methods.POST,
     uri: '/api/login'
   },
+  register: {
+    ...defaults.methods.POST,
+    uri: '/api/signup'
+  },
 
   verifyToken: {
     ...defaults.methods.GET,

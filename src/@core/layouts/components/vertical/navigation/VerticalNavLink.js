@@ -68,7 +68,6 @@ const VerticalNavLink = ({
 
   // ** Vars
   const { navCollapsed } = settings
-  console.log('navCollapsed :', navCollapsed)
   const icon = parent && !item?.icon ? themeConfig.navSubItemIcon : item.icon
 
   const isNavLinkActive = () => {

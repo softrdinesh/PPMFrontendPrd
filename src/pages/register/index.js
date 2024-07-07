@@ -61,9 +61,10 @@ const RegisterPage = () => {
 
   // ** States
   const [showPassword, setShowPassword] = useState(false)
+  const [location, setLocation] = useState()
 
   // ** Hook
-  const { registrationData, setLoading } = useAuth()
+  const { registrationData, setLoading, register } = useAuth()
 
   // ** Vars
   const rules = registerRules()
@@ -87,8 +88,26 @@ const RegisterPage = () => {
   }
 
   const onSubmit = async data => {
-    console.log('DATA++++++++++++', data)
+    await register({ ...data, ...location })
   }
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const latitude = position.coords.latitude
+        const longitude = position.coords.longitude
+        setLocation({ latitude, longitude })
+      },
+      error => {
+        console.error('Error getting location:', error)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    )
+  }, [])
 
   useEffect(() => {
     googleRegistration()
@@ -97,7 +116,7 @@ const RegisterPage = () => {
   return (
     <Box className='content-center'>
       <Card sx={{ zIndex: 1 }}>
-        <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
+        <CardContent sx={{ padding: theme => `${theme.spacing(7, 9, 7)} !important` }}>
           <Box sx={{ mb: 6 }}>
             <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
               Adventure starts here 🚀

@@ -13,7 +13,7 @@ import { authentication } from 'src/utils/endpoints/authentication'
 
 // import toast from 'react-hot-toast'
 import toast from 'react-hot-toast'
-import { userLogin } from 'src/services/login'
+import { userLogin, userRegister } from 'src/services/login'
 import { routes } from '@routes'
 
 // ** Defaults
@@ -37,9 +37,8 @@ const AuthProvider = ({ children }) => {
   // ** Hooks
   const router = useRouter()
 
-  const verifyToken = async () => {
+  const verifyToken = async storedToken => {
     try {
-      const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
       if (storedToken) {
         setLoading(true)
         await axios
@@ -52,7 +51,7 @@ const AuthProvider = ({ children }) => {
             let responseData = res?.data?.data
 
             setLoading(false)
-            setUser(responseData)
+            setUser(responseData?.userData)
           })
           .catch(() => {
             setLoading(false)
@@ -76,11 +75,10 @@ const AuthProvider = ({ children }) => {
         .then(res => {
           const responseValue = res?.data
           if (responseValue?.status && responseValue.data?.isVerified) {
-            window.localStorage.removeItem(authConfig.loginWithGoogle)
             localStorage.setItem(authConfig.storageTokenKeyName, responseValue.data.token)
             localStorage.setItem(authConfig.storageUId, responseValue.data.id)
             localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue.data))
-            setUser(responseValue?.data)
+            setUser(responseValue?.data?.userData)
             router.replace(routes.dashboard)
             setLoading(false)
           } else {
@@ -90,6 +88,7 @@ const AuthProvider = ({ children }) => {
           }
         })
         .catch(err => {
+          console.log('err :', err)
           verifyToken()
         })
     } catch (error) {
@@ -99,14 +98,17 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const isLoggedInWithGoogle = localStorage.getItem(authConfig.loginWithGoogle)
-    if (isLoggedInWithGoogle) {
+    const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
+
+    if (isLoggedInWithGoogle && !storedToken) {
       googleLogin()
     } else {
-      verifyToken()
+      verifyToken(storedToken)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // ** USER LOGIN
   const handleLogin = async (params, errorCallback) => {
     try {
       const res = await userLogin(params)
@@ -116,7 +118,7 @@ const AuthProvider = ({ children }) => {
 
       // ** redirection based on previous path
       const returnUrl = router.query.returnUrl
-      const redirectURL = returnUrl && returnUrl !== '/login' ? returnUrl : '/dashboard'
+      const redirectURL = returnUrl && returnUrl !== routes.login ? returnUrl : '/dashboard'
       router.replace(redirectURL)
       return res
     } catch (err) {
@@ -125,8 +127,30 @@ const AuthProvider = ({ children }) => {
     }
   }
 
+  // ** USER REGISTER
+  const handleRegister = async (params, errorCallback) => {
+    try {
+      const res = await userRegister(params)
+      let responseData = res?.data
+
+      setUser(responseData?.userData)
+
+      // ** redirection based on previous path
+      const returnUrl = router.query.returnUrl
+      const redirectURL = returnUrl && returnUrl !== routes.register ? returnUrl : '/dashboard'
+      toast.success(res?.message ?? 'Registered Successfully')
+
+      router.replace(redirectURL)
+      return res
+    } catch (err) {
+      console.log('err :', err)
+      toast.error(err?.response?.data?.message ?? 'Registeration Failed')
+      if (errorCallback) errorCallback(err)
+    }
+  }
+
+  // ** CLEARING CONTEXTS AND VALUES
   const clearStorageAndValues = async () => {
-    console.log('HERE# IS ISSUE 11')
     setUser(null)
     setLoading(false)
     window.localStorage.removeItem(authConfig.loginWithGoogle)
@@ -147,6 +171,7 @@ const AuthProvider = ({ children }) => {
     setUser,
     setLoading,
     login: handleLogin,
+    register: handleRegister,
     logout: handleLogout
   }
 
