@@ -64,7 +64,7 @@ const Navigation = props => {
   const { afterVerticalNavMenuContentPosition, beforeVerticalNavMenuContentPosition } = themeConfig
 
   // ** Hooks
-  const { workspace } = useContext(WorkspaceContext)
+  const wrkData = useContext(WorkspaceContext)
 
   const navMenuContentProps = {
     ...props,
@@ -172,8 +172,8 @@ const Navigation = props => {
                 />
                 <CreateWorkshop {...props} navHover={navHover} />
 
-                {workspace?.map(item => (
-                  <NavWorkshopLists key={item?.WorkspaceID} {...props} data={item} navHover={navHover} />
+                {wrkData?.workspace?.map(item => (
+                  <NavWorkshopLists key={item?.WorkspaceID} {...props} {...wrkData} data={item} navHover={navHover} />
                 ))}
               </List>
             )}

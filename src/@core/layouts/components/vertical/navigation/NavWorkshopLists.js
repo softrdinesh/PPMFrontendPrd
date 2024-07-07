@@ -35,7 +35,7 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
 
 function NavWorkshopLists({ data, ...props }) {
   const isNavLinkActive = () => {
-    if (true) {
+    if (props?.selected?.WorkspaceID === data?.WorkspaceID) {
       return true
     } else {
       return false
@@ -59,6 +59,7 @@ function NavWorkshopLists({ data, ...props }) {
         disableTouchRipple
         disableRipple
         className={isNavLinkActive() ? 'active' : ''}
+        onClick={() => props?.setSelected(data)}
         sx={{
           py: 2.25,
           backgroundColor: isNavLinkActive() ? 'background.paper' : 'inherit',
@@ -75,21 +76,19 @@ function NavWorkshopLists({ data, ...props }) {
               : 2.25
         }}
       >
-        {props?.isSubToSub ? null : (
-          <ListItemIcon
-            sx={{
-              minWidth: 30,
-              transition: 'margin .25s ease-in-out',
-              color: 'white',
-              ...(props?.navCollapsed && !props?.navHover ? { mr: 0 } : { mr: 1 }),
-              ...(props?.parent ? { ml: 2, mr: 4 } : {})
-            }}
-          >
-            <Avatar skin='light' color='error' sx={{ width: 25, height: 25, fontSize: '1rem' }}>
-              {getInitials(data?.WorkspaceName?.split(' ')?.[0])}
-            </Avatar>
-          </ListItemIcon>
-        )}
+        <ListItemIcon
+          sx={{
+            minWidth: 30,
+            transition: 'margin .25s ease-in-out',
+            color: 'white',
+            ...(props?.navCollapsed && !props?.navHover ? { mr: 0 } : { mr: 1 }),
+            ...(props?.parent ? { ml: 2, mr: 4 } : {})
+          }}
+        >
+          <Avatar skin={isNavLinkActive() && 'light'} color='error' sx={{ width: 25, height: 25, fontSize: '1rem' }}>
+            {getInitials(data?.WorkspaceName?.split(' ')?.[0])}
+          </Avatar>
+        </ListItemIcon>
 
         <MenuItemTextMetaWrapper
           sx={{
@@ -102,6 +101,7 @@ function NavWorkshopLists({ data, ...props }) {
               (!themeConfig.menuTextTruncate && props?.navCollapsed && !props?.navHover)) && {
               noWrap: true
             })}
+            color={!isNavLinkActive() && 'common.white'}
           >
             {data?.WorkspaceName}
           </Typography>
