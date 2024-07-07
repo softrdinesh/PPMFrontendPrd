@@ -1,55 +1,50 @@
+import { useRef } from 'react'
+
 // ** MUI Imports
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
-import InputAdornment from '@mui/material/InputAdornment'
-import TextField from '@mui/material/TextField'
-import useMediaQuery from '@mui/material/useMediaQuery'
 
-// ** Icons Imports
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Components
-import IconifyIcon from 'src/@core/components/icon'
 import ModeToggler from 'src/@core/layouts/components/shared-components/ModeToggler'
 import NotificationDropdown from 'src/@core/layouts/components/shared-components/NotificationDropdown'
 import UserDropdown from 'src/@core/layouts/components/shared-components/UserDropdown'
 
+// ** style import
+import * as styles from '@styles-page/app-bar-content/styles'
+import { useAuth } from 'src/hooks/useAuth'
+
 const AppBarContent = props => {
   // ** Props
-  const { hidden, settings, saveSettings, toggleNavVisibility } = props
+  const { hidden, settings, toggleNavVisibility, saveSettings } = props
 
-  // ** Hook
-  const hiddenSm = useMediaQuery(theme => theme.breakpoints.down('sm'))
+  // ** Hooks
+  const auth = useAuth()
+
+  const ref = useRef(null)
 
   return (
-    <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Box className='actions-left' sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
-        {hidden ? (
-          <IconButton
-            color='inherit'
-            onClick={toggleNavVisibility}
-            sx={{ ml: -2.75, ...(hiddenSm ? {} : { mr: 3.5 }) }}
-          >
-            <IconifyIcon icon='mdi:menu' />
-          </IconButton>
-        ) : null}
-        <TextField
-          size='small'
-          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position='start'>
-                <IconifyIcon icon='mdi:magnify' fontSize={'1.25rem'} />
-              </InputAdornment>
-            )
-          }}
-        />
+    <>
+      <Box sx={styles.mainBox()} ref={ref}>
+        <Box className='actions-left' sx={styles.mainSubBox()}>
+          {hidden ? (
+            <IconButton color='inherit' sx={styles.toggleButtonStyle()} onMouseDown={toggleNavVisibility}>
+              <Icon icon='mdi:menu' />
+            </IconButton>
+          ) : null}
+        </Box>
+
+        <Box className='actions-right' sx={styles.rightBoxStyle()}>
+          <ModeToggler settings={settings} saveSettings={saveSettings} />
+
+          <NotificationDropdown settings={settings} id='notify' />
+
+          {auth.user && <UserDropdown settings={settings} user={auth?.user} />}
+        </Box>
       </Box>
-      <Box className='actions-right' sx={{ display: 'flex', alignItems: 'center' }}>
-        <ModeToggler settings={settings} saveSettings={saveSettings} />
-        <NotificationDropdown />
-        <UserDropdown />
-      </Box>
-    </Box>
+    </>
   )
 }
 

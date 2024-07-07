@@ -5,6 +5,10 @@ export const authentication = {
     ...defaults.methods.POST,
     uri: '/api/login'
   },
+  register: {
+    ...defaults.methods.POST,
+    uri: '/api/signup'
+  },
 
   verifyToken: {
     ...defaults.methods.GET,
@@ -16,18 +20,18 @@ export const authentication = {
     uri: '/api/get-refresh-token'
   },
 
-  mobileNumberVerification: {
-    ...defaults.methods.POST,
-    uri: '/api/mobile-number-verification'
+  googleLogin: {
+    ...defaults.methods.GET,
+    uri: '/auth/google/callback'
   },
 
-  mobileOtpVerification: {
+  googleLogout: {
     ...defaults.methods.POST,
-    uri: '/api/mobile-number-otp-verification'
+    uri: '/auth/logout'
   },
 
-  emailVerification: {
-    ...defaults.methods.POST,
-    uri: '/api/email-verification'
+  googleLoginSuccess: {
+    ...defaults.methods.GET,
+    uri: '/auth/login/success'
   }
 }

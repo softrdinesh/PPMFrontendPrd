@@ -8,7 +8,7 @@
     "url": "https://themeselection.com/"
   },
   "scripts": {
-    "dev": "next dev -p 4050",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "pull": "git pull origin dev",
     "start": "next start",

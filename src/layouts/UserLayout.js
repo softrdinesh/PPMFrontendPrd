@@ -1,9 +1,7 @@
-// ** MUI Imports
 import useMediaQuery from '@mui/material/useMediaQuery'
 
 // ** Layout Imports
-// !Do not remove this Layout import
-import VerticalLayout from 'src/@core/layouts/VerticalLayout'
+import Layout from 'src/@core/layouts/Layout'
 
 // ** Navigation Imports
 import VerticalNavItems from 'src/navigation/vertical'
@@ -14,31 +12,39 @@ import VerticalAppBarContent from './components/vertical/AppBarContent'
 // ** Hook Import
 import { useSettings } from 'src/@core/hooks/useSettings'
 
-const UserLayout = ({ children }) => {
+const UserLayout = ({ children, contentHeightFixed }) => {
   // ** Hooks
   const { settings, saveSettings } = useSettings()
 
   const hidden = useMediaQuery(theme => theme.breakpoints.down('lg'))
+  if (hidden && settings.layout === 'horizontal') {
+    settings.layout = 'vertical'
+  }
 
   return (
-    <VerticalLayout
+    <Layout
       hidden={hidden}
       settings={settings}
       saveSettings={saveSettings}
-      verticalNavItems={VerticalNavItems()}
-      verticalAppBarContent={(
-        props // AppBar Content
-      ) => (
-        <VerticalAppBarContent
-          hidden={hidden}
-          settings={settings}
-          saveSettings={saveSettings}
-          toggleNavVisibility={props.toggleNavVisibility}
-        />
-      )}
+      contentHeightFixed={contentHeightFixed}
+      verticalLayoutProps={{
+        navMenu: {
+          navItems: VerticalNavItems()
+        },
+        appBar: {
+          content: props => (
+            <VerticalAppBarContent
+              hidden={hidden}
+              settings={settings}
+              saveSettings={saveSettings}
+              toggleNavVisibility={props.toggleNavVisibility}
+            />
+          )
+        }
+      }}
     >
       {children}
-    </VerticalLayout>
+    </Layout>
   )
 }
 

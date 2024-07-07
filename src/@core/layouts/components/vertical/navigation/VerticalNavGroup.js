@@ -195,6 +195,7 @@ const VerticalNavGroup = props => {
           {isSubToSub ? null : (
             <ListItemIcon
               sx={{
+                minWidth: 30,
                 transition: 'margin .25s ease-in-out',
                 ...(parent && navCollapsed && !navHover ? {} : { mr: 2 }),
                 ...(navCollapsed && !navHover ? { mr: 0 } : {}),

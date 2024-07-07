@@ -4,17 +4,18 @@
  */
 
 import Axios from 'axios'
-import authConfig from 'src/configs/auth'
 import queryString from 'querystring'
 import { refreshToken } from 'src/services/login'
 
 // ** Moment
 import moment from 'moment'
+import { authConfig } from '@configs/auth'
+import { routes } from '@routes'
 
 const showLogs = false
 
 const checkTokenExpired = async () => {
-  let userData = localStorage.getItem('userData')
+  let userData = localStorage.getItem(authConfig.storageLoginUserData)
   let loginData = JSON.parse(userData)
   let date = moment().toDate()
 
@@ -22,18 +23,16 @@ const checkTokenExpired = async () => {
     return localStorage.getItem(authConfig.storageTokenKeyName)
   } else if (loginData.refreshTokenTime > date.getTime() / 1000) {
     const newRefreshToken = await refreshToken({ refresh_token: loginData.refreshToken })
-    localStorage.setItem('userData', JSON.stringify(newRefreshToken.data))
+    localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(newRefreshToken.data))
     localStorage.setItem(authConfig.storageTokenKeyName, newRefreshToken.data.token)
     localStorage.setItem(authConfig.storageUId, newRefreshToken.data.u_id)
-    localStorage.setItem(authConfig.storageRoleName, newRefreshToken.data.role_name)
 
     return newRefreshToken.data.token
   } else {
-    localStorage.removeItem('userData')
+    localStorage.removeItem(authConfig.storageLoginUserData)
     localStorage.removeItem(authConfig.storageTokenKeyName)
     localStorage.removeItem(authConfig.storageUId)
-    localStorage.removeItem(authConfig.storageRoleName)
-    window.location.href = '/login'
+    window.location.href = routes.login
 
     return null
   }

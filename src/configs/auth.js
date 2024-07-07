@@ -1,10 +1,6 @@
-export default {
-  meEndpoint: '/auth/me',
-  loginEndpoint: '/jwt/login',
-  registerEndpoint: '/jwt/register',
+export const authConfig = {
   storageLoginUserData: 'userData',
   storageTokenKeyName: 'accessToken',
   storageUId: 'login_id',
-  storageRoleName: 'role',
-  onTokenExpiration: 'refreshToken' // logout | refreshToken
+  loginWithGoogle: 'googleLogin'
 }
