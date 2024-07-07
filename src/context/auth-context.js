@@ -66,6 +66,7 @@ const AuthProvider = ({ children }) => {
   }
 
   const googleLogin = async () => {
+    console.log('HRE')
     try {
       setLoading(true)
       axios
@@ -74,10 +75,9 @@ const AuthProvider = ({ children }) => {
         })
         .then(res => {
           const responseValue = res?.data
+          console.log('responseValue :', responseValue)
           if (responseValue?.status && responseValue.data?.isVerified) {
-            localStorage.setItem(authConfig.storageTokenKeyName, responseValue.data.token)
-            localStorage.setItem(authConfig.storageUId, responseValue.data.id)
-            localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue.data))
+            localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue.data.userData))
             setUser(responseValue?.data?.userData)
             router.replace(routes.dashboard)
             setLoading(false)
@@ -98,6 +98,7 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const isLoggedInWithGoogle = localStorage.getItem(authConfig.loginWithGoogle)
+    console.log('isLoggedInWithGoogle :', isLoggedInWithGoogle)
     const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
 
     if (isLoggedInWithGoogle && !storedToken) {
