@@ -19,6 +19,7 @@ import { routes } from '@routes'
 // ** Defaults
 const defaultProvider = {
   user: null,
+  registrationData: null,
   loading: true,
   setUser: () => null,
   setLoading: () => Boolean,
@@ -31,7 +32,7 @@ const AuthProvider = ({ children }) => {
   // ** States
   const [user, setUser] = useState(defaultProvider.user)
   const [loading, setLoading] = useState(defaultProvider.loading)
-  console.log('loading :', loading)
+  const [registrationData, setRegistrationData] = useState(defaultProvider.registrationData)
 
   // ** Hooks
   const router = useRouter()
@@ -58,7 +59,7 @@ const AuthProvider = ({ children }) => {
             handleLogout()
           })
       } else {
-        handleLogout()
+        clearStorageAndValues()
       }
     } catch (error) {
       setLoading(false)
@@ -78,16 +79,17 @@ const AuthProvider = ({ children }) => {
             window.localStorage.removeItem(authConfig.loginWithGoogle)
             localStorage.setItem(authConfig.storageTokenKeyName, responseValue.data.token)
             localStorage.setItem(authConfig.storageUId, responseValue.data.id)
-            localStorage.setItem('userData', JSON.stringify(responseValue.data))
+            localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue.data))
             setUser(responseValue?.data)
             router.replace(routes.dashboard)
             setLoading(false)
           } else {
-            throw Error('Failed to verify google login')
+            setRegistrationData(responseValue.data.userData)
+            router.replace(routes.register)
+            setLoading(false)
           }
         })
         .catch(err => {
-          console.error('err :', err)
           verifyToken()
         })
     } catch (error) {
@@ -123,19 +125,25 @@ const AuthProvider = ({ children }) => {
     }
   }
 
-  const handleLogout = async () => {
+  const clearStorageAndValues = async () => {
+    console.log('HERE# IS ISSUE 11')
     setUser(null)
     setLoading(false)
     window.localStorage.removeItem(authConfig.loginWithGoogle)
     window.localStorage.removeItem(authConfig.storageLoginUserData)
     window.localStorage.removeItem(authConfig.storageTokenKeyName)
     window.localStorage.removeItem(authConfig.storageUId)
-    router.push('/login')
+  }
+
+  const handleLogout = async () => {
+    clearStorageAndValues()
+    router.push(routes.login)
   }
 
   const values = {
     user,
     loading,
+    registrationData,
     setUser,
     setLoading,
     login: handleLogin,

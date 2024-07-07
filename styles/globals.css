@@ -7,6 +7,10 @@ body {
   height: 100%;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 code {
   font-family:
     'Inter',

@@ -18,12 +18,12 @@ const AuthGuard = props => {
   useEffect(
     () => {
       if (router.route === '/') {
-        const homeRoute = '/dashboard'
+        const homeRoute = routes.dashboard
         router.replace(homeRoute)
       }
 
       if ((router?.route === routes.login || router?.route === routes.register) && auth?.user) {
-        router.replace('/dashboard')
+        router.replace(routes.dashboard)
       }
 
       if (!router.isReady) {
@@ -37,11 +37,11 @@ const AuthGuard = props => {
       ) {
         if (router.asPath !== '/') {
           router.replace({
-            pathname: '/login',
+            pathname: routes.login,
             query: { returnUrl: router.asPath }
           })
         } else {
-          router.replace('/login')
+          router.replace(routes.login)
         }
       }
     },

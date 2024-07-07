@@ -10,7 +10,7 @@ export const userLogin = async body => {
       if (res.statusCode === 200) {
         localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
         localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
-        localStorage.setItem('userData', JSON.stringify(res.data))
+        localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(res.data))
 
         return res
       } else {
