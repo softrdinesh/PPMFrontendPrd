@@ -118,7 +118,7 @@ const Navigation = props => {
         {(beforeVerticalNavMenuContentPosition === 'static' || !beforeNavMenuContent) && (
           <StyledBoxForShadow ref={shadowRef} />
         )}
-        <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', overflow: 'hidden', height: '100%', backgroundColor: 'primary.light', pt: 4 }}>
           {/* @ts-ignore */}
           <ScrollWrapper
             {...(hidden

@@ -24,7 +24,6 @@
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.11.5",
     "@iconify/react": "^5.0.1",
-    "@mui/lab": "^5.0.0-alpha.168",
     "@mui/material": "5.11.13",
     "@popperjs/core": "^2.11.8",
     "apexcharts-clevision": "3.28.5",
@@ -44,7 +43,8 @@
     "react-hot-toast": "^2.4.1",
     "react-perfect-scrollbar": "^1.5.8",
     "react-popper": "^2.3.0",
-    "react-query": "^3.39.3"
+    "react-query": "^3.39.3",
+    "usehooks-ts": "^3.1.0"
   },
   "devDependencies": {
     "eslint": "8.57.0",
