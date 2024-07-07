@@ -16,8 +16,9 @@ const MenuNavLink = styled(ListItemButton)(({ theme }) => ({
   borderRadius: 8,
   transition: 'padding-left .25s ease-in-out',
   '& .MuiTypography-root': {
-    fontWeight: 300,
-    color: `${theme.palette.common.white} !important`
+    fontWeight: 500,
+    color: `${theme.palette.common.white} !important`,
+    fontSize: '.9rem'
   }
 }))
 
@@ -67,8 +68,9 @@ function CreateWorkshop(props) {
               (!themeConfig.menuTextTruncate && props?.navCollapsed && !props?.navHover)) && {
               noWrap: true
             })}
+            textTransform={'uppercase'}
           >
-            {'Create Workshop'}
+            {'Create Workspace'}
           </Typography>
         </MenuItemTextMetaWrapper>
 
