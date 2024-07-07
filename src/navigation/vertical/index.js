@@ -8,9 +8,9 @@ const navigation = () => {
       path: '/dashboard'
     },
     {
-      title: 'Account Settings',
-      icon: 'mdi:cog-outline',
-      path: '/account-settings'
+      title: 'Recent Activity',
+      icon: 'hugeicons:shopping-bag-02',
+      path: '/recent-activity'
     }
 
     // {
