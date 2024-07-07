@@ -12,21 +12,6 @@ const navigation = () => {
       icon: 'hugeicons:shopping-bag-02',
       path: '/recent-activity'
     }
-
-    // {
-    //   sectionTitle: 'Pages'
-    // },
-
-    // {
-    //   title: 'Auth',
-    //   icon: 'mdi:logout',
-    //   children: [
-    //     {
-    //       title: 'Login',
-    //       path: '/login'
-    //     }
-    //   ]
-    // }
   ]
 }
 
