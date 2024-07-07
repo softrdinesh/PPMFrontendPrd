@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
@@ -77,7 +77,7 @@ const RegisterPage = () => {
     setShowPassword(!showPassword)
   }
 
-  const googleRegistration = () => {
+  const googleRegistration = useCallback(() => {
     if (registrationData) {
       setValue('name', registrationData?.Name)
       setValue('email', registrationData?.Email)
@@ -85,7 +85,7 @@ const RegisterPage = () => {
     } else {
       setLoading(false)
     }
-  }
+  }, [registrationData, setLoading, setValue])
 
   const onSubmit = async data => {
     await register({ ...data, ...location })
@@ -111,7 +111,7 @@ const RegisterPage = () => {
 
   useEffect(() => {
     googleRegistration()
-  }, [registrationData])
+  }, [googleRegistration, registrationData])
 
   return (
     <Box className='content-center'>

@@ -38,11 +38,6 @@ const queryClient = new QueryClient()
 
 const clientSideEmotionCache = createEmotionCache()
 
-// ** Toast Options
-const toastOptions = {
-  position: 'top-right'
-}
-
 // ** Pace Loader
 if (themeConfig.routingLoader) {
   Router.events.on('routeChangeStart', () => {

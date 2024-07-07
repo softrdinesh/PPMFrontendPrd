@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 
 // ** MUI Components
 import Box from '@mui/material/Box'
@@ -16,8 +15,6 @@ import FormControl from '@mui/material/FormControl'
 import MuiFormControlLabel from '@mui/material/FormControlLabel'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
-import InputLabel from '@mui/material/InputLabel'
-import OutlinedInput from '@mui/material/OutlinedInput'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
@@ -31,15 +28,14 @@ import themeConfig from 'src/configs/themeConfig'
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
-import IconifyIcon from 'src/@core/components/icon'
-import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
-import { Controller, useForm } from 'react-hook-form'
-import { pattern } from '@patterns'
-import { useAuth } from 'src/hooks/useAuth'
-import { CircularProgress } from '@mui/material'
-import { routes } from '@routes'
-import { authentication } from '@endpoints/authentication'
 import { authConfig } from '@configs/auth'
+import { authentication } from '@endpoints/authentication'
+import { CircularProgress } from '@mui/material'
+import { pattern } from '@patterns'
+import { routes } from '@routes'
+import { Controller, useForm } from 'react-hook-form'
+import IconifyIcon from 'src/@core/components/icon'
+import { useAuth } from 'src/hooks/useAuth'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({

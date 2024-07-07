@@ -11,6 +11,7 @@ import { authConfig } from '@configs/auth'
 
 const AuthGuard = props => {
   const { children, fallback } = props
+
   // ** Hooks
   const auth = useAuth()
   const router = useRouter()
