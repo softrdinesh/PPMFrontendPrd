@@ -25,15 +25,13 @@ const MenuNavLink = styled(ListItemButton)(({ theme }) => ({
   width: '100%',
   borderRadius: 8,
   transition: 'padding-left .25s ease-in-out',
+  '& .MuiTypography-root': {
+    fontWeight: 300,
+    color: `${theme.palette.common.white} !important`
+  },
   '&.active': {
-    '&, &:hover': {
-      backgroundColor: theme.palette.primary.light,
-      '&.Mui-focusVisible': {
-        backgroundColor: theme.palette.primary.main
-      }
-    },
     '& .MuiTypography-root': {
-      fontWeight: 500,
+      fontWeight: 600,
       color: `${theme.palette.common.white} !important`
     },
     '& .MuiListItemIcon-root': {
@@ -121,7 +119,7 @@ const VerticalNavLink = ({
             sx={{
               minWidth: 30,
               transition: 'margin .25s ease-in-out',
-              color: parent ? 'text.secondary' : 'text.primary',
+              color: 'white',
               ...(navCollapsed && !navHover ? { mr: 0 } : { mr: 2 }),
               ...(parent ? { ml: 2, mr: 4 } : {}),
               '& svg': {
