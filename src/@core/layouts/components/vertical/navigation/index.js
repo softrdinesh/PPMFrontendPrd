@@ -1,9 +1,9 @@
 // ** React Import
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 
 // ** MUI Imports
-import List from '@mui/material/List'
 import Box from '@mui/material/Box'
+import List from '@mui/material/List'
 import { createTheme, responsiveFontSizes, styled, ThemeProvider } from '@mui/material/styles'
 
 // ** Third Party Components
@@ -14,14 +14,18 @@ import themeConfig from 'src/configs/themeConfig'
 
 // ** Component Imports
 import Drawer from './Drawer'
-import VerticalNavItems from './VerticalNavItems'
 import VerticalNavHeader from './VerticalNavHeader'
+import VerticalNavItems from './VerticalNavItems'
 
 // ** Theme Options
 import themeOptions from 'src/@core/theme/ThemeOptions'
 
 // ** Util Import
+import { Divider } from '@mui/material'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
+import { WorkspaceContext } from 'src/context/workspace-context'
+import CreateWorkshop from './CreateWorkshop'
+import NavWorkshopLists from './NavWorkshopLists'
 
 const StyledBoxForShadow = styled(Box)(({ theme }) => ({
   top: 60,
@@ -58,6 +62,9 @@ const Navigation = props => {
 
   // ** Var
   const { afterVerticalNavMenuContentPosition, beforeVerticalNavMenuContentPosition } = themeConfig
+
+  // ** Hooks
+  const { workspace } = useContext(WorkspaceContext)
 
   const navMenuContentProps = {
     ...props,
@@ -155,6 +162,19 @@ const Navigation = props => {
                   setCurrentActiveGroup={setCurrentActiveGroup}
                   {...props}
                 />
+                <Divider
+                  sx={{
+                    pt: 5,
+                    mb: 4,
+                    borderColor: theme => (theme.palette.mode === 'dark' ? 'action.focus' : 'background.paper')
+                  }}
+                  variant='middle'
+                />
+                <CreateWorkshop {...props} navHover={navHover} />
+
+                {workspace?.map(item => (
+                  <NavWorkshopLists key={item?.WorkspaceID} {...props} data={item} navHover={navHover} />
+                ))}
               </List>
             )}
             {afterNavMenuContent && afterVerticalNavMenuContentPosition === 'static'

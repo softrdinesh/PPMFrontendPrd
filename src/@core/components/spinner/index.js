@@ -17,6 +17,7 @@ const FallbackSpinner = ({ sx }) => {
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
+        backgroundColor: 'background.paper',
         ...sx
       }}
     >
