@@ -121,8 +121,8 @@ const AuthProvider = ({ children }) => {
       const returnUrl = router.query.returnUrl
       const redirectURL = returnUrl && returnUrl !== routes.login ? returnUrl : '/dashboard'
       router.replace(redirectURL)
-      
-return res
+
+      return res
     } catch (err) {
       toast.error(err?.response?.data?.message ?? 'Login Failed')
       if (errorCallback) errorCallback(err)
@@ -143,8 +143,8 @@ return res
       toast.success(res?.message ?? 'Registered Successfully')
 
       router.replace(redirectURL)
-      
-return res
+
+      return res
     } catch (err) {
       console.log('err :', err)
       toast.error(err?.response?.data?.message ?? 'Registeration Failed')
