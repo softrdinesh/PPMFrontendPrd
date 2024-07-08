@@ -20,6 +20,7 @@ import UserLayout from 'src/layouts/UserLayout'
 
 // ** Contexts
 import { SettingsConsumer, SettingsProvider } from 'src/@core/context/settingsContext'
+import { WorkspaceProvider } from 'src/context/workspace-context'
 
 // ** Utils Imports
 import { createEmotionCache } from 'src/@core/utils/create-emotion-cache'
@@ -37,11 +38,6 @@ import '../../styles/globals.css'
 const queryClient = new QueryClient()
 
 const clientSideEmotionCache = createEmotionCache()
-
-// ** Toast Options
-const toastOptions = {
-  position: 'top-right'
-}
 
 // ** Pace Loader
 if (themeConfig.routingLoader) {
@@ -78,32 +74,31 @@ const App = props => {
   return (
     <CacheProvider value={emotionCache}>
       <Head>
-        <title>{`${themeConfig.templateName} - Material Design React Admin Template`}</title>
-        <meta
-          name='description'
-          content={`${themeConfig.templateName} – Material Design React Admin Dashboard Template – is the most developer friendly & highly customizable Admin Dashboard Template based on MUI v5.`}
-        />
-        <meta name='keywords' content='Material Design, MUI, Admin Template, React Admin Template' />
+        <title>{`${themeConfig.templateName} - Project Management`}</title>
+        <meta name='description' content={`${themeConfig.templateName} – A Project Management Software`} />
+        <meta name='keywords' content='Project Management, PPM, Monday, Workspace, Project' />
         <meta name='viewport' content='initial-scale=1, width=device-width' />
       </Head>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SettingsProvider>
-            <SettingsConsumer>
-              {({ settings }) => {
-                return (
-                  <ThemeComponent settings={settings}>
-                    <Guard authGuard={authGuard} guestGuard={guestGuard}>
-                      {getLayout(<Component {...pageProps} />)}
-                    </Guard>
-                    <ReactHotToast>
-                      <Toaster position={settings?.toastPosition} />
-                    </ReactHotToast>
-                  </ThemeComponent>
-                )
-              }}
-            </SettingsConsumer>
-          </SettingsProvider>
+          <WorkspaceProvider>
+            <SettingsProvider>
+              <SettingsConsumer>
+                {({ settings }) => {
+                  return (
+                    <ThemeComponent settings={settings}>
+                      <Guard authGuard={authGuard} guestGuard={guestGuard}>
+                        {getLayout(<Component {...pageProps} />)}
+                      </Guard>
+                      <ReactHotToast>
+                        <Toaster position={settings?.toastPosition} />
+                      </ReactHotToast>
+                    </ThemeComponent>
+                  )
+                }}
+              </SettingsConsumer>
+            </SettingsProvider>
+          </WorkspaceProvider>
         </AuthProvider>
       </QueryClientProvider>
     </CacheProvider>

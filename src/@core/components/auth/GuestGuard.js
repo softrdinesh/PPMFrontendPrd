@@ -6,6 +6,8 @@ import { useRouter } from 'next/router'
 
 // ** Hooks Import
 import { useAuth } from 'src/hooks/useAuth'
+import { routes } from '@routes'
+import { authConfig } from '@configs/auth'
 
 const GuestGuard = props => {
   const { children, fallback } = props
@@ -15,12 +17,17 @@ const GuestGuard = props => {
     if (!router.isReady) {
       return
     }
-    if (window.localStorage.getItem('userData')) {
+    if (window.localStorage.getItem(authConfig.storageLoginUserData)) {
       router.replace('/')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.route])
+
   if (auth.loading) {
+    return fallback
+  }
+
+  if (auth.user && (router?.route === routes.login || router?.route === routes.register)) {
     return fallback
   }
 

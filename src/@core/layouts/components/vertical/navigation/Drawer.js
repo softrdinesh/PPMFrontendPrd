@@ -1,5 +1,5 @@
 // ** MUI Imports
-import { styled, useTheme } from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 import MuiSwipeableDrawer from '@mui/material/SwipeableDrawer'
 
 const SwipeableDrawer = styled(MuiSwipeableDrawer)({
@@ -22,10 +22,22 @@ const SwipeableDrawer = styled(MuiSwipeableDrawer)({
 
 const Drawer = props => {
   // ** Props
-  const { hidden, children, navWidth, navVisible, setNavVisible } = props
+  const {
+    hidden,
+    children,
+    navHover,
+    navWidth,
+    settings,
+    navVisible,
+    setNavHover,
+    navMenuProps,
+    setNavVisible,
+    collapsedNavWidth
+  } = props
 
-  // ** Hook
-  const theme = useTheme()
+  // ** Vars
+  const { navCollapsed } = settings
+  let flag = true
 
   // Drawer Props for Mobile & Tablet screens
   const MobileDrawerProps = {
@@ -37,26 +49,56 @@ const Drawer = props => {
     }
   }
 
-  // Drawer Props for Desktop screens
+  // Drawer Props for Laptop & Desktop screens
   const DesktopDrawerProps = {
     open: true,
     onOpen: () => null,
-    onClose: () => null
+    onClose: () => null,
+    onMouseEnter: () => {
+      // Declared flag to resolve first time flicker issue while trying to collapse the menu
+      if (flag || navCollapsed) {
+        setNavHover(true)
+        flag = false
+      }
+    },
+    onMouseLeave: () => {
+      if (navCollapsed) {
+        setNavHover(false)
+      }
+    }
   }
+  let userNavMenuStyle = {}
+  let userNavMenuPaperStyle = {}
+  if (navMenuProps && navMenuProps.sx) {
+    userNavMenuStyle = navMenuProps.sx
+  }
+  if (navMenuProps && navMenuProps.PaperProps && navMenuProps.PaperProps.sx) {
+    userNavMenuPaperStyle = navMenuProps.PaperProps.sx
+  }
+  const userNavMenuProps = Object.assign({}, navMenuProps)
+  delete userNavMenuProps.sx
+  delete userNavMenuProps.PaperProps
 
   return (
     <SwipeableDrawer
       className='layout-vertical-nav'
       variant={hidden ? 'temporary' : 'permanent'}
       {...(hidden ? { ...MobileDrawerProps } : { ...DesktopDrawerProps })}
-      PaperProps={{ sx: { width: navWidth } }}
-      sx={{
-        width: navWidth,
-        '& .MuiDrawer-paper': {
-          borderRight: 0,
-          backgroundColor: theme.palette.background.default
-        }
+      PaperProps={{
+        sx: {
+          backgroundColor: 'background.default',
+          width: navCollapsed && !navHover ? collapsedNavWidth : navWidth,
+          ...(!hidden && navCollapsed && navHover ? { boxShadow: 10 } : {}),
+
+          ...userNavMenuPaperStyle
+        },
+        ...navMenuProps?.PaperProps
       }}
+      sx={{
+        width: navCollapsed ? collapsedNavWidth : navWidth,
+        ...userNavMenuStyle
+      }}
+      {...userNavMenuProps}
     >
       {children}
     </SwipeableDrawer>

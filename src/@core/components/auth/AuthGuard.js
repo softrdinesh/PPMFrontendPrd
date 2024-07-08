@@ -6,28 +6,43 @@ import { useRouter } from 'next/router'
 
 // ** Hooks Import
 import { useAuth } from 'src/hooks/useAuth'
+import { routes } from '@routes'
+import { authConfig } from '@configs/auth'
 
 const AuthGuard = props => {
   const { children, fallback } = props
+
+  // ** Hooks
   const auth = useAuth()
   const router = useRouter()
+
   useEffect(
     () => {
+      if (router.route === '/') {
+        const homeRoute = routes.dashboard
+        router.replace(homeRoute)
+      }
+
+      if ((router?.route === routes.login || router?.route === routes.register) && auth?.user) {
+        router.replace(routes.dashboard)
+      }
+
       if (!router.isReady) {
         return
       }
-      if (auth.user && router.route === '/') {
-        const homeRoute = '/dashboard'
-        router.replace(homeRoute)
-      }
-      if (auth.user === null && !window.localStorage.getItem('userData')) {
+
+      if (
+        auth.user === null &&
+        !window.localStorage.getItem(authConfig.storageLoginUserData) &&
+        !window.localStorage.getItem(authConfig.loginWithGoogle)
+      ) {
         if (router.asPath !== '/') {
           router.replace({
-            pathname: '/login',
+            pathname: routes.login,
             query: { returnUrl: router.asPath }
           })
         } else {
-          router.replace('/login')
+          router.replace(routes.login)
         }
       }
     },

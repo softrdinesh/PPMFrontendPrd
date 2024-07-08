@@ -1,17 +1,36 @@
 /* eslint-disable no-console */
 import Axios from 'axios'
-import authConfig from 'src/configs/auth'
 import { callApi } from '../utils/api-utils'
 import { authentication } from '../utils/endpoints/authentication'
+import { authConfig } from '@configs/auth'
 
 export const userLogin = async body => {
   return callApi({ uriEndPoint: authentication.login, body })
     .then(res => {
       if (res.statusCode === 200) {
         localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
-        localStorage.setItem(authConfig.storageUId, res.data.id)
-        localStorage.setItem(authConfig.storageRoleName, res.data.name)
-        localStorage.setItem('userData', JSON.stringify(res.data))
+        localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
+        localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(res.data))
+
+        return res
+      } else {
+        delete res.data
+
+        return res
+      }
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+export const userRegister = async body => {
+  return callApi({ uriEndPoint: authentication.register, body })
+    .then(res => {
+      if (res.statusCode === 201) {
+        localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
+        localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
+        localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(res.data))
 
         return res
       } else {

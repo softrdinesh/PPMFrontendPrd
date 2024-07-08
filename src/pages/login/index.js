@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 
 // ** MUI Components
 import Box from '@mui/material/Box'
@@ -16,8 +15,6 @@ import FormControl from '@mui/material/FormControl'
 import MuiFormControlLabel from '@mui/material/FormControlLabel'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
-import InputLabel from '@mui/material/InputLabel'
-import OutlinedInput from '@mui/material/OutlinedInput'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
@@ -31,12 +28,14 @@ import themeConfig from 'src/configs/themeConfig'
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
-import IconifyIcon from 'src/@core/components/icon'
-import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
-import { Controller, useForm } from 'react-hook-form'
-import { pattern } from '@patterns'
-import { useAuth } from 'src/hooks/useAuth'
+import { authConfig } from '@configs/auth'
+import { authentication } from '@endpoints/authentication'
 import { CircularProgress } from '@mui/material'
+import { pattern } from '@patterns'
+import { routes } from '@routes'
+import { Controller, useForm } from 'react-hook-form'
+import IconifyIcon from 'src/@core/components/icon'
+import { useAuth } from 'src/hooks/useAuth'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -110,25 +109,16 @@ const LoginPage = () => {
     )
   }, [])
 
+  const handleGoogleSignin = () => {
+    window?.localStorage?.setItem(authConfig.loginWithGoogle, true)
+    const redirectUri = process.env.NEXT_PUBLIC_API_URL + authentication.googleLogin?.uri
+    window?.open(redirectUri, '_self')
+  }
+
   return (
     <Box className='content-center'>
       <Card sx={{ zIndex: 1 }}>
         <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
-          {/* <Box sx={{ mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            
-            <Typography
-              variant='h6'
-              sx={{
-                ml: 3,
-                lineHeight: 1,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                fontSize: '1.5rem !important'
-              }}
-            >
-              {themeConfig.templateName}
-            </Typography>
-          </Box> */}
           <Box sx={{ mb: 6 }}>
             <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
               Welcome to {themeConfig.templateName}! 👋🏻
@@ -227,17 +217,22 @@ const LoginPage = () => {
                 New on our platform?
               </Typography>
               <Typography variant='body2'>
-                <LinkStyled href='/register'>Create an account</LinkStyled>
+                <LinkStyled href={routes.register}>Create an account</LinkStyled>
               </Typography>
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}></Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button type='button' className='login-with-google-btn' onClick={handleGoogleSignin}>
+                Sign in with Google
+              </button>
+            </Box>
           </form>
         </CardContent>
       </Card>
     </Box>
   )
 }
+
 LoginPage.getLayout = page => <BlankLayout>{page}</BlankLayout>
 LoginPage.guestGuard = true
 

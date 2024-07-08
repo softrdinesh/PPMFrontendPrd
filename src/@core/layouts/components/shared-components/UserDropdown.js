@@ -1,9 +1,6 @@
 // ** React Imports
 import { Fragment, useState } from 'react'
 
-// ** Next Import
-import { useRouter } from 'next/router'
-
 // ** MUI Imports
 import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
@@ -32,9 +29,8 @@ const UserDropdown = () => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   // ** Hooks
-  const router = useRouter()
   const auth = useAuth()
-  console.log('auth :', auth?.user)
+  console.log('auth :', auth)
 
   const handleDropdownOpen = event => {
     setAnchorEl(event.currentTarget)
@@ -76,7 +72,7 @@ const UserDropdown = () => {
           alt='John Doe'
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
-          src='/images/avatars/1.png'
+          src={auth?.user?.image ?? '/images/avatars/1.png'}
         />
       </Badge>
       <Menu
@@ -94,10 +90,14 @@ const UserDropdown = () => {
               badgeContent={<BadgeContentSpan />}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-              <Avatar alt='John Doe' src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
+              <Avatar
+                alt='John Doe'
+                src={auth?.user?.image ?? '/images/avatars/1.png'}
+                sx={{ width: '2.5rem', height: '2.5rem' }}
+              />
             </Badge>
             <Box sx={{ display: 'flex', marginLeft: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>{auth?.user?.userData?.Name ?? 'John Doe'}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{auth?.user?.Name ?? 'John Doe'}</Typography>
             </Box>
           </Box>
         </Box>
