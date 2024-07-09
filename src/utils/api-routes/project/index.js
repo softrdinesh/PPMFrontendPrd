@@ -1,0 +1,15 @@
+import { project } from '@endpoints/project'
+import toast from 'react-hot-toast'
+import { callApi } from 'src/utils/api-utils'
+
+export const addProject = async body => {
+  return callApi({ uriEndPoint: project.addProject, body })
+    .then(res => {
+      toast.success(res?.message ?? 'Project Added Successfully')
+
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
