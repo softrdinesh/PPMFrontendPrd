@@ -85,7 +85,11 @@ function NavWorkshopLists({ data, ...props }) {
             ...(props?.parent ? { ml: 2, mr: 4 } : {})
           }}
         >
-          <Avatar skin={isNavLinkActive() && 'light'} color='error' sx={{ width: 25, height: 25, fontSize: '1rem' }}>
+          <Avatar
+            skin={isNavLinkActive() ? 'light' : 'filled'}
+            color='error'
+            sx={{ width: 25, height: 25, fontSize: '1rem', transition: 'all 300ms linear' }}
+          >
             {getInitials(data?.WorkspaceName?.split(' ')?.[0])}
           </Avatar>
         </ListItemIcon>

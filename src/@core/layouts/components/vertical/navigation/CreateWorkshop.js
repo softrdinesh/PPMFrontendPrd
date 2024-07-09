@@ -10,6 +10,8 @@ import themeConfig from 'src/configs/themeConfig'
 // ** Util Import
 import { ListItem, ListItemButton, ListItemIcon, Typography } from '@mui/material'
 import UserIcon from 'src/layouts/components/UserIcon'
+import { useContext } from 'react'
+import { WorkspaceContext } from 'src/context/workspace-context'
 
 const MenuNavLink = styled(ListItemButton)(({ theme }) => ({
   width: '100%',
@@ -33,6 +35,12 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
 }))
 
 function CreateWorkshop(props) {
+  const { setSelected } = useContext(WorkspaceContext)
+
+  const handleCreateWorkspace = () => {
+    setSelected(null)
+  }
+
   return (
     <ListItem
       disablePadding
@@ -57,6 +65,7 @@ function CreateWorkshop(props) {
               ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
               : 2.4
         }}
+        onClick={handleCreateWorkspace}
       >
         <MenuItemTextMetaWrapper
           sx={{
