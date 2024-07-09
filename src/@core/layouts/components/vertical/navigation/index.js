@@ -26,6 +26,7 @@ import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { WorkspaceContext } from 'src/context/workspace-context'
 import CreateWorkshop from './CreateWorkshop'
 import NavWorkshopLists from './NavWorkshopLists'
+import ProjectListNavMenu from './ProjectList'
 
 const StyledBoxForShadow = styled(Box)(({ theme }) => ({
   top: 60,
@@ -173,8 +174,24 @@ const Navigation = props => {
                 <CreateWorkshop {...props} navHover={navHover} />
 
                 {wrkData?.workspace?.map(item => (
-                  <NavWorkshopLists key={item?.WorkspaceID} {...props} {...wrkData} data={item} navHover={navHover} />
+                  <NavWorkshopLists
+                    key={item?.WorkspaceID}
+                    {...props}
+                    {...wrkData}
+                    data={item}
+                    navHover={navHover}
+                    refetch={wrkData?.refetchWorkspaces}
+                  />
                 ))}
+
+                {wrkData?.projects && wrkData?.projects?.length !== 0 && (
+                  <ProjectListNavMenu
+                    {...props}
+                    navHover={navHover}
+                    projects={wrkData?.projects}
+                    refetch={wrkData?.refetchProjects}
+                  />
+                )}
               </List>
             )}
             {afterNavMenuContent && afterVerticalNavMenuContentPosition === 'static'

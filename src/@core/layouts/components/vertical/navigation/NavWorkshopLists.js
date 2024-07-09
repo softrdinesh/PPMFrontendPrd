@@ -8,10 +8,13 @@ import { styled } from '@mui/material/styles'
 import themeConfig from 'src/configs/themeConfig'
 
 // ** Util Import
-import { IconButton, ListItem, ListItemButton, ListItemIcon, Typography } from '@mui/material'
+import { IconButton, ListItem, ListItemButton, ListItemIcon, Menu, MenuItem, Typography, Zoom } from '@mui/material'
 import Avatar from '@components/avatar'
 import { getInitials } from '@utils/get-initials'
 import { Icon } from '@iconify/react'
+import { useState } from 'react'
+import DeleteWorkspaceDialog from '../../modals/DeleteWorkspace'
+import { deleteWorkspace } from '@api/workspace'
 
 const MenuNavLink = styled(ListItemButton)(() => ({
   width: '100%',
@@ -33,12 +36,43 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
   ...(themeConfig.menuTextTruncate && { overflow: 'hidden' })
 }))
 
-function NavWorkshopLists({ data, ...props }) {
+function NavWorkshopLists({ data, refetch, ...props }) {
+  // ** States
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [open, setOpen] = useState(false)
+
+  // ** Functions
   const isNavLinkActive = () => {
     if (props?.selected?.WorkspaceID === data?.WorkspaceID) {
       return true
     } else {
       return false
+    }
+  }
+
+  const handleOpenMenu = e => {
+    setAnchorEl(e.currentTarget)
+  }
+
+  const handleOpenClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleDeleteOpen = () => {
+    setOpen(true)
+    handleOpenClose()
+  }
+
+  const handleDelete = async () => {
+    try {
+      const response = await deleteWorkspace(data)
+      if (response?.status) {
+        refetch()
+        setOpen(false)
+        handleOpenClose()
+      }
+    } catch (error) {
+      console.log('Delete Workspace Error :', error)
     }
   }
 
@@ -85,7 +119,11 @@ function NavWorkshopLists({ data, ...props }) {
             ...(props?.parent ? { ml: 2, mr: 4 } : {})
           }}
         >
-          <Avatar skin={isNavLinkActive() && 'light'} color='error' sx={{ width: 25, height: 25, fontSize: '1rem' }}>
+          <Avatar
+            skin={isNavLinkActive() ? 'light' : 'filled'}
+            color='error'
+            sx={{ width: 25, height: 25, fontSize: '1rem' }}
+          >
             {getInitials(data?.WorkspaceName?.split(' ')?.[0])}
           </Avatar>
         </ListItemIcon>
@@ -105,9 +143,18 @@ function NavWorkshopLists({ data, ...props }) {
           >
             {data?.WorkspaceName}
           </Typography>
-          <IconButton sx={{ p: 1 }}>
-            <Icon icon={'solar:menu-dots-bold'} fontSize={'1rem'} />
+          <IconButton sx={{ p: 1 }} onClick={handleOpenMenu}>
+            <Icon icon={'solar:menu-dots-bold'} fontSize={'1rem'} color={!isNavLinkActive() ? 'white' : 'blue'} />
           </IconButton>
+          <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleOpenClose} TransitionComponent={Zoom}>
+            <MenuItem onClick={handleDeleteOpen}>
+              <Box display={'flex'} alignItems={'center'} gap={2}>
+                <Icon icon={'mdi:delete-outline'} />
+                <Typography>Delete</Typography>
+              </Box>
+            </MenuItem>
+          </Menu>
+          <DeleteWorkspaceDialog open={open} setOpen={setOpen} onConfirm={handleDelete} />
         </MenuItemTextMetaWrapper>
       </MenuNavLink>
     </ListItem>

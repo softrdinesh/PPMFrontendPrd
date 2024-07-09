@@ -121,6 +121,7 @@ const VerticalNavHeader = props => {
           <LinkStyled href='/'>
             <HeaderTitle
               variant='h6'
+              color={'text.primary'}
               sx={{
                 ...menuCollapsedStyles,
                 ...(navCollapsed && !navHover ? {} : { ml: 2 }),

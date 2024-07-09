@@ -8,5 +8,9 @@ export const project = {
   addProject: {
     ...defaults.methods.POST,
     uri: '/api/project'
+  },
+  viewProject: {
+    ...defaults.methods.GET,
+    uri: '/api/project/:id'
   }
 }

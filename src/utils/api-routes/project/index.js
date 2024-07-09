@@ -12,6 +12,16 @@ export const fetchProjectList = async () => {
     })
 }
 
+export const viewProject = async id => {
+  return callApi({ uriEndPoint: project.viewProject, pathParams: { id } })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
 export const addProject = async body => {
   return callApi({ uriEndPoint: project.addProject, body })
     .then(res => {

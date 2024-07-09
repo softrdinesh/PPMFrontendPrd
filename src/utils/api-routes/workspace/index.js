@@ -23,3 +23,19 @@ export const addWorkspace = async body => {
       throw err
     })
 }
+
+export const deleteWorkspace = async ({ WorkspaceID, OrganizationID, WorkspaceName }) => {
+  return callApi({
+    uriEndPoint: workspace.deleteWorkspace,
+    pathParams: { id: WorkspaceID },
+    body: { organizationID: OrganizationID, workspaceName: WorkspaceName }
+  })
+    .then(res => {
+      toast.success(res?.message ?? 'Workspace Added Successfully')
+
+      return res
+    })
+    .catch(err => {
+      throw err
+    })
+}

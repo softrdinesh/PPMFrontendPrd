@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "baseUrl": ".",
     "paths": {
       "@images/*": ["public/images/*"],
@@ -26,7 +27,5 @@
       "@translate/*": ["src/utils/translate/*"]
     }
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 
 // ** MUI Components
 import { Divider, FormControl, IconButton, Switch, Typography, useTheme } from '@mui/material'
@@ -7,6 +7,7 @@ import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import { CircularProgress } from '@mui/material'
+import { WorkspaceContext } from 'src/context/workspace-context'
 
 // ** Icons Imports
 import IconifyIcon from '@components/icon'
@@ -26,6 +27,8 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const theme = useTheme()
 
+  const { refetchProjects } = useContext(WorkspaceContext)
+
   const defaultValues = {
     ProjectName: ''
   }
@@ -42,6 +45,7 @@ const CreateProject = ({ open, onCloseModal }) => {
     await addProject(values)
     setIsLoading(false)
     reset()
+    refetchProjects()
     onCloseModal()
   }
 

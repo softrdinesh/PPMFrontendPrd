@@ -8,5 +8,9 @@ export const workspace = {
   addWorkspace: {
     ...defaults.methods.POST,
     uri: '/api/workspace'
+  },
+  deleteWorkspace: {
+    ...defaults.methods.DELETE,
+    uri: '/api/workspace/:id'
   }
 }
