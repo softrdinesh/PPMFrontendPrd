@@ -28,7 +28,12 @@ const DefaultPalette = (mode, themeColor) => {
     },
     common: {
       black: '#000',
-      white: '#FFF'
+      white: '#FFF',
+      border: '#EAEAEF',
+      gray37: '#5E5E5E',
+      lightGray: '#c5c5c5',
+      lightGrayishBlue: '#DCDCE4',
+      desaturatedBlue: '#32324d'
     },
     mode: mode,
     primary: {

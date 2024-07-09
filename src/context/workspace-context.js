@@ -13,7 +13,7 @@ const WorkspaceContext = createContext(defaultProvider)
 
 const WorkspaceProvider = ({ children }) => {
   // ** API calls
-  const { data } = useQuery('workspaces', fetchWorkspaceList)
+  const { data, refetch } = useQuery('workspaces', fetchWorkspaceList)
   const { data: projects, refetch: refetchProjects } = useQuery('projects', fetchProjectList)
 
   // ** States
@@ -24,7 +24,8 @@ const WorkspaceProvider = ({ children }) => {
     projects: projects ?? [],
     refetchProjects: refetchProjects,
     selected: activeWorkspace ?? null,
-    setSelected: setActiveWorkspace
+    setSelected: setActiveWorkspace,
+    refetchWorkspaces: refetch
   }
 
   return <WorkspaceContext.Provider value={values}>{children}</WorkspaceContext.Provider>
