@@ -7,11 +7,21 @@ import themeConfig from 'src/configs/themeConfig'
 
 // ** Util Import
 import { Icon } from '@iconify/react'
-import { FormControl, IconButton, ListItemButton, ListItemIcon, TextField, Typography } from '@mui/material'
+import {
+  FormControl,
+  IconButton,
+  ListItemButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  TextField,
+  Typography
+} from '@mui/material'
 import { useState } from 'react'
 import UserIcon from 'src/layouts/components/UserIcon'
 import Router from 'next/router'
 import { routes } from '@routes'
+import CreateProject from '../../modals/CreateProject'
 
 const MenuNavLink = styled(ListItemButton)(() => ({
   width: '100%',
@@ -31,13 +41,18 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
 }))
 
 function ProjectListNavMenu({ projects, ...props }) {
+  // ** States
   const [name, setName] = useState('')
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [open, setOpen] = useState(false)
 
+  // ** Router
   const {
     pathname,
     query: { id }
   } = Router
 
+  // ** Functions
   const isNavLinkActive = prID => {
     console.log("pathname?.split('/') :", pathname?.split('/'))
     console.log('prID :', prID)
@@ -47,6 +62,15 @@ function ProjectListNavMenu({ projects, ...props }) {
 
     return false
   }
+
+  const handleOpenAnchor = e => setAnchorEl(e.currentTarget)
+  const handleCloseAnchor = () => setAnchorEl(null)
+
+  const handleOpen = () => {
+    setOpen(true)
+    handleCloseAnchor()
+  }
+  const handleClose = () => setOpen(false)
 
   const handleOpenProject = id => {
     Router.push(`${routes.project}/${id}`)
@@ -115,10 +139,18 @@ function ProjectListNavMenu({ projects, ...props }) {
             }
           }}
         >
-          <IconButton sx={{ p: 0 }}>
+          <IconButton sx={{ p: 0 }} onClick={handleOpenAnchor}>
             <Icon icon={'ph:plus-fill'} color='white' />
           </IconButton>
+          <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleCloseAnchor}>
+            <MenuItem sx={{ minWidth: 150 }} onClick={handleOpen}>
+              <Box display={'flex'} alignItems={'center'} gap={3}>
+                <Typography variant='body2'>New Project</Typography>
+              </Box>
+            </MenuItem>
+          </Menu>
         </ListItemIcon>
+        <CreateProject open={open} onCloseModal={handleClose} />
       </MenuItemTextMetaWrapper>
 
       {/* List of Projects */}
