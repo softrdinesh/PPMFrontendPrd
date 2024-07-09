@@ -8,16 +8,16 @@ import classes from './spinner.module.css'
 
 import ppmLogo from '@images/apple-touch-icon.png'
 
-const FallbackSpinner = ({ sx }) => {
+const FallbackSpinner = ({ sx, height }) => {
   return (
     <Box
       sx={{
-        height: '100vh',
+        height: height ?? '100vh',
         display: 'flex',
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
-        backgroundColor: 'background.paper',
+        backgroundColor: 'background.default',
         ...sx
       }}
     >

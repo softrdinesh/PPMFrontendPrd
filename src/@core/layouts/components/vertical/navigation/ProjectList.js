@@ -6,11 +6,12 @@ import { styled } from '@mui/material/styles'
 import themeConfig from 'src/configs/themeConfig'
 
 // ** Util Import
-import { FormControl, IconButton, ListItemButton, ListItemIcon, TextField, Typography } from '@mui/material'
-import { useContext, useState } from 'react'
-import { WorkspaceContext } from 'src/context/workspace-context'
-import UserIcon from 'src/layouts/components/UserIcon'
 import { Icon } from '@iconify/react'
+import { FormControl, IconButton, ListItemButton, ListItemIcon, TextField, Typography } from '@mui/material'
+import { useState } from 'react'
+import UserIcon from 'src/layouts/components/UserIcon'
+import Router from 'next/router'
+import { routes } from '@routes'
 
 const MenuNavLink = styled(ListItemButton)(({ theme }) => ({
   width: '100%',
@@ -33,12 +34,11 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
   ...(themeConfig.menuTextTruncate && { overflow: 'hidden' })
 }))
 
-function ProjectListNavMenu(props) {
-  const { setSelected } = useContext(WorkspaceContext)
+function ProjectListNavMenu({ projects, ...props }) {
   const [name, setName] = useState('')
 
-  const handleCreateWorkspace = () => {
-    setSelected(null)
+  const handleOpenProject = id => {
+    Router.push(`${routes.project}/${id}`)
   }
 
   return (
@@ -55,7 +55,7 @@ function ProjectListNavMenu(props) {
       <MenuItemTextMetaWrapper
         sx={{
           ...(props?.navCollapsed && !props?.navHover ? { opacity: 0 } : { opacity: 1 }),
-          mt: 5
+          my: 5
         }}
       >
         <Box flex={1}>
@@ -110,50 +110,53 @@ function ProjectListNavMenu(props) {
         </ListItemIcon>
       </MenuItemTextMetaWrapper>
 
-      <MenuNavLink
-        sx={{
-          mt: 3,
-          py: 2.25,
-          pr:
-            props?.navCollapsed && !props?.navHover
-              ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
-              : 3,
-          pl:
-            props?.navCollapsed && !props?.navHover
-              ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
-              : 2.4
-        }}
-        onClick={handleCreateWorkspace}
-      >
-        <ListItemIcon
+      {/* List of Projects */}
+      {projects?.map(item => (
+        <MenuNavLink
+          key={item?.ID}
           sx={{
-            minWidth: 35,
-            justifyContent: props?.navCollapsed && !props?.navHover ? 'flex-end' : 'flex-start',
-            transition: 'margin .25s ease-in-out',
-            color: 'white',
-            '& svg': {
-              ...(!props?.parent ? { fontSize: '1.5rem' } : { fontSize: '0.5rem' })
-            }
+            py: 2.25,
+            pr:
+              props?.navCollapsed && !props?.navHover
+                ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
+                : 3,
+            pl:
+              props?.navCollapsed && !props?.navHover
+                ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
+                : 2.4
           }}
+          onClick={() => handleOpenProject(item?.ID)}
         >
-          <UserIcon icon={'gravity-ui:list-check'} />
-        </ListItemIcon>
-        <MenuItemTextMetaWrapper
-          sx={{
-            ...(props?.navCollapsed && !props?.navHover ? { opacity: 0 } : { opacity: 1 })
-          }}
-        >
-          <Typography
-            {...((themeConfig.menuTextTruncate ||
-              (!themeConfig.menuTextTruncate && props?.navCollapsed && !props?.navHover)) && {
-              noWrap: true
-            })}
-            textTransform={'uppercase'}
+          <ListItemIcon
+            sx={{
+              minWidth: 35,
+              justifyContent: props?.navCollapsed && !props?.navHover ? 'flex-end' : 'flex-start',
+              transition: 'margin .25s ease-in-out',
+              color: 'white',
+              '& svg': {
+                ...(!props?.parent ? { fontSize: '1.5rem' } : { fontSize: '0.5rem' })
+              }
+            }}
           >
-            {'Project 1'}
-          </Typography>
-        </MenuItemTextMetaWrapper>
-      </MenuNavLink>
+            <UserIcon icon={'gravity-ui:list-check'} />
+          </ListItemIcon>
+          <MenuItemTextMetaWrapper
+            sx={{
+              ...(props?.navCollapsed && !props?.navHover ? { opacity: 0 } : { opacity: 1 })
+            }}
+          >
+            <Typography
+              {...((themeConfig.menuTextTruncate ||
+                (!themeConfig.menuTextTruncate && props?.navCollapsed && !props?.navHover)) && {
+                noWrap: true
+              })}
+              textTransform={'uppercase'}
+            >
+              {item?.ProjectName}
+            </Typography>
+          </MenuItemTextMetaWrapper>
+        </MenuNavLink>
+      ))}
     </Box>
   )
 }
