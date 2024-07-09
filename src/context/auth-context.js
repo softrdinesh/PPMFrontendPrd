@@ -66,7 +66,6 @@ const AuthProvider = ({ children }) => {
   }
 
   const googleLogin = async () => {
-    console.log('HRE')
     try {
       setLoading(true)
       axios
@@ -75,12 +74,11 @@ const AuthProvider = ({ children }) => {
         })
         .then(res => {
           const responseValue = res?.data
-          console.log('responseValue :', responseValue)
           if (responseValue?.status && responseValue.data?.isVerified) {
-            localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue.data.userData))
-            setUser(responseValue?.data?.userData)
+            localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue?.data))
             router.replace(routes.dashboard)
             setLoading(false)
+            setUser(responseValue?.data?.userData)
           } else {
             setRegistrationData(responseValue.data.userData)
             router.replace(routes.register)
@@ -88,7 +86,8 @@ const AuthProvider = ({ children }) => {
           }
         })
         .catch(err => {
-          console.log('err :', err)
+          console.error('err :', err)
+          localStorage.removeItem(authConfig.loginWithGoogle)
           verifyToken()
         })
     } catch (error) {
@@ -98,10 +97,9 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const isLoggedInWithGoogle = localStorage.getItem(authConfig.loginWithGoogle)
-    console.log('isLoggedInWithGoogle :', isLoggedInWithGoogle)
-    const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
+    const storedToken = window.localStorage.getItem(authConfig.storageLoginUserData)
 
-    if (isLoggedInWithGoogle && !storedToken) {
+    if (isLoggedInWithGoogle) {
       googleLogin()
     } else {
       verifyToken(storedToken)
@@ -115,7 +113,7 @@ const AuthProvider = ({ children }) => {
       const res = await userLogin(params)
       let responseData = res?.data
 
-      setUser(responseData)
+      setUser(responseData?.userData)
 
       // ** redirection based on previous path
       const returnUrl = router.query.returnUrl
@@ -146,7 +144,7 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
-      console.log('err :', err)
+      console.error('err :', err)
       toast.error(err?.response?.data?.message ?? 'Registeration Failed')
       if (errorCallback) errorCallback(err)
     }
@@ -158,7 +156,6 @@ const AuthProvider = ({ children }) => {
     setLoading(false)
     window.localStorage.removeItem(authConfig.loginWithGoogle)
     window.localStorage.removeItem(authConfig.storageLoginUserData)
-    window.localStorage.removeItem(authConfig.storageTokenKeyName)
     window.localStorage.removeItem(authConfig.storageUId)
   }
 

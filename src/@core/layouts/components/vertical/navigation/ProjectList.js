@@ -54,8 +54,6 @@ function ProjectListNavMenu({ projects, ...props }) {
 
   // ** Functions
   const isNavLinkActive = prID => {
-    console.log("pathname?.split('/') :", pathname?.split('/'))
-    console.log('prID :', prID)
     if (pathname?.split('/')?.[1] === 'project' && prID == id) {
       return true
     }

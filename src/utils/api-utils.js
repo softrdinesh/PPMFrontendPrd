@@ -20,17 +20,15 @@ const checkTokenExpired = async () => {
   let date = moment().toDate()
 
   if (loginData.tokenTime > date.getTime() / 1000) {
-    return localStorage.getItem(authConfig.storageTokenKeyName)
+    return loginData?.token
   } else if (loginData.refreshTokenTime > date.getTime() / 1000) {
     const newRefreshToken = await refreshToken({ refresh_token: loginData.refreshToken })
     localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(newRefreshToken.data))
-    localStorage.setItem(authConfig.storageTokenKeyName, newRefreshToken.data.token)
     localStorage.setItem(authConfig.storageUId, newRefreshToken.data.u_id)
 
     return newRefreshToken.data.token
   } else {
     localStorage.removeItem(authConfig.storageLoginUserData)
-    localStorage.removeItem(authConfig.storageTokenKeyName)
     localStorage.removeItem(authConfig.storageUId)
     window.location.href = routes.login
 
@@ -39,7 +37,9 @@ const checkTokenExpired = async () => {
 }
 
 export const getDefaultHeaders = async () => {
-  if (localStorage.accessToken) {
+  let userData = localStorage.getItem(authConfig.storageLoginUserData)
+  let loginData = JSON.parse(userData)
+  if (loginData) {
     return {
       Authorization: 'Bearer ' + (await checkTokenExpired()),
       'Content-Type': 'application/json',

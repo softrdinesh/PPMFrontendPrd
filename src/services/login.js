@@ -8,7 +8,6 @@ export const userLogin = async body => {
   return callApi({ uriEndPoint: authentication.login, body })
     .then(res => {
       if (res.statusCode === 200) {
-        localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
         localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
         localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(res.data))
 
@@ -28,7 +27,6 @@ export const userRegister = async body => {
   return callApi({ uriEndPoint: authentication.register, body })
     .then(res => {
       if (res.statusCode === 201) {
-        localStorage.setItem(authConfig.storageTokenKeyName, res.data.token)
         localStorage.setItem(authConfig.storageUId, res?.data?.userData?.UserID)
         localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(res.data))
 
