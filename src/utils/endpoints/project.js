@@ -12,5 +12,9 @@ export const project = {
   viewProject: {
     ...defaults.methods.GET,
     uri: '/api/project/:id'
+  },
+  updateProject: {
+    ...defaults.methods.PUT,
+    uri: '/api/project/:id'
   }
 }

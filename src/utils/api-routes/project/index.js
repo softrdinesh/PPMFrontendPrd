@@ -22,6 +22,16 @@ export const viewProject = async id => {
     })
 }
 
+export const updateProject = async ({ id, body }) => {
+  return callApi({ uriEndPoint: project.updateProject, pathParams: { id }, body })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
 export const addProject = async body => {
   return callApi({ uriEndPoint: project.addProject, body })
     .then(res => {

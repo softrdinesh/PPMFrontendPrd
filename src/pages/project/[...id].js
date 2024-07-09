@@ -1,20 +1,76 @@
-import { viewProject } from '@api/project'
-import CustomButton from '@components/button'
-import FallbackSpinner from '@components/spinner'
-import { Icon } from '@iconify/react'
-import { Box, Card, Divider, Grid, IconButton, TextField, Typography } from '@mui/material'
+// ** React Imports
+import React, { useContext, useEffect, useState } from 'react'
+
+// ** Next Imports
 import { useRouter } from 'next/router'
-import React from 'react'
-import { useQuery } from 'react-query'
+
+// ** MUI Imports
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+
+// ** Custom Imports
+import FallbackSpinner from '@components/spinner'
+import CustomButton from '@components/button'
 import CustomizedAccordions from 'src/@core/custom-components/task-accordian'
+import { Icon } from '@iconify/react'
+
+// ** API Imports
+import { updateProject, viewProject } from '@api/project'
+import { useQuery } from 'react-query'
+import { ClickAwayListener } from '@mui/material'
+import { WorkspaceContext } from 'src/context/workspace-context'
 
 function ProjectView() {
+  // ** Hooks
+  const { refetchProjects } = useContext(WorkspaceContext)
   const router = useRouter()
   const { id } = router.query
 
   const projectID = id?.[0]
 
-  const { data, isLoading } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
+  const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [projectName, setProjectName] = useState('')
+
+  const handleEditClick = () => {
+    setIsEditing(true)
+  }
+
+  const handleSave = () => {
+    const body = {
+      ProjectName: projectName
+    }
+
+    updateProject({ id: data?.ID, body }).then(() => {
+      setIsEditing(false)
+      refetchProjects()
+      refetch()
+    })
+  }
+
+  const handleChange = event => {
+    setProjectName(event.target.value)
+  }
+
+  const handleKeyPress = event => {
+    if (event.key === 'Enter') {
+      handleSave()
+    }
+  }
+
+  const handleClickAway = () => {
+    handleSave()
+  }
+
+  useEffect(() => {
+    setProjectName(data?.ProjectName)
+  }, [data])
 
   if (isLoading) return <FallbackSpinner height={'80vh'} />
 
@@ -25,12 +81,27 @@ function ProjectView() {
           {/* Project Title */}
           <Box display={'flex'} flexDirection={'column'}>
             <Box display={'flex'} alignItems={'end'} gap={2}>
-              <Typography fontWeight={700} fontSize={'1.75rem'}>
-                {data?.ProjectName}
-              </Typography>
-              <IconButton>
-                <Icon icon={'mdi:pencil'} />
-              </IconButton>
+              {isEditing ? (
+                <ClickAwayListener onClickAway={handleClickAway}>
+                  <TextField
+                    variant='standard'
+                    value={projectName ?? data?.ProjectName}
+                    onChange={handleChange}
+                    inputProps={{ style: { fontSize: 27, fontWeight: 700, width: 'auto' } }}
+                    onKeyPress={handleKeyPress}
+                    autoFocus
+                  />
+                </ClickAwayListener>
+              ) : (
+                <>
+                  <Typography fontWeight={700} fontSize={'1.75rem'}>
+                    {projectName}
+                  </Typography>
+                  <IconButton onClick={handleEditClick}>
+                    <Icon icon={'mdi:pencil'} />
+                  </IconButton>
+                </>
+              )}
             </Box>
             <Typography variant='subtitle2'>Add your board's description here</Typography>
           </Box>

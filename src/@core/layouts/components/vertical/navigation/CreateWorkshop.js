@@ -68,7 +68,6 @@ function CreateWorkshop(props) {
               : 2.4
         }}
         onClick={() => {
-          console.log('helloa')
           handleModalOpen()
         }}
       >

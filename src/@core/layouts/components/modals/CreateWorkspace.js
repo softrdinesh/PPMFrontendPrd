@@ -29,8 +29,6 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
   // ** Hooks
   // const auth = useAuth()
 
-  // console.log('auth :', auth)
-
   const defaultValues = {
     workspaceName: '',
     organizationID: 3 // TODO:: parse dynamic value

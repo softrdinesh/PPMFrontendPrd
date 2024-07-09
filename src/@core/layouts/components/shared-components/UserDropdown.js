@@ -2,27 +2,18 @@
 import { Fragment, useState } from 'react'
 
 // ** MUI Imports
-import Avatar from '@mui/material/Avatar'
-import Badge from '@mui/material/Badge'
+import Avatar from '@components/avatar'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
-import { styled } from '@mui/material/styles'
 
 // ** Icons Imports
 import IconifyIcon from 'src/@core/components/icon'
-import { useAuth } from 'src/hooks/useAuth'
 
-// ** Styled Components
-const BadgeContentSpan = styled('span')(({ theme }) => ({
-  width: 8,
-  height: 8,
-  borderRadius: '50%',
-  backgroundColor: theme.palette.success.main,
-  boxShadow: `0 0 0 2px ${theme.palette.background.paper}`
-}))
+// ** Context Imports
+import { useAuth } from 'src/hooks/useAuth'
 
 const UserDropdown = () => {
   // ** States
@@ -30,7 +21,6 @@ const UserDropdown = () => {
 
   // ** Hooks
   const auth = useAuth()
-  console.log('auth :', auth)
 
   const handleDropdownOpen = event => {
     setAnchorEl(event.currentTarget)
@@ -61,20 +51,12 @@ const UserDropdown = () => {
 
   return (
     <Fragment>
-      <Badge
-        overlap='circular'
+      <Avatar
+        alt={auth?.user?.Name ?? 'John Doe'}
         onClick={handleDropdownOpen}
-        sx={{ ml: 2, cursor: 'pointer' }}
-        badgeContent={<BadgeContentSpan />}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Avatar
-          alt='John Doe'
-          onClick={handleDropdownOpen}
-          sx={{ width: 40, height: 40 }}
-          src={auth?.user?.image ?? '/images/avatars/1.png'}
-        />
-      </Badge>
+        sx={{ width: 40, height: 40, cursor: 'pointer' }}
+        src={auth?.user?.image ?? '/images/avatars/1.png'}
+      />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -85,17 +67,12 @@ const UserDropdown = () => {
       >
         <Box sx={{ pt: 2, pb: 3, px: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Badge
-              overlap='circular'
-              badgeContent={<BadgeContentSpan />}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-              <Avatar
-                alt='John Doe'
-                src={auth?.user?.image ?? '/images/avatars/1.png'}
-                sx={{ width: '2.5rem', height: '2.5rem' }}
-              />
-            </Badge>
+            <Avatar
+              alt={auth?.user?.Name ?? 'John Doe'}
+              src={auth?.user?.image ?? '/images/avatars/1.png'}
+              sx={{ width: '2.5rem', height: '2.5rem' }}
+            />
+
             <Box sx={{ display: 'flex', marginLeft: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
               <Typography sx={{ fontWeight: 600 }}>{auth?.user?.Name ?? 'John Doe'}</Typography>
             </Box>

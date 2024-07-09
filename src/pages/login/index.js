@@ -86,7 +86,7 @@ const LoginPage = () => {
     }
     setIsLoggingIn(true)
     await auth.login(body).catch(err => {
-      console.log('ERROR', err)
+      console.error('ERROR', err)
     })
     setIsLoggingIn(false)
   }

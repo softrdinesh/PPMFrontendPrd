@@ -72,7 +72,7 @@ function NavWorkshopLists({ data, refetch, ...props }) {
         handleOpenClose()
       }
     } catch (error) {
-      console.log('Delete Workspace Error :', error)
+      console.error('Delete Workspace Error :', error)
     }
   }
 
