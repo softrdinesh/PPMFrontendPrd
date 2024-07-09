@@ -13,15 +13,11 @@ import UserIcon from 'src/layouts/components/UserIcon'
 import Router from 'next/router'
 import { routes } from '@routes'
 
-const MenuNavLink = styled(ListItemButton)(({ theme }) => ({
+const MenuNavLink = styled(ListItemButton)(() => ({
   width: '100%',
   borderRadius: 8,
-  transition: 'padding-left .25s ease-in-out',
-  '& .MuiTypography-root': {
-    fontWeight: 500,
-    color: `${theme.palette.common.white} !important`,
-    fontSize: '.9rem'
-  }
+
+  transition: 'padding-left .25s ease-in-out'
 }))
 
 const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
@@ -36,6 +32,21 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
 
 function ProjectListNavMenu({ projects, ...props }) {
   const [name, setName] = useState('')
+
+  const {
+    pathname,
+    query: { id }
+  } = Router
+
+  const isNavLinkActive = prID => {
+    console.log("pathname?.split('/') :", pathname?.split('/'))
+    console.log('prID :', prID)
+    if (pathname?.split('/')?.[1] === 'project' && prID == id) {
+      return true
+    }
+
+    return false
+  }
 
   const handleOpenProject = id => {
     Router.push(`${routes.project}/${id}`)
@@ -116,6 +127,11 @@ function ProjectListNavMenu({ projects, ...props }) {
           key={item?.ID}
           sx={{
             py: 2.25,
+            mb: 2,
+            backgroundColor: isNavLinkActive(item?.ID) && '#E5E6EA',
+            '&:hover': {
+              backgroundColor: isNavLinkActive(item?.ID) && '#E5E6EA'
+            },
             pr:
               props?.navCollapsed && !props?.navHover
                 ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
@@ -125,18 +141,21 @@ function ProjectListNavMenu({ projects, ...props }) {
                 ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
                 : 2.4
           }}
+          disableGutters
+          disableTouchRipple
+          disableRipple
           onClick={() => handleOpenProject(item?.ID)}
         >
           <ListItemIcon
-            sx={{
+            sx={theme => ({
               minWidth: 35,
               justifyContent: props?.navCollapsed && !props?.navHover ? 'flex-end' : 'flex-start',
               transition: 'margin .25s ease-in-out',
-              color: 'white',
+              color: isNavLinkActive(item?.ID) ? theme?.palette?.primary.main : 'white',
               '& svg': {
                 ...(!props?.parent ? { fontSize: '1.5rem' } : { fontSize: '0.5rem' })
               }
-            }}
+            })}
           >
             <UserIcon icon={'gravity-ui:list-check'} />
           </ListItemIcon>
@@ -150,7 +169,9 @@ function ProjectListNavMenu({ projects, ...props }) {
                 (!themeConfig.menuTextTruncate && props?.navCollapsed && !props?.navHover)) && {
                 noWrap: true
               })}
-              textTransform={'uppercase'}
+              variant='body2'
+              color={isNavLinkActive(item?.ID) ? 'primary.main' : 'white'}
+              fontWeight={isNavLinkActive(item?.ID) ? 500 : 300}
             >
               {item?.ProjectName}
             </Typography>
