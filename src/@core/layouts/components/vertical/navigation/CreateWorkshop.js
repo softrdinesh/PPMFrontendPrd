@@ -84,7 +84,7 @@ function CreateWorkshop(props) {
             })}
             textTransform={'uppercase'}
           >
-            {'Create Workspacaae'}
+            {'Create Workspace'}
           </Typography>
         </MenuItemTextMetaWrapper>
 

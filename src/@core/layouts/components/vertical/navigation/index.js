@@ -66,7 +66,6 @@ const Navigation = props => {
 
   // ** Hooks
   const wrkData = useContext(WorkspaceContext)
-  console.log('wrkData :', wrkData)
 
   const navMenuContentProps = {
     ...props,
@@ -175,7 +174,14 @@ const Navigation = props => {
                 <CreateWorkshop {...props} navHover={navHover} />
 
                 {wrkData?.workspace?.map(item => (
-                  <NavWorkshopLists key={item?.WorkspaceID} {...props} {...wrkData} data={item} navHover={navHover} />
+                  <NavWorkshopLists
+                    key={item?.WorkspaceID}
+                    {...props}
+                    {...wrkData}
+                    data={item}
+                    navHover={navHover}
+                    refetch={wrkData?.refetchWorkspaces}
+                  />
                 ))}
 
                 {wrkData?.projects && wrkData?.projects?.length !== 0 && (
