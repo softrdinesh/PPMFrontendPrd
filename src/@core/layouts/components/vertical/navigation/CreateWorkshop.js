@@ -10,6 +10,9 @@ import themeConfig from 'src/configs/themeConfig'
 // ** Util Import
 import { ListItem, ListItemButton, ListItemIcon, Typography } from '@mui/material'
 import UserIcon from 'src/layouts/components/UserIcon'
+import CreateWorkspace from '../../modals/CreateWorkspace'
+import { useContext, useState } from 'react'
+import { WorkspaceContext } from 'src/context/workspace-context'
 
 const MenuNavLink = styled(ListItemButton)(({ theme }) => ({
   width: '100%',
@@ -31,8 +34,15 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
   transition: 'opacity .25s ease-in-out',
   ...(themeConfig.menuTextTruncate && { overflow: 'hidden' })
 }))
-
 function CreateWorkshop(props) {
+  const { refetchWorkspaces } = useContext(WorkspaceContext)
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true)
+  }
+
   return (
     <ListItem
       disablePadding
@@ -57,6 +67,10 @@ function CreateWorkshop(props) {
               ? (props?.collapsedNavWidth - props?.navigationBorderWidth - 24 - 16) / 8
               : 2.4
         }}
+        onClick={() => {
+          console.log('helloa')
+          handleModalOpen()
+        }}
       >
         <MenuItemTextMetaWrapper
           sx={{
@@ -70,7 +84,7 @@ function CreateWorkshop(props) {
             })}
             textTransform={'uppercase'}
           >
-            {'Create Workspace'}
+            {'Create Workspacaae'}
           </Typography>
         </MenuItemTextMetaWrapper>
 
@@ -90,6 +104,11 @@ function CreateWorkshop(props) {
           </ListItemIcon>
         )}
       </MenuNavLink>
+      <CreateWorkspace
+        open={isModalOpen}
+        onCloseModal={() => setIsModalOpen(false)}
+        refetchWorkspaces={refetchWorkspaces}
+      />
     </ListItem>
   )
 }
