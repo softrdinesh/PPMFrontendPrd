@@ -37,14 +37,16 @@ const AuthProvider = ({ children }) => {
   // ** Hooks
   const router = useRouter()
 
-  const verifyToken = async storedToken => {
+  const verifyToken = async () => {
+    let userData = localStorage.getItem(authConfig.storageLoginUserData)
+    let loginData = JSON.parse(userData)
     try {
-      if (storedToken) {
+      if (loginData?.token) {
         setLoading(true)
         await axios
           .get(process.env.NEXT_PUBLIC_API_URL + authentication.verifyToken.uri, {
             headers: {
-              Authorization: `Bearer ${storedToken}`
+              Authorization: `Bearer ${loginData?.token}`
             }
           })
           .then(async res => {
@@ -97,12 +99,11 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const isLoggedInWithGoogle = localStorage.getItem(authConfig.loginWithGoogle)
-    const storedToken = window.localStorage.getItem(authConfig.storageLoginUserData)
 
     if (isLoggedInWithGoogle) {
       googleLogin()
     } else {
-      verifyToken(storedToken)
+      verifyToken()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

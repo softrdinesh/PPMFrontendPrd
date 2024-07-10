@@ -27,7 +27,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const theme = useTheme()
 
-  const { refetchProjects } = useContext(WorkspaceContext)
+  const { selected, refetchProjects } = useContext(WorkspaceContext)
 
   const defaultValues = {
     ProjectName: ''
@@ -42,6 +42,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const onSubmit = async values => {
     setIsLoading(true)
+    values.workspaceID = selected?.WorkspaceID
     await addProject(values)
     setIsLoading(false)
     reset()

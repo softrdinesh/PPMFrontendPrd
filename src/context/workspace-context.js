@@ -19,12 +19,16 @@ const WorkspaceProvider = ({ children }) => {
   // ** API calls
   const { data, refetch } = useQuery('workspaces', fetchWorkspaceList, { enabled: Boolean(auth?.user) })
 
-  const { data: projects, refetch: refetchProjects } = useQuery('projects', fetchProjectList, {
-    enabled: Boolean(auth?.user)
-  })
-
   // ** States
   const [activeWorkspace, setActiveWorkspace] = useState(null)
+
+  const { data: projects, refetch: refetchProjects } = useQuery(
+    'projects',
+    () => fetchProjectList(activeWorkspace?.WorkspaceID),
+    {
+      enabled: Boolean(auth?.user) && Boolean(activeWorkspace)
+    }
+  )
 
   useEffect(() => {
     if (auth?.user) {
