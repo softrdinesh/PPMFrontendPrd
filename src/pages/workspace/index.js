@@ -42,7 +42,7 @@ const Workspace = () => {
           justifyContent: 'space-between',
           border: `1px solid ${theme.palette.common.lightGray}`,
           borderRadius: '22px',
-          backgroundColor: `${theme.palette.grey[50]}`
+          flexWrap: 'wrap-reverse'
         }}
         px={5}
         mt={5}
@@ -78,8 +78,13 @@ const Workspace = () => {
           alt='man doing work'
           src={WorkspaceMen}
           style={{
-            height: '25%',
-            width: '25%'
+            objectFit: 'cover',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            height: 'auto',
+            width: 'auto',
+            marginTop: 10,
+            marginBottom: 10
           }}
         />
       </Box>
