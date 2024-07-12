@@ -2,8 +2,8 @@ import { project } from '@endpoints/project'
 import toast from 'react-hot-toast'
 import { callApi } from 'src/utils/api-utils'
 
-export const fetchProjectList = async () => {
-  return callApi({ uriEndPoint: project.projectList })
+export const fetchProjectList = async workspaceID => {
+  return callApi({ uriEndPoint: project.projectList, body: { workspaceID } })
     .then(res => {
       return res?.data
     })

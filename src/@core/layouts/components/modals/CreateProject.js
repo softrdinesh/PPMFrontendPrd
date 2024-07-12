@@ -2,7 +2,7 @@
 import React, { useState, useContext } from 'react'
 
 // ** MUI Components
-import { Divider, FormControl, IconButton, Switch, Typography, useTheme } from '@mui/material'
+import { Dialog, Divider, FormControl, IconButton, Switch, Typography, useTheme, Zoom } from '@mui/material'
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
@@ -11,10 +11,6 @@ import { WorkspaceContext } from 'src/context/workspace-context'
 
 // ** Icons Imports
 import IconifyIcon from '@components/icon'
-
-// ** package Imports
-import Modal from 'react-responsive-modal'
-import 'react-responsive-modal/styles.css'
 
 // ** Local Imports
 import { Controller, useForm } from 'react-hook-form'
@@ -27,7 +23,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const theme = useTheme()
 
-  const { refetchProjects } = useContext(WorkspaceContext)
+  const { selected, refetchProjects } = useContext(WorkspaceContext)
 
   const defaultValues = {
     ProjectName: ''
@@ -42,6 +38,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const onSubmit = async values => {
     setIsLoading(true)
+    values.workspaceID = selected?.WorkspaceID
     await addProject(values)
     setIsLoading(false)
     reset()
@@ -50,173 +47,159 @@ const CreateProject = ({ open, onCloseModal }) => {
   }
 
   return (
-    <div>
-      <Modal
-        open={open}
-        onClose={onCloseModal}
-        center
-        showCloseIcon={false}
-        styles={{
-          modal: {
-            borderRadius: 10,
-            padding: 0,
-            paddingTop: 10,
-            paddingBottom: 10,
-            width: '40vw'
-          }
+    <Dialog
+      open={open}
+      style={{
+        padding: 0
+      }}
+      onClose={onCloseModal}
+      TransitionComponent={Zoom}
+      fullWidth
+      maxWidth='md'
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingX: 5,
+          paddingY: 2
         }}
-        closeIcon={null}
       >
-        <Box>
+        <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Create project name</Typography>
+        <IconButton
+          aria-label='close'
+          onClick={onCloseModal}
+          style={{
+            height: 35,
+            width: 35,
+            border: '1px solid ',
+            borderColor: `${theme.palette.common.lightGrayishBlue}`,
+            borderRadius: 4
+          }}
+        >
+          <IconifyIcon icon={'mdi:close'} color={`common.black`} fontSize={24} />
+        </IconButton>
+      </Box>
+      <Divider />
+
+      <Box py={2}>
+        <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+          {/* workspace name */}
+          <FormControl
+            fullWidth
+            sx={{
+              paddingX: 5
+            }}
+          >
+            <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}>
+              Project name *
+            </Typography>
+
+            <Controller
+              name='ProjectName'
+              control={control}
+              rules={{
+                required: 'Please enter a projectName'
+              }}
+              render={({ field: { value, onChange, onBlur } }) => (
+                <TextField
+                  autoFocus
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  error={Boolean(errors?.ProjectName)}
+                  helperText={Boolean(errors?.ProjectName) && errors?.ProjectName?.message}
+                  fullWidth
+                  id='ProjectName'
+                  label='Project Name'
+                  sx={{ marginBottom: 4 }}
+                />
+              )}
+            />
+          </FormControl>
           <Box
             sx={{
               display: 'flex',
-              flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingX: 5,
-              paddingY: 2
+              paddingX: 5
             }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>
-              Create project name
-            </Typography>
-            <IconButton
-              aria-label='close'
-              onClick={onCloseModal}
-              style={{
-                height: 35,
-                width: 35,
-                border: '1px solid ',
-                borderColor: `${theme.palette.common.lightGrayishBlue}`,
-                borderRadius: 4
+            <Box sx={{}}>
+              <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue' }}>
+                Privacy *
+              </Typography>
+              <Typography sx={{ fontWeight: 400, fontSize: '14px', color: 'common.desaturatedBlue' }}>
+                Open
+                <Switch defaultChecked />
+                Closed
+              </Typography>
+            </Box>
+            <Typography
+              sx={{
+                fontWeight: 400,
+                fontSize: '14px',
+                color: 'common.desaturatedBlue'
               }}
             >
-              <IconifyIcon icon={'mdi:close'} color={`common.black`} fontSize={24} />
-            </IconButton>
+              <span
+                style={{
+                  fontWeight: 'bold'
+                }}
+              >
+                Info:
+              </span>{' '}
+              Project will be visible to everyone in your account
+            </Typography>
           </Box>
           <Divider />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingTop: 2,
+              px: 5
+            }}
+          >
+            <Button
+              sx={{
+                borderRadius: 30,
+                fontWeight: 400,
+                fontSize: '14px',
+                textTransform: 'capitalize'
+              }}
+              variant='outlined'
+              size='small'
+              onClick={() => {
+                onCloseModal()
+              }}
+            >
+              Cancel
+            </Button>
 
-          <Box py={2}>
-            <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
-              {/* workspace name */}
-              <FormControl
-                fullWidth
-                sx={{
-                  paddingX: 5
-                }}
-              >
-                <Typography
-                  sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}
-                >
-                  Project name *
-                </Typography>
-
-                <Controller
-                  name='ProjectName'
-                  control={control}
-                  rules={{
-                    required: 'Please enter a projectName'
-                  }}
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <TextField
-                      autoFocus
-                      value={value}
-                      onBlur={onBlur}
-                      onChange={onChange}
-                      error={Boolean(errors?.ProjectName)}
-                      helperText={Boolean(errors?.ProjectName) && errors?.ProjectName?.message}
-                      fullWidth
-                      id='ProjectName'
-                      label='Project Name'
-                      sx={{ marginBottom: 4 }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingX: 5
-                }}
-              >
-                <Box sx={{}}>
-                  <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue' }}>
-                    Privacy *
-                  </Typography>
-                  <Typography sx={{ fontWeight: 400, fontSize: '14px', color: 'common.desaturatedBlue' }}>
-                    Open
-                    <Switch defaultChecked />
-                    Closed
-                  </Typography>
-                </Box>
-                <Typography
-                  sx={{
-                    fontWeight: 400,
-                    fontSize: '14px',
-                    color: 'common.desaturatedBlue'
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Info:
-                  </span>{' '}
-                  Project will be visible to everyone in your account
-                </Typography>
-              </Box>
-              <Divider />
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: 2,
-                  px: 5
-                }}
-              >
-                <Button
-                  sx={{
-                    borderRadius: 30,
-                    fontWeight: 400,
-                    fontSize: '14px',
-                    textTransform: 'capitalize'
-                  }}
-                  variant='outlined'
-                  size='small'
-                  onClick={() => {
-                    onCloseModal()
-                  }}
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  sx={{
-                    borderRadius: 30,
-                    fontWeight: 400,
-                    fontSize: '14px',
-                    textTransform: 'capitalize'
-                  }}
-                  variant='contained'
-                  size='large'
-                  type='submit'
-                >
-                  {isLoading ? <CircularProgress size={15} color='inherit' /> : 'Create'}
-                </Button>
-              </Box>
-            </form>
+            <Button
+              sx={{
+                borderRadius: 30,
+                fontWeight: 400,
+                fontSize: '14px',
+                textTransform: 'capitalize'
+              }}
+              variant='contained'
+              size='large'
+              type='submit'
+            >
+              {isLoading ? <CircularProgress size={15} color='inherit' /> : 'Create'}
+            </Button>
           </Box>
-        </Box>
-      </Modal>
-    </div>
+        </form>
+      </Box>
+    </Dialog>
   )
 }
 

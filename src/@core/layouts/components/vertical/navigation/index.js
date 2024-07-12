@@ -184,7 +184,7 @@ const Navigation = props => {
                   />
                 ))}
 
-                {wrkData?.projects && wrkData?.projects?.length !== 0 && (
+                {wrkData?.selected && (
                   <ProjectListNavMenu
                     {...props}
                     navHover={navHover}
