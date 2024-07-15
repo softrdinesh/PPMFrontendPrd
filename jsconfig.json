@@ -23,6 +23,7 @@
       "@configs/*": ["src/configs/*"],
       "@utils/*": ["src/@core/utils/*"],
       "@components/*": ["src/@core/components/*"],
+      "@custom-components/*": ["src/@core/custom-components/*"],
       "@config": ["./config"],
       "@translate/*": ["src/utils/translate/*"]
     }

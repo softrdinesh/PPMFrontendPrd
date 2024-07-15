@@ -2,8 +2,8 @@ import { taskGroup } from '@endpoints/task-group'
 import toast from 'react-hot-toast'
 import { callApi } from 'src/utils/api-utils'
 
-export const fetchTaskGroupList = async workspaceID => {
-  return callApi({ uriEndPoint: taskGroup.taskGroupList, query: { workspaceID } })
+export const fetchTaskGroupList = async projectID => {
+  return callApi({ uriEndPoint: taskGroup.taskGroupList, query: { projectID } })
     .then(res => {
       return res?.data
     })

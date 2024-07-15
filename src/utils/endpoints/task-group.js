@@ -3,18 +3,18 @@ import { defaults } from './defaults'
 export const taskGroup = {
   taskGroupList: {
     ...defaults.methods.GET,
-    uri: '/api/project'
+    uri: '/api/task-group'
   },
   addTaskGroup: {
     ...defaults.methods.POST,
-    uri: '/api/project'
+    uri: '/api/task-group'
   },
   viewTaskGroup: {
     ...defaults.methods.GET,
-    uri: '/api/project/:id'
+    uri: '/api/task-group/:id'
   },
   updateTaskGroup: {
     ...defaults.methods.PUT,
-    uri: '/api/project/:id'
+    uri: '/api/task-group/:id'
   }
 }

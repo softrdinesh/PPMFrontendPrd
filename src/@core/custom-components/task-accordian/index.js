@@ -27,7 +27,8 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme.spacing(2)
 }))
 
-export default function CustomizedAccordions() {
+export default function CustomizedAccordions({ data }) {
+  console.log('data :', data)
   const [expanded, setExpanded] = React.useState('panel1')
 
   const handleChange = panel => (event, newExpanded) => {
@@ -37,7 +38,9 @@ export default function CustomizedAccordions() {
   return (
     <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
       <AccordionSummary aria-controls='panel1d-content' id='panel1d-header' sx={{ pl: 2 }}>
-        <Typography ml={3}>Collapsible Group Item #1</Typography>
+        <Typography ml={3} fontWeight={700}>
+          {data?.TaskGroupName ?? '-'}
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <TaskGroupComponent />
