@@ -17,6 +17,7 @@ import { Icon } from '@iconify/react'
 
 // ** API Imports
 import { viewProject } from '@api/project'
+import { fetchTaskGroupList } from '@api/task-group'
 import ProjectTitle from '@custom-components/project/title'
 import TaskGroupList from '@custom-components/task-group/list'
 import NewTask from '@custom-components/task-group/new-task'
@@ -30,6 +31,12 @@ function ProjectView() {
   const projectID = id?.[0]
 
   const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
+
+  const {
+    data: taskGroups,
+    isLoading: taskLoading,
+    refetch: refetchTaskGroup
+  } = useQuery(`taskGroup-${id}`, () => fetchTaskGroupList(projectID), { retry: false })
 
   if (isLoading) return <FallbackSpinner height={'80vh'} />
 
@@ -55,7 +62,7 @@ function ProjectView() {
 
           {/* Buttons */}
           <Box display={'flex'} alignItems={'center'} gap={4} flexWrap={'wrap'} justifyContent={'center'}>
-            <NewTask projectID={projectID} refetch={refetch} />
+            <NewTask projectID={projectID} refetch={refetchTaskGroup} />
             <CustomButton
               variant='outlined'
               startIcon={<Icon icon={'solar:users-group-rounded-linear'} style={{ marginInline: 2 }} />}
@@ -92,7 +99,7 @@ function ProjectView() {
         </Box>
       </Grid>
       <Grid item xs={12}>
-        <TaskGroupList id={projectID} refetch={refetch} />
+        <TaskGroupList id={projectID} refetch={refetchTaskGroup} taskGroups={taskGroups} isLoading={taskLoading} />
       </Grid>
     </Grid>
   )

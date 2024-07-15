@@ -1,27 +1,19 @@
-import { fetchTaskGroupList } from '@api/task-group'
 import FallbackSpinner from '@components/spinner'
 import { Box, Card, Typography } from '@mui/material'
 import React, { memo, useState } from 'react'
-import { useQuery } from 'react-query'
 import CustomizedAccordions from '../task-accordian'
 
+import CustomButton from '@components/button'
 import noDataImage from '@images/cards/no-data.svg'
 import Image from 'next/image'
 import NewTaskDialog from './new-task/dialog'
-import CustomButton from '@components/button'
 
-const TaskGroupList = ({ id }) => {
+const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => setOpen(true)
 
   const handleClose = () => setOpen(false)
-
-  const {
-    data: taskGroups,
-    isLoading,
-    refetch
-  } = useQuery(`taskGroup-${id}`, () => fetchTaskGroupList(id), { retry: false })
 
   if (isLoading) return <FallbackSpinner height={'60vh'} />
 
