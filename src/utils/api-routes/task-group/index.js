@@ -1,9 +1,9 @@
-import { project } from '@endpoints/project'
+import { taskGroup } from '@endpoints/task-group'
 import toast from 'react-hot-toast'
 import { callApi } from 'src/utils/api-utils'
 
-export const fetchProjectList = async workspaceID => {
-  return callApi({ uriEndPoint: project.projectList, query: { workspaceID } })
+export const fetchTaskGroupList = async workspaceID => {
+  return callApi({ uriEndPoint: taskGroup.taskGroupList, query: { workspaceID } })
     .then(res => {
       return res?.data
     })
@@ -12,8 +12,8 @@ export const fetchProjectList = async workspaceID => {
     })
 }
 
-export const viewProject = async id => {
-  return callApi({ uriEndPoint: project.viewProject, pathParams: { id } })
+export const viewTaskGroup = async id => {
+  return callApi({ uriEndPoint: taskGroup.viewTaskGroup, pathParams: { id } })
     .then(res => {
       return res?.data
     })
@@ -22,8 +22,8 @@ export const viewProject = async id => {
     })
 }
 
-export const updateProject = async ({ id, body }) => {
-  return callApi({ uriEndPoint: project.updateProject, pathParams: { id }, body })
+export const updateTaskGroup = async ({ id, body }) => {
+  return callApi({ uriEndPoint: taskGroup.updateTaskGroup, pathParams: { id }, body })
     .then(res => {
       return res?.data
     })
@@ -32,8 +32,8 @@ export const updateProject = async ({ id, body }) => {
     })
 }
 
-export const addProject = async body => {
-  return callApi({ uriEndPoint: project.addProject, body })
+export const addTaskGroup = async body => {
+  return callApi({ uriEndPoint: taskGroup.addTaskGroup, body })
     .then(res => {
       toast.success(res?.message ?? 'Project Added Successfully')
 

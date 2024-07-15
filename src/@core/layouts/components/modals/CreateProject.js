@@ -1,12 +1,21 @@
 // ** React Imports
-import React, { useState, useContext } from 'react'
+import React, { useContext } from 'react'
 
 // ** MUI Components
-import { Dialog, Divider, FormControl, IconButton, Switch, Typography, useTheme, Zoom } from '@mui/material'
+import {
+  CircularProgress,
+  Dialog,
+  Divider,
+  FormControl,
+  IconButton,
+  Switch,
+  Typography,
+  useTheme,
+  Zoom
+} from '@mui/material'
 import Box from '@mui/material/Box'
-import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
-import { CircularProgress } from '@mui/material'
+import TextField from '@mui/material/TextField'
 import { WorkspaceContext } from 'src/context/workspace-context'
 
 // ** Icons Imports
@@ -19,8 +28,6 @@ import { Controller, useForm } from 'react-hook-form'
 import { addProject } from '@api/project'
 
 const CreateProject = ({ open, onCloseModal }) => {
-  const [isLoading, setIsLoading] = useState(false)
-
   const theme = useTheme()
 
   const { selected, refetchProjects } = useContext(WorkspaceContext)
@@ -32,18 +39,18 @@ const CreateProject = ({ open, onCloseModal }) => {
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset
   } = useForm({ defaultValues })
 
   const onSubmit = async values => {
-    setIsLoading(true)
-    values.workspaceID = selected?.WorkspaceID
-    await addProject(values)
-    setIsLoading(false)
-    reset()
-    refetchProjects()
-    onCloseModal()
+    values.WorkspaceID = selected?.WorkspaceID
+    const res = await addProject(values)
+    if (res?.status) {
+      reset()
+      refetchProjects()
+      onCloseModal()
+    }
   }
 
   return (
@@ -194,7 +201,7 @@ const CreateProject = ({ open, onCloseModal }) => {
               size='large'
               type='submit'
             >
-              {isLoading ? <CircularProgress size={15} color='inherit' /> : 'Create'}
+              {isSubmitting ? <CircularProgress size={15} color='inherit' /> : 'Create'}
             </Button>
           </Box>
         </form>

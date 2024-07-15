@@ -22,13 +22,17 @@ const WorkspaceProvider = ({ children }) => {
   // ** States
   const [activeWorkspace, setActiveWorkspace] = useState(null)
 
+  console.log('activeWorkspace?.WorkspaceID :', activeWorkspace?.WorkspaceID)
+
   const { data: projects, refetch: refetchProjects } = useQuery(
     'projects',
     () => fetchProjectList(activeWorkspace?.WorkspaceID),
     {
-      enabled: Boolean(auth?.user) && Boolean(activeWorkspace)
+      enabled: Boolean(activeWorkspace),
+      retry: false
     }
   )
+  console.log('projects :', projects)
 
   useEffect(() => {
     if (auth?.user) {
@@ -36,6 +40,12 @@ const WorkspaceProvider = ({ children }) => {
       refetchProjects()
     }
   }, [auth?.user, refetch, refetchProjects])
+
+  useEffect(() => {
+    if (activeWorkspace) {
+      refetchProjects()
+    }
+  }, [activeWorkspace, refetchProjects])
 
   const values = {
     workspace: data ?? defaultProvider?.workspace,
