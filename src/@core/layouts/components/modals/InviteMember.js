@@ -296,11 +296,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
               sx={{
                 backgroundColor: 'common.lightSkyColor'
               }}
-            >
-              <Typography variant='caption' fontSize={13}>
-                revert the changes
-              </Typography>
-            </Box>
+            ></Box>
           </Grid>
         </DialogContent>
       </Grid>
