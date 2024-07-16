@@ -33,7 +33,8 @@ const DefaultPalette = (mode, themeColor) => {
       gray37: '#5E5E5E',
       lightGray: '#c5c5c5',
       lightGrayishBlue: '#DCDCE4',
-      desaturatedBlue: '#32324d'
+      desaturatedBlue: '#32324d',
+      lightSkyColor: '#DFEEF6'
     },
     mode: mode,
     primary: {

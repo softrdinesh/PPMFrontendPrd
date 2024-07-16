@@ -14,10 +14,12 @@ import { useTheme } from '@mui/material/styles'
 import WorkspaceMen from '../../../public/images/workspace-men.svg'
 import CreateWorkspace from 'src/@core/layouts/components/modals/CreateWorkspace'
 import { WorkspaceContext } from 'src/context/workspace-context'
+import InviteMember from 'src/@core/layouts/components/modals/InviteMember'
 
 const Workspace = () => {
   // ** State
   const [open, setOpen] = useState(false)
+  const [openInviteModal, setOpenInviteModal] = useState(false)
 
   // ** Hooks
   const theme = useTheme()
@@ -90,6 +92,29 @@ const Workspace = () => {
       </Box>
       <Box>
         <CreateWorkspace open={open} onCloseModal={handleClose} refetchWorkspaces={refetchWorkspaces} />
+      </Box>
+      <Box pt={10} display={'flex'} justifyContent={'flex-end'}>
+        <Button
+          sx={{
+            borderRadius: 18,
+            fontWeight: 500,
+            fontSize: '11px',
+            textTransform: 'capitalize'
+          }}
+          variant='contained'
+          onClick={() => {
+            setOpenInviteModal(true)
+          }}
+        >
+          Invite clients / people
+        </Button>
+      </Box>
+      <Box>
+        <InviteMember
+          openInviteModal={openInviteModal}
+          setOpenInviteModal={setOpenInviteModal}
+          refetchWorkspaces={refetchWorkspaces}
+        />
       </Box>
     </Box>
   )
