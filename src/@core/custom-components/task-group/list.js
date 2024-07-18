@@ -18,7 +18,7 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
   if (isLoading) return <FallbackSpinner height={'60vh'} />
 
   return (
-    <Card>
+    <Card sx={{ borderRadius: '15px' }}>
       {taskGroups?.length ? (
         <Box px={3} py={4}>
           {taskGroups?.map(item => (

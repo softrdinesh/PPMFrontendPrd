@@ -4,7 +4,7 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import MuiAccordionSummary from '@mui/material/AccordionSummary'
 import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
-import * as React from 'react'
+import { useState } from 'react'
 import TaskGroupComponent from '../task-group'
 
 const Accordion = styled(props => <MuiAccordion disableGutters elevation={0} square {...props} />)(() => ({
@@ -28,8 +28,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }))
 
 export default function CustomizedAccordions({ data }) {
-  console.log('data :', data)
-  const [expanded, setExpanded] = React.useState('panel1')
+  const [expanded, setExpanded] = useState(null)
 
   const handleChange = panel => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false)

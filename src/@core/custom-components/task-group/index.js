@@ -1,6 +1,7 @@
+import React from 'react'
 import { Icon } from '@iconify/react'
 import { Box, Grid, TextField, useTheme } from '@mui/material'
-import React from 'react'
+import DataTable from './data-grid'
 
 function TaskGroupComponent() {
   const theme = useTheme()
@@ -24,6 +25,10 @@ function TaskGroupComponent() {
               }}
             />
           </Box>
+        </Grid>
+        <Grid item xs={12}>
+          {/* <TaskTable /> */}
+          <DataTable />
         </Grid>
       </Grid>
     </Box>
