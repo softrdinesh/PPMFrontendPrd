@@ -1,10 +1,11 @@
+import { fetchTaskList } from '@api/task'
 import { Icon } from '@iconify/react'
 import MuiAccordion from '@mui/material/Accordion'
 import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import MuiAccordionSummary from '@mui/material/AccordionSummary'
 import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import TaskGroupComponent from '../task-group'
 
 const Accordion = styled(props => <MuiAccordion disableGutters elevation={0} square {...props} />)(() => ({
@@ -29,10 +30,30 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 export default function CustomizedAccordions({ data }) {
   const [expanded, setExpanded] = useState(null)
+  const [isLoading, setisLoading] = useState(true)
+  const [taskList, setTaskList] = useState([])
 
   const handleChange = panel => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false)
   }
+
+  const callAPI = useCallback(async () => {
+    setisLoading(true)
+    try {
+      const response = await fetchTaskList(data?.TaskGroupID)
+      setTaskList(response ?? [])
+    } catch (error) {
+      console.error(' task list error :', error)
+    } finally {
+      setisLoading(false)
+    }
+  }, [data?.TaskGroupID])
+
+  useEffect(() => {
+    if (expanded) {
+      callAPI()
+    }
+  }, [callAPI, expanded])
 
   return (
     <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
@@ -42,7 +63,7 @@ export default function CustomizedAccordions({ data }) {
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <TaskGroupComponent />
+        <TaskGroupComponent isLoading={isLoading} taskList={taskList} taskGroupData={data} refetch={callAPI} />
       </AccordionDetails>
     </Accordion>
   )

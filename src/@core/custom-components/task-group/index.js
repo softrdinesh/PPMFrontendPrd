@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react'
 import { Box, Grid, TextField, useTheme } from '@mui/material'
 import DataTable from './data-grid'
 
-function TaskGroupComponent() {
+function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
   const theme = useTheme()
 
   return (
@@ -28,7 +28,12 @@ function TaskGroupComponent() {
         </Grid>
         <Grid item xs={12}>
           {/* <TaskTable /> */}
-          <DataTable />
+          <DataTable
+            isLoading={isLoading}
+            taskList={taskList}
+            taskGroupID={taskGroupData?.TaskGroupID}
+            refetch={refetch}
+          />
         </Grid>
       </Grid>
     </Box>

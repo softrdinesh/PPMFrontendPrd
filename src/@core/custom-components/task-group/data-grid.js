@@ -1,45 +1,46 @@
-import * as React from 'react'
-import { DataGrid } from '@mui/x-data-grid'
+import { addTask } from '@api/task'
+import CustomButton from '@components/button'
+import NoRowsOverlay from '@custom-components/no-rows-overlay'
+import { Icon } from '@iconify/react'
 import { Box } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import * as React from 'react'
 
 const columns = [
-  { field: 'id', headerName: 'ID', minWidth: 70 },
-  { field: 'firstName', headerName: 'First name', flex: 0.5, minWidth: 130 },
-  { field: 'lastName', headerName: 'Last name', minWidth: 130 },
+  { field: 'TaskID', headerName: 'Task ID', minWidth: 70 },
+  { field: 'Taskowner', headerName: 'Owner', minWidth: 70 },
+  { field: 'Taskname', headerName: 'Task', flex: 0.5, minWidth: 130 },
+  { field: 'Priority', headerName: 'Priority', minWidth: 130 },
   {
-    field: 'age',
-    headerName: 'Age',
+    field: 'Status',
+    headerName: 'Status',
     minWidth: 130
   },
   {
-    field: 'fullName',
-    headerName: 'Full name',
-    description: 'This column has a value getter and is not sortable.',
-    sortable: false,
+    field: 'Timeline',
+    headerName: 'Timeline',
     minWidth: 130,
-    valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`
+    valueGetter: (value, row) => `${row?.TimelineStartDate || ''} ${row?.TimelineEndDate || ''}`
   }
 ]
 
-const rows = [
-  { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-  { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-  { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-  { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-  { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-  { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-  { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-  { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-  { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 }
-]
+export default function DataTable({ isLoading, taskList, taskGroupID, refetch }) {
+  const handleAddTask = async () => {
+    await addTask({ taskGroupID })
+    refetch()
+  }
 
-export default function DataTable() {
   return (
     <Box>
       <DataGrid
         autoHeight
-        rows={rows}
+        rows={taskList}
+        getRowId={v => v?.TaskID}
         columns={columns}
+        loading={isLoading}
+        slots={{ noRowsOverlay: NoRowsOverlay }}
+        slotProps={{ noRowsOverlay: { title: 'No Tasks Added' } }}
+        editMode='cell'
         checkboxSelection
         hideFooter
         disableColumnMenu
@@ -49,6 +50,9 @@ export default function DataTable() {
         disableVirtualization
         disableColumnResize
       />
+      <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={handleAddTask}>
+        Add Task
+      </CustomButton>
     </Box>
   )
 }
