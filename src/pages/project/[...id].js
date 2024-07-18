@@ -1,5 +1,5 @@
 // ** React Imports
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 
 // ** Next Imports
 import { useRouter } from 'next/router'
@@ -22,10 +22,12 @@ import ProjectTitle from '@custom-components/project/title'
 import TaskGroupList from '@custom-components/task-group/list'
 import NewTask from '@custom-components/task-group/new-task'
 import { useQuery } from 'react-query'
+import { WorkspaceContext } from 'src/context/workspace-context'
 
 function ProjectView() {
   // ** Hooks
   const router = useRouter()
+  const { selected, setSelected, workspace } = useContext(WorkspaceContext)
   const { id } = router.query
 
   const projectID = id?.[0]
@@ -37,6 +39,13 @@ function ProjectView() {
     isLoading: taskLoading,
     refetch: refetchTaskGroup
   } = useQuery(`taskGroup-${id}`, () => fetchTaskGroupList(projectID), { retry: false })
+
+  useEffect(() => {
+    if (data && projectID && !selected) {
+      const activeData = workspace?.find(value => value?.WorkspaceID === data?.WorkSpaceID)
+      if (activeData) setSelected(activeData)
+    }
+  }, [data, projectID, selected, setSelected, workspace])
 
   if (isLoading) return <FallbackSpinner height={'80vh'} />
 

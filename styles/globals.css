@@ -11,6 +11,14 @@ body {
   display: none !important;
 }
 
+/* Add this to your CSS file or in a <style> tag */
+.MuiDataGrid-cell:focus,
+.MuiDataGrid-columnHeader:focus,
+.MuiDataGrid-columnHeader:focus-within {
+  outline: none !important;
+}
+
+
 code {
   font-family:
     'Inter',
