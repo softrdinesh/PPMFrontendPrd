@@ -33,7 +33,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch })
         field: 'Taskname',
         headerName: 'Task',
         flex: 0.5,
-        minWidth: 130,
+        minWidth: 300,
         renderCell: ({ row }) => {
           return <TaskNameCell data={row} refetch={refetch} />
         }
@@ -57,7 +57,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch })
       {
         field: 'Timeline',
         headerName: 'Timeline',
-        minWidth: 250,
+        minWidth: 280,
         valueGetter: (value, row) => `${row?.TimelineStartDate || ''} ${row?.TimelineEndDate || ''}`,
         renderCell: ({ row }) => {
           return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} />

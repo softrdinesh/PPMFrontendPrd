@@ -12,6 +12,7 @@ import {
   Typography,
   Zoom
 } from '@mui/material'
+import moment from 'moment'
 import React, { memo, useState } from 'react'
 import DatePicker from 'react-datepicker'
 
@@ -19,7 +20,7 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Controller, Form, useForm } from 'react-hook-form'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { dateFormatPicker } from 'src/constants/formats'
+import { dateFormatMoment, dateFormatPicker } from 'src/constants/formats'
 
 const TaskTimeline = ({ row, handleTimeLineChange }) => {
   const [open, setOpen] = useState(false)
@@ -48,9 +49,16 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
   return (
     <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={'100%'}>
       {row?.TimelineStartDate || row?.TimelineEndDate ? (
-        <Typography>{`${row?.TimelineStartDate ?? ''} - ${row?.TimelineEndDate ?? ''}`}</Typography>
+        <Typography>{`${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format(dateFormatMoment) : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format(dateFormatMoment) : ''}`}</Typography>
       ) : (
-        <Chip size='small' label='Pick a timeline' color='secondary' skin='light' onClick={() => setOpen(true)} />
+        <Chip
+          size='small'
+          label='Pick a timeline'
+          color='secondary'
+          skin='light'
+          onClick={() => setOpen(true)}
+          sx={{ '&:hover': { backgroundColor: 'inherit' } }}
+        />
       )}
       <Dialog open={open} TransitionComponent={Zoom} onClose={handleClose} fullWidth maxWidth='sm'>
         <Box
