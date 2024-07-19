@@ -45,3 +45,23 @@ export const addProject = async body => {
       return err
     })
 }
+
+export const fetchProjectPriorityList = async () => {
+  return callApi({ uriEndPoint: project.priorityList })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+export const fetchProjectStatusList = async () => {
+  return callApi({ uriEndPoint: project.statusList })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}

@@ -30,7 +30,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 export default function CustomizedAccordions({ data }) {
   const [expanded, setExpanded] = useState(null)
-  const [isLoading, setisLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [taskList, setTaskList] = useState([])
 
   const handleChange = panel => (event, newExpanded) => {
@@ -38,14 +38,14 @@ export default function CustomizedAccordions({ data }) {
   }
 
   const callAPI = useCallback(async () => {
-    setisLoading(true)
+    setIsLoading(true)
     try {
       const response = await fetchTaskList(data?.TaskGroupID)
       setTaskList(response ?? [])
     } catch (error) {
       console.error(' task list error :', error)
     } finally {
-      setisLoading(false)
+      setIsLoading(false)
     }
   }, [data?.TaskGroupID])
 

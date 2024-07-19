@@ -1,8 +1,8 @@
 // ** React Imports
-import { fetchProjectList } from '@api/project'
+import { fetchProjectList, fetchProjectPriorityList, fetchProjectStatusList } from '@api/project'
 import { fetchWorkspaceList } from '@api/workspace'
-import { createContext, useEffect, useState } from 'react'
-import { useQuery } from 'react-query'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { useQueries, useQuery } from 'react-query'
 import { useAuth } from 'src/hooks/useAuth'
 
 // ** Defaults
@@ -31,6 +31,16 @@ const WorkspaceProvider = ({ children }) => {
     }
   )
 
+  const [{ data: projectPriorityList }, { data: projectStatusList }] = useQueries([
+    {
+      queryKey: 'project-priority-list',
+      queryFn: fetchProjectPriorityList,
+      retry: false,
+      enabled: Boolean(auth?.user)
+    },
+    { queryKey: 'project-status-list', queryFn: fetchProjectStatusList, retry: false, enabled: Boolean(auth?.user) }
+  ])
+
   useEffect(() => {
     if (auth?.user) {
       refetch()
@@ -47,6 +57,8 @@ const WorkspaceProvider = ({ children }) => {
   const values = {
     workspace: data ?? defaultProvider?.workspace,
     projects: projects ?? [],
+    priorityList: projectPriorityList,
+    statusList: projectStatusList,
     refetchProjects: refetchProjects,
     selected: activeWorkspace ?? null,
     setSelected: setActiveWorkspace,
@@ -57,3 +69,10 @@ const WorkspaceProvider = ({ children }) => {
 }
 
 export { WorkspaceContext, WorkspaceProvider }
+
+export const useWorkspace = () => {
+  const value = useContext(WorkspaceContext)
+  if (value === undefined) throw new Error('Tried to use context without a provider')
+
+  return value
+}
