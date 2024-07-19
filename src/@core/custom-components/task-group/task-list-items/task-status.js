@@ -19,8 +19,8 @@ const TaskStatus = ({ row, handleStatusChange }) => {
       <Tooltip title={row?.Status?.Statusname}>
         <Box
           bgcolor={row?.Status?.Colorcode ?? 'background.default'}
-          minWidth={'90%'}
           borderRadius={1}
+          maxWidth={'95%'}
           height={'60%'}
           display={'flex'}
           alignItems={'center'}

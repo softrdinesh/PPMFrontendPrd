@@ -49,7 +49,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch })
       {
         field: 'Status',
         headerName: 'Status',
-        minWidth: 150,
+        minWidth: 160,
         renderCell: ({ row }) => {
           return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} />
         }

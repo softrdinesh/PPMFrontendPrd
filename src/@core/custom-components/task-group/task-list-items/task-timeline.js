@@ -54,7 +54,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
   }
 
   return (
-    <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={'100%'}>
+    <Box display={'flex'} alignItems={'center'} justifyContent={'start'} height={'100%'}>
       {row?.TimelineStartDate || row?.TimelineEndDate ? (
         <Typography
           onClick={() => setOpen(true)}
