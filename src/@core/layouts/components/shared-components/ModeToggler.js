@@ -22,15 +22,7 @@ const ModeToggler = props => {
 
   return (
     <IconButton color='inherit' aria-haspopup='true' onClick={handleModeToggle}>
-      <Icon
-        icon={
-          settings.mode === 'dark'
-            ? 'mdi:lightbulb-on-10'
-            : settings.mode === 'semi-dark'
-              ? 'mdi:lightbulb-on-40'
-              : 'mdi:lightbulb-on-90'
-        }
-      />
+      <Icon icon={settings.mode === 'dark' ? 'mdi:lightbulb-on-10' : 'mdi:lightbulb-on-90'} />
     </IconButton>
   )
 }

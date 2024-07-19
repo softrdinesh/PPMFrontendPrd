@@ -1,26 +1,33 @@
+// ** React Imports
+import React, { memo, useState } from 'react'
+
+// ** MUI Imports
+import Box from '@mui/material/Box'
+import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Zoom from '@mui/material/Zoom'
+
+// ** Third Party Imports
+import { Icon } from '@iconify/react'
+import moment from 'moment'
+import DatePicker from 'react-datepicker'
+import { Controller, Form, useForm } from 'react-hook-form'
+
+// ** Custom Components
+import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import CustomButton from '@components/button'
 import Chip from '@components/chip'
-import { Icon } from '@iconify/react'
-import {
-  Box,
-  CircularProgress,
-  Dialog,
-  DialogContent,
-  Grid,
-  IconButton,
-  TextField,
-  Typography,
-  Zoom
-} from '@mui/material'
-import moment from 'moment'
-import React, { memo, useState } from 'react'
-import DatePicker from 'react-datepicker'
+
+// ** Custom Functions
+import { dateFormatMomentTask, dateFormatPicker } from 'src/constants/formats'
 
 // ** Third Party Styles Imports
 import 'react-datepicker/dist/react-datepicker.css'
-import { Controller, Form, useForm } from 'react-hook-form'
-import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { dateFormatMoment, dateFormatPicker } from 'src/constants/formats'
 
 const TaskTimeline = ({ row, handleTimeLineChange }) => {
   const [open, setOpen] = useState(false)
@@ -49,7 +56,9 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
   return (
     <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={'100%'}>
       {row?.TimelineStartDate || row?.TimelineEndDate ? (
-        <Typography>{`${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format(dateFormatMoment) : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format(dateFormatMoment) : ''}`}</Typography>
+        <Typography
+          onClick={() => setOpen(true)}
+        >{`${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format(dateFormatMomentTask) : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format(dateFormatMomentTask) : ''}`}</Typography>
       ) : (
         <Chip
           size='small'
@@ -85,7 +94,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                     control={control}
                     render={({ field }) => (
                       <DatePicker
-                        selected={field?.value}
+                        selected={field?.value ? moment(field?.value)?.toDate() : null}
                         withPortal
                         onChange={date => {
                           field.onChange(date)
@@ -107,7 +116,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                     control={control}
                     render={({ field }) => (
                       <DatePicker
-                        selected={field?.value}
+                        selected={field?.value ? moment(field?.value)?.toDate() : null}
                         withPortal
                         {...field}
                         isClearable
