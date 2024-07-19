@@ -42,6 +42,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
       {
         field: 'Priority',
         headerName: 'Priority',
+        valueGetter: (value, row) => row?.Priority?.PriorityName,
         minWidth: 130,
         renderCell: ({ row }) => {
           return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} />
@@ -51,6 +52,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
         field: 'Status',
         headerName: 'Status',
         minWidth: 160,
+        valueGetter: (value, row) => row?.Status?.Statusname,
         renderCell: ({ row }) => {
           return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} />
         }
