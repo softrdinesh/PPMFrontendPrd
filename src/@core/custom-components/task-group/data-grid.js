@@ -2,7 +2,7 @@ import { addTask, updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import NoRowsOverlay from '@custom-components/no-rows-overlay'
 import { Icon } from '@iconify/react'
-import { Box } from '@mui/material'
+import { Box, Card } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { useCallback, useMemo } from 'react'
 import TaskNameCell from './task-list-items/task-name'
@@ -10,7 +10,8 @@ import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
 
-export default function DataTable({ isLoading, taskList, taskGroupID, refetch }) {
+export default function DataTable({ isLoading, taskList, taskGroupID, refetch, handleSelectedRows }) {
+  // ** Functions
   const handleAddTask = async () => {
     await addTask({ taskGroupID })
     refetch()
@@ -68,7 +69,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch })
   )
 
   return (
-    <Box>
+    <Card>
       <DataGrid
         autoHeight
         rows={taskList}
@@ -79,6 +80,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch })
         slotProps={{ noRowsOverlay: { title: 'No Tasks Added' } }}
         editMode='cell'
         checkboxSelection
+        onRowSelectionModelChange={handleSelectedRows}
         hideFooter
         disableColumnMenu
         disableAutosize
@@ -87,9 +89,11 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch })
         disableVirtualization
         disableColumnResize
       />
-      <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={handleAddTask}>
-        Add Task
-      </CustomButton>
-    </Box>
+      <Box m={2}>
+        <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={handleAddTask}>
+          Add Task
+        </CustomButton>
+      </Box>
+    </Card>
   )
 }

@@ -25,6 +25,7 @@
     "@emotion/styled": "^11.11.5",
     "@iconify/react": "^5.0.1",
     "@mui/material": "5.11.13",
+    "@mui/styles": "^5.16.4",
     "@mui/x-data-grid": "^7.10.0",
     "@popperjs/core": "^2.11.8",
     "apexcharts-clevision": "3.28.5",
