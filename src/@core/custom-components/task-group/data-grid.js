@@ -11,7 +11,14 @@ import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
 
-export default function DataTable({ isLoading, taskList, taskGroupID, refetch, handleSelectedRows }) {
+export default function DataTable({
+  isLoading = false,
+  isRefetching = false,
+  taskList = [],
+  taskGroupID = null,
+  refetch = () => {},
+  handleSelectedRows = () => {}
+}) {
   // ** Functions
   const handleAddTask = useCallback(async () => {
     await addTask({ taskGroupID })
@@ -98,7 +105,7 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
         rows={taskList}
         getRowId={v => v?.TaskID}
         columns={columns}
-        loading={isLoading}
+        loading={isLoading || isRefetching}
         slots={{ noRowsOverlay: NoRowsOverlay }}
         editMode='cell'
         slotProps={{ noRowsOverlay: { title: 'No Tasks Added' } }}
