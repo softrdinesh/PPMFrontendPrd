@@ -1,7 +1,7 @@
-import CustomButton from '@components/button'
 import { Box, Menu, MenuItem, Typography, Zoom } from '@mui/material'
 import React, { useState } from 'react'
 import { useWorkspace } from 'src/context/workspace-context'
+import { getContrastingTextColor } from 'src/utils/functions'
 
 const TaskPriority = ({ row, handlePriorityChange }) => {
   const [anchorEl, setAnchorEl] = useState(null)
@@ -19,18 +19,21 @@ const TaskPriority = ({ row, handlePriorityChange }) => {
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       <Box
         bgcolor={row?.Priority?.Colorcode ?? 'background.default'}
-        component={CustomButton}
         width={'80%'}
         borderRadius={1}
         height={'60%'}
         display={'flex'}
         alignItems={'center'}
         justifyContent={'center'}
+        color={row?.Priority?.Colorcode && getContrastingTextColor(row?.Priority?.Colorcode)}
         border={1}
         borderColor={'divider'}
         onClick={handleOpen}
+        sx={{ cursor: 'pointer' }}
       >
-        <Typography fontSize={'0.85rem'}>{row?.Priority?.PriorityName ?? 'None'}</Typography>
+        <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
+          {row?.Priority?.PriorityName ?? 'None'}
+        </Typography>
       </Box>
       <Menu
         open={Boolean(anchorEl)}
@@ -50,6 +53,7 @@ const TaskPriority = ({ row, handlePriorityChange }) => {
             mx={1}
             borderRadius={1}
             display={'flex'}
+            color={getContrastingTextColor(item?.Colorcode)}
             justifyContent={'center'}
             alignItems={'center'}
             onClick={() => {
@@ -59,7 +63,7 @@ const TaskPriority = ({ row, handlePriorityChange }) => {
               handleClose()
             }}
           >
-            <Typography>{item?.PriorityName}</Typography>
+            <Typography color={'inherit'}>{item?.PriorityName}</Typography>
           </Box>
         ))}
       </Menu>

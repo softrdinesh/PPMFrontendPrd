@@ -9,9 +9,9 @@ const TaskPeople = ({ data }) => {
           <Avatar
             key={item?.UserID}
             alt={item?.Name}
-            title={item?.Email?.toLowerCase}
+            title={item?.Email?.toLowerCase()}
             src='/images/avatars/3.png'
-            sx={{ width: 30, height: 30 }}
+            sx={{ width: 32, height: 32 }}
           />
         ))}
       </AvatarGroup>

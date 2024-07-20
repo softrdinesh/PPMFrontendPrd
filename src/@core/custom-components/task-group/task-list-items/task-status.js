@@ -1,6 +1,7 @@
 import { Box, Menu, MenuItem, Tooltip, Typography, Zoom } from '@mui/material'
 import React, { useState } from 'react'
 import { useWorkspace } from 'src/context/workspace-context'
+import { getContrastingTextColor } from 'src/utils/functions'
 
 const TaskStatus = ({ row, handleStatusChange }) => {
   const [anchorEl, setAnchorEl] = useState(null)
@@ -24,6 +25,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
           height={'60%'}
           display={'flex'}
           alignItems={'center'}
+          color={row?.Status?.Colorcode && getContrastingTextColor(row?.Status?.Colorcode)}
           px={2}
           justifyContent={'center'}
           border={1}
@@ -31,7 +33,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
           onClick={handleOpen}
           sx={{ cursor: 'pointer' }}
         >
-          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'}>
+          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
             {row?.Status?.Statusname ?? 'None'}
           </Typography>
         </Box>
@@ -53,6 +55,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
             my={2}
             mx={1}
             borderRadius={1}
+            color={getContrastingTextColor(item?.Colorcode)}
             display={'flex'}
             justifyContent={'center'}
             alignItems={'center'}
@@ -63,7 +66,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
               handleClose()
             }}
           >
-            <Typography>{item?.Statusname}</Typography>
+            <Typography color={'inherit'}>{item?.Statusname}</Typography>
           </Box>
         ))}
       </Menu>

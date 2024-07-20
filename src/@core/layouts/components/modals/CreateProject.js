@@ -109,7 +109,7 @@ const CreateProject = ({ open, onCloseModal }) => {
               name='ProjectName'
               control={control}
               rules={{
-                required: 'Please enter a projectName'
+                required: 'Please enter name of the project'
               }}
               render={({ field: { value, onChange, onBlur } }) => (
                 <TextField
@@ -121,7 +121,7 @@ const CreateProject = ({ open, onCloseModal }) => {
                   helperText={Boolean(errors?.ProjectName) && errors?.ProjectName?.message}
                   fullWidth
                   id='ProjectName'
-                  label='Project Name'
+                  placeholder='Project Name'
                   sx={{ marginBottom: 4 }}
                 />
               )}

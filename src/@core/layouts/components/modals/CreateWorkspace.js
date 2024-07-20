@@ -104,7 +104,7 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
                 name='workspaceName'
                 control={control}
                 rules={{
-                  required: 'Please enter a workspaceName'
+                  required: 'Please enter a workspace name'
                 }}
                 render={({ field: { value, onChange, onBlur } }) => (
                   <TextField
@@ -116,7 +116,7 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
                     helperText={Boolean(errors?.workspaceName) && errors?.workspaceName?.message}
                     fullWidth
                     id='workspaceName'
-                    label='Workspace Name'
+                    placeholder='Workspace Name'
                     sx={{ marginBottom: 4 }}
                   />
                 )}

@@ -21,8 +21,8 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
     <Card sx={{ borderRadius: '15px' }}>
       {taskGroups?.length ? (
         <Box px={3} py={4}>
-          {taskGroups?.map(item => (
-            <CustomizedAccordions key={item?.TaskGroupID} data={item} />
+          {taskGroups?.map((item, index) => (
+            <CustomizedAccordions key={item?.TaskGroupID} index={index} data={item} refetchGroups={refetch} />
           ))}
         </Box>
       ) : (

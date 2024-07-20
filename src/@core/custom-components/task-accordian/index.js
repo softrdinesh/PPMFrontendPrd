@@ -1,10 +1,10 @@
 import { fetchTaskList } from '@api/task'
 import { Icon } from '@iconify/react'
+import { Typography } from '@mui/material'
 import MuiAccordion from '@mui/material/Accordion'
 import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import MuiAccordionSummary from '@mui/material/AccordionSummary'
 import { styled } from '@mui/material/styles'
-import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 import { useQuery } from 'react-query'
 import TaskGroupComponent from '../task-group'
@@ -29,8 +29,8 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme?.breakpoints.up('md') && theme.spacing(2)
 }))
 
-export default function CustomizedAccordions({ data }) {
-  const [expanded, setExpanded] = useState(null)
+export default function CustomizedAccordions({ data, index }) {
+  const [expanded, setExpanded] = useState(index === 0 ? 'panel1' : null)
 
   const handleChange = panel => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false)
@@ -51,6 +51,7 @@ export default function CustomizedAccordions({ data }) {
   return (
     <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
       <AccordionSummary aria-controls='panel1d-content' id='panel1d-header' sx={{ pl: 2 }}>
+        {/* <TaskGroupTitle data={data} refetch={refetchGroups} /> */}
         <Typography ml={3} fontWeight={700}>
           {data?.TaskGroupName ?? '-'}
         </Typography>
