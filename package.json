@@ -34,7 +34,6 @@
     "clsx": "^2.1.1",
     "eslint-plugin-react": "^7.34.3",
     "lodash": "^4.17.21",
-    "mdi-material-ui": "^7.9.1",
     "moment": "^2.29.4",
     "next": "14.2.4",
     "nprogress": "^0.2.0",
@@ -45,9 +44,7 @@
     "react-hook-form": "^7.52.1",
     "react-hot-toast": "^2.4.1",
     "react-perfect-scrollbar": "^1.5.8",
-    "react-popper": "^2.3.0",
     "react-query": "^3.39.3",
-    "react-responsive-modal": "^6.4.2",
     "sharp": "^0.33.4",
     "usehooks-ts": "^3.1.0"
   },
