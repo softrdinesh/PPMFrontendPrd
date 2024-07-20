@@ -24,9 +24,9 @@ const WorkspaceProvider = ({ children }) => {
 
   const { data: projects, refetch: refetchProjects } = useQuery(
     'projects',
-    () => fetchProjectList(activeWorkspace?.WorkspaceID),
+    () => activeWorkspace?.WorkspaceID && fetchProjectList(activeWorkspace?.WorkspaceID),
     {
-      enabled: Boolean(activeWorkspace?.WorkspaceID),
+      enabled: Boolean(activeWorkspace?.WorkspaceID && auth?.user),
       retry: false
     }
   )

@@ -4,26 +4,41 @@ import NoRowsOverlay from '@custom-components/no-rows-overlay'
 import { Icon } from '@iconify/react'
 import { Box, Card } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { debounce } from 'lodash'
 import { useCallback, useMemo } from 'react'
-import TaskNameCell from './task-list-items/task-name'
+import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
-import TaskPeople from './task-list-items/task-people'
 
 export default function DataTable({ isLoading, taskList, taskGroupID, refetch, handleSelectedRows }) {
   // ** Functions
-  const handleAddTask = async () => {
+  const handleAddTask = useCallback(async () => {
     await addTask({ taskGroupID })
     refetch()
-  }
+  }, [refetch, taskGroupID])
+
+  const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
   const handleTaskUpdate = useCallback(
     async (row, body) => {
       await updateTask({ id: row?.TaskID, body })
       refetch()
+
+      return null
     },
     [refetch]
+  )
+
+  const handleProcessRowUpdate = useCallback(
+    updatedRow => {
+      const taskID = updatedRow?.TaskID
+      const body = { Taskname: updatedRow?.Taskname }
+      handleTaskUpdate({ TaskID: taskID }, body)
+
+      return updatedRow
+    },
+    [handleTaskUpdate]
   )
 
   const columns = useMemo(
@@ -34,13 +49,12 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
         headerName: 'Task',
         flex: 0.5,
         minWidth: 350,
-        renderCell: ({ row }) => {
-          return <TaskNameCell data={row} refetch={refetch} />
-        }
+        editable: true
       },
       {
         field: 'Taskowner',
         headerName: 'Owner',
+        description: 'Person who created this task',
         minWidth: 100,
         renderCell: ({ row }) => {
           return <TaskPeople data={[row?.Owner]} refetch={refetch} />
@@ -86,20 +100,20 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
         columns={columns}
         loading={isLoading}
         slots={{ noRowsOverlay: NoRowsOverlay }}
-        slotProps={{ noRowsOverlay: { title: 'No Tasks Added' } }}
         editMode='cell'
+        slotProps={{ noRowsOverlay: { title: 'No Tasks Added' } }}
         checkboxSelection
         onRowSelectionModelChange={handleSelectedRows}
+        processRowUpdate={handleProcessRowUpdate}
         hideFooter
         disableColumnMenu
         disableAutosize
         disableRowSelectionOnClick
         disableColumnSelector
-        disableVirtualization
         disableColumnResize
       />
       <Box m={2}>
-        <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={handleAddTask}>
+        <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={debouncedHandleAddTask}>
           Add Task
         </CustomButton>
       </Box>

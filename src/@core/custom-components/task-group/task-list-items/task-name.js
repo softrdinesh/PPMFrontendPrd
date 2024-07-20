@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -12,31 +12,38 @@ import { ClickAwayListener } from '@mui/material'
 
 const TaskNameCell = ({ data, refetch }) => {
   const [isEditing, setIsEditing] = useState(false)
-  const [taskName, setTaskName] = useState('')
+  const [taskName, setTaskName] = useState(data?.Taskname)
 
   const handleEditClick = () => {
-    setIsEditing(true)
+    !isEditing && setIsEditing(true)
   }
 
   const handleSave = () => {
-    const body = {
-      Taskname: taskName
-    }
-    updateTask({ id: data?.TaskID, body }).then(() => {
+    if (data?.Taskname !== taskName) {
+      const body = {
+        Taskname: taskName
+      }
+      updateTask({ id: data?.TaskID, body }).then(() => {
+        setIsEditing(false)
+        refetch()
+      })
+    } else {
       setIsEditing(false)
-      refetch()
-    })
+    }
   }
 
   const handleChange = event => {
-    console.log('event :', event)
     setTaskName(event.target.value)
   }
 
   const handleKeyPress = event => {
-    console.log('event.key :', event.key)
+    console.log('event.key :', event)
     if (event.key === 'Enter') {
       handleSave()
+    }
+    if (event?.keyCode == 32) {
+      console.log('event :', event)
+      setTaskName(event.target.value)
     }
   }
 
@@ -44,15 +51,18 @@ const TaskNameCell = ({ data, refetch }) => {
     handleSave()
   }
 
-  useEffect(() => {
-    setTaskName(data?.Taskname)
-  }, [data?.Taskname])
-
   return (
-    <Box display={'flex'} alignItems={'center'} height={'100%'}>
+    <Box display={'flex'} alignItems={'center'} height={'100%'} onClick={handleEditClick}>
       {isEditing ? (
         <ClickAwayListener onClickAway={handleClickAway}>
-          <TextField variant='standard' value={taskName} onChange={handleChange} onKeyPress={handleKeyPress} />
+          <TextField
+            name='Taskname'
+            variant='standard'
+            value={taskName}
+            onChange={handleChange}
+            onKeyDown={handleKeyPress}
+            onBlur={handleSave}
+          />
         </ClickAwayListener>
       ) : (
         <Typography onClick={handleEditClick}>{taskName}</Typography>
