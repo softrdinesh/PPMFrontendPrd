@@ -22,8 +22,6 @@ const TaskNameCell = ({ data, refetch }) => {
     const body = {
       Taskname: taskName
     }
-    console.log('=======> body===>', body)
-
     updateTask({ id: data?.TaskID, body }).then(() => {
       setIsEditing(false)
       refetch()
@@ -31,10 +29,12 @@ const TaskNameCell = ({ data, refetch }) => {
   }
 
   const handleChange = event => {
+    console.log('event :', event)
     setTaskName(event.target.value)
   }
 
   const handleKeyPress = event => {
+    console.log('event.key :', event.key)
     if (event.key === 'Enter') {
       handleSave()
     }
@@ -52,12 +52,7 @@ const TaskNameCell = ({ data, refetch }) => {
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       {isEditing ? (
         <ClickAwayListener onClickAway={handleClickAway}>
-          <TextField
-            variant='standard'
-            value={taskName ?? data?.Taskname}
-            onChange={handleChange}
-            onKeyPress={handleKeyPress}
-          />
+          <TextField variant='standard' value={taskName} onChange={handleChange} onKeyPress={handleKeyPress} />
         </ClickAwayListener>
       ) : (
         <Typography onClick={handleEditClick}>{taskName}</Typography>

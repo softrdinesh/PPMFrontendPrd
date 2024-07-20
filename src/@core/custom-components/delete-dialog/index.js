@@ -1,5 +1,5 @@
 // ** React Imports
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -8,7 +8,7 @@ import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import IconButton from '@mui/material/IconButton'
 import Slide from '@mui/material/Slide'
-import { Alert, AlertTitle } from '@mui/material'
+import { Alert, AlertTitle, CircularProgress } from '@mui/material'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { makeStyles } from '@mui/styles'
@@ -30,8 +30,17 @@ export default function DeleteDialog({ open, setOpen, title, description, onConf
   const theme = useMediaQuery(theme => theme.breakpoints.down('lg'))
   const classes = useStyles()
 
+  // ** States
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const handleClose = () => {
     setOpen(false)
+  }
+
+  const handleConfirm = async () => {
+    setIsDeleting(true)
+    await onConfirm()
+    setIsDeleting(false)
   }
 
   return (
@@ -58,8 +67,14 @@ export default function DeleteDialog({ open, setOpen, title, description, onConf
           {/* Button */}
 
           <Box sx={styles.buttonsContainer}>
-            <Button variant='contained' onClick={onConfirm} id={'confirm-delete'} data-testid={'confirm-delete-button'}>
-              {confirmText ?? `Delete`}
+            <Button
+              variant='contained'
+              onClick={handleConfirm}
+              id={'confirm-delete'}
+              disabled={isDeleting}
+              data-testid={'confirm-delete-button'}
+            >
+              {isDeleting ? <CircularProgress size={22} color='secondary' /> : confirmText ?? `Delete`}
             </Button>
 
             <Button

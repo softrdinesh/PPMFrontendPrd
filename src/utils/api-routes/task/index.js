@@ -45,3 +45,17 @@ export const addTask = async body => {
       return err
     })
 }
+
+export const deleteMultipleTask = async body => {
+  return callApi({ uriEndPoint: task.deleteMulitpleTask, body: { taskIds: body } })
+    .then(res => {
+      toast.success(res?.message ?? 'Tasks Deleted Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Failed to delete tasks')
+
+      return err
+    })
+}

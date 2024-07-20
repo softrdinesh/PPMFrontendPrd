@@ -49,7 +49,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
       await handleTimeLineChange(row, data)
       handleClose()
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
     }
   }
 

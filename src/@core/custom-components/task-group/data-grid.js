@@ -9,6 +9,7 @@ import TaskNameCell from './task-list-items/task-name'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
+import TaskPeople from './task-list-items/task-people'
 
 export default function DataTable({ isLoading, taskList, taskGroupID, refetch, handleSelectedRows }) {
   // ** Functions
@@ -19,7 +20,6 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
 
   const handleTaskUpdate = useCallback(
     async (row, body) => {
-      console.log('row, body :', row, body)
       await updateTask({ id: row?.TaskID, body })
       refetch()
     },
@@ -29,14 +29,21 @@ export default function DataTable({ isLoading, taskList, taskGroupID, refetch, h
   const columns = useMemo(
     () => [
       { field: 'TaskID', headerName: 'Task ID', minWidth: 70 },
-      { field: 'Taskowner', headerName: 'Owner', minWidth: 70 },
       {
         field: 'Taskname',
         headerName: 'Task',
         flex: 0.5,
-        minWidth: 300,
+        minWidth: 350,
         renderCell: ({ row }) => {
           return <TaskNameCell data={row} refetch={refetch} />
+        }
+      },
+      {
+        field: 'Taskowner',
+        headerName: 'Owner',
+        minWidth: 100,
+        renderCell: ({ row }) => {
+          return <TaskPeople data={[row?.Owner]} refetch={refetch} />
         }
       },
       {

@@ -16,5 +16,9 @@ export const task = {
   updateTask: {
     ...defaults.methods.PUT,
     uri: '/api/task/:id'
+  },
+  deleteMulitpleTask: {
+    ...defaults.methods.DELETE,
+    uri: '/api/task-delete-mulitple'
   }
 }

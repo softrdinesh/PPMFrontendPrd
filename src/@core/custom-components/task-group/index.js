@@ -4,6 +4,7 @@ import { Box, Card, Grid, TextField, Typography, useTheme } from '@mui/material'
 import DataTable from './data-grid'
 import CustomButton from '@components/button'
 import DeleteDialog from '@custom-components/delete-dialog'
+import { deleteMultipleTask } from '@api/task'
 
 function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
   // ** States
@@ -23,6 +24,8 @@ function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
   }
 
   const handleDelete = async () => {
+    await deleteMultipleTask(selectedRows)
+    await refetch()
     setDeleteOpen(false)
   }
 
