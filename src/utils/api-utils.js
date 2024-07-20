@@ -20,8 +20,6 @@ const checkTokenExpired = async () => {
   let date = moment().toDate()
 
   if (loginData.tokenTime > date.getTime() / 1000) {
-    console.log('loginData?.token :', loginData)
-
     return loginData?.token
   } else if (loginData.refreshTokenTime > date.getTime() / 1000) {
     const newRefreshToken = await refreshToken({ refresh_token: loginData.refreshToken })

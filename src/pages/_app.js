@@ -35,6 +35,9 @@ import ReactHotToast from 'src/@core/styles/libs/react-hot-toast'
 import { AuthProvider } from 'src/context/auth-context'
 import '../../styles/globals.css'
 
+// ** Third Party Styles Imports
+import 'react-datepicker/dist/react-datepicker.css'
+
 const queryClient = new QueryClient()
 
 const clientSideEmotionCache = createEmotionCache()

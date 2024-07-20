@@ -11,6 +11,15 @@ body {
   display: none !important;
 }
 
+/* Add this to your CSS file or in a <style> tag */
+.MuiDataGrid-cell:focus,
+.MuiDataGrid-cell:focus-within,
+.MuiDataGrid-columnHeader:focus,
+.MuiDataGrid-columnHeader:focus-within {
+  outline: none !important;
+}
+
+
 code {
   font-family:
     'Inter',
@@ -74,4 +83,29 @@ code[class*='language-'] {
   background-color: #ebebeb;
   box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.25);
   cursor: not-allowed;
+}
+
+
+@keyframes slide-in-anime {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-anime {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
 }

@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { callApi } from 'src/utils/api-utils'
 
 export const fetchProjectList = async workspaceID => {
-  return callApi({ uriEndPoint: project.projectList, body: { workspaceID } })
+  return callApi({ uriEndPoint: project.projectList, query: { workspaceID } })
     .then(res => {
       return res?.data
     })
@@ -37,6 +37,28 @@ export const addProject = async body => {
     .then(res => {
       toast.success(res?.message ?? 'Project Added Successfully')
 
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Project Added Successfully')
+
+      return err
+    })
+}
+
+export const fetchProjectPriorityList = async () => {
+  return callApi({ uriEndPoint: project.priorityList })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+export const fetchProjectStatusList = async () => {
+  return callApi({ uriEndPoint: project.statusList })
+    .then(res => {
       return res?.data
     })
     .catch(err => {

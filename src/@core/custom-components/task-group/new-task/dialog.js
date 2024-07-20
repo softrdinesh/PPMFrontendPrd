@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { useContext } from 'react'
+import React, { useEffect } from 'react'
 
 // ** MUI Components
 import {
@@ -16,7 +16,6 @@ import {
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
-import { WorkspaceContext } from 'src/context/workspace-context'
 
 // ** Icons Imports
 import IconifyIcon from '@components/icon'
@@ -25,15 +24,13 @@ import IconifyIcon from '@components/icon'
 import { Controller, useForm } from 'react-hook-form'
 
 // ** API Imports
-import { addProject } from '@api/project'
+import { addTaskGroup } from '@api/task-group'
 
-const CreateProject = ({ open, onCloseModal }) => {
+const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
   const theme = useTheme()
 
-  const { selected, refetchProjects } = useContext(WorkspaceContext)
-
   const defaultValues = {
-    ProjectName: ''
+    groupName: ''
   }
 
   const {
@@ -44,14 +41,20 @@ const CreateProject = ({ open, onCloseModal }) => {
   } = useForm({ defaultValues })
 
   const onSubmit = async values => {
-    values.WorkspaceID = selected?.WorkspaceID
-    const res = await addProject(values)
+    values.projectID = projectID
+    const res = await addTaskGroup(values)
     if (res?.status) {
       reset()
-      refetchProjects()
+      refetch()
       onCloseModal()
     }
   }
+
+  useEffect(() => {
+    if (open) {
+      reset()
+    }
+  }, [open, reset])
 
   return (
     <Dialog
@@ -75,7 +78,7 @@ const CreateProject = ({ open, onCloseModal }) => {
           paddingY: 2
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Create project name</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Create Task Group</Typography>
         <IconButton
           aria-label='close'
           onClick={onCloseModal}
@@ -94,7 +97,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
       <Box py={2}>
         <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
-          {/* workspace name */}
+          {/* Task Group Name */}
           <FormControl
             fullWidth
             sx={{
@@ -102,14 +105,14 @@ const CreateProject = ({ open, onCloseModal }) => {
             }}
           >
             <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}>
-              Project name *
+              Task Group name *
             </Typography>
 
             <Controller
-              name='ProjectName'
+              name='groupName'
               control={control}
               rules={{
-                required: 'Please enter a projectName'
+                required: 'Please enter a name for task group'
               }}
               render={({ field: { value, onChange, onBlur } }) => (
                 <TextField
@@ -117,11 +120,11 @@ const CreateProject = ({ open, onCloseModal }) => {
                   value={value}
                   onBlur={onBlur}
                   onChange={onChange}
-                  error={Boolean(errors?.ProjectName)}
-                  helperText={Boolean(errors?.ProjectName) && errors?.ProjectName?.message}
+                  error={Boolean(errors?.groupName)}
+                  helperText={Boolean(errors?.groupName) && errors?.groupName?.message}
                   fullWidth
-                  id='ProjectName'
-                  label='Project Name'
+                  id='TaskGroupName'
+                  placeholder='Task Group Name'
                   sx={{ marginBottom: 4 }}
                 />
               )}
@@ -210,4 +213,4 @@ const CreateProject = ({ open, onCloseModal }) => {
   )
 }
 
-export default CreateProject
+export default NewTaskDialog

@@ -158,9 +158,11 @@ function ProjectListNavMenu({ projects, ...props }) {
           sx={{
             py: 2.25,
             mb: 2,
-            backgroundColor: isNavLinkActive(item?.ID) && '#E5E6EA',
+            backgroundColor: theme =>
+              isNavLinkActive(item?.ID) && (theme.palette.mode === 'dark' ? 'action.hover' : 'background.paper'),
             '&:hover': {
-              backgroundColor: isNavLinkActive(item?.ID) && '#E5E6EA'
+              backgroundColor: theme =>
+                isNavLinkActive(item?.ID) && (theme.palette.mode === 'dark' ? 'action.hover' : 'background.paper')
             },
             pr:
               props?.navCollapsed && !props?.navHover
