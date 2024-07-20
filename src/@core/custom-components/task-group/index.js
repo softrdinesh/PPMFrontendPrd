@@ -40,7 +40,7 @@ function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
   }, [showSelected])
 
   return (
-    <Box px={4} py={8} border={2} borderColor={'divider'} borderRadius={1}>
+    <Box px={[0, 4]} py={[4, 8]} border={[0, 2]} borderColor={['divider', 'divider']} borderRadius={1}>
       <Grid container spacing={7}>
         <Grid item xs={12}>
           <Box display={'flex'} justifyContent={['center', 'end']}>

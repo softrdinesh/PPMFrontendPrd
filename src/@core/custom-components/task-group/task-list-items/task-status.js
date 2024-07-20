@@ -57,7 +57,9 @@ const TaskStatus = ({ row, handleStatusChange }) => {
             justifyContent={'center'}
             alignItems={'center'}
             onClick={() => {
-              handleStatusChange(row, { StatusID: item?.StatusID })
+              if (row?.StatusID != item?.StatusID) {
+                handleStatusChange(row, { StatusID: item?.StatusID })
+              }
               handleClose()
             }}
           >

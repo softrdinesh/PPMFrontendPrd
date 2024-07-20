@@ -53,7 +53,9 @@ const TaskPriority = ({ row, handlePriorityChange }) => {
             justifyContent={'center'}
             alignItems={'center'}
             onClick={() => {
-              handlePriorityChange(row, { PriorityID: item?.PriorityID })
+              if (row?.PriorityID != item?.PriorityID) {
+                handlePriorityChange(row, { PriorityID: item?.PriorityID })
+              }
               handleClose()
             }}
           >
