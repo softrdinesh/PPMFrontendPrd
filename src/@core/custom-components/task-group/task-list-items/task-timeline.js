@@ -45,7 +45,6 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
   const handleClose = () => setOpen(false)
 
   const onSubmit = async data => {
-    console.log('data :', data)
     try {
       await handleTimeLineChange(row, data)
       handleClose()

@@ -37,12 +37,10 @@ const TaskNameCell = ({ data, refetch }) => {
   }
 
   const handleKeyPress = event => {
-    console.log('event.key :', event)
     if (event.key === 'Enter') {
       handleSave()
     }
     if (event?.keyCode == 32) {
-      console.log('event :', event)
       setTaskName(event.target.value)
     }
   }

@@ -108,7 +108,14 @@ export default function DataTable({
         loading={isLoading || isRefetching}
         slots={{ noRowsOverlay: NoRowsOverlay }}
         editMode='cell'
-        slotProps={{ noRowsOverlay: { title: 'No Tasks Added' } }}
+        slotProps={{
+          noRowsOverlay: { title: 'No Tasks Added' },
+          loadingOverlay: {
+            variant: isLoading ? 'skeleton' : 'linear-progress',
+            noRowsVariant: isLoading ? 'skeleton' : 'linear-progress'
+          }
+        }}
+        sx={{ '& .MuiDataGrid-overlay .MuiLinearProgress-root': { height: 2 } }}
         checkboxSelection
         onRowSelectionModelChange={handleSelectedRows}
         processRowUpdate={handleProcessRowUpdate}
