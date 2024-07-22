@@ -2,14 +2,15 @@ import { addTask, updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import NoRowsOverlay from '@custom-components/no-rows-overlay'
 import { Icon } from '@iconify/react'
-import { Box, Card } from '@mui/material'
+import { Box, Card, IconButton } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { debounce } from 'lodash'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
+import AddColumnsMenu from './add-columns/menu'
 
 export default function DataTable({
   isLoading = false,
@@ -19,6 +20,9 @@ export default function DataTable({
   refetch = () => {},
   handleSelectedRows = () => {}
 }) {
+  // ** States
+  const [anchorEl, setAnchorEl] = useState(null)
+
   // ** Functions
   const handleAddTask = useCallback(async () => {
     await addTask({ taskGroupID })
@@ -48,18 +52,26 @@ export default function DataTable({
     [handleTaskUpdate]
   )
 
+  const handlePlusIconClick = e => {
+    setAnchorEl(e.currentTarget)
+  }
+
+  const handlePlusMenuClose = () => {
+    setAnchorEl(null)
+  }
+
   const columns = useMemo(
     () => [
-      { field: 'TaskID', headerName: 'Task ID', minWidth: 70 },
+      { field: 'TaskID', flex: 0.1, headerName: 'Task ID', minWidth: 70 },
       {
         field: 'Taskname',
         headerName: 'Task',
-        flex: 0.5,
-        minWidth: 350,
+        flex: 0.3,
         editable: true
       },
       {
         field: 'Taskowner',
+        flex: 0.1,
         headerName: 'Owner',
         description: 'Person who created this task',
         minWidth: 100,
@@ -69,17 +81,17 @@ export default function DataTable({
       },
       {
         field: 'Priority',
+        flex: 0.15,
         headerName: 'Priority',
         valueGetter: (value, row) => row?.Priority?.PriorityName,
-        minWidth: 130,
         renderCell: ({ row }) => {
           return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} />
         }
       },
       {
         field: 'Status',
+        flex: 0.2,
         headerName: 'Status',
-        minWidth: 160,
         valueGetter: (value, row) => row?.Status?.Statusname,
         renderCell: ({ row }) => {
           return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} />
@@ -87,12 +99,23 @@ export default function DataTable({
       },
       {
         field: 'Timeline',
+        flex: 0.2,
         headerName: 'Timeline',
-        minWidth: 280,
         valueGetter: (value, row) => `${row?.TimelineStartDate || ''} ${row?.TimelineEndDate || ''}`,
         renderCell: ({ row }) => {
           return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} />
         }
+      },
+      {
+        field: 'add column',
+        flex: 0.1,
+        sortable: false,
+        headerAlign: 'center',
+        headerName: (
+          <IconButton onClick={handlePlusIconClick}>
+            <Icon icon={'mdi:plus-circle-outline'} />
+          </IconButton>
+        )
       }
     ],
     [handleTaskUpdate, refetch]
@@ -131,6 +154,7 @@ export default function DataTable({
           Add Task
         </CustomButton>
       </Box>
+      <AddColumnsMenu open={anchorEl} close={handlePlusMenuClose} />
     </Card>
   )
 }

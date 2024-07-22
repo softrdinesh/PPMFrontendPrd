@@ -1,12 +1,5 @@
 import { isNumber } from 'lodash'
-
-const colorNamesToHex = {
-  black: '#000000',
-  white: '#FFFFFF',
-  red: '#FF0000',
-  yellow: '#FFFF00',
-  green: '#008000'
-}
+import { colorNamesToHex } from 'src/constants/colors'
 
 function getHexColor(color) {
   if (color.startsWith('#')) {
@@ -35,5 +28,5 @@ export function getContrastingTextColor(color) {
   const hexColor = getHexColor(color)
   const luminance = getLuminance(hexColor)
 
-  return isNumber(luminance) && luminance > 0.5 ? '#222222' : '#FFFFFF'
+  return isNumber(luminance) && luminance > 0.5 ? '#444444' : '#FFFFFF'
 }

@@ -50,7 +50,7 @@ function TaskGroupComponent({ isLoading, isRefetching, taskList, taskGroupData, 
               InputProps={{
                 startAdornment: (
                   <Icon
-                    icon={'mdi:search'}
+                    icon={'ion:search'}
                     style={{ marginRight: 10, color: theme?.palette?.secondary?.light }}
                     fontSize={24}
                   />

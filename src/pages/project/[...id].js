@@ -65,7 +65,7 @@ function ProjectView() {
               fullWidth
               size='small'
               placeholder='Search ID, task, Project, Keywords...'
-              InputProps={{ startAdornment: <Icon icon={'mdi:search'} style={{ marginRight: 10 }} fontSize={24} /> }}
+              InputProps={{ startAdornment: <Icon icon={'ion:search'} style={{ marginRight: 10 }} fontSize={24} /> }}
             />
           </Box>
 
