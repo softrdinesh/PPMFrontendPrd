@@ -11,6 +11,8 @@ import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
 import AddColumnsMenu from './add-columns/menu'
+import { useQuery } from 'react-query'
+import { fetchColumnType } from '@api/column-type'
 
 export default function DataTable({
   isLoading = false,
@@ -20,6 +22,9 @@ export default function DataTable({
   refetch = () => {},
   handleSelectedRows = () => {}
 }) {
+  // ** GET COLUMN TYPES
+  const { data: additionalColumnsType } = useQuery('column-type', fetchColumnType)
+
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -143,6 +148,7 @@ export default function DataTable({
         processRowUpdate={handleProcessRowUpdate}
         hideFooter
         disableRowSelectionOnClick
+        disableColumnMenu
         disableColumnResize
       />
       <Box m={2}>
@@ -150,7 +156,7 @@ export default function DataTable({
           Add Task
         </CustomButton>
       </Box>
-      <AddColumnsMenu open={anchorEl} close={handlePlusMenuClose} />
+      <AddColumnsMenu open={anchorEl} close={handlePlusMenuClose} columns={additionalColumnsType} />
     </Card>
   )
 }
