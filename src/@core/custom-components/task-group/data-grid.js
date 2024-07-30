@@ -62,7 +62,6 @@ export default function DataTable({
 
   const columns = useMemo(
     () => [
-      { field: 'TaskID', flex: 0.1, headerName: 'Task ID', minWidth: 70 },
       {
         field: 'Taskname',
         headerName: 'Task',
@@ -143,10 +142,7 @@ export default function DataTable({
         onRowSelectionModelChange={handleSelectedRows}
         processRowUpdate={handleProcessRowUpdate}
         hideFooter
-        disableColumnMenu
-        disableAutosize
         disableRowSelectionOnClick
-        disableColumnSelector
         disableColumnResize
       />
       <Box m={2}>
