@@ -22,7 +22,7 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
       {taskGroups?.length ? (
         <Box px={3} py={4}>
           {taskGroups?.map((item, index) => (
-            <CustomizedAccordions key={item?.TaskGroupID} index={index} data={item} refetchGroups={refetch} />
+            <CustomizedAccordions key={item?.TaskGroupID} index={index} data={item} projectID={id} />
           ))}
         </Box>
       ) : (

@@ -29,7 +29,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme?.breakpoints.up('md') && theme.spacing(2)
 }))
 
-export default function CustomizedAccordions({ data, index }) {
+export default function CustomizedAccordions({ data, index, projectID }) {
   const [expanded, setExpanded] = useState(index === 0 ? 'panel1' : null)
 
   const handleChange = panel => (event, newExpanded) => {
@@ -62,6 +62,7 @@ export default function CustomizedAccordions({ data, index }) {
           isRefetching={isRefetching}
           taskList={taskList}
           taskGroupData={data}
+          projectID={projectID}
           refetch={refetch}
         />
       </AccordionDetails>

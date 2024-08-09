@@ -54,16 +54,7 @@ const CreateProject = ({ open, onCloseModal }) => {
   }
 
   return (
-    <Dialog
-      open={open}
-      style={{
-        padding: 0
-      }}
-      onClose={onCloseModal}
-      TransitionComponent={Zoom}
-      fullWidth
-      maxWidth='md'
-    >
+    <Dialog open={open} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
       <Box
         sx={{
           display: 'flex',
@@ -75,7 +66,7 @@ const CreateProject = ({ open, onCloseModal }) => {
           paddingY: 2
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Create project name</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '18px' }}>Create project name</Typography>
         <IconButton
           aria-label='close'
           onClick={onCloseModal}
@@ -101,9 +92,7 @@ const CreateProject = ({ open, onCloseModal }) => {
               paddingX: 5
             }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}>
-              Project name *
-            </Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 3 }}>Project name *</Typography>
 
             <Controller
               name='ProjectName'
@@ -137,10 +126,8 @@ const CreateProject = ({ open, onCloseModal }) => {
             }}
           >
             <Box sx={{}}>
-              <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue' }}>
-                Privacy *
-              </Typography>
-              <Typography sx={{ fontWeight: 400, fontSize: '14px', color: 'common.desaturatedBlue' }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Privacy *</Typography>
+              <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                 Open
                 <Switch defaultChecked />
                 Closed
@@ -149,8 +136,7 @@ const CreateProject = ({ open, onCloseModal }) => {
             <Typography
               sx={{
                 fontWeight: 400,
-                fontSize: '14px',
-                color: 'common.desaturatedBlue'
+                fontSize: '14px'
               }}
             >
               <span

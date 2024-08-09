@@ -13,26 +13,34 @@ import TaskTimeline from './task-list-items/task-timeline'
 import AddColumnsMenu from './add-columns/menu'
 import { useQuery } from 'react-query'
 import { fetchColumnType } from '@api/column-type'
+import { useWorkspace } from 'src/context/workspace-context'
 
 export default function DataTable({
   isLoading = false,
   isRefetching = false,
   taskList = [],
+  taskGroupData = null,
   taskGroupID = null,
+  projectID = null,
   refetch = () => {},
   handleSelectedRows = () => {}
 }) {
+  console.log(taskGroupData, 'taskGroupData')
+
   // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery('column-type', fetchColumnType)
+
+  // ** Hooks
+  const { selected } = useWorkspace()
 
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
 
   // ** Functions
   const handleAddTask = useCallback(async () => {
-    await addTask({ taskGroupID })
+    await addTask({ taskGroupID, projectID, workspaceID: selected?.WorkspaceID })
     refetch()
-  }, [refetch, taskGroupID])
+  }, [projectID, refetch, selected?.WorkspaceID, taskGroupID])
 
   const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
@@ -71,12 +79,14 @@ export default function DataTable({
         field: 'Taskname',
         headerName: 'Task',
         flex: 0.3,
+        minWidth: 300,
         editable: true
       },
       {
         field: 'Taskowner',
         flex: 0.1,
         headerName: 'Owner',
+        minWidth: 100,
         description: 'Person who created this task',
         minWidth: 100,
         renderCell: ({ row }) => {
@@ -86,6 +96,7 @@ export default function DataTable({
       {
         field: 'Priority',
         flex: 0.15,
+        minWidth: 150,
         headerName: 'Priority',
         valueGetter: (value, row) => row?.Priority?.PriorityName,
         renderCell: ({ row }) => {
@@ -95,6 +106,7 @@ export default function DataTable({
       {
         field: 'Status',
         flex: 0.2,
+        minWidth: 150,
         headerName: 'Status',
         valueGetter: (value, row) => row?.Status?.Statusname,
         renderCell: ({ row }) => {
@@ -104,6 +116,7 @@ export default function DataTable({
       {
         field: 'Timeline',
         flex: 0.2,
+        minWidth: 200,
         headerName: 'Timeline',
         valueGetter: (value, row) => `${row?.TimelineStartDate || ''} ${row?.TimelineEndDate || ''}`,
         renderCell: ({ row }) => {
@@ -114,6 +127,7 @@ export default function DataTable({
         field: 'add column',
         flex: 0.1,
         sortable: false,
+        minWidth: 100,
         headerAlign: 'center',
         headerName: (
           <IconButton onClick={handlePlusIconClick}>

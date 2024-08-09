@@ -105,7 +105,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                         isClearable
                         maxDate={watch('TimelineEndDate')}
                         dateFormat={dateFormatPicker}
-                        customInput={<TextField label='Timeline Start Date' fullWidth />}
+                        customInput={<TextField label='Timeline Start Date' fullWidth autoComplete='off' />}
                       />
                     )}
                   />
@@ -123,7 +123,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                         minDate={watch('TimelineStartDate')}
                         disabled={!watch('TimelineStartDate')}
                         dateFormat={dateFormatPicker}
-                        customInput={<TextField label='Timeline End Date' fullWidth />}
+                        customInput={<TextField label='Timeline End Date' fullWidth autoComplete='off' />}
                       />
                     )}
                   />

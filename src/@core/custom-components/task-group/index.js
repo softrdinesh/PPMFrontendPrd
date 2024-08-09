@@ -6,7 +6,7 @@ import CustomButton from '@components/button'
 import DeleteDialog from '@custom-components/delete-dialog'
 import { deleteMultipleTask } from '@api/task'
 
-function TaskGroupComponent({ isLoading, isRefetching, taskList, taskGroupData, refetch }) {
+function TaskGroupComponent({ isLoading, isRefetching, taskList, taskGroupData, refetch, projectID }) {
   // ** States
   const [selectedRows, setSelectedRows] = useState([])
   const [showCard, setShowCard] = useState(false)
@@ -61,9 +61,11 @@ function TaskGroupComponent({ isLoading, isRefetching, taskList, taskGroupData, 
         </Grid>
         <Grid item xs={12}>
           <DataTable
+            projectID={projectID}
             isLoading={isLoading}
             isRefetching={isRefetching}
             taskList={taskList}
+            taskGroupData={taskGroupData}
             taskGroupID={taskGroupData?.TaskGroupID}
             refetch={refetch}
             handleSelectedRows={handleSelectedRows}
