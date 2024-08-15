@@ -11,6 +11,7 @@ import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
 const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
   const [openDialog, setOpenDialog] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
 
   const handleOpenDialog = () => {
@@ -24,6 +25,8 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
 
   const handleSave = async () => {
     try {
+      setIsSubmitting(true)
+
       const body = {
         DynamicID: dynamicValue?.DynamicID ?? null,
         AdditionalColumnID: columnData?.AdditionalColumnID,
@@ -35,11 +38,13 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
       }
     } catch (error) {
       console.log('error :', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleDateChange = date => {
-    console.log('date :', date)
+    setIsSubmitting(false)
     setSelectedDate(moment(date).format('LLL'))
   }
 
@@ -78,8 +83,8 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
             </Grid>
             <Grid item xs={12}>
               <Box display={'flex'} justifyContent={'center'}>
-                <CustomButton variant='contained' circular onClick={debouncedClick}>
-                  Save Changes
+                <CustomButton variant='contained' circular onClick={debouncedClick} disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </CustomButton>
               </Box>
             </Grid>
