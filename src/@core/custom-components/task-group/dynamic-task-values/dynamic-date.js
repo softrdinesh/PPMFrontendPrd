@@ -29,9 +29,10 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
         AdditionalColumnID: columnData?.AdditionalColumnID,
         value: moment(selectedDate).format('LLL')
       }
-      await updateTask({ id: rowData?.TaskID, body })
-
-      // setOpenDialog(false)
+      const response = await updateTask({ id: rowData?.TaskID, body })
+      if (response) {
+        setOpenDialog(false)
+      }
     } catch (error) {
       console.log('error :', error)
     }
