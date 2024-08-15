@@ -1,6 +1,9 @@
+import { createColumn } from '@api/task-group'
+import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Box, Dialog, Grid, Menu, MenuItem, TextField, Typography, useTheme, Zoom } from '@mui/material'
+import { Box, Grid, Menu, MenuItem, TextField, Typography, useTheme, Zoom } from '@mui/material'
 import React, { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 
 const getIcon = key => {
   switch (key) {
@@ -26,15 +29,31 @@ const getIcon = key => {
   }
 }
 
-const AddColumnsMenu = ({ open, close, columns }) => {
+const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGroup }) => {
   const theme = useTheme()
-  const [anchorEl, setAnchorEl] = useState(null)
+  const [selectedColumnType, setSelectedColumnType] = useState(null)
 
   const handleTypeClicked = e => {
-    setAnchorEl(e.currentTarget)
+    setSelectedColumnType(e)
   }
 
-  const handleTypeClose = () => setAnchorEl(null)
+  const {
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors }
+  } = useForm({ defaultValues: { columnName: '' } })
+  const handleTypeClose = () => setSelectedColumnType(null)
+
+  const onSubmit = async data => {
+    // Add logic here to add the new column
+    await createColumn({ ...data, ...taskGroupAllData, columnTypeID: selectedColumnType?.ColumnTypeID }).then(() => {
+      refetchTaskGroup()
+      close()
+      handleTypeClose()
+      reset()
+    })
+  }
 
   return (
     <>
@@ -46,68 +65,83 @@ const AddColumnsMenu = ({ open, close, columns }) => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       >
-        <Box p={4} maxWidth={'300px'}>
-          <Grid container spacing={5}>
-            <Grid item xs={12}>
-              <TextField
-                size='small'
-                fullWidth
-                placeholder='Search'
-                InputProps={{
-                  startAdornment: (
-                    <Icon
-                      icon={'ion:search'}
-                      fontSize={24}
-                      color={theme?.palette?.grey[400]}
-                      style={{ marginRight: 10 }}
-                    />
-                  )
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '50px' // Make the border radius high to achieve pill shape
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+        <Box component={'form'} onSubmit={handleSubmit(onSubmit)} p={4} maxWidth={'300px'}>
+          {selectedColumnType ? (
+            <Grid container spacing={6}>
+              <Grid item xs={12}>
+                <Box display={'flex'} gap={3} width={'200px'}>
                   <Typography fontWeight={'bold'} fontSize={13} textTransform={'uppercase'}>
-                    Essentials
+                    {`Add ${selectedColumnType?.Title}`}
                   </Typography>
-                </Grid>
-                {columns?.map(item => (
-                  <Grid item xs={12} md={6} key={item?.ColumnTypeID}>
-                    <Box
-                      component={MenuItem}
-                      display={'flex'}
-                      alignItems={'center'}
-                      gap={3}
-                      p={0}
-                      px={0}
-                      py={1}
-                      onClick={handleTypeClicked}
-                    >
-                      <Icon icon={getIcon(item?.Key)} fontSize={20} color={theme?.palette?.primary?.main} />
-                      <Typography fontSize={14} textTransform={'capitalize'}>
-                        {item?.Title}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                ))}
+                  <Icon icon={getIcon(selectedColumnType?.Key)} fontSize={20} color={theme?.palette?.primary?.main} />
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name='columnName'
+                  control={control}
+                  rules={{ required: 'Please name your column' }}
+                  render={({ field }) => (
+                    <TextField
+                      fullWidth
+                      size='small'
+                      placeholder='Enter a label for column'
+                      {...field}
+                      error={!!errors?.columnName}
+                      helperText={errors?.columnName?.message}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
+                  <CustomButton
+                    circular
+                    variant='outlined'
+                    color='secondary'
+                    size='small'
+                    onClick={handleTypeClose}
+                  >{`Close`}</CustomButton>
+                  <CustomButton
+                    type='submit'
+                    circular
+                    variant='outlined'
+                    endIcon={<Icon icon={'mdi:plus'} />}
+                    size='small'
+                  >{`Add  Column`}</CustomButton>
+                </Box>
               </Grid>
             </Grid>
-          </Grid>
+          ) : (
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography fontWeight={'bold'} fontSize={13} textTransform={'uppercase'}>
+                  Essentials
+                </Typography>
+              </Grid>
+              {columns?.map(item => (
+                <Grid item xs={12} md={6} key={item?.ColumnTypeID}>
+                  <Box
+                    component={MenuItem}
+                    display={'flex'}
+                    alignItems={'center'}
+                    gap={3}
+                    p={0}
+                    px={0}
+                    py={1}
+                    onClick={() => handleTypeClicked(item)}
+                  >
+                    <Icon icon={getIcon(item?.Key)} fontSize={20} color={theme?.palette?.primary?.main} />
+                    <Typography fontSize={14} textTransform={'capitalize'}>
+                      {item?.Title}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Box>
       </Menu>
-      <Dialog open={Boolean(anchorEl)} onClose={handleTypeClose} TransitionComponent={Zoom}>
-        <Box p={4} maxWidth={'300px'}>
-          <Grid container spacing={5}>
-            <Grid item xs={12}></Grid>
-          </Grid>
-        </Box>
-      </Dialog>
     </>
   )
 }

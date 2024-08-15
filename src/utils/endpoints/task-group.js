@@ -16,5 +16,9 @@ export const taskGroup = {
   updateTaskGroup: {
     ...defaults.methods.PUT,
     uri: '/api/task-group/:id'
+  },
+  createColumn: {
+    ...defaults.methods.POST,
+    uri: '/api/create-column'
   }
 }

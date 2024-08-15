@@ -1,7 +1,7 @@
 import { isNumber } from 'lodash'
 import { colorNamesToHex } from 'src/constants/colors'
 
-function getHexColor(color) {
+export function getHexColor(color) {
   if (color.startsWith('#')) {
     return color
   }
@@ -10,7 +10,7 @@ function getHexColor(color) {
 }
 
 // Utility function to calculate luminance
-function getLuminance(hex) {
+export function getLuminance(hex) {
   hex = hex.replace('#', '')
   let r = parseInt(hex.substring(0, 2), 16) / 255
   let g = parseInt(hex.substring(2, 4), 16) / 255

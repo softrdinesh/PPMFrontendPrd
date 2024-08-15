@@ -1,9 +1,9 @@
 import { Box, Menu, MenuItem, Tooltip, Typography, Zoom } from '@mui/material'
 import React, { useState } from 'react'
 import { useWorkspace } from 'src/context/workspace-context'
-import { getContrastingTextColor, getHexColor, getLuminance } from 'src/utils/functions'
+import { getContrastingTextColor } from 'src/utils/functions'
 
-const TaskStatus = ({ row, handleStatusChange }) => {
+const DynamicStatus = ({ row }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const { statusList } = useWorkspace()
 
@@ -15,43 +15,17 @@ const TaskStatus = ({ row, handleStatusChange }) => {
     setAnchorEl(null)
   }
 
-  const generateBGColor = () => {
-    if (!row?.Status?.Colorcode) return 'background.default'
-
-    const hexColor = getHexColor(row?.Status?.Colorcode)
-    const luminance = getLuminance(hexColor)
-
-    if (luminance < 0.5) {
-      return `${hexColor}33`
-    }
-
-    return row?.Status?.Colorcode
-  }
-
-  const generateTextColor = () => {
-    if (!row?.Status?.Colorcode) return null
-
-    const hexColor = getHexColor(row?.Status?.Colorcode)
-    const luminance = getLuminance(hexColor)
-
-    if (luminance < 0.5) {
-      return `${hexColor}`
-    }
-
-    return getContrastingTextColor(row?.Status?.Colorcode)
-  }
-
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       <Tooltip title={row?.Status?.Statusname}>
         <Box
-          bgcolor={generateBGColor()}
+          bgcolor={row?.Status?.Colorcode ?? 'background.default'}
           borderRadius={1}
           maxWidth={'95%'}
           height={'60%'}
           display={'flex'}
           alignItems={'center'}
-          color={generateTextColor()}
+          color={row?.Status?.Colorcode && getContrastingTextColor(row?.Status?.Colorcode)}
           px={2}
           justifyContent={'center'}
           border={1}
@@ -59,13 +33,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
           onClick={handleOpen}
           sx={{ cursor: 'pointer' }}
         >
-          <Typography
-            fontSize={'0.85rem'}
-            fontWeight={500}
-            textOverflow={'ellipsis'}
-            overflow={'hidden'}
-            color={'inherit'}
-          >
+          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
             {row?.Status?.Statusname ?? 'None'}
           </Typography>
         </Box>
@@ -93,7 +61,6 @@ const TaskStatus = ({ row, handleStatusChange }) => {
             alignItems={'center'}
             onClick={() => {
               if (row?.StatusID != item?.StatusID) {
-                handleStatusChange(row, { StatusID: item?.StatusID })
               }
               handleClose()
             }}
@@ -106,4 +73,4 @@ const TaskStatus = ({ row, handleStatusChange }) => {
   )
 }
 
-export default TaskStatus
+export default DynamicStatus

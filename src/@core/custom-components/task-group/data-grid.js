@@ -1,3 +1,4 @@
+import { fetchColumnType } from '@api/column-type'
 import { addTask, updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import NoRowsOverlay from '@custom-components/no-rows-overlay'
@@ -6,14 +7,18 @@ import { Box, Card, IconButton } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { debounce } from 'lodash'
 import { useCallback, useMemo, useState } from 'react'
+import { useQuery } from 'react-query'
+import { useWorkspace } from 'src/context/workspace-context'
+import AddColumnsMenu from './add-columns/menu'
+import DynamicDate from './dynamic-task-values/dynamic-date'
+import DynamicDropdown from './dynamic-task-values/dynamic-dropdown'
+import DynamicPeople from './dynamic-task-values/dynamic-people'
+import DynamicStatus from './dynamic-task-values/dynamic-status'
+import DynamicText from './dynamic-task-values/dynamic-text'
 import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
-import AddColumnsMenu from './add-columns/menu'
-import { useQuery } from 'react-query'
-import { fetchColumnType } from '@api/column-type'
-import { useWorkspace } from 'src/context/workspace-context'
 
 export default function DataTable({
   isLoading = false,
@@ -23,9 +28,10 @@ export default function DataTable({
   taskGroupID = null,
   projectID = null,
   refetch = () => {},
+  refetchTaskGroup = () => {},
   handleSelectedRows = () => {}
 }) {
-  console.log(taskGroupData, 'taskGroupData')
+  console.log('taskList :', taskList)
 
   // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery('column-type', fetchColumnType)
@@ -73,6 +79,38 @@ export default function DataTable({
     setAnchorEl(null)
   }
 
+  const filterDynamicValue = (additionColumnID, additionalValues) => {
+    const filteredValues = additionalValues.find(item => item.AdditionalColumnID === additionColumnID)
+
+    return filteredValues ?? null
+  }
+
+  const dynamicColumn = useCallback(() => {
+    return taskGroupData?.additionalColumns?.map(i => {
+      return {
+        field: i?.AdditionalColumnID,
+        headerName: i?.ColumnName,
+        minWidth: 250,
+        renderCell: ({ row }) => {
+          const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
+          console.log('value :', value)
+          switch (i?.ColumnType?.Keyname) {
+            case 'DPK':
+              return <DynamicDate columnData={i} rowData={row} dynamicValue={value ?? null} />
+            case 'DDL':
+              return <DynamicDropdown row={row} handleTimeLineChange={handleTaskUpdate} />
+            case 'USR':
+              return <DynamicPeople data={[row?.Owner]} refetch={refetch} />
+            case 'LBL':
+              return <DynamicStatus columnData={i} row={row} />
+            default:
+              return <DynamicText />
+          }
+        }
+      }
+    })
+  }, [handleTaskUpdate, refetch, taskGroupData?.additionalColumns])
+
   const columns = useMemo(
     () => [
       {
@@ -116,13 +154,14 @@ export default function DataTable({
       {
         field: 'Timeline',
         flex: 0.2,
-        minWidth: 200,
+        minWidth: 220,
         headerName: 'Timeline',
         valueGetter: (value, row) => `${row?.TimelineStartDate || ''} ${row?.TimelineEndDate || ''}`,
         renderCell: ({ row }) => {
           return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} />
         }
       },
+      ...dynamicColumn(),
       {
         field: 'add column',
         flex: 0.1,
@@ -136,7 +175,7 @@ export default function DataTable({
         )
       }
     ],
-    [handleTaskUpdate, refetch]
+    [dynamicColumn, handleTaskUpdate, refetch]
   )
 
   return (
@@ -170,7 +209,13 @@ export default function DataTable({
           Add Task
         </CustomButton>
       </Box>
-      <AddColumnsMenu open={anchorEl} close={handlePlusMenuClose} columns={additionalColumnsType} />
+      <AddColumnsMenu
+        open={anchorEl}
+        close={handlePlusMenuClose}
+        columns={additionalColumnsType}
+        refetchTaskGroup={refetchTaskGroup}
+        taskGroupAllData={{ taskGroupID, projectID, workspaceID: selected?.WorkspaceID }}
+      />
     </Card>
   )
 }
