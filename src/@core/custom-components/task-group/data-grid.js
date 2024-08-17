@@ -129,6 +129,8 @@ export default function DataTable({
         description: 'Person who created this task',
         minWidth: 100,
         renderCell: ({ row }) => {
+          console.log('row?.Owner :', row)
+
           return <TaskPeople data={[row?.Owner]} refetch={refetch} />
         }
       },

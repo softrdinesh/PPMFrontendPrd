@@ -16,30 +16,30 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
     setAnchorEl(null)
   }
 
-  const generateBGColor = () => {
-    if (!dynamicValue?.Status?.Colorcode) return 'background.default'
+  const generateBGColor = colorCode => {
+    if (!colorCode) return 'background.default'
 
-    const hexColor = getHexColor(dynamicValue?.Status?.Colorcode)
+    const hexColor = getHexColor(colorCode)
     const luminance = getLuminance(hexColor)
 
     if (luminance < 0.5) {
       return `${hexColor}33`
     }
 
-    return dynamicValue?.Status?.Colorcode
+    return colorCode
   }
 
-  const generateTextColor = () => {
-    if (!dynamicValue?.Status?.Colorcode) return null
+  const generateTextColor = colorCode => {
+    if (!colorCode) return null
 
-    const hexColor = getHexColor(dynamicValue?.Status?.Colorcode)
+    const hexColor = getHexColor(colorCode)
     const luminance = getLuminance(hexColor)
 
     if (luminance < 0.5) {
       return `${hexColor}`
     }
 
-    return getContrastingTextColor(dynamicValue?.Status?.Colorcode)
+    return getContrastingTextColor(colorCode)
   }
 
   const handleSelectStatus = async ID => {
@@ -63,13 +63,13 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       <Tooltip title={dynamicValue?.Status?.Statusname}>
         <Box
-          bgcolor={generateBGColor()}
+          bgcolor={generateBGColor(dynamicValue?.Status?.Colorcode)}
           borderRadius={1}
           maxWidth={'95%'}
           height={'60%'}
           display={'flex'}
           alignItems={'center'}
-          color={generateTextColor()}
+          color={generateTextColor(dynamicValue?.Status?.Colorcode)}
           px={2}
           justifyContent={'center'}
           border={1}
@@ -100,12 +100,12 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
         {statusList?.map(item => (
           <Box
             component={MenuItem}
-            bgcolor={item?.Colorcode}
+            bgcolor={generateBGColor(item?.Colorcode)}
             key={item?.StatusID}
             my={2}
             mx={1}
             borderRadius={1}
-            color={getContrastingTextColor(item?.Colorcode)}
+            color={generateTextColor(item?.Colorcode)}
             display={'flex'}
             justifyContent={'center'}
             alignItems={'center'}

@@ -15,43 +15,43 @@ const TaskStatus = ({ row, handleStatusChange }) => {
     setAnchorEl(null)
   }
 
-  const generateBGColor = () => {
-    if (!row?.Status?.Colorcode) return 'background.default'
+  const generateBGColor = colorCode => {
+    if (!colorCode) return 'background.default'
 
-    const hexColor = getHexColor(row?.Status?.Colorcode)
+    const hexColor = getHexColor(colorCode)
     const luminance = getLuminance(hexColor)
 
     if (luminance < 0.5) {
       return `${hexColor}33`
     }
 
-    return row?.Status?.Colorcode
+    return colorCode
   }
 
-  const generateTextColor = () => {
-    if (!row?.Status?.Colorcode) return null
+  const generateTextColor = colorCode => {
+    if (!colorCode) return null
 
-    const hexColor = getHexColor(row?.Status?.Colorcode)
+    const hexColor = getHexColor(colorCode)
     const luminance = getLuminance(hexColor)
 
     if (luminance < 0.5) {
       return `${hexColor}`
     }
 
-    return getContrastingTextColor(row?.Status?.Colorcode)
+    return getContrastingTextColor(colorCode)
   }
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       <Tooltip title={row?.Status?.Statusname}>
         <Box
-          bgcolor={generateBGColor()}
+          bgcolor={generateBGColor(row?.Status?.Colorcode)}
           borderRadius={1}
           maxWidth={'95%'}
           height={'60%'}
           display={'flex'}
           alignItems={'center'}
-          color={generateTextColor()}
+          color={generateTextColor(row?.Status?.Colorcode)}
           px={2}
           justifyContent={'center'}
           border={1}
@@ -82,12 +82,12 @@ const TaskStatus = ({ row, handleStatusChange }) => {
         {statusList?.map(item => (
           <Box
             component={MenuItem}
-            bgcolor={item?.Colorcode}
+            bgcolor={generateBGColor(item?.Colorcode)}
             key={item?.StatusID}
             my={2}
             mx={1}
             borderRadius={1}
-            color={getContrastingTextColor(item?.Colorcode)}
+            color={generateTextColor(item?.Colorcode)}
             display={'flex'}
             justifyContent={'center'}
             alignItems={'center'}
