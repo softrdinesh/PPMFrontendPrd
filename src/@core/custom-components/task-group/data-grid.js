@@ -80,6 +80,7 @@ export default function DataTable({
         headerName: i?.ColumnName,
         minWidth: 250,
         renderCell: ({ row }) => {
+          console.log('row?.additionalValues :', row?.additionalValues)
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
           switch (i?.ColumnType?.Keyname) {
             case 'DPK':
@@ -129,8 +130,6 @@ export default function DataTable({
         description: 'Person who created this task',
         minWidth: 100,
         renderCell: ({ row }) => {
-          console.log('row?.Owner :', row)
-
           return <TaskPeople data={[row?.Owner]} refetch={refetch} />
         }
       },
