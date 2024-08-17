@@ -1,12 +1,11 @@
 import { updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Box, ClickAwayListener, IconButton, Menu, TextField } from '@mui/material'
-import { pattern } from '@patterns'
+import { Box, ClickAwayListener, IconButton, Menu, TextField, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { Controller, Form, useForm } from 'react-hook-form'
 
-const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => {
+const TaskTitle = ({ row, refetch }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const {
@@ -15,12 +14,12 @@ const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => 
     control,
     formState: { isSubmitting, isDirty }
   } = useForm({
-    defaultValues: { value: dynamicValue?.DynamicColumnValues ?? '' }
+    defaultValues: { value: row?.Taskname ?? '' }
   })
 
   const handleOpen = e => {
     setAnchorEl(e.currentTarget)
-    reset({ value: dynamicValue?.DynamicColumnValues ?? '' })
+    reset({ value: row?.Taskname ?? '' })
   }
 
   const handleCloseMenu = () => {
@@ -29,27 +28,30 @@ const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => 
 
   const handleSave = async data => {
     try {
-      const body = {
-        DynamicID: dynamicValue?.DynamicID ?? null,
-        AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: data?.value
-      }
-
-      const response = await updateTask({ id: rowData?.TaskID, body })
+      const body = { Taskname: data?.value }
+      const response = await updateTask({ id: row?.TaskID, body })
       if (response) {
         refetch()
         handleCloseMenu()
       }
     } catch (error) {
       console.log('error :', error)
-    } finally {
     }
   }
 
   return (
     <div>
-      <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'} pr={4}>
-        {dynamicValue?.DynamicColumnValues ?? '-'}
+      <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'} pr={4} width={'100%'}>
+        <Typography
+          variant='body2'
+          overflow={'hidden'}
+          textOverflow={'ellipsis'}
+          whiteSpace={'nowrap'}
+          m={0}
+          lineHeight={'3.5rem'}
+        >
+          {row?.Taskname ?? '-'}
+        </Typography>
         <IconButton size='small' onClick={handleOpen}>
           <Icon icon={'mdi:pencil-outline'} />
         </IconButton>
@@ -69,13 +71,7 @@ const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => 
                     {...field}
                     error={!!formState?.errors?.value}
                     onChange={e => {
-                      if (number) {
-                        if (e?.target?.value === '' || pattern.numbersAllowed?.test(e?.target?.value)) {
-                          field.onChange(e)
-                        }
-                      } else {
-                        field?.onChange(e)
-                      }
+                      field?.onChange(e)
                     }}
                     size='small'
                     placeholder='Enter a value'
@@ -104,4 +100,4 @@ const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => 
   )
 }
 
-export default DynamicText
+export default TaskTitle

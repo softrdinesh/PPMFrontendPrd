@@ -19,6 +19,7 @@ import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
+import TaskTitle from './task-list-items/task-title'
 
 export default function DataTable({
   isLoading = false,
@@ -31,8 +32,6 @@ export default function DataTable({
   refetchTaskGroup = () => {},
   handleSelectedRows = () => {}
 }) {
-  console.log('taskList :', taskList)
-
   // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery('column-type', fetchColumnType)
 
@@ -60,17 +59,6 @@ export default function DataTable({
     [refetch]
   )
 
-  const handleProcessRowUpdate = useCallback(
-    updatedRow => {
-      const taskID = updatedRow?.TaskID
-      const body = { Taskname: updatedRow?.Taskname }
-      handleTaskUpdate({ TaskID: taskID }, body)
-
-      return updatedRow
-    },
-    [handleTaskUpdate]
-  )
-
   const handlePlusIconClick = e => {
     setAnchorEl(e.currentTarget)
   }
@@ -93,23 +81,34 @@ export default function DataTable({
         minWidth: 250,
         renderCell: ({ row }) => {
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
-          console.log('value :', value)
           switch (i?.ColumnType?.Keyname) {
             case 'DPK':
-              return <DynamicDate columnData={i} rowData={row} dynamicValue={value ?? null} />
+              return <DynamicDate columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
             case 'DDL':
-              return <DynamicDropdown row={row} handleTimeLineChange={handleTaskUpdate} />
-            case 'USR':
-              return <DynamicPeople data={[row?.Owner]} refetch={refetch} />
+              return <DynamicDropdown columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
             case 'LBL':
-              return <DynamicStatus columnData={i} row={row} />
+              return <DynamicStatus columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
+            case 'USR':
+              const usersList = row?.additionalValues?.filter(
+                addVal => addVal?.AdditionalColumnID === i?.AdditionalColumnID
+              )
+
+              return <DynamicPeople columnData={i} rowData={row} dynamicValue={usersList ?? []} refetch={refetch} />
             default:
-              return <DynamicText />
+              return (
+                <DynamicText
+                  columnData={i}
+                  rowData={row}
+                  dynamicValue={value ?? null}
+                  refetch={refetch}
+                  number={i?.ColumnType?.Keyname === 'NUM'}
+                />
+              )
           }
         }
       }
     })
-  }, [handleTaskUpdate, refetch, taskGroupData?.additionalColumns])
+  }, [refetch, taskGroupData?.additionalColumns])
 
   const columns = useMemo(
     () => [
@@ -118,7 +117,9 @@ export default function DataTable({
         headerName: 'Task',
         flex: 0.3,
         minWidth: 300,
-        editable: true
+        renderCell: ({ row }) => {
+          return <TaskTitle row={row} refetch={refetch} />
+        }
       },
       {
         field: 'Taskowner',
@@ -187,7 +188,6 @@ export default function DataTable({
         columns={columns}
         loading={isLoading || isRefetching}
         slots={{ noRowsOverlay: NoRowsOverlay }}
-        editMode='cell'
         slotProps={{
           noRowsOverlay: { title: 'No Tasks Added' },
           loadingOverlay: {
@@ -198,7 +198,6 @@ export default function DataTable({
         sx={{ '& .MuiDataGrid-overlay .MuiLinearProgress-root': { height: 2 } }}
         checkboxSelection
         onRowSelectionModelChange={handleSelectedRows}
-        processRowUpdate={handleProcessRowUpdate}
         hideFooter
         disableRowSelectionOnClick
         disableColumnMenu

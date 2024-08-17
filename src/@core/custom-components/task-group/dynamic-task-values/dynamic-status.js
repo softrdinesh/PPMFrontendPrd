@@ -1,9 +1,10 @@
+import { updateTask } from '@api/task'
 import { Box, Menu, MenuItem, Tooltip, Typography, Zoom } from '@mui/material'
 import React, { useState } from 'react'
 import { useWorkspace } from 'src/context/workspace-context'
-import { getContrastingTextColor } from 'src/utils/functions'
+import { getContrastingTextColor, getHexColor, getLuminance } from 'src/utils/functions'
 
-const DynamicStatus = ({ row }) => {
+const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, refetch }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const { statusList } = useWorkspace()
 
@@ -15,17 +16,60 @@ const DynamicStatus = ({ row }) => {
     setAnchorEl(null)
   }
 
+  const generateBGColor = () => {
+    if (!dynamicValue?.Status?.Colorcode) return 'background.default'
+
+    const hexColor = getHexColor(dynamicValue?.Status?.Colorcode)
+    const luminance = getLuminance(hexColor)
+
+    if (luminance < 0.5) {
+      return `${hexColor}33`
+    }
+
+    return dynamicValue?.Status?.Colorcode
+  }
+
+  const generateTextColor = () => {
+    if (!dynamicValue?.Status?.Colorcode) return null
+
+    const hexColor = getHexColor(dynamicValue?.Status?.Colorcode)
+    const luminance = getLuminance(hexColor)
+
+    if (luminance < 0.5) {
+      return `${hexColor}`
+    }
+
+    return getContrastingTextColor(dynamicValue?.Status?.Colorcode)
+  }
+
+  const handleSelectStatus = async ID => {
+    try {
+      const body = {
+        DynamicID: dynamicValue?.DynamicID ?? null,
+        AdditionalColumnID: columnData?.AdditionalColumnID,
+        value: ID
+      }
+      const response = await updateTask({ id: rowData?.TaskID, body })
+      if (response) {
+        refetch()
+        handleClose()
+      }
+    } catch (error) {
+      console.log('error :', error)
+    }
+  }
+
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Tooltip title={row?.Status?.Statusname}>
+      <Tooltip title={dynamicValue?.Status?.Statusname}>
         <Box
-          bgcolor={row?.Status?.Colorcode ?? 'background.default'}
+          bgcolor={generateBGColor()}
           borderRadius={1}
           maxWidth={'95%'}
           height={'60%'}
           display={'flex'}
           alignItems={'center'}
-          color={row?.Status?.Colorcode && getContrastingTextColor(row?.Status?.Colorcode)}
+          color={generateTextColor()}
           px={2}
           justifyContent={'center'}
           border={1}
@@ -33,8 +77,14 @@ const DynamicStatus = ({ row }) => {
           onClick={handleOpen}
           sx={{ cursor: 'pointer' }}
         >
-          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
-            {row?.Status?.Statusname ?? 'None'}
+          <Typography
+            fontSize={'0.85rem'}
+            fontWeight={500}
+            textOverflow={'ellipsis'}
+            overflow={'hidden'}
+            color={'inherit'}
+          >
+            {dynamicValue?.Status?.Statusname ?? 'None'}
           </Typography>
         </Box>
       </Tooltip>
@@ -60,9 +110,7 @@ const DynamicStatus = ({ row }) => {
             justifyContent={'center'}
             alignItems={'center'}
             onClick={() => {
-              if (row?.StatusID != item?.StatusID) {
-              }
-              handleClose()
+              handleSelectStatus(item?.StatusID)
             }}
           >
             <Typography color={'inherit'}>{item?.Statusname}</Typography>
@@ -73,4 +121,4 @@ const DynamicStatus = ({ row }) => {
   )
 }
 
-export default DynamicStatus
+export default TaskStatus

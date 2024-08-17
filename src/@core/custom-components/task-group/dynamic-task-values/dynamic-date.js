@@ -9,7 +9,7 @@ import React, { memo, useState } from 'react'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
-const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
+const DynamicDate = ({ columnData, rowData, dynamicValue, refetch }) => {
   const [openDialog, setOpenDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
@@ -34,6 +34,7 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
       }
       const response = await updateTask({ id: rowData?.TaskID, body })
       if (response) {
+        refetch()
         setOpenDialog(false)
       }
     } catch (error) {
@@ -53,7 +54,7 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
   return (
     <div>
       {selectedDate ? (
-        <Box display={'flex'} alignItems={'center'} gap={3}>
+        <Box display={'flex'} alignItems={'center'} gap={3} justifyContent={'space-between'} pr={2}>
           {selectedDate}
           <IconButton size='small' onClick={handleOpenDialog}>
             <Icon icon={'mdi:pencil-outline'} />
@@ -63,7 +64,12 @@ const DynamicDate = ({ columnData, rowData, dynamicValue }) => {
         <Chip label={'Pick a date'} size='small' onClick={handleOpenDialog} />
       )}
 
-      <Dialog open={openDialog} onClose={handleClose} maxWidth='xs'>
+      <Dialog
+        open={openDialog}
+        onClose={handleClose}
+        maxWidth='xs'
+        sx={{ '& .MuiPaper-root': { backgroundColor: 'transparent' } }}
+      >
         <DialogContent>
           <Grid container spacing={6}>
             <Grid item xs={12}></Grid>
