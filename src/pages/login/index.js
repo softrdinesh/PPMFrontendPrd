@@ -36,6 +36,7 @@ import { routes } from '@routes'
 import { Controller, useForm } from 'react-hook-form'
 import IconifyIcon from 'src/@core/components/icon'
 import { useAuth } from 'src/hooks/useAuth'
+import { debounce } from 'lodash'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -115,6 +116,9 @@ const LoginPage = () => {
     window?.open(redirectUri, '_self')
   }
 
+  const debounceSubmit = debounce(onSubmit, 400)
+  const debounceGoogleSignin = debounce(handleGoogleSignin, 400)
+
   return (
     <Box className='content-center'>
       <Card sx={{ zIndex: 1 }}>
@@ -125,7 +129,7 @@ const LoginPage = () => {
             </Typography>
             <Typography variant='body2'>Please sign-in to your account and start the adventure</Typography>
           </Box>
-          <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+          <form noValidate autoComplete='off' onSubmit={handleSubmit(debounceSubmit)}>
             {/* Email */}
             <FormControl fullWidth>
               <Controller
@@ -222,7 +226,7 @@ const LoginPage = () => {
             </Box>
             <Divider sx={{ my: 5 }}>or</Divider>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <button type='button' className='login-with-google-btn' onClick={handleGoogleSignin}>
+              <button type='button' className='login-with-google-btn' onClick={debounceGoogleSignin}>
                 Sign in with Google
               </button>
             </Box>

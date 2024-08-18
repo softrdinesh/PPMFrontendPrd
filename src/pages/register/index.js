@@ -34,6 +34,7 @@ import { registerRules } from '@validations/register'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from 'react-query'
 import { useAuth } from 'src/hooks/useAuth'
+import { debounce } from 'lodash'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -91,6 +92,8 @@ const RegisterPage = () => {
     await register({ ...data, ...location })
   }
 
+  const debounceSubmit = debounce(onSubmit, 400)
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -123,7 +126,7 @@ const RegisterPage = () => {
             </Typography>
             <Typography variant='body2'>Make your app management easy and fun!</Typography>
           </Box>
-          <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+          <form noValidate autoComplete='off' onSubmit={handleSubmit(debounceSubmit)}>
             <Grid container spacing={5}>
               {/* Name */}
               <Grid item xs={12}>
