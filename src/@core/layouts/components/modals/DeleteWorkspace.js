@@ -33,7 +33,7 @@ function DeleteWorkspaceDialog({ open, setOpen, onConfirm }) {
           <Icon icon={'mdi:close'} color={`common.black`} fontSize={24} />
         </IconButton>
       </Box>
-      <DialogContent>
+      <DialogContent sx={{ bgcolor: 'background.default' }}>
         <Box display={'flex'} flexDirection={'column'} alignItems={'center'} gap={2}>
           <Typography variant='caption' fontSize={13} textAlign={'center'}>
             Are you sure you want to delete this workspace?
@@ -43,7 +43,7 @@ function DeleteWorkspaceDialog({ open, setOpen, onConfirm }) {
           </Typography>
         </Box>
       </DialogContent>
-      <DialogActions sx={{ justifyContent: 'space-between', px: 4, py: 3 }}>
+      <DialogActions sx={{ justifyContent: 'space-between', px: 4, py: 3, bgcolor: 'background.default' }}>
         <Button
           sx={{
             borderRadius: 30,

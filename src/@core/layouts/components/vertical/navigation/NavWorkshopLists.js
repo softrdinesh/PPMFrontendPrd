@@ -15,6 +15,7 @@ import { Icon } from '@iconify/react'
 import { useState } from 'react'
 import DeleteWorkspaceDialog from '../../modals/DeleteWorkspace'
 import { deleteWorkspace } from '@api/workspace'
+import { debounce } from 'lodash'
 
 const MenuNavLink = styled(ListItemButton)(() => ({
   width: '100%',
@@ -70,11 +71,16 @@ function NavWorkshopLists({ data, refetch, ...props }) {
         refetch()
         setOpen(false)
         handleOpenClose()
+        if (props?.selected?.WorkspaceID === data?.WorkspaceID) {
+          props?.setSelected(null)
+        }
       }
     } catch (error) {
       console.error('Delete Workspace Error :', error)
     }
   }
+
+  const debouncedDelete = debounce(handleDelete, 400)
 
   return (
     <ListItem
@@ -154,7 +160,7 @@ function NavWorkshopLists({ data, refetch, ...props }) {
               </Box>
             </MenuItem>
           </Menu>
-          <DeleteWorkspaceDialog open={open} setOpen={setOpen} onConfirm={handleDelete} />
+          <DeleteWorkspaceDialog open={open} setOpen={setOpen} onConfirm={debouncedDelete} />
         </MenuItemTextMetaWrapper>
       </MenuNavLink>
     </ListItem>

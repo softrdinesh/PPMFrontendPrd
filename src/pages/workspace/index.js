@@ -35,28 +35,31 @@ const Workspace = () => {
 
   return (
     <Box>
-      <Typography sx={{ fontWeight: 700, fontSize: '30px', color: 'common.black' }}>Create your workspace</Typography>
+      <Typography variant='h4' fontWeight={700}>
+        Create your workspace
+      </Typography>
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          border: `1px solid ${theme.palette.common.lightGray}`,
           borderRadius: '22px',
           flexWrap: 'wrap-reverse'
         }}
+        border={1}
+        borderColor={'divider'}
         px={5}
         mt={5}
       >
         <Box py={6}>
-          <Typography sx={{ fontWeight: 400, fontSize: '20px', color: `${theme.palette.common.Gray37}` }}>
+          <Typography variant='body1' fontWeight={400}>
             Welcome To
           </Typography>
-          <Typography my={1} sx={{ fontWeight: 600, fontSize: '24px', color: `${theme.palette.common.black}` }}>
+          <Typography my={1} fontWeight={600} variant='h6'>
             Your Workspace Area
           </Typography>
-          <Typography sx={{ fontWeight: 400, fontSize: '14px', color: `${theme.palette.common.Gray37}` }}>
+          <Typography variant='body1' fontWeight={400}>
             Create your perfect workspace here
           </Typography>
           <Button

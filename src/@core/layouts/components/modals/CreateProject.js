@@ -56,6 +56,7 @@ const CreateProject = ({ open, onCloseModal }) => {
   return (
     <Dialog open={open} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
       <Box
+        bgcolor={'background.default'}
         sx={{
           display: 'flex',
           flex: 1,
@@ -83,7 +84,7 @@ const CreateProject = ({ open, onCloseModal }) => {
       </Box>
       <Divider />
 
-      <Box py={2}>
+      <Box py={2} bgcolor={'background.default'}>
         <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
           {/* workspace name */}
           <FormControl
