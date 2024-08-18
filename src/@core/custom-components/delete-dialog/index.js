@@ -77,7 +77,7 @@ export default function DeleteDialog({ open, setOpen, title, description, onConf
               disabled={isDeleting}
               data-testid={'confirm-delete-button'}
             >
-              {isDeleting ? <CircularProgress size={22} color='secondary' /> : confirmText ?? `Delete`}
+              {isDeleting ? <CircularProgress size={22} color='secondary' /> : (confirmText ?? `Delete`)}
             </Button>
 
             <Button
