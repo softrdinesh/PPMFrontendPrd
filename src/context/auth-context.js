@@ -123,7 +123,7 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Login Failed')
+      toast.error(err?.response?.data?.message ?? err?.message ?? 'Login Failed')
       if (errorCallback) errorCallback(err)
     }
   }
