@@ -79,6 +79,7 @@ export default function DataTable({
         field: i?.AdditionalColumnID,
         headerName: i?.ColumnName,
         minWidth: 250,
+        sortable: false,
         renderCell: ({ row }) => {
           console.log('row?.additionalValues :', row?.additionalValues)
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
@@ -118,6 +119,7 @@ export default function DataTable({
         headerName: 'Task',
         flex: 0.3,
         minWidth: 300,
+        sortable: false,
         renderCell: ({ row }) => {
           return <TaskTitle row={row} refetch={refetch} />
         }
@@ -128,6 +130,7 @@ export default function DataTable({
         headerName: 'Owner',
         minWidth: 100,
         description: 'Person who created this task',
+        sortable: false,
         minWidth: 100,
         renderCell: ({ row }) => {
           return <TaskPeople data={[row?.Owner]} refetch={refetch} />
@@ -146,6 +149,7 @@ export default function DataTable({
       {
         field: 'Status',
         flex: 0.2,
+        sortable: false,
         minWidth: 150,
         headerName: 'Status',
         valueGetter: (value, row) => row?.Status?.Statusname,

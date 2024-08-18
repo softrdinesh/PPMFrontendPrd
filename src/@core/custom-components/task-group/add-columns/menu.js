@@ -1,8 +1,9 @@
 import { createColumn } from '@api/task-group'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Box, Grid, Menu, MenuItem, TextField, Typography, useTheme, Zoom } from '@mui/material'
-import React, { useState } from 'react'
+import { Box, CircularProgress, Grid, Menu, MenuItem, TextField, Typography, useTheme, Zoom } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { Form } from 'react-hook-form'
 import { Controller, useForm } from 'react-hook-form'
 
 const getIcon = key => {
@@ -46,7 +47,7 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors, isSubmitting }
   } = useForm({ defaultValues: { columnName: '' } })
 
   const handleTypeClose = () => setSelectedColumnType(null)
@@ -61,17 +62,14 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
     })
   }
 
+  useEffect(() => {
+    reset()
+  }, [selectedColumnType])
+
   return (
     <>
-      <Menu
-        open={Boolean(open)}
-        onClose={handleClose}
-        anchorEl={open}
-        TransitionComponent={Zoom}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-      >
-        <Box component={'form'} onSubmit={handleSubmit(onSubmit)} p={4} maxWidth={'300px'}>
+      <Menu open={Boolean(open)} onClose={handleClose} anchorEl={open} TransitionComponent={Zoom}>
+        <Box p={4} maxWidth={'300px'}>
           {selectedColumnType ? (
             <Grid container spacing={6}>
               <Grid item xs={12}>
@@ -83,21 +81,24 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
                 </Box>
               </Grid>
               <Grid item xs={12}>
-                <Controller
-                  name='columnName'
-                  control={control}
-                  rules={{ required: 'Please name your column' }}
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      size='small'
-                      placeholder='Enter a label for column'
-                      {...field}
-                      error={!!errors?.columnName}
-                      helperText={errors?.columnName?.message}
-                    />
-                  )}
-                />
+                {' '}
+                <Form control={control} onSubmit={handleSubmit(onSubmit)}>
+                  <Controller
+                    name='columnName'
+                    control={control}
+                    rules={{ required: 'Please name your column' }}
+                    render={({ field }) => (
+                      <TextField
+                        fullWidth
+                        size='small'
+                        placeholder='Enter a label for column'
+                        {...field}
+                        error={!!errors?.columnName}
+                        helperText={errors?.columnName?.message}
+                      />
+                    )}
+                  />{' '}
+                </Form>
               </Grid>
               <Grid item xs={12}>
                 <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
@@ -105,16 +106,20 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
                     circular
                     variant='outlined'
                     color='secondary'
+                    startIcon={<Icon icon={'mdi:chevron-left'} />}
                     size='small'
                     onClick={handleTypeClose}
-                  >{`Close`}</CustomButton>
+                  >{`Back`}</CustomButton>
                   <CustomButton
                     type='submit'
                     circular
                     variant='outlined'
-                    endIcon={<Icon icon={'mdi:plus'} />}
+                    endIcon={!isSubmitting && <Icon icon={'mdi:plus'} />}
+                    disabled={isSubmitting}
                     size='small'
-                  >{`Add  Column`}</CustomButton>
+                  >
+                    {isSubmitting ? <CircularProgress color='secondary' size={20} /> : `Add  Column`}
+                  </CustomButton>
                 </Box>
               </Grid>
             </Grid>
