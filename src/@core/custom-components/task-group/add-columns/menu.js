@@ -37,12 +37,18 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
     setSelectedColumnType(e)
   }
 
+  const handleClose = () => {
+    setSelectedColumnType(null)
+    close()
+  }
+
   const {
     handleSubmit,
     control,
     reset,
     formState: { errors }
   } = useForm({ defaultValues: { columnName: '' } })
+
   const handleTypeClose = () => setSelectedColumnType(null)
 
   const onSubmit = async data => {
@@ -59,7 +65,7 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
     <>
       <Menu
         open={Boolean(open)}
-        onClose={close}
+        onClose={handleClose}
         anchorEl={open}
         TransitionComponent={Zoom}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
