@@ -145,8 +145,7 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
-      console.error('err :', err)
-      toast.error(err?.response?.data?.message ?? 'Registeration Failed')
+      toast.error(err?.response?.data?.message ?? err?.message ?? 'Registeration Failed')
       if (errorCallback) errorCallback(err)
     }
   }

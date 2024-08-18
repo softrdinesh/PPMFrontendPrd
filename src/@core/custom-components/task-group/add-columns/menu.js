@@ -69,20 +69,20 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
   return (
     <>
       <Menu open={Boolean(open)} onClose={handleClose} anchorEl={open} TransitionComponent={Zoom}>
-        <Box p={4} maxWidth={'300px'}>
+        <Box p={4} width={'300px'}>
           {selectedColumnType ? (
-            <Grid container spacing={6}>
-              <Grid item xs={12}>
-                <Box display={'flex'} gap={3} width={'200px'}>
-                  <Typography fontWeight={'bold'} fontSize={13} textTransform={'uppercase'}>
-                    {`Add ${selectedColumnType?.Title}`}
-                  </Typography>
-                  <Icon icon={getIcon(selectedColumnType?.Key)} fontSize={20} color={theme?.palette?.primary?.main} />
-                </Box>
-              </Grid>
-              <Grid item xs={12}>
-                {' '}
-                <Form control={control} onSubmit={handleSubmit(onSubmit)}>
+            <Form control={control} onSubmit={handleSubmit(onSubmit)}>
+              <Grid container spacing={6}>
+                <Grid item xs={12}>
+                  <Box display={'flex'} gap={3} width={'200px'}>
+                    <Typography fontWeight={'bold'} fontSize={13} textTransform={'uppercase'}>
+                      {`Add ${selectedColumnType?.Title}`}
+                    </Typography>
+                    <Icon icon={getIcon(selectedColumnType?.Key)} fontSize={20} color={theme?.palette?.primary?.main} />
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  {' '}
                   <Controller
                     name='columnName'
                     control={control}
@@ -98,31 +98,31 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
                       />
                     )}
                   />{' '}
-                </Form>
+                </Grid>
+                <Grid item xs={12}>
+                  <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
+                    <CustomButton
+                      circular
+                      variant='outlined'
+                      color='secondary'
+                      startIcon={<Icon icon={'mdi:chevron-left'} />}
+                      size='small'
+                      onClick={handleTypeClose}
+                    >{`Back`}</CustomButton>
+                    <CustomButton
+                      type='submit'
+                      circular
+                      variant='outlined'
+                      endIcon={!isSubmitting && <Icon icon={'mdi:plus'} />}
+                      disabled={isSubmitting}
+                      size='small'
+                    >
+                      {isSubmitting ? <CircularProgress color='secondary' size={20} /> : `Add  Column`}
+                    </CustomButton>
+                  </Box>
+                </Grid>
               </Grid>
-              <Grid item xs={12}>
-                <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
-                  <CustomButton
-                    circular
-                    variant='outlined'
-                    color='secondary'
-                    startIcon={<Icon icon={'mdi:chevron-left'} />}
-                    size='small'
-                    onClick={handleTypeClose}
-                  >{`Back`}</CustomButton>
-                  <CustomButton
-                    type='submit'
-                    circular
-                    variant='outlined'
-                    endIcon={!isSubmitting && <Icon icon={'mdi:plus'} />}
-                    disabled={isSubmitting}
-                    size='small'
-                  >
-                    {isSubmitting ? <CircularProgress color='secondary' size={20} /> : `Add  Column`}
-                  </CustomButton>
-                </Box>
-              </Grid>
-            </Grid>
+            </Form>
           ) : (
             <Grid container spacing={2}>
               <Grid item xs={12}>

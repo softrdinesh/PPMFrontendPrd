@@ -55,7 +55,7 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
         handleClose()
       }
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
     }
   }
 

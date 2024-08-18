@@ -60,7 +60,6 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
   })
 
   const onSubmit = async values => {
-    // console.log('Submitted values:', values.invitations)
     setIsLoading(true)
     await addWorkspace(values)
 

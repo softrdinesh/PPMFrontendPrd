@@ -38,7 +38,7 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch }) => {
         setOpenDialog(false)
       }
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
     } finally {
       setIsSubmitting(false)
     }

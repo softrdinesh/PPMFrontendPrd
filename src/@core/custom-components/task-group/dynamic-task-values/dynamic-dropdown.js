@@ -29,7 +29,7 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
         handleClose()
       }
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
     }
   }
 

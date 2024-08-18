@@ -40,7 +40,7 @@ const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], r
         handleClose()
       }
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
     }
   }
 

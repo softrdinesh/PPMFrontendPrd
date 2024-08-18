@@ -81,7 +81,6 @@ export default function DataTable({
         minWidth: 250,
         sortable: false,
         renderCell: ({ row }) => {
-          console.log('row?.additionalValues :', row?.additionalValues)
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
           switch (i?.ColumnType?.Keyname) {
             case 'DPK':

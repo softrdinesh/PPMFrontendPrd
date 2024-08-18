@@ -35,7 +35,7 @@ const TaskTitle = ({ row, refetch }) => {
         handleCloseMenu()
       }
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
     }
   }
 

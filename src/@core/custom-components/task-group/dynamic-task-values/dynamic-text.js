@@ -41,8 +41,7 @@ const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => 
         handleCloseMenu()
       }
     } catch (error) {
-      console.log('error :', error)
-    } finally {
+      console.error('error :', error)
     }
   }
 

@@ -2,8 +2,6 @@ import { Avatar, AvatarGroup, Box, Tooltip } from '@mui/material'
 import React from 'react'
 
 const TaskPeople = ({ data }) => {
-  console.log('data :', data)
-
   return (
     <Box display={'flex'} height={'100%'} alignItems={'center'}>
       <AvatarGroup max={2}>
