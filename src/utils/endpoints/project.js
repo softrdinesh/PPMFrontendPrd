@@ -24,5 +24,9 @@ export const project = {
   statusList: {
     ...defaults.methods.GET,
     uri: '/api/project-status'
+  },
+  statusAdd: {
+    ...defaults?.methods?.POST,
+    uri: '/api/project-status'
   }
 }

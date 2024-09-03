@@ -58,6 +58,7 @@ const TaskNameCell = ({ data, refetch }) => {
             variant='standard'
             value={taskName}
             onChange={handleChange}
+            inputProps={{ maxLength: 50 }}
             onKeyDown={handleKeyPress}
             onBlur={handleSave}
           />

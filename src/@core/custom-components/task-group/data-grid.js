@@ -199,7 +199,10 @@ export default function DataTable({
             noRowsVariant: isLoading ? 'skeleton' : 'linear-progress'
           }
         }}
-        sx={{ '& .MuiDataGrid-overlay .MuiLinearProgress-root': { height: 2 } }}
+        sx={{
+          '& .MuiDataGrid-overlay .MuiLinearProgress-root': { height: 2 },
+          '&::-webkit-scrollbar': { width: '1px' }
+        }}
         checkboxSelection
         onRowSelectionModelChange={handleSelectedRows}
         hideFooter

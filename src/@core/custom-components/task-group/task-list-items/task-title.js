@@ -24,6 +24,7 @@ const TaskTitle = ({ row, refetch }) => {
 
   const handleCloseMenu = () => {
     setAnchorEl(null)
+    reset({ value: row?.Taskname ?? '' })
   }
 
   const handleSave = async data => {
@@ -74,12 +75,13 @@ const TaskTitle = ({ row, refetch }) => {
                       field?.onChange(e)
                     }}
                     size='small'
+                    inputProps={{ maxLength: 50 }}
                     placeholder='Enter a value'
                   />
                 )}
               />
               <Box display={'flex'} px={3} width={'100%'} alignItems={'center'} justifyContent={'space-between'}>
-                <CustomButton size='small' variant='outlined' circular>
+                <CustomButton size='small' variant='outlined' circular onClick={handleCloseMenu}>
                   Close
                 </CustomButton>
                 <CustomButton

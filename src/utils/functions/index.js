@@ -30,3 +30,87 @@ export function getContrastingTextColor(color) {
 
   return isNumber(luminance) && luminance > 0.5 ? '#444444' : '#FFFFFF'
 }
+
+const defaultIcons = [
+  {
+    StatusID: 1,
+    Statusname: 'Done',
+    Icon: 'tabler:browser-check',
+    IconSize: 28
+  },
+  {
+    StatusID: 2,
+    Statusname: 'Working on it',
+    Icon: 'la:book',
+    IconSize: 26
+  },
+  {
+    StatusID: 3,
+    Statusname: 'On Hold',
+    Icon: 'hugeicons:hold-03',
+    IconSize: 24
+  },
+  {
+    StatusID: 4,
+    Statusname: 'Stuck',
+    Icon: 'streamline:pencil',
+    IconSize: 16
+  },
+  {
+    StatusID: 5,
+    Statusname: 'Future Steps',
+    Icon: 'fluent-mdl2:renewal-future',
+    IconSize: 20
+  },
+  {
+    StatusID: 6,
+    Statusname: 'In-Progress',
+    Icon: 'mdi:progress-wrench',
+    IconSize: 24
+  },
+  {
+    StatusID: 7,
+    Statusname: 'Development completed',
+    Icon: 'carbon:task-complete',
+    IconSize: 24
+  },
+  {
+    StatusID: 8,
+    Statusname: 'UAT',
+    Icon: 'teenyicons:ab-testing-solid',
+    IconSize: 24
+  },
+  {
+    StatusID: 9,
+    Statusname: 'Live Deployed',
+    Icon: 'fluent:location-live-24-regular',
+    IconSize: 24
+  }
+]
+
+export const generateStatusIcons = statusname => {
+  const defaultStatus = defaultIcons?.find(i => i?.Statusname === statusname)
+
+  if (defaultStatus) {
+    return defaultStatus?.Icon
+  } else {
+    return ''
+  }
+}
+
+export const getStatusIconSize = statusname => {
+  const defaultStatus = defaultIcons?.find(i => i?.Statusname === statusname)
+
+  if (defaultStatus) {
+    return defaultStatus?.IconSize
+  } else {
+    return 22
+  }
+}
+
+export const getStatusIconColor = color => {
+  const hexColor = getHexColor(color)
+  const luminance = getLuminance(hexColor)
+
+  return isNumber(luminance) && luminance > 0.9 ? '#444444' : '#FFFFFF'
+}

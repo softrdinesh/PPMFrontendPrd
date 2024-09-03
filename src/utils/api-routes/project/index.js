@@ -56,12 +56,18 @@ export const fetchProjectPriorityList = async () => {
     })
 }
 
-export const fetchProjectStatusList = async () => {
-  return callApi({ uriEndPoint: project.statusList })
+export const fetchProjectStatusList = async ({ taskGroupID = null }) => {
+  return callApi({ uriEndPoint: project.statusList, query: { taskGroupID } })
     .then(res => {
       return res?.data
     })
     .catch(err => {
       throw err
     })
+}
+
+export const addProjectStatus = async body => {
+  return callApi({ uriEndPoint: project.statusAdd, body })
+    .then(res => res)
+    .catch(err => err)
 }
