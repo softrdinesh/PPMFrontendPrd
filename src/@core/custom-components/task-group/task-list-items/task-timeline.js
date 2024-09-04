@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { memo, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -28,6 +28,7 @@ import { dateFormatMomentTask, dateFormatPicker } from 'src/constants/formats'
 
 // ** Third Party Styles Imports
 import 'react-datepicker/dist/react-datepicker.css'
+import { Menu } from '@mui/material'
 
 const TaskTimeline = ({ row, handleTimeLineChange }) => {
   const [open, setOpen] = useState(false)
@@ -36,12 +37,14 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
     handleSubmit,
     control,
     watch,
+    reset,
     setValue,
     formState: { isSubmitting, isDirty }
   } = useForm({
     defaultValues: { TimelineStartDate: row?.TimelineStartDate ?? null, TimelineEndDate: row?.TimelineEndDate ?? null }
   })
 
+  console.log('row?.TimelineEndDate :', moment(row?.TimelineEndDate)?.toDate())
   const handleClose = () => setOpen(false)
 
   const onSubmit = async data => {
@@ -53,11 +56,17 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
     }
   }
 
+  useEffect(() => {
+    if (open) {
+      reset({ TimelineStartDate: row?.TimelineStartDate ?? null, TimelineEndDate: row?.TimelineEndDate ?? null })
+    }
+  }, [open])
+
   return (
     <Box display={'flex'} alignItems={'center'} justifyContent={'start'} height={'100%'}>
       {row?.TimelineStartDate || row?.TimelineEndDate ? (
         <Typography
-          onClick={() => setOpen(true)}
+          onClick={e => setOpen(e?.currentTarget)}
         >{`${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format(dateFormatMomentTask) : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format(dateFormatMomentTask) : ''}`}</Typography>
       ) : (
         <Chip
@@ -65,29 +74,23 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
           label='Pick a timeline'
           color='secondary'
           skin='light'
-          onClick={() => setOpen(true)}
+          onClick={e => setOpen(e?.currentTarget)}
           sx={{ '&:hover': { backgroundColor: 'inherit' } }}
         />
       )}
-      <Dialog open={open} TransitionComponent={Zoom} onClose={handleClose} fullWidth maxWidth='sm'>
-        <Box
-          p={3}
-          bgcolor={'background.default'}
-          display={'flex'}
-          justifyContent={'space-between'}
-          alignItems={'center'}
-        >
-          <Typography fontWeight={500} fontSize={'1.2rem'}>
-            Timeline Picker
-          </Typography>
-          <IconButton onClick={handleClose}>
-            <Icon icon={'mdi:close'} />
-          </IconButton>
-        </Box>
-        <DialogContent>
+      <Menu
+        open={!!open}
+        anchorEl={open}
+        onClose={handleClose}
+        TransitionComponent={Zoom}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: 'center' }}
+        sx={{ '& .MuiList-root': { p: 0 } }}
+      >
+        <Box p={2} maxWidth={'300px'}>
           <Form control={control} onSubmit={handleSubmit(onSubmit)}>
             <DatePickerWrapper>
-              <Grid container spacing={6}>
+              <Grid container spacing={6} py={5}>
                 <Grid item xs={6}>
                   <Controller
                     name='TimelineStartDate'
@@ -102,10 +105,11 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                             setValue('TimelineEndDate', null)
                           }
                         }}
-                        isClearable
                         maxDate={watch('TimelineEndDate')}
                         dateFormat={dateFormatPicker}
-                        customInput={<TextField label='Timeline Start Date' fullWidth autoComplete='off' />}
+                        customInput={
+                          <TextField size='small' label='Timeline Start Date' fullWidth autoComplete='off' />
+                        }
                       />
                     )}
                   />
@@ -119,14 +123,24 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                         selected={field?.value ? moment(field?.value)?.toDate() : null}
                         withPortal
                         {...field}
-                        isClearable
                         minDate={watch('TimelineStartDate')}
                         disabled={!watch('TimelineStartDate')}
                         dateFormat={dateFormatPicker}
-                        customInput={<TextField label='Timeline End Date' fullWidth autoComplete='off' />}
+                        customInput={<TextField size='small' label='Timeline End Date' fullWidth autoComplete='off' />}
                       />
                     )}
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <Box display={'flex'} width={'100%'} justifyContent={'center'}>
+                    <DatePicker
+                      inline
+                      startDate={watch('TimelineStartDate') ? moment(watch('TimelineStartDate'))?.toDate() : null}
+                      selectsRange
+                      readOnly
+                      endDate={watch('TimelineEndDate') ? moment(watch('TimelineEndDate'))?.toDate() : null}
+                    />
+                  </Box>
                 </Grid>
                 <Grid item xs={12}>
                   <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} mt={3} gap={4}>
@@ -141,8 +155,8 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
               </Grid>
             </DatePickerWrapper>
           </Form>
-        </DialogContent>
-      </Dialog>
+        </Box>
+      </Menu>
     </Box>
   )
 }

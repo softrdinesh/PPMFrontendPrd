@@ -142,7 +142,7 @@ export default function DataTable({
         headerName: 'Priority',
         valueGetter: (value, row) => row?.Priority?.PriorityName,
         renderCell: ({ row }) => {
-          return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} />
+          return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} refetch={refetch} />
         }
       },
       {
@@ -153,7 +153,7 @@ export default function DataTable({
         headerName: 'Status',
         valueGetter: (value, row) => row?.Status?.Statusname,
         renderCell: ({ row }) => {
-          return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} />
+          return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} refetch={refetch} />
         }
       },
       {
@@ -207,6 +207,7 @@ export default function DataTable({
         onRowSelectionModelChange={handleSelectedRows}
         hideFooter
         disableRowSelectionOnClick
+        disableMultipleRowSelection
         disableColumnMenu
         disableColumnResize
       />

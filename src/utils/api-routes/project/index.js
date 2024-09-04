@@ -46,14 +46,26 @@ export const addProject = async body => {
     })
 }
 
-export const fetchProjectPriorityList = async () => {
-  return callApi({ uriEndPoint: project.priorityList })
+export const fetchProjectPriorityList = async ({ taskGroupID = null }) => {
+  return callApi({ uriEndPoint: project.priorityList, query: { taskGroupID } })
     .then(res => {
       return res?.data
     })
     .catch(err => {
       throw err
     })
+}
+
+export const addProjectPriority = async body => {
+  return callApi({ uriEndPoint: project.priorityAdd, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const updateProjectPriority = async ({ body, id }) => {
+  return callApi({ uriEndPoint: project.priorityUpdate, pathParams: { id }, body })
+    .then(res => res)
+    .catch(err => err)
 }
 
 export const fetchProjectStatusList = async ({ taskGroupID = null }) => {
@@ -68,6 +80,12 @@ export const fetchProjectStatusList = async ({ taskGroupID = null }) => {
 
 export const addProjectStatus = async body => {
   return callApi({ uriEndPoint: project.statusAdd, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const updateProjectStatus = async ({ body, id }) => {
+  return callApi({ uriEndPoint: project.statusUpdate, pathParams: { id }, body })
     .then(res => res)
     .catch(err => err)
 }

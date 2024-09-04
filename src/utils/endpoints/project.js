@@ -21,6 +21,14 @@ export const project = {
     ...defaults.methods.GET,
     uri: '/api/project-priority'
   },
+  priorityAdd: {
+    ...defaults.methods.POST,
+    uri: '/api/project-priority'
+  },
+  priorityUpdate: {
+    ...defaults.methods.PUT,
+    uri: '/api/project-priority/:id'
+  },
   statusList: {
     ...defaults.methods.GET,
     uri: '/api/project-status'
@@ -28,5 +36,9 @@ export const project = {
   statusAdd: {
     ...defaults?.methods?.POST,
     uri: '/api/project-status'
+  },
+  statusUpdate: {
+    ...defaults?.methods?.PUT,
+    uri: '/api/project-status/:id'
   }
 }

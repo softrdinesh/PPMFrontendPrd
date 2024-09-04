@@ -1,7 +1,7 @@
-import { addProjectStatus, fetchProjectStatusList } from '@api/project'
+import { addProjectStatus, fetchProjectStatusList, updateProjectStatus } from '@api/project'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Avatar, Box, Button, Grid, Menu, MenuItem, TextField, Tooltip, Typography, Zoom } from '@mui/material'
+import { Avatar, Box, Grid, IconButton, Menu, MenuItem, TextField, Tooltip, Typography, Zoom } from '@mui/material'
 import { pattern } from '@patterns'
 import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -16,7 +16,7 @@ import {
   getStatusIconSize
 } from 'src/utils/functions'
 
-const StatusMenuItem = ({ item, row, handleStatusChange, handleClose }) => {
+const StatusMenuItem = ({ item, row, handleStatusChange, handleClose, handleEdit }) => {
   const generateTextColor = colorCode => {
     if (!colorCode) return null
 
@@ -32,48 +32,60 @@ const StatusMenuItem = ({ item, row, handleStatusChange, handleClose }) => {
 
   return (
     <Grid item xs={12}>
-      <Box
-        component={MenuItem}
-        key={item?.StatusID}
-        borderRadius={1}
-        color={generateTextColor(item?.Colorcode)}
-        display={'flex'}
-        gap={2}
-        p={0}
-        alignItems={'center'}
-        onClick={() => {
-          if (row?.StatusID != item?.StatusID) {
-            handleStatusChange(row, { StatusID: item?.StatusID })
-          }
-          handleClose()
-        }}
-      >
-        <Avatar variant='rounded' sx={{ bgcolor: item?.Colorcode, width: 30, height: 30, p: 0 }}>
-          {item?.TaskgroupID ? (
-            <Icon
-              icon={'material-symbols:table-chart-view-outline'}
-              color={getContrastingTextColor(item?.Colorcode)}
-              fontSize={22}
-            />
-          ) : (
-            <Icon
-              icon={generateStatusIcons(item?.Statusname)}
-              color={getStatusIconColor(item?.Colorcode)}
-              fontSize={getStatusIconSize(item?.Statusname)}
-            />
-          )}
-        </Avatar>
-        <Typography textOverflow={'ellipsis'} overflow={'hidden'} whiteSpace={'nowrap'}>
-          {item?.Statusname}
-        </Typography>
+      {' '}
+      <Box display={'flex'} alignItems={'stretch'} gap={2}>
+        <Box
+          component={MenuItem}
+          key={item?.StatusID}
+          borderRadius={1}
+          color={generateTextColor(item?.Colorcode)}
+          display={'flex'}
+          gap={2}
+          flex={1}
+          p={0}
+          alignItems={'center'}
+          onClick={() => {
+            if (row?.StatusID != item?.StatusID) {
+              handleStatusChange(row, { StatusID: item?.StatusID })
+            }
+            handleClose()
+          }}
+        >
+          <Avatar variant='rounded' sx={{ bgcolor: item?.Colorcode, width: 30, height: 30, p: 0 }}>
+            {item?.TaskgroupID ? (
+              <Icon
+                icon={'material-symbols:table-chart-view-outline'}
+                color={getContrastingTextColor(item?.Colorcode)}
+                fontSize={22}
+              />
+            ) : (
+              <Icon
+                icon={generateStatusIcons(item?.Statusname)}
+                color={getStatusIconColor(item?.Colorcode)}
+                fontSize={getStatusIconSize(item?.Statusname)}
+              />
+            )}
+          </Avatar>
+          <Tooltip title={item?.Statusname}>
+            <Typography flex={1} maxWidth={'140px'} textOverflow={'ellipsis'} overflow={'hidden'} whiteSpace={'nowrap'}>
+              {item?.Statusname}
+            </Typography>
+          </Tooltip>
+        </Box>
+        {!item?.IsDefault && item?.TaskgroupID && (
+          <IconButton onClick={() => handleEdit(item)}>
+            <Icon icon={'mdi:pencil-outline'} fontSize={18} />
+          </IconButton>
+        )}
       </Box>
     </Grid>
   )
 }
 
-const TaskStatus = ({ row, handleStatusChange }) => {
+const TaskStatus = ({ row, handleStatusChange, refetch }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [formAnchor, setFormAnchor] = useState(null)
+  const [isEdit, setIsEdit] = useState(null)
   const { statusList } = useWorkspace()
 
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
@@ -108,23 +120,10 @@ const TaskStatus = ({ row, handleStatusChange }) => {
     const luminance = getLuminance(hexColor)
 
     if (luminance < 0.5) {
-      return `${hexColor}33`
+      return `${hexColor}66`
     }
 
     return colorCode
-  }
-
-  const generateTextColor = colorCode => {
-    if (!colorCode) return null
-
-    const hexColor = getHexColor(colorCode)
-    const luminance = getLuminance(hexColor)
-
-    if (luminance < 0.5) {
-      return `${hexColor}`
-    }
-
-    return getContrastingTextColor(colorCode)
   }
 
   const checkChangeInHexValue = value => {
@@ -135,16 +134,33 @@ const TaskStatus = ({ row, handleStatusChange }) => {
     return false
   }
 
+  const handleEdit = item => {
+    setIsEdit(item?.StatusID)
+    reset({ Statusname: item?.Statusname, Colorcode: item?.Colorcode })
+    setFormAnchor(anchorEl)
+    setAnchorEl(null)
+  }
+
   const onSubmit = async data => {
     const body = {
       ...data,
       TaskgroupID: row?.TaskGroupID
     }
-    const response = await addProjectStatus(body)
-    if (response?.status) {
-      refetchStatusList()
-      reset({ Statusname: '', Colorcode: '' })
-      handleFormClose()
+    if (isEdit) {
+      const response = await updateProjectStatus({ body, id: isEdit })
+      if (response?.status) {
+        refetchStatusList()
+        refetch()
+        reset({ Statusname: '', Colorcode: '' })
+        handleFormClose()
+      }
+    } else {
+      const response = await addProjectStatus(body)
+      if (response?.status) {
+        refetchStatusList()
+        reset({ Statusname: '', Colorcode: '' })
+        handleFormClose()
+      }
     }
   }
 
@@ -158,7 +174,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
           height={'60%'}
           display={'flex'}
           alignItems={'center'}
-          color={generateTextColor(row?.Status?.Colorcode)}
+          color={getContrastingTextColor(generateBGColor(row?.Status?.Colorcode))}
           px={2}
           justifyContent={'center'}
           border={1}
@@ -166,13 +182,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
           onClick={handleOpen}
           sx={{ cursor: 'pointer' }}
         >
-          <Typography
-            fontSize={'0.85rem'}
-            fontWeight={500}
-            textOverflow={'ellipsis'}
-            overflow={'hidden'}
-            color={'inherit'}
-          >
+          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
             {row?.Status?.Statusname ?? 'None'}
           </Typography>
         </Box>
@@ -186,7 +196,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
         transformOrigin={{ horizontal: 'center' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
-        <Box maxWidth={'400px'} p={4}>
+        <Box maxWidth={'500px'} p={4}>
           <Grid container spacing={3}>
             <Grid item xs={6}>
               <Box pb={2}>
@@ -219,7 +229,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
               </Grid>
             </Grid>
             <Grid item xs={6}>
-              <Grid container spacing={3}>
+              <Grid container spacing={4} maxHeight={'200px'} sx={{ overflowY: 'auto' }}>
                 <Grid item xs={12}>
                   <Box
                     component={MenuItem}
@@ -249,6 +259,7 @@ const TaskStatus = ({ row, handleStatusChange }) => {
                     handleStatusChange={handleStatusChange}
                     key={item?.StatusID}
                     handleClose={handleClose}
+                    handleEdit={handleEdit}
                   />
                 ))}
               </Grid>

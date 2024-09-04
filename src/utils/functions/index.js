@@ -28,7 +28,7 @@ export function getContrastingTextColor(color) {
   const hexColor = getHexColor(color)
   const luminance = getLuminance(hexColor)
 
-  return isNumber(luminance) && luminance > 0.5 ? '#444444' : '#FFFFFF'
+  return isNumber(luminance) && luminance > 0.5 ? '#000' : '#FFFFFF'
 }
 
 const defaultIcons = [
