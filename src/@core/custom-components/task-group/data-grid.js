@@ -140,7 +140,6 @@ export default function DataTable({
         flex: 0.15,
         minWidth: 150,
         headerName: 'Priority',
-        valueGetter: (value, row) => row?.Priority?.PriorityName,
         renderCell: ({ row }) => {
           return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} refetch={refetch} />
         }
@@ -151,7 +150,6 @@ export default function DataTable({
         sortable: false,
         minWidth: 150,
         headerName: 'Status',
-        valueGetter: (value, row) => row?.Status?.Statusname,
         renderCell: ({ row }) => {
           return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} refetch={refetch} />
         }
@@ -161,7 +159,6 @@ export default function DataTable({
         flex: 0.2,
         minWidth: 220,
         headerName: 'Timeline',
-        valueGetter: (value, row) => `${row?.TimelineStartDate || ''} ${row?.TimelineEndDate || ''}`,
         renderCell: ({ row }) => {
           return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} />
         }

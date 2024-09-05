@@ -44,7 +44,6 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
     defaultValues: { TimelineStartDate: row?.TimelineStartDate ?? null, TimelineEndDate: row?.TimelineEndDate ?? null }
   })
 
-  console.log('row?.TimelineEndDate :', moment(row?.TimelineEndDate)?.toDate())
   const handleClose = () => setOpen(false)
 
   const onSubmit = async data => {
