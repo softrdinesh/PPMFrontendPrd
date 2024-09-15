@@ -65,6 +65,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
     <Box display={'flex'} alignItems={'center'} justifyContent={'start'} height={'100%'}>
       {row?.TimelineStartDate || row?.TimelineEndDate ? (
         <Typography
+          whiteSpace={'nowrap'}
           onClick={e => setOpen(e?.currentTarget)}
         >{`${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format(dateFormatMomentTask) : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format(dateFormatMomentTask) : ''}`}</Typography>
       ) : (

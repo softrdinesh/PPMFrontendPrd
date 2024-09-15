@@ -40,5 +40,17 @@ export const project = {
   statusUpdate: {
     ...defaults?.methods?.PUT,
     uri: '/api/project-status/:id'
+  },
+  dropdownList: {
+    ...defaults.methods.GET,
+    uri: '/api/dropdown-items'
+  },
+  dropdownAdd: {
+    ...defaults.methods.POST,
+    uri: '/api/dropdown-items'
+  },
+  dropdownUpdate: {
+    ...defaults.methods.PUT,
+    uri: '/api/dropdown-items/:id'
   }
 }

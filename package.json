@@ -28,6 +28,7 @@
     "@mui/styles": "^5.16.7",
     "@mui/x-data-grid": "^7.16.0",
     "@popperjs/core": "^2.11.8",
+    "@tanstack/react-table": "^8.20.5",
     "apexcharts-clevision": "3.28.5",
     "axios": "1.7.4",
     "axios-mock-adapter": "2.0.0",
@@ -37,6 +38,8 @@
     "moment": "^2.29.4",
     "next": "14.2.5",
     "nprogress": "^0.2.0",
+    "postcss-attribute-case-insensitive": "^7.0.0",
+    "postcss-nested": "^6.2.0",
     "react": "18.3.1",
     "react-apexcharts": "^1.4.1",
     "react-datepicker": "^7.3.0",
@@ -50,6 +53,7 @@
   },
   "devDependencies": {
     "@types/node": "22.4.0",
+    "autoprefixer": "^10.4.20",
     "eslint": "9.9.0",
     "eslint-config-next": "14.2.5",
     "eslint-config-prettier": "^9.1.0",
@@ -57,6 +61,8 @@
     "eslint-import-resolver-typescript": "3.6.1",
     "eslint-plugin-import": "2.29.1",
     "next-transpile-modules": "^10.0.1",
+    "postcss": "8.4.40",
+    "postcss-styled-syntax": "0.6.4",
     "prettier": "3.3.3"
   }
 }

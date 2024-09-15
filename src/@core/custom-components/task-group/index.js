@@ -5,6 +5,7 @@ import DataTable from './data-grid'
 import CustomButton from '@components/button'
 import DeleteDialog from '@custom-components/delete-dialog'
 import { deleteMultipleTask } from '@api/task'
+import Table from './table'
 
 function TaskGroupComponent({
   isLoading,
@@ -67,8 +68,8 @@ function TaskGroupComponent({
             />
           </Box>
         </Grid>
-        <Grid item xs={12}>
-          <DataTable
+        <Grid item xs={12} overflow={'hidden'}>
+          <Table
             projectID={projectID}
             isLoading={isLoading}
             isRefetching={isRefetching}

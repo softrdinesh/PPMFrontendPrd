@@ -199,7 +199,13 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
           onClick={handleOpen}
           sx={{ cursor: 'pointer' }}
         >
-          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            overflow={'hidden'}
+            color={'inherit'}
+            whiteSpace={'nowrap'}
+          >
             {dynamicValue?.Status?.Statusname ?? 'None'}
           </Typography>
         </Box>

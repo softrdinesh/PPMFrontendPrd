@@ -89,3 +89,19 @@ export const updateProjectStatus = async ({ body, id }) => {
     .then(res => res)
     .catch(err => err)
 }
+
+export const fetchProjectDropDownList = async ({ taskGroupID = null }) => {
+  return callApi({ uriEndPoint: project.dropdownList, query: { taskGroupID } })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+export const addDropdownItem = async body => {
+  return callApi({ uriEndPoint: project.dropdownAdd, body })
+    .then(res => res)
+    .catch(err => err)
+}
