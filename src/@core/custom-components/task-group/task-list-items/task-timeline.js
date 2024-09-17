@@ -132,7 +132,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <Box display={'flex'} width={'100%'} justifyContent={'center'}>
+                  <Box display={'flex'} width={'100%'} justifyContent={'center'} className='inline-calender'>
                     <DatePicker
                       inline
                       startDate={watch('TimelineStartDate') ? moment(watch('TimelineStartDate'))?.toDate() : null}

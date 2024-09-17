@@ -1,5 +1,6 @@
 import { fetchColumnType } from '@api/column-type'
-import { updateTask } from '@api/task'
+import { addTask, updateTask } from '@api/task'
+import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
 import {
   Box,
@@ -21,6 +22,7 @@ import {
   getPaginationRowModel,
   useReactTable
 } from '@tanstack/react-table'
+import { debounce } from 'lodash'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useWorkspace } from 'src/context/workspace-context'
@@ -74,8 +76,11 @@ const defaultColumn = {
         variant='standard'
         sx={{
           border: 0,
-          '&::before, &::before:hover': {
-            borderBottom: '0px'
+          '& .MuiInputBase-root::before': {
+            borderBottom: 0
+          },
+          '& .MuiInputBase-root:hover::before': {
+            borderBottom: 0
           }
         }}
         fullWidth
@@ -103,7 +108,7 @@ const DataTable = ({
 
   // ** Hooks
   const { selected } = useWorkspace()
-  const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
+  const [skipAutoResetPageIndex] = useSkipper()
 
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
@@ -128,10 +133,17 @@ const DataTable = ({
 
   const filterDynamicValue = (additionColumnID, additionalValues) => {
     const filteredValues = additionalValues.find(item => item.AdditionalColumnID === additionColumnID)
-    console.log('filteredValues :', filteredValues)
 
     return filteredValues ?? null
   }
+
+  // ** Functions
+  const handleAddTask = useCallback(async () => {
+    await addTask({ taskGroupID, projectID, workspaceID: selected?.WorkspaceID })
+    refetch()
+  }, [projectID, refetch, selected?.WorkspaceID, taskGroupID])
+
+  const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
   const dynamicColumn = useCallback(() => {
     return taskGroupData?.additionalColumns?.map(i => {
@@ -147,7 +159,13 @@ const DataTable = ({
             case 'DPK':
               return <DynamicDate columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
             case 'DDL':
-              return <DynamicDropdown columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
+              const dropdownList = row?.additionalValues?.filter(
+                addVal => addVal?.AdditionalColumnID === i?.AdditionalColumnID
+              )
+
+              return (
+                <DynamicDropdown columnData={i} rowData={row} dynamicValue={dropdownList ?? null} refetch={refetch} />
+              )
             case 'LBL':
               return <DynamicStatus columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
             case 'USR':
@@ -265,7 +283,6 @@ const DataTable = ({
           return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} refetch={refetch} />
         }
       },
-
       ...dynamicColumn(),
       {
         id: 'add-column',
@@ -294,23 +311,21 @@ const DataTable = ({
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     meta: {
-      updateData: (rowIndex, columnId, value) => {
-        console.log('rowIndex :', rowIndex)
-        console.log('value :', value)
-        console.log('columnId :', columnId)
-        // Skip page index reset until after next rerender
+      updateData: async (rowIndex, columnId, value) => {
         skipAutoResetPageIndex()
-        // setData(old =>
-        //   old.map((row, index) => {
-        //     if (index === rowIndex) {
-        //       return {
-        //         ...old[rowIndex],
-        //         [columnId]: value
-        //       }
-        //     }
-        //     return row
-        //   })
-        // )
+
+        if (columnId === 'Taskname') {
+          try {
+            const body = { Taskname: value }
+
+            const response = await updateTask({ id: taskList?.[rowIndex]?.TaskID, body })
+            if (response) {
+              refetch()
+            }
+          } catch (error) {
+            console.error('error :', error)
+          }
+        }
       }
     }
   })
@@ -320,14 +335,20 @@ const DataTable = ({
   }
 
   return (
-    <Box sx={{ width: '100%', overflowX: 'auto', '&::-webkit-scrollbar': { height: '4px' } }}>
+    <Box
+      sx={{
+        width: '100%',
+        overflowX: 'auto',
+        '&::-webkit-scrollbar': { height: '1px' },
+        border: 1,
+        borderRadius: 1,
+        boxShadow: theme => theme.shadows[3],
+        borderColor: theme => theme.palette.divider
+      }}
+    >
       <Table
         sx={{
-          minWidth: 'max-content', // This ensures the table takes the required width based on content
-          border: 1,
-          borderRadius: 1,
-          boxShadow: theme => theme.shadows[3],
-          borderColor: theme => theme.palette.divider
+          minWidth: 'max-content'
         }}
       >
         <TableHead>
@@ -376,6 +397,11 @@ const DataTable = ({
           })}
         </TableBody>
       </Table>
+      <Box m={2}>
+        <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={debouncedHandleAddTask}>
+          Add Task
+        </CustomButton>
+      </Box>
       <AddColumnsMenu
         open={anchorEl}
         close={handlePlusMenuClose}

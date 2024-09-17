@@ -20,5 +20,9 @@ export const task = {
   deleteMulitpleTask: {
     ...defaults.methods.DELETE,
     uri: '/api/task-delete-mulitple'
+  },
+  dlDynamicValue: {
+    ...defaults.methods.DELETE,
+    uri: '/api/dynamic-task/:dynamicId'
   }
 }

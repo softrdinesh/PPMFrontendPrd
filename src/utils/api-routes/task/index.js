@@ -59,3 +59,13 @@ export const deleteMultipleTask = async body => {
       return err
     })
 }
+
+export const deleteDynamicValue = async dynamicId => {
+  return callApi({ uriEndPoint: task.dlDynamicValue, pathParams: { dynamicId } })
+    .then(res => {
+      return res
+    })
+    .catch(err => {
+      return err
+    })
+}

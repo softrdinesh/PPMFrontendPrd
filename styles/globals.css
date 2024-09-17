@@ -159,3 +159,7 @@ input.color-input {
   padding: 0;
   width: 30px;
 }
+
+.inline-calender .react-datepicker {
+  box-shadow: none !important;
+}
