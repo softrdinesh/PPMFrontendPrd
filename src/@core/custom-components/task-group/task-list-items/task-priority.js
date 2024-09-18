@@ -232,7 +232,7 @@ const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
       </Menu>
 
       <Menu
-        open={Boolean(formAnchor)}
+        open={!!formAnchor}
         anchorEl={formAnchor}
         onClose={handleFormClose}
         TransitionComponent={Zoom}

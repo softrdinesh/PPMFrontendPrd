@@ -24,5 +24,13 @@ export const task = {
   dlDynamicValue: {
     ...defaults.methods.DELETE,
     uri: '/api/dynamic-task/:dynamicId'
+  },
+  subTaskList: {
+    ...defaults.methods.GET,
+    uri: '/api/sub-task'
+  },
+  addSubTask: {
+    ...defaults.methods.POST,
+    uri: '/api/sub-task'
   }
 }

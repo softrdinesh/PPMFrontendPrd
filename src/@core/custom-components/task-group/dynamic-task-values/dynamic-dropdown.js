@@ -176,6 +176,7 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
                     <Box display={'flex'} alignItems={'center'} flexWrap={'wrap'} rowGap={3} columnGap={3}>
                       {dynamicValue?.map(i => (
                         <Box
+                          key={i?.Dropdown?.Dynamic_ddl_ID}
                           borderRadius={10}
                           py={1}
                           px={3}

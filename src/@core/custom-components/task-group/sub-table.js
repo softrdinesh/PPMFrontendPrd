@@ -1,27 +1,19 @@
 // ** React Imports
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 // ** MUI Imports
-import { Box, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from '@mui/material'
+import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from '@mui/material'
 
 // ** Third Party Imports
-import { flexRender, useReactTable, getCoreRowModel } from '@tanstack/react-table'
+import CustomButton from '@components/button'
+import { Icon } from '@iconify/react'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { debounce } from 'lodash'
+import { useQuery } from 'react-query'
+import TaskPeople from './task-list-items/task-people'
+import { addSubTask, deleteSubTask, fetchSubTaskList } from '@api/sub-task'
+import DeleteDialog from '@custom-components/delete-dialog'
 
-function useSkipper() {
-  const shouldSkipRef = useRef(true)
-  const shouldSkip = shouldSkipRef.current
-
-  // Wrap a function with this to skip a pagination reset temporarily
-  const skip = useCallback(() => {
-    shouldSkipRef.current = false
-  }, [])
-
-  useEffect(() => {
-    shouldSkipRef.current = true
-  })
-
-  return [shouldSkip, skip]
-}
 // Give our default column cell renderer editing superpowers!
 const defaultColumn = {
   cell: ({ getValue, row: { index }, column: { id }, table }) => {
@@ -61,19 +53,93 @@ const defaultColumn = {
 }
 
 const SubTable = ({ row }) => {
-  // ** Hooks
-  const [skipAutoResetPageIndex] = useSkipper()
+  // ** States
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteData, setDeleteData] = useState(null)
+
+  // ** API Calls
+  const { data: subTaskList = [], refetch: refetchSubTask } = useQuery({
+    queryKey: ['sub-task-list', row?.original?.TaskID],
+    queryFn: () => fetchSubTaskList(row?.original?.TaskID)
+  })
+
+  // ** Functions
+  const handleAddTask = useCallback(async () => {
+    await addSubTask({ taskID: row?.original?.TaskID })
+    refetchSubTask()
+  }, [])
+
+  const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
+
+  const handleDeleteSubTask = rowData => {
+    setDeleteOpen(true)
+    setDeleteData(rowData)
+  }
+
+  const handleDelete = useCallback(async () => {
+    const response = await deleteSubTask(deleteData?.SubTaskID)
+    if (response?.status) {
+      refetchSubTask()
+      setDeleteData(null)
+      setDeleteOpen(false)
+    }
+  }, [deleteData])
 
   // ** Columns
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'Taskname',
+        accessorKey: 'SubTaskID',
+        minSize: 30,
+        size: 30,
+        header: () => <></>,
+        cell: ({ row: { original } }) => {
+          return (
+            <IconButton sx={{ p: 0 }} size='small' onClick={() => handleDeleteSubTask(original)}>
+              <Icon icon={'mingcute:delete-fill'} color='#D02B20' />
+            </IconButton>
+          )
+        }
+      },
+      {
+        accessorKey: 'SubTaskName',
         minSize: 300,
         size: 300,
         header: () => (
           <Typography variant='body2' fontWeight={800}>
-            Task
+            Sub Task
+          </Typography>
+        )
+      },
+      {
+        accessorFn: row => row.Owner.Name,
+        id: 'owner',
+        size: 160,
+        maxSize: 160,
+        cell: ({ row: { original } }) => {
+          return <TaskPeople data={[original?.Owner]} refetch={refetchSubTask} />
+        },
+        header: () => (
+          <Typography variant='body2' fontWeight={800}>
+            Owner
+          </Typography>
+        )
+      },
+      {
+        accessorKey: 'Effort',
+        id: 'effort',
+        size: 200,
+        maxSize: 200,
+        cell: ({ row: { original } }) => {
+          return (
+            <Typography variant='body2' fontWeight={800}>
+              {original?.Effort ?? '-'}
+            </Typography>
+          )
+        },
+        header: () => (
+          <Typography variant='body2' fontWeight={800}>
+            Planned Effort
           </Typography>
         )
       }
@@ -82,37 +148,38 @@ const SubTable = ({ row }) => {
   )
 
   const table = useReactTable({
-    data: [row?.original],
+    data: subTaskList,
     columns,
     defaultColumn,
-    getCoreRowModel: getCoreRowModel(),
-    meta: {
-      updateData: async (rowIndex, columnId, value) => {
-        return
-        if (columnId === 'Taskname') {
-          try {
-            const body = { Taskname: value }
-
-            const response = await updateTask({ id: taskList?.[rowIndex]?.TaskID, body })
-            if (response) {
-              refetch()
-            }
-          } catch (error) {
-            console.error('error :', error)
-          }
-        }
-      }
-    }
+    getCoreRowModel: getCoreRowModel()
   })
 
   return (
-    <Box>
+    <Box py={4} ml={3} display={'flex'}>
+      <Box display={'flex'} flexDirection={'column'} width={50} position={'relative'}>
+        <Box height={45} display={'flex'} alignItems={'center'} justifyContent={'center'}>
+          <Box height={10} width={10} borderRadius={100} bgcolor={'secondary.light'} />
+        </Box>
+        {subTaskList?.map(i => (
+          <Box height={64.44} display={'flex'} alignItems={'center'} justifyContent={'end'}>
+            <Box width={22} borderTop={'2px dashed'} borderColor={'secondary.light'} position={'relative'}></Box>
+          </Box>
+        ))}
+        <Box height={50} display={'flex'} alignItems={'center'} justifyContent={'center'}>
+          <Box height={10} width={10} borderRadius={100} bgcolor={'secondary.light'} />
+        </Box>
+        <Box
+          position={'absolute'}
+          borderRight={`2px dashed`}
+          borderColor={'secondary.light'}
+          sx={{ top: '50%', left: '50%', transform: 'translate(-50%,-50%)', height: 'calc(100% - 60px)' }}
+        />
+      </Box>
       <Box
         sx={{
-          width: '100%',
           overflowX: 'auto',
           '&::-webkit-scrollbar': { height: '1px' },
-          border: 1,
+          // border: 1,
           borderRadius: 1,
           boxShadow: theme => theme.shadows[3],
           borderColor: theme => theme.palette.divider
@@ -161,9 +228,26 @@ const SubTable = ({ row }) => {
             })}
           </TableBody>
         </Table>
+        <Box m={2}>
+          <CustomButton
+            variant='text'
+            size='small'
+            color='primary'
+            endIcon={<Icon icon={'mdi:plus'} />}
+            onClick={debouncedHandleAddTask}
+          >
+            Add Sub Task
+          </CustomButton>
+        </Box>
       </Box>
+      <DeleteDialog
+        open={deleteOpen && !!deleteData}
+        setOpen={setDeleteOpen}
+        description={`Subtask '${deleteData?.SubTaskName}' will be deleted`}
+        onConfirm={handleDelete}
+      />
     </Box>
   )
 }
 
-export default SubTable
+export default memo(SubTable)

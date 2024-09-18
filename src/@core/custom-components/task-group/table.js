@@ -23,7 +23,7 @@ import {
   useReactTable
 } from '@tanstack/react-table'
 import { debounce } from 'lodash'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useWorkspace } from 'src/context/workspace-context'
 import AddColumnsMenu from './add-columns/menu'
@@ -37,22 +37,6 @@ import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
-
-function useSkipper() {
-  const shouldSkipRef = useRef(true)
-  const shouldSkip = shouldSkipRef.current
-
-  // Wrap a function with this to skip a pagination reset temporarily
-  const skip = useCallback(() => {
-    shouldSkipRef.current = false
-  }, [])
-
-  useEffect(() => {
-    shouldSkipRef.current = true
-  })
-
-  return [shouldSkip, skip]
-}
 
 // Give our default column cell renderer editing superpowers!
 const defaultColumn = {
@@ -96,19 +80,19 @@ const DataTable = ({
   isLoading = false,
   isRefetching = false,
   taskList = [],
+  selectedRows = [],
   taskGroupData = null,
   taskGroupID = null,
   projectID = null,
   refetch = () => {},
   refetchTaskGroup = () => {},
-  handleSelectedRows = () => {}
+  setSelectedRows
 }) => {
   // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery({ queryKey: 'column-type', queryFn: () => fetchColumnType() })
 
   // ** Hooks
   const { selected } = useWorkspace()
-  const [skipAutoResetPageIndex] = useSkipper()
 
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
@@ -303,17 +287,19 @@ const DataTable = ({
   const table = useReactTable({
     data: taskList,
     columns,
+    state: {
+      rowSelection: selectedRows
+    },
     defaultColumn,
     getRowCanExpand: row => true,
     enableRowSelection: () => true,
+    onRowSelectionChange: setSelectedRows,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     meta: {
       updateData: async (rowIndex, columnId, value) => {
-        skipAutoResetPageIndex()
-
         if (columnId === 'Taskname') {
           try {
             const body = { Taskname: value }
@@ -331,7 +317,7 @@ const DataTable = ({
   })
 
   const renderSubComponent = ({ row }) => {
-    return <SubTable row={row} />
+    return <SubTable row={row} key={row?.original?.TaskID} />
   }
 
   return (
@@ -387,7 +373,7 @@ const DataTable = ({
                   })}
                 </TableRow>
                 {row.getIsExpanded() && (
-                  <TableRow>
+                  <TableRow key={row.id}>
                     {/* 2nd row is a custom 1 cell row */}
                     <TableCell colSpan={row.getVisibleCells().length}>{renderSubComponent({ row })}</TableCell>
                   </TableRow>

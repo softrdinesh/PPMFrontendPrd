@@ -1,10 +1,9 @@
-import React, { useMemo, useState, useEffect } from 'react'
-import { Icon } from '@iconify/react'
-import { Box, Card, Grid, TextField, Typography, useTheme } from '@mui/material'
-import DataTable from './data-grid'
+import { deleteMultipleTask } from '@api/task'
 import CustomButton from '@components/button'
 import DeleteDialog from '@custom-components/delete-dialog'
-import { deleteMultipleTask } from '@api/task'
+import { Icon } from '@iconify/react'
+import { Box, Card, Grid, TextField, Typography, useTheme } from '@mui/material'
+import React, { useEffect, useMemo, useState } from 'react'
 import Table from './table'
 
 function TaskGroupComponent({
@@ -17,25 +16,25 @@ function TaskGroupComponent({
   refetchTaskGroup
 }) {
   // ** States
-  const [selectedRows, setSelectedRows] = useState([])
+  const [selectedRows, setSelectedRows] = useState({})
   const [showCard, setShowCard] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   // ** Memo
-  const showSelected = useMemo(() => selectedRows?.length !== 0, [selectedRows])
+  const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   // ** Hooks
   const theme = useTheme()
 
-  // ** Functions
-  const handleSelectedRows = values => {
-    setSelectedRows(values)
-  }
-
   const handleDelete = async () => {
-    await deleteMultipleTask(selectedRows)
+    const finalArray = taskList
+      ?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))
+      ?.map(t => t?.TaskID)
+
+    await deleteMultipleTask(finalArray)
     await refetch()
     setDeleteOpen(false)
+    setSelectedRows({})
   }
 
   useEffect(() => {
@@ -78,7 +77,8 @@ function TaskGroupComponent({
             taskGroupID={taskGroupData?.TaskGroupID}
             refetch={refetch}
             refetchTaskGroup={refetchTaskGroup}
-            handleSelectedRows={handleSelectedRows}
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
           />
         </Grid>
         {showCard && (
@@ -90,7 +90,7 @@ function TaskGroupComponent({
               }}
             >
               <Box m={2} p={2} display={'flex'} gap={5} alignItems={'center'}>
-                <Typography fontWeight={600}>{`${selectedRows?.length} entries  selected`}</Typography>
+                <Typography fontWeight={600}>{`${Object?.keys(selectedRows)?.length} entries  selected`}</Typography>
                 <CustomButton
                   variant='contained'
                   size='small'
