@@ -32,7 +32,6 @@ const StatusMenuItem = ({ item, row, handleStatusChange, handleClose, handleEdit
 
   return (
     <Grid item xs={12}>
-      {' '}
       <Box display={'flex'} alignItems={'stretch'} gap={2}>
         <Box
           component={MenuItem}
@@ -82,15 +81,15 @@ const StatusMenuItem = ({ item, row, handleStatusChange, handleClose, handleEdit
   )
 }
 
-const TaskStatus = ({ row, handleStatusChange, refetch }) => {
+const SubTaskStatus = ({ row, handleStatusChange, refetch, taskRow }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [formAnchor, setFormAnchor] = useState(null)
   const [isEdit, setIsEdit] = useState(null)
   const { statusList } = useWorkspace()
 
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
-    queryKey: ['dynamic-status', row?.TaskGroupID],
-    queryFn: () => fetchProjectStatusList({ taskGroupID: row?.TaskGroupID })
+    queryKey: ['dynamic-status', taskRow?.original?.TaskGroupID],
+    queryFn: () => fetchProjectStatusList({ taskGroupID: taskRow?.original?.TaskGroupID })
   })
 
   const {
@@ -144,7 +143,7 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
   const onSubmit = async data => {
     const body = {
       ...data,
-      TaskgroupID: row?.TaskGroupID
+      TaskgroupID: taskRow?.original?.TaskGroupID
     }
     if (isEdit) {
       const response = await updateProjectStatus({ body, id: isEdit })
@@ -361,4 +360,4 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
   )
 }
 
-export default TaskStatus
+export default SubTaskStatus

@@ -2,7 +2,18 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 // ** MUI Imports
-import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography
+} from '@mui/material'
 
 // ** Third Party Imports
 import CustomButton from '@components/button'
@@ -11,63 +22,83 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { debounce } from 'lodash'
 import { useQuery } from 'react-query'
 import TaskPeople from './task-list-items/task-people'
-import { addSubTask, deleteSubTask, fetchSubTaskList } from '@api/sub-task'
+import { addSubTask, deleteSubTask, fetchSubTaskList, updateSubTask } from '@api/sub-task'
 import DeleteDialog from '@custom-components/delete-dialog'
+import SubTaskStatus from './sub-task-list-items/sub-task-status'
 
-// Give our default column cell renderer editing superpowers!
+const ColumnTextField = ({ table, getValue, index, id }) => {
+  const initialValue = getValue()
+  const [value, setValue] = useState(initialValue)
+
+  // When the input is blurred, we'll call our table meta's updateData function
+  const onBlur = () => {
+    table.options.meta?.updateData(index, id, value)
+  }
+
+  // If the initialValue is changed external, sync it up with our state
+  useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  return (
+    <TextField
+      variant='standard'
+      sx={{
+        border: 0,
+        '& .MuiInputBase-root::before': {
+          borderBottom: 0
+        },
+        '& .MuiInputBase-root:hover::before': {
+          borderBottom: 0
+        }
+      }}
+      fullWidth
+      value={value}
+      onChange={e => setValue(e.target.value)}
+      onBlur={onBlur}
+    />
+  )
+}
+
 const defaultColumn = {
   cell: ({ getValue, row: { index }, column: { id }, table }) => {
-    const initialValue = getValue()
-    // We need to keep and update the state of the cell normally
-    const [value, setValue] = useState(initialValue)
-
-    // When the input is blurred, we'll call our table meta's updateData function
-    const onBlur = () => {
-      table.options.meta?.updateData(index, id, value)
-    }
-
-    // If the initialValue is changed external, sync it up with our state
-    useEffect(() => {
-      setValue(initialValue)
-    }, [initialValue])
-
-    return (
-      <TextField
-        variant='standard'
-        sx={{
-          border: 0,
-          '& .MuiInputBase-root::before': {
-            borderBottom: 0
-          },
-          '& .MuiInputBase-root:hover::before': {
-            borderBottom: 0
-          }
-        }}
-        fullWidth
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        onBlur={onBlur}
-      />
-    )
+    return <ColumnTextField getValue={getValue} index={index} id={id} table={table} />
   }
 }
 
-const SubTable = ({ row }) => {
+const SubTable = ({ taskRow }) => {
   // ** States
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteData, setDeleteData] = useState(null)
 
   // ** API Calls
-  const { data: subTaskList = [], refetch: refetchSubTask } = useQuery({
-    queryKey: ['sub-task-list', row?.original?.TaskID],
-    queryFn: () => fetchSubTaskList(row?.original?.TaskID)
+  const {
+    data: subTaskList = [],
+    isLoading,
+    refetch: refetchSubTask
+  } = useQuery({
+    queryKey: ['sub-task-list', taskRow?.original?.TaskID],
+    queryFn: () => fetchSubTaskList(taskRow?.original?.TaskID)
   })
 
   // ** Functions
+
+  const handleTaskUpdate = useCallback(
+    async (row, body) => {
+      console.log('body :', body)
+      console.log('row :', row)
+      await updateSubTask({ id: row?.SubTaskID, body })
+      refetchSubTask()
+
+      return null
+    },
+    [refetchSubTask]
+  )
+
   const handleAddTask = useCallback(async () => {
-    await addSubTask({ taskID: row?.original?.TaskID })
+    await addSubTask({ taskID: taskRow?.original?.TaskID })
     refetchSubTask()
-  }, [])
+  }, [refetchSubTask, taskRow?.original?.TaskID])
 
   const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
@@ -83,7 +114,7 @@ const SubTable = ({ row }) => {
       setDeleteData(null)
       setDeleteOpen(false)
     }
-  }, [deleteData])
+  }, [deleteData?.SubTaskID, refetchSubTask])
 
   // ** Columns
   const columns = useMemo(
@@ -142,17 +173,53 @@ const SubTable = ({ row }) => {
             Planned Effort
           </Typography>
         )
+      },
+      {
+        accessorFn: row => row.Status.Name,
+        id: 'Status',
+        size: 200,
+        maxSize: 200,
+        headerName: 'Status',
+        cell: ({ row: { original: row } }) => {
+          return (
+            <SubTaskStatus row={row} taskRow={taskRow} handleStatusChange={handleTaskUpdate} refetch={refetchSubTask} />
+          )
+        }
       }
     ],
-    []
+    [handleTaskUpdate, refetchSubTask, taskRow]
   )
 
   const table = useReactTable({
     data: subTaskList,
     columns,
     defaultColumn,
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    meta: {
+      updateData: async (rowIndex, columnId, value) => {
+        if (columnId === 'SubTaskName') {
+          try {
+            const body = { SubTaskName: value }
+
+            const response = await updateSubTask({ id: subTaskList?.[rowIndex]?.SubTaskID, body })
+            if (response) {
+              refetch()
+            }
+          } catch (error) {
+            console.error('error :', error)
+          }
+        }
+      }
+    }
   })
+
+  if (isLoading) {
+    return (
+      <Box display={'flex'} alignItems={'center'} ml={40} justifyContent={'start'} height={'20vh'} width={'100%'}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box py={4} ml={3} display={'flex'}>
@@ -160,11 +227,17 @@ const SubTable = ({ row }) => {
         <Box height={45} display={'flex'} alignItems={'center'} justifyContent={'center'}>
           <Box height={10} width={10} borderRadius={100} bgcolor={'secondary.light'} />
         </Box>
-        {subTaskList?.map(i => (
-          <Box height={64.44} display={'flex'} alignItems={'center'} justifyContent={'end'}>
+        {subTaskList?.length ? (
+          subTaskList?.map(i => (
+            <Box height={64.44} display={'flex'} alignItems={'center'} justifyContent={'end'} key={i?.SubTaskID}>
+              <Box width={22} borderTop={'2px dashed'} borderColor={'secondary.light'} position={'relative'}></Box>
+            </Box>
+          ))
+        ) : (
+          <Box height={100} display={'flex'} alignItems={'center'} justifyContent={'end'}>
             <Box width={22} borderTop={'2px dashed'} borderColor={'secondary.light'} position={'relative'}></Box>
           </Box>
-        ))}
+        )}
         <Box height={50} display={'flex'} alignItems={'center'} justifyContent={'center'}>
           <Box height={10} width={10} borderRadius={100} bgcolor={'secondary.light'} />
         </Box>
@@ -179,8 +252,8 @@ const SubTable = ({ row }) => {
         sx={{
           overflowX: 'auto',
           '&::-webkit-scrollbar': { height: '1px' },
-          // border: 1,
           borderRadius: 1,
+          border: 1,
           boxShadow: theme => theme.shadows[3],
           borderColor: theme => theme.palette.divider
         }}
@@ -215,17 +288,27 @@ const SubTable = ({ row }) => {
             ))}
           </TableHead>
           <TableBody>
-            {table.getRowModel().rows.map(row => {
-              return (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => {
-                    return (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    )
-                  })}
-                </TableRow>
-              )
-            })}
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map(row => {
+                return (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map(cell => {
+                      return (
+                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      )
+                    })}
+                  </TableRow>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns?.length}>
+                  <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
+                    <Typography>No Data Found</Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
         <Box m={2}>

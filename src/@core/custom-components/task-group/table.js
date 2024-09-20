@@ -2,18 +2,17 @@ import { fetchColumnType } from '@api/column-type'
 import { addTask, updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import {
-  Box,
-  Checkbox,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography
-} from '@mui/material'
+import Box from '@mui/material/Box'
+import Checkbox from '@mui/material/Checkbox'
+import CircularProgress from '@mui/material/CircularProgress'
+import IconButton from '@mui/material/IconButton'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 import {
   flexRender,
   getCoreRowModel,
@@ -38,47 +37,49 @@ import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
 
+const ColumnTextField = ({ table, getValue, index, id }) => {
+  const initialValue = getValue()
+  const [value, setValue] = useState(initialValue)
+
+  // When the input is blurred, we'll call our table meta's updateData function
+  const onBlur = () => {
+    table.options.meta?.updateData(index, id, value)
+  }
+
+  // If the initialValue is changed external, sync it up with our state
+  useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  return (
+    <TextField
+      variant='standard'
+      sx={{
+        border: 0,
+        '& .MuiInputBase-root::before': {
+          borderBottom: 0
+        },
+        '& .MuiInputBase-root:hover::before': {
+          borderBottom: 0
+        }
+      }}
+      fullWidth
+      value={value}
+      onChange={e => setValue(e.target.value)}
+      onBlur={onBlur}
+    />
+  )
+}
+
 // Give our default column cell renderer editing superpowers!
 const defaultColumn = {
   cell: ({ getValue, row: { index }, column: { id }, table }) => {
-    const initialValue = getValue()
-    // We need to keep and update the state of the cell normally
-    const [value, setValue] = useState(initialValue)
-
-    // When the input is blurred, we'll call our table meta's updateData function
-    const onBlur = () => {
-      table.options.meta?.updateData(index, id, value)
-    }
-
-    // If the initialValue is changed external, sync it up with our state
-    useEffect(() => {
-      setValue(initialValue)
-    }, [initialValue])
-
-    return (
-      <TextField
-        variant='standard'
-        sx={{
-          border: 0,
-          '& .MuiInputBase-root::before': {
-            borderBottom: 0
-          },
-          '& .MuiInputBase-root:hover::before': {
-            borderBottom: 0
-          }
-        }}
-        fullWidth
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        onBlur={onBlur}
-      />
-    )
+    return <ColumnTextField getValue={getValue} index={index} id={id} table={table} />
   }
 }
 
 const DataTable = ({
   isLoading = false,
-  isRefetching = false,
   taskList = [],
   selectedRows = [],
   taskGroupData = null,
@@ -133,8 +134,8 @@ const DataTable = ({
     return taskGroupData?.additionalColumns?.map(i => {
       return {
         id: i?.AdditionalColumnID,
-        minSize: 250, // Prevent shrinking
-        size: 250, // Ensure column has fixed size
+        minSize: 250,
+        size: 250,
         sortable: false,
         header: () => i?.ColumnName,
         cell: ({ row: { original: row } }) => {
@@ -291,7 +292,7 @@ const DataTable = ({
       rowSelection: selectedRows
     },
     defaultColumn,
-    getRowCanExpand: row => true,
+    getRowCanExpand: () => true,
     enableRowSelection: () => true,
     onRowSelectionChange: setSelectedRows,
     getCoreRowModel: getCoreRowModel(),
@@ -317,7 +318,15 @@ const DataTable = ({
   })
 
   const renderSubComponent = ({ row }) => {
-    return <SubTable row={row} key={row?.original?.TaskID} />
+    return <SubTable taskRow={row} key={row?.original?.TaskID} />
+  }
+
+  if (isLoading) {
+    return (
+      <Box display={'flex'} alignItems={'center'} justifyContent={'center '} height={'20vh'} width={'100%'}>
+        <CircularProgress />
+      </Box>
+    )
   }
 
   return (
@@ -362,25 +371,35 @@ const DataTable = ({
           ))}
         </TableHead>
         <TableBody>
-          {table.getRowModel().rows.map(row => {
-            return (
-              <>
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => {
-                    return (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    )
-                  })}
-                </TableRow>
-                {row.getIsExpanded() && (
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map(row => {
+              return (
+                <>
                   <TableRow key={row.id}>
-                    {/* 2nd row is a custom 1 cell row */}
-                    <TableCell colSpan={row.getVisibleCells().length}>{renderSubComponent({ row })}</TableCell>
+                    {row.getVisibleCells().map(cell => {
+                      return (
+                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      )
+                    })}
                   </TableRow>
-                )}
-              </>
-            )
-          })}
+                  {row.getIsExpanded() && (
+                    <TableRow key={row.id}>
+                      {/* 2nd row is a custom 1 cell row */}
+                      <TableCell colSpan={row.getVisibleCells().length}>{renderSubComponent({ row })}</TableCell>
+                    </TableRow>
+                  )}
+                </>
+              )
+            })
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns?.length}>
+                <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
+                  <Typography>No Tasks Added</Typography>
+                </Box>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <Box m={2}>

@@ -15,8 +15,6 @@ export const fetchSubTaskList = async taskID => {
 export const addSubTask = async body => {
   return callApi({ uriEndPoint: subTask.addSubTask, body })
     .then(res => {
-      toast.success(res?.message ?? 'Sub Task Added Successfully')
-
       return res
     })
     .catch(err => {
@@ -26,11 +24,18 @@ export const addSubTask = async body => {
     })
 }
 
+export const updateSubTask = async ({ id, body }) => {
+  return callApi({ uriEndPoint: subTask.updateSubTask, pathParams: { id }, body })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
 export const deleteSubTask = async id => {
   return callApi({ uriEndPoint: subTask.delete, pathParams: { id } })
     .then(res => {
-      toast.success(res?.message ?? 'Sub Task Deleted Successfully')
-
       return res
     })
     .catch(err => {
