@@ -36,6 +36,8 @@ import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
+import useWebSocket from 'src/hooks/useWebSocket'
+import { useAuth } from 'src/hooks/useAuth'
 
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
@@ -90,6 +92,21 @@ const DataTable = ({
   refetchTaskGroup = () => {},
   setSelectedRows
 }) => {
+  // ** User
+  const { user } = useAuth()
+
+  // ** Socket function
+  const handleUpdate = data => {
+    if (user?.UserID !== data?.by) {
+      if (data?.value === 'updateTaskList') {
+        refetch()
+      }
+    }
+  }
+
+  // ** Web Socket Setup
+  useWebSocket(projectID, handleUpdate)
+
   // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery({ queryKey: 'column-type', queryFn: () => fetchColumnType() })
 
