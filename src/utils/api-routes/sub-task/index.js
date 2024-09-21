@@ -33,6 +33,7 @@ export const updateSubTask = async ({ id, body }) => {
       throw err
     })
 }
+
 export const deleteSubTask = async id => {
   return callApi({ uriEndPoint: subTask.delete, pathParams: { id } })
     .then(res => {

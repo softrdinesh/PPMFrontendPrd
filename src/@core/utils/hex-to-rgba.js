@@ -13,7 +13,6 @@ export const hexToRGBA = (hexCode, opacity) => {
 
     return `rgba(${r}, ${g}, ${b}, ${opacity})`
   } catch (error) {
-    console.error('error :', error)
     return 'rgba(0,0,0,1)'
   }
 }

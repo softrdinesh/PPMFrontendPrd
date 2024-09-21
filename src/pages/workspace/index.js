@@ -8,21 +8,17 @@ import Image from 'next/image'
 import { Typography } from '@mui/material'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import { useTheme } from '@mui/material/styles'
 
 // ** Local Imoports
-import WorkspaceMen from '../../../public/images/workspace-men.svg'
 import CreateWorkspace from 'src/@core/layouts/components/modals/CreateWorkspace'
-import { WorkspaceContext } from 'src/context/workspace-context'
 import InviteMember from 'src/@core/layouts/components/modals/InviteMember'
+import { WorkspaceContext } from 'src/context/workspace-context'
+import WorkspaceMen from '../../../public/images/workspace-men.svg'
 
 const Workspace = () => {
   // ** State
   const [open, setOpen] = useState(false)
   const [openInviteModal, setOpenInviteModal] = useState(false)
-
-  // ** Hooks
-  const theme = useTheme()
 
   const handleOpen = () => setOpen(true)
 

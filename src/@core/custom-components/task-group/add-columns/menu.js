@@ -64,7 +64,7 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
 
   useEffect(() => {
     reset()
-  }, [selectedColumnType])
+  }, [reset, selectedColumnType])
 
   return (
     <>

@@ -3,7 +3,7 @@ import { Box, IconButton, Menu, MenuItem, Tooltip, Typography, Zoom } from '@mui
 import React, { useState } from 'react'
 import { useQuery } from 'react-query'
 import { useWorkspace } from 'src/context/workspace-context'
-import { getContrastingTextColor, getHexColor, getLuminance } from 'src/utils/functions'
+import { getContrastingTextColor, getHexColor } from 'src/utils/functions'
 
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
@@ -201,7 +201,7 @@ const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
                     gap={2}
                     p={0}
                     alignItems={'center'}
-                    onClick={e => {
+                    onClick={() => {
                       setFormAnchor(anchorEl)
                       setAnchorEl(null)
                     }}

@@ -216,7 +216,7 @@ const SubTable = ({ taskRow }) => {
   if (isLoading) {
     return (
       <Box display={'flex'} alignItems={'center'} ml={40} justifyContent={'start'} height={'20vh'} width={'100%'}>
-        <CircularProgress />
+        <CircularProgress size={24} />
       </Box>
     )
   }

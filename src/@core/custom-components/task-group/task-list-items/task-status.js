@@ -244,7 +244,7 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
                     gap={2}
                     p={0}
                     alignItems={'center'}
-                    onClick={e => {
+                    onClick={() => {
                       setFormAnchor(anchorEl)
                       setAnchorEl(null)
                     }}

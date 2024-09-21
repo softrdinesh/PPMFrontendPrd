@@ -4,31 +4,27 @@ import React, { memo, useEffect, useState } from 'react'
 // ** MUI Imports
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
 import Grid from '@mui/material/Grid'
-import IconButton from '@mui/material/IconButton'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import Zoom from '@mui/material/Zoom'
 
 // ** Third Party Imports
-import { Icon } from '@iconify/react'
 import moment from 'moment'
 import DatePicker from 'react-datepicker'
 import { Controller, Form, useForm } from 'react-hook-form'
 
 // ** Custom Components
-import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import CustomButton from '@components/button'
 import Chip from '@components/chip'
+import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
 // ** Custom Functions
 import { dateFormatMomentTask, dateFormatPicker } from 'src/constants/formats'
 
 // ** Third Party Styles Imports
-import 'react-datepicker/dist/react-datepicker.css'
 import { Menu } from '@mui/material'
+import 'react-datepicker/dist/react-datepicker.css'
 
 const TaskTimeline = ({ row, handleTimeLineChange }) => {
   const [open, setOpen] = useState(false)
@@ -59,7 +55,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
     if (open) {
       reset({ TimelineStartDate: row?.TimelineStartDate ?? null, TimelineEndDate: row?.TimelineEndDate ?? null })
     }
-  }, [open])
+  }, [open, reset, row?.TimelineEndDate, row?.TimelineStartDate])
 
   return (
     <Box display={'flex'} alignItems={'center'} justifyContent={'start'} height={'100%'}>

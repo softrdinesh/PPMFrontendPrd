@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 // ** MUI Imports
 import {
@@ -12,9 +12,9 @@ import {
   IconButton,
   MenuItem,
   Select,
+  TextField,
   Typography,
-  Zoom,
-  TextField
+  Zoom
 } from '@mui/material'
 
 // ** Custom Imports
@@ -22,8 +22,7 @@ import IconifyIcon from '@components/icon'
 import { Icon } from '@iconify/react'
 
 // ** Hook Imports
-import { Controller, useForm, useFieldArray } from 'react-hook-form'
-import { useCopyToClipboard } from 'usehooks-ts'
+import { Controller, useFieldArray, useForm } from 'react-hook-form'
 
 // ** API Imports
 import { addWorkspace } from '@api/workspace'
@@ -33,10 +32,8 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
     email: '',
     role: ''
   }
-  const [isLoading, setIsLoading] = useState(false)
 
   // ** Hooks
-  const [copiedText, copyToClipboard] = useCopyToClipboard()
 
   const handleClose = () => {
     reset()
@@ -60,10 +57,8 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
   })
 
   const onSubmit = async values => {
-    setIsLoading(true)
     await addWorkspace(values)
 
-    setIsLoading(false)
     reset()
     handleClose()
   }
@@ -122,7 +117,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
 
                   <Button
                     onClick={() => {
-                      copyToClipboard(inviteLink)
+                      // copyToClipboard(inviteLink)
                     }}
                     startIcon={<Icon icon={'mdi-content-copy'} style={{ marginInline: 2 }} />}
                     sx={{

@@ -324,7 +324,7 @@ const DataTable = ({
   if (isLoading) {
     return (
       <Box display={'flex'} alignItems={'center'} justifyContent={'center '} height={'20vh'} width={'100%'}>
-        <CircularProgress />
+        <CircularProgress size={24} />
       </Box>
     )
   }

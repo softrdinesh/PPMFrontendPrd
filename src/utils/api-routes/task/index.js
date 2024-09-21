@@ -35,8 +35,6 @@ export const updateTask = async ({ id, body }) => {
 export const addTask = async body => {
   return callApi({ uriEndPoint: task.addTask, body })
     .then(res => {
-      toast.success(res?.message ?? 'Task Added Successfully')
-
       return res
     })
     .catch(err => {
@@ -49,8 +47,6 @@ export const addTask = async body => {
 export const deleteMultipleTask = async body => {
   return callApi({ uriEndPoint: task.deleteMulitpleTask, body: { taskIds: body } })
     .then(res => {
-      toast.success(res?.message ?? 'Tasks Deleted Successfully')
-
       return res
     })
     .catch(err => {
