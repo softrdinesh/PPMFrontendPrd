@@ -1,3 +1,4 @@
+import { updateSubTask } from '@api/sub-task'
 import { updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import Chip from '@components/chip'
@@ -9,7 +10,7 @@ import React, { memo, useState } from 'react'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
-const DynamicDate = ({ columnData, rowData, dynamicValue, refetch }) => {
+const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask }) => {
   const [openDialog, setOpenDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
@@ -32,10 +33,19 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch }) => {
         AdditionalColumnID: columnData?.AdditionalColumnID,
         value: moment(selectedDate).format('LLL')
       }
-      const response = await updateTask({ id: rowData?.TaskID, body })
-      if (response) {
-        refetch()
-        setOpenDialog(false)
+      if (isSubTask) {
+        body.TaskID = rowData?.TaskMasterID
+        const response = await updateSubTask({ id: rowData?.SubTaskID, body })
+        if (response) {
+          refetch()
+          handleClose()
+        }
+      } else {
+        const response = await updateTask({ id: rowData?.TaskID, body })
+        if (response) {
+          refetch()
+          setOpenDialog(false)
+        }
       }
     } catch (error) {
       console.error('error :', error)

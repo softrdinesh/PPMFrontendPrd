@@ -1,3 +1,4 @@
+import { updateSubTask } from '@api/sub-task'
 import { updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
@@ -6,7 +7,7 @@ import { pattern } from '@patterns'
 import React, { useState } from 'react'
 import { Controller, Form, useForm } from 'react-hook-form'
 
-const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => {
+const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number, isSubTask }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const {
@@ -34,11 +35,19 @@ const DynamicText = ({ columnData, rowData, dynamicValue, refetch, number }) => 
         AdditionalColumnID: columnData?.AdditionalColumnID,
         value: data?.value
       }
-
-      const response = await updateTask({ id: rowData?.TaskID, body })
-      if (response) {
-        refetch()
-        handleCloseMenu()
+      if (isSubTask) {
+        body.TaskID = rowData?.TaskMasterID
+        const response = await updateSubTask({ id: rowData?.SubTaskID, body })
+        if (response) {
+          refetch()
+          handleCloseMenu()
+        }
+      } else {
+        const response = await updateTask({ id: rowData?.TaskID, body })
+        if (response) {
+          refetch()
+          handleCloseMenu()
+        }
       }
     } catch (error) {
       console.error('error :', error)

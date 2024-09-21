@@ -1,3 +1,4 @@
+import { updateSubTask } from '@api/sub-task'
 import { updateTask } from '@api/task'
 import { Icon } from '@iconify/react'
 import {
@@ -16,7 +17,7 @@ import {
 import { debounce } from 'lodash'
 import React, { useState } from 'react'
 
-const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], refetch }) => {
+const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], refetch, isSubTask }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const handleOpen = event => {
@@ -34,10 +35,19 @@ const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], r
         AdditionalColumnID: columnData?.AdditionalColumnID,
         value: 56
       }
-      const response = await updateTask({ id: rowData?.TaskID, body })
-      if (response) {
-        refetch()
-        handleClose()
+      if (isSubTask) {
+        body.TaskID = rowData?.TaskMasterID
+        const response = await updateSubTask({ id: rowData?.SubTaskID, body })
+        if (response) {
+          refetch()
+          handleClose()
+        }
+      } else {
+        const response = await updateTask({ id: rowData?.TaskID, body })
+        if (response) {
+          refetch()
+          handleClose()
+        }
       }
     } catch (error) {
       console.error('error :', error)

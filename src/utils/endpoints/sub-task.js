@@ -16,5 +16,13 @@ export const subTask = {
   delete: {
     ...defaults.methods.DELETE,
     uri: '/api/sub-task/:id'
+  },
+  getColumn: {
+    ...defaults.methods.GET,
+    uri: '/api/sub-task-column'
+  },
+  createColumn: {
+    ...defaults.methods.POST,
+    uri: '/api/sub-task-column'
   }
 }

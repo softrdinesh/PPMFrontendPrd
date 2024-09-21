@@ -30,7 +30,7 @@ import DynamicDate from './dynamic-task-values/dynamic-date'
 import DynamicDropdown from './dynamic-task-values/dynamic-dropdown'
 import DynamicPeople from './dynamic-task-values/dynamic-people'
 import DynamicStatus from './dynamic-task-values/dynamic-status'
-import DynamicText from './dynamic-task-values/dynamic-text'
+import TaskTextValues from './dynamic-task-values/dynamic-value'
 import SubTable from './sub-table'
 import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
@@ -64,6 +64,7 @@ const ColumnTextField = ({ table, getValue, index, id }) => {
         }
       }}
       fullWidth
+      inputProps={{ maxLength: 50 }}
       value={value}
       onChange={e => setValue(e.target.value)}
       onBlur={onBlur}
@@ -133,12 +134,13 @@ const DataTable = ({
   const dynamicColumn = useCallback(() => {
     return taskGroupData?.additionalColumns?.map(i => {
       return {
+        accessorFn: row => filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])?.DynamicColumnValues,
         id: i?.AdditionalColumnID,
         minSize: 250,
         size: 250,
         sortable: false,
         header: () => i?.ColumnName,
-        cell: ({ row: { original: row } }) => {
+        cell: ({ getValue, row: { index, original: row }, column: { id }, table }) => {
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
           switch (i?.ColumnType?.Keyname) {
             case 'DPK':
@@ -161,12 +163,13 @@ const DataTable = ({
               return <DynamicPeople columnData={i} rowData={row} dynamicValue={usersList ?? []} refetch={refetch} />
             default:
               return (
-                <DynamicText
+                <TaskTextValues
+                  getValue={getValue}
+                  index={index}
+                  id={id}
+                  table={table}
                   columnData={i}
-                  rowData={row}
                   dynamicValue={value ?? null}
-                  refetch={refetch}
-                  number={i?.ColumnType?.Keyname === 'NUM'}
                 />
               )
           }
@@ -313,12 +316,26 @@ const DataTable = ({
             console.error('error :', error)
           }
         }
+        if (value?.AdditionalColumnID) {
+          const body = { ...value }
+          const response = await updateTask({ id: taskList?.[rowIndex]?.TaskID, body })
+          if (response) {
+            refetch()
+          }
+        }
       }
     }
   })
 
   const renderSubComponent = ({ row }) => {
-    return <SubTable taskRow={row} key={row?.original?.TaskID} />
+    return (
+      <SubTable
+        taskRow={row}
+        key={row?.original?.TaskID}
+        additionalColumnsType={additionalColumnsType}
+        taskGroupData={{ taskGroupID, projectID, workspaceID: selected?.WorkspaceID }}
+      />
+    )
   }
 
   if (isLoading) {
@@ -376,9 +393,9 @@ const DataTable = ({
               return (
                 <>
                   <TableRow key={row.id}>
-                    {row.getVisibleCells().map(cell => {
+                    {row.getVisibleCells().map((cell, index) => {
                       return (
-                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                        <TableCell key={index}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                       )
                     })}
                   </TableRow>

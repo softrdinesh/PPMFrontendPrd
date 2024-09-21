@@ -1,10 +1,10 @@
+import { createSubTaskColumn } from '@api/sub-task'
 import { createColumn } from '@api/task-group'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
 import { Box, CircularProgress, Grid, Menu, MenuItem, TextField, Typography, useTheme, Zoom } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { Form } from 'react-hook-form'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, Form, useForm } from 'react-hook-form'
 
 const getIcon = key => {
   switch (key) {
@@ -30,7 +30,7 @@ const getIcon = key => {
   }
 }
 
-const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGroup }) => {
+const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGroup, isSubTask }) => {
   const theme = useTheme()
   const [selectedColumnType, setSelectedColumnType] = useState(null)
 
@@ -53,6 +53,17 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
   const handleTypeClose = () => setSelectedColumnType(null)
 
   const onSubmit = async data => {
+    if (isSubTask) {
+      return createSubTaskColumn({ ...data, ...taskGroupAllData, columnTypeID: selectedColumnType?.ColumnTypeID }).then(
+        () => {
+          refetchTaskGroup()
+          close()
+          handleTypeClose()
+          reset()
+        }
+      )
+    }
+
     // Add logic here to add the new column
     await createColumn({ ...data, ...taskGroupAllData, columnTypeID: selectedColumnType?.ColumnTypeID }).then(() => {
       refetchTaskGroup()

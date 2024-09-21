@@ -199,7 +199,7 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
         onClose={handleClose}
         TransitionComponent={Zoom}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'center' }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
         <Box maxWidth={'500px'} p={4}>
@@ -280,7 +280,7 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
         onClose={handleFormClose}
         TransitionComponent={Zoom}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'center' }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
         <Box maxWidth={'300px'} width={'100%'} p={4}>

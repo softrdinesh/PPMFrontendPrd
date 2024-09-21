@@ -1,4 +1,5 @@
 import { addDropdownItem, fetchProjectDropDownList } from '@api/project'
+import { updateSubTask } from '@api/sub-task'
 import { deleteDynamicValue, updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import Chip from '@components/chip'
@@ -8,7 +9,7 @@ import React, { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from 'react-query'
 
-const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = null, refetch }) => {
+const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = null, refetch, isSubTask }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const [createMenu, setCreateMenu] = useState(false)
@@ -64,9 +65,18 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
         AdditionalColumnID: columnData?.AdditionalColumnID,
         value: item?.Dynamic_ddl_ID
       }
-      const response = await updateTask({ id: rowData?.TaskID, body })
-      if (response) {
-        refetch()
+      if (isSubTask) {
+        body.TaskID = rowData?.TaskMasterID
+        const response = await updateSubTask({ id: rowData?.SubTaskID, body })
+        if (response) {
+          refetch()
+          handleClose()
+        }
+      } else {
+        const response = await updateTask({ id: rowData?.TaskID, body })
+        if (response) {
+          refetch()
+        }
       }
     } catch (error) {
       console.error('error select ddl :', error)

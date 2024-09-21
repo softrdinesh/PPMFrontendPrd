@@ -16,15 +16,22 @@ import {
 } from '@mui/material'
 
 // ** Third Party Imports
+import { addSubTask, deleteSubTask, fetchSubTaskColumns, fetchSubTaskList, updateSubTask } from '@api/sub-task'
 import CustomButton from '@components/button'
+import DeleteDialog from '@custom-components/delete-dialog'
 import { Icon } from '@iconify/react'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { debounce } from 'lodash'
 import { useQuery } from 'react-query'
-import TaskPeople from './task-list-items/task-people'
-import { addSubTask, deleteSubTask, fetchSubTaskList, updateSubTask } from '@api/sub-task'
-import DeleteDialog from '@custom-components/delete-dialog'
+import AddColumnsMenu from './add-columns/menu'
+import DynamicDate from './dynamic-task-values/dynamic-date'
+import DynamicDropdown from './dynamic-task-values/dynamic-dropdown'
+import DynamicPeople from './dynamic-task-values/dynamic-people'
+import DynamicStatus from './dynamic-task-values/dynamic-status'
+import TaskTextValues from './dynamic-task-values/dynamic-value'
 import SubTaskStatus from './sub-task-list-items/sub-task-status'
+import TaskEffortCell from './task-list-items/task-effort'
+import TaskPeople from './task-list-items/task-people'
 
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
@@ -54,6 +61,7 @@ const ColumnTextField = ({ table, getValue, index, id }) => {
       }}
       fullWidth
       value={value}
+      inputProps={{ maxLength: 50 }}
       onChange={e => setValue(e.target.value)}
       onBlur={onBlur}
     />
@@ -66,10 +74,19 @@ const defaultColumn = {
   }
 }
 
-const SubTable = ({ taskRow }) => {
+const SubTable = ({ taskRow, additionalColumnsType, taskGroupData }) => {
   // ** States
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteData, setDeleteData] = useState(null)
+  const [adding, setAdding] = useState(false)
+
+  // ** States
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const { data: additionalSubColumns = [], refetch: refetchDyColumns } = useQuery({
+    queryKey: ['sub-task-columns', taskRow?.original?.TaskID],
+    queryFn: () => fetchSubTaskColumns({ taskID: taskRow?.original?.TaskID })
+  })
 
   // ** API Calls
   const {
@@ -81,8 +98,97 @@ const SubTable = ({ taskRow }) => {
     queryFn: () => fetchSubTaskList(taskRow?.original?.TaskID)
   })
 
-  // ** Functions
+  const filterDynamicValue = (additionColumnID, additionalValues) => {
+    const filteredValues = additionalValues.find(item => item.AdditionalColumnID === additionColumnID)
 
+    return filteredValues ?? null
+  }
+
+  const dynamicColumn = useCallback(() => {
+    try {
+      return additionalSubColumns?.map(i => {
+        return {
+          accessorFn: row =>
+            filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])?.DynamicColumnValues,
+          id: i?.AdditionalColumnID,
+          minSize: 250,
+          size: 250,
+          sortable: false,
+          header: () => i?.ColumnName,
+          cell: ({ getValue, row: { index, original: row }, column: { id }, table }) => {
+            const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
+            switch (i?.ColumnType?.Keyname) {
+              case 'DPK':
+                return (
+                  <DynamicDate
+                    columnData={i}
+                    rowData={row}
+                    dynamicValue={value ?? null}
+                    refetch={refetchSubTask}
+                    isSubTask
+                  />
+                )
+              case 'DDL':
+                const dropdownList = row?.additionalValues?.filter(
+                  addVal => addVal?.AdditionalColumnID === i?.AdditionalColumnID
+                )
+
+                return (
+                  <DynamicDropdown
+                    columnData={i}
+                    rowData={{ ...row, TaskGroupID: taskGroupData?.taskGroupID, TaskID: row?.TaskMasterID }}
+                    dynamicValue={dropdownList ?? null}
+                    refetch={refetchSubTask}
+                    isSubTask={true}
+                  />
+                )
+              case 'LBL':
+                return (
+                  <DynamicStatus
+                    columnData={i}
+                    rowData={{ ...row, TaskGroupID: taskGroupData?.taskGroupID }}
+                    dynamicValue={value ?? null}
+                    refetch={refetchSubTask}
+                    isSubTask={true}
+                  />
+                )
+              case 'USR':
+                const usersList = row?.additionalValues?.filter(
+                  addVal => addVal?.AdditionalColumnID === i?.AdditionalColumnID
+                )
+
+                return (
+                  <DynamicPeople
+                    columnData={i}
+                    rowData={row}
+                    dynamicValue={usersList ?? []}
+                    refetch={refetchSubTask}
+                    isSubTask={true}
+                  />
+                )
+              default:
+                return (
+                  <TaskTextValues
+                    getValue={getValue}
+                    index={index}
+                    id={id}
+                    table={table}
+                    columnData={i}
+                    dynamicValue={value ?? null}
+                  />
+                )
+            }
+          }
+        }
+      })
+    } catch (error) {
+      console.log('error :', error)
+
+      return [{}]
+    }
+  }, [additionalSubColumns, refetchSubTask, taskGroupData?.taskGroupID])
+
+  // ** Functions
   const handleTaskUpdate = useCallback(
     async (row, body) => {
       console.log('body :', body)
@@ -95,13 +201,17 @@ const SubTable = ({ taskRow }) => {
     [refetchSubTask]
   )
 
+  // ** Add Task
   const handleAddTask = useCallback(async () => {
+    setAdding(true)
     await addSubTask({ taskID: taskRow?.original?.TaskID })
     refetchSubTask()
+    setAdding(false)
   }, [refetchSubTask, taskRow?.original?.TaskID])
 
   const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
+  // ** Delete Sub Task
   const handleDeleteSubTask = rowData => {
     setDeleteOpen(true)
     setDeleteData(rowData)
@@ -115,6 +225,15 @@ const SubTable = ({ taskRow }) => {
       setDeleteOpen(false)
     }
   }, [deleteData?.SubTaskID, refetchSubTask])
+
+  // ** Create Columns
+  const handlePlusIconClick = e => {
+    setAnchorEl(e.currentTarget)
+  }
+
+  const handlePlusMenuClose = () => {
+    setAnchorEl(null)
+  }
 
   // ** Columns
   const columns = useMemo(
@@ -157,16 +276,12 @@ const SubTable = ({ taskRow }) => {
         )
       },
       {
-        accessorKey: 'Effort',
+        accessorFn: row => row?.Effort,
         id: 'effort',
         size: 200,
         maxSize: 200,
-        cell: ({ row: { original } }) => {
-          return (
-            <Typography variant='body2' fontWeight={800}>
-              {original?.Effort ?? '-'}
-            </Typography>
-          )
+        cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          return <TaskEffortCell getValue={getValue} index={index} id={id} table={table} />
         },
         header: () => (
           <Typography variant='body2' fontWeight={800}>
@@ -185,9 +300,22 @@ const SubTable = ({ taskRow }) => {
             <SubTaskStatus row={row} taskRow={taskRow} handleStatusChange={handleTaskUpdate} refetch={refetchSubTask} />
           )
         }
+      },
+      ...dynamicColumn(),
+      {
+        id: 'add-column',
+        size: 20,
+        maxSize: 20,
+        align: 'right',
+        header: () => (
+          <IconButton onClick={handlePlusIconClick}>
+            <Icon icon={'mdi:plus-circle-outline'} fontSize={27} />
+          </IconButton>
+        ),
+        cell: () => null
       }
     ],
-    [handleTaskUpdate, refetchSubTask, taskRow]
+    [dynamicColumn, handleTaskUpdate, refetchSubTask, taskRow]
   )
 
   const table = useReactTable({
@@ -197,9 +325,17 @@ const SubTable = ({ taskRow }) => {
     getCoreRowModel: getCoreRowModel(),
     meta: {
       updateData: async (rowIndex, columnId, value) => {
-        if (columnId === 'SubTaskName') {
+        if (columnId === 'SubTaskName' || columnId === 'effort') {
           try {
-            const body = { SubTaskName: value }
+            let body = {}
+
+            if (columnId === 'SubTaskName') {
+              body.SubTaskName = value
+            }
+
+            if (columnId === 'effort') {
+              body.Effort = value
+            }
 
             const response = await updateSubTask({ id: subTaskList?.[rowIndex]?.SubTaskID, body })
             if (response) {
@@ -207,6 +343,13 @@ const SubTable = ({ taskRow }) => {
             }
           } catch (error) {
             console.error('error :', error)
+          }
+        }
+        if (value?.AdditionalColumnID) {
+          const body = { ...value, TaskID: taskRow?.original?.TaskID }
+          const response = await updateSubTask({ id: subTaskList?.[rowIndex]?.SubTaskID, body })
+          if (response) {
+            refetchSubTask()
           }
         }
       }
@@ -224,12 +367,12 @@ const SubTable = ({ taskRow }) => {
   return (
     <Box py={4} ml={3} display={'flex'}>
       <Box display={'flex'} flexDirection={'column'} width={50} position={'relative'}>
-        <Box height={45} display={'flex'} alignItems={'center'} justifyContent={'center'}>
+        <Box height={67.5} display={'flex'} alignItems={'center'} justifyContent={'center'}>
           <Box height={10} width={10} borderRadius={100} bgcolor={'secondary.light'} />
         </Box>
         {subTaskList?.length ? (
           subTaskList?.map(i => (
-            <Box height={64.44} display={'flex'} alignItems={'center'} justifyContent={'end'} key={i?.SubTaskID}>
+            <Box height={69} display={'flex'} alignItems={'center'} justifyContent={'end'} key={i?.SubTaskID}>
               <Box width={22} borderTop={'2px dashed'} borderColor={'secondary.light'} position={'relative'}></Box>
             </Box>
           ))
@@ -316,10 +459,11 @@ const SubTable = ({ taskRow }) => {
             variant='text'
             size='small'
             color='primary'
+            disabled={adding}
             endIcon={<Icon icon={'mdi:plus'} />}
             onClick={debouncedHandleAddTask}
           >
-            Add Sub Task
+            {adding ? 'Adding' : 'Add Sub Task'}
           </CustomButton>
         </Box>
       </Box>
@@ -328,6 +472,17 @@ const SubTable = ({ taskRow }) => {
         setOpen={setDeleteOpen}
         description={`Subtask '${deleteData?.SubTaskName}' will be deleted`}
         onConfirm={handleDelete}
+      />
+      <AddColumnsMenu
+        open={anchorEl}
+        close={handlePlusMenuClose}
+        columns={additionalColumnsType}
+        refetchTaskGroup={refetchDyColumns}
+        taskGroupAllData={{
+          ...taskGroupData,
+          taskID: taskRow?.original?.TaskID
+        }}
+        isSubTask={true}
       />
     </Box>
   )

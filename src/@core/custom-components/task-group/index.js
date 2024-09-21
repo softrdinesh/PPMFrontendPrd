@@ -69,6 +69,7 @@ function TaskGroupComponent({
         </Grid>
         <Grid item xs={12} overflow={'hidden'}>
           <Table
+            key={taskGroupData?.TaskGroupID}
             projectID={projectID}
             isLoading={isLoading}
             isRefetching={isRefetching}

@@ -80,7 +80,7 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
         onClose={handleClose}
         TransitionComponent={Zoom}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'center' }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
         <Box p={2} maxWidth={'300px'}>

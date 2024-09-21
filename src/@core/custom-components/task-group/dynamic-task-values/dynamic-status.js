@@ -1,4 +1,5 @@
 import { addProjectStatus, fetchProjectStatusList, updateProjectStatus } from '@api/project'
+import { updateSubTask } from '@api/sub-task'
 import { updateTask } from '@api/task'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
@@ -82,7 +83,7 @@ const StatusMenuItem = ({ item, row, handleStatusChange, handleClose, handleEdit
   )
 }
 
-const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, refetch }) => {
+const DynamicStatus = ({ columnData = null, rowData = null, dynamicValue = null, refetch, isSubTask }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [formAnchor, setFormAnchor] = useState(null)
   const [isEdit, setIsEdit] = useState(null)
@@ -148,10 +149,19 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
         AdditionalColumnID: columnData?.AdditionalColumnID,
         value: ID
       }
-      const response = await updateTask({ id: rowData?.TaskID, body })
-      if (response) {
-        refetch()
-        handleClose()
+      if (isSubTask) {
+        body.TaskID = rowData?.TaskMasterID
+        const response = await updateSubTask({ id: rowData?.SubTaskID, body })
+        if (response) {
+          refetch()
+          handleClose()
+        }
+      } else {
+        const response = await updateTask({ id: rowData?.TaskID, body })
+        if (response) {
+          refetch()
+          handleClose()
+        }
       }
     } catch (error) {
       console.error('error :', error)
@@ -378,4 +388,4 @@ const TaskStatus = ({ columnData = null, rowData = null, dynamicValue = null, re
   )
 }
 
-export default TaskStatus
+export default DynamicStatus

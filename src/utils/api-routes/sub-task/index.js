@@ -45,3 +45,29 @@ export const deleteSubTask = async id => {
       return err
     })
 }
+
+export const fetchSubTaskColumns = async query => {
+  return callApi({ uriEndPoint: subTask.getColumn, query })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Failed to fetch column')
+
+      return err
+    })
+}
+
+export const createSubTaskColumn = async body => {
+  return callApi({ uriEndPoint: subTask.createColumn, body })
+    .then(res => {
+      toast.success(res?.message ?? 'Created Column Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Failed to create column')
+
+      return err
+    })
+}

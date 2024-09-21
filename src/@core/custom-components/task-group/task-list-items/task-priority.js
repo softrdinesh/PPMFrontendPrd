@@ -151,12 +151,12 @@ const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
         </Tooltip>
       </Box>
       <Menu
-        open={Boolean(anchorEl)}
+        open={!!anchorEl}
         anchorEl={anchorEl}
         onClose={handleClose}
         TransitionComponent={Zoom}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'center' }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
         <Box maxWidth={'400px'} p={4}>
@@ -237,7 +237,7 @@ const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
         onClose={handleFormClose}
         TransitionComponent={Zoom}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'center' }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
         <Box maxWidth={'300px'} width={'100%'} p={4}>
