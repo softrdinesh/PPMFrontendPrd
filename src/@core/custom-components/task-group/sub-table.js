@@ -182,7 +182,7 @@ const SubTable = ({ taskRow, additionalColumnsType, taskGroupData }) => {
         }
       })
     } catch (error) {
-      console.log('error :', error)
+      console.error('error :', error)
 
       return [{}]
     }
@@ -191,8 +191,6 @@ const SubTable = ({ taskRow, additionalColumnsType, taskGroupData }) => {
   // ** Functions
   const handleTaskUpdate = useCallback(
     async (row, body) => {
-      console.log('body :', body)
-      console.log('row :', row)
       await updateSubTask({ id: row?.SubTaskID, body })
       refetchSubTask()
 
