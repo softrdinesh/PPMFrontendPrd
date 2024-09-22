@@ -82,16 +82,16 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
 
   return (
     <Dialog open={openInviteModal} onClose={handleClose} TransitionComponent={Zoom} fullWidth maxWidth='md'>
-      <Grid container>
-        <DialogContent
-          style={{
-            padding: 0,
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap-reverse'
-          }}
-        >
-          <Grid py={5} lg={9} xs={12} sm={12} px={8}>
+      <DialogContent
+        style={{
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap-reverse'
+        }}
+      >
+        <Grid container>
+          <Grid item py={5} lg={9} xs={12} sm={12} px={8}>
             <Box>
               <Typography color={'primary.main'} fontSize={32} fontWeight={600}>
                 Invite your teammates
@@ -284,7 +284,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
               </DialogActions>
             </Box>
           </Grid>
-          <Grid lg={3} xs={12} sm={12}>
+          <Grid item lg={3} xs={12} sm={12}>
             <Box
               height={'100%'}
               sx={{
@@ -292,8 +292,8 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
               }}
             ></Box>
           </Grid>
-        </DialogContent>
-      </Grid>
+        </Grid>
+      </DialogContent>
     </Dialog>
   )
 }

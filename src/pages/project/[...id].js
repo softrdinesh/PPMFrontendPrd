@@ -14,6 +14,7 @@ import TextField from '@mui/material/TextField'
 import CustomButton from '@components/button'
 import FallbackSpinner from '@components/spinner'
 import { Icon } from '@iconify/react'
+import useWebSocket from 'src/hooks/useWebSocket'
 
 // ** API Imports
 import { viewProject } from '@api/project'
@@ -33,6 +34,16 @@ function ProjectView() {
   const projectID = id?.[0]
 
   const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
+
+  // ** Socket function
+  const handleUpdate = data => {
+    if (data?.value === 'titleUpdate') {
+      refetch()
+    }
+  }
+
+  // ** Web Socket Setup
+  useWebSocket(projectID, handleUpdate)
 
   const {
     data: taskGroups,

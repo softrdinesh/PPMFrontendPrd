@@ -1,0 +1,16 @@
+// ADD
+{
+    "taskGroupID": 13,
+    "projectID": "35",
+    "workspaceID": 40
+}
+
+
+// UPDATE
+38
+
+{
+    "DynamicID": 127,
+    "AdditionalColumnID": 45,
+    "value": "new Task here"
+}

@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 import io from 'socket.io-client'
+import { useAuth } from './useAuth'
 
 const useSocket = (projectId, handleUpdate) => {
   const socket = useRef(null)
+  const { user } = useAuth()
 
   useEffect(() => {
     socket.current = io(process?.env?.NEXT_PUBLIC_API_URL)
@@ -19,7 +21,11 @@ const useSocket = (projectId, handleUpdate) => {
         } catch {
           data = message?.data
         }
-        handleUpdate(data)
+        if (user?.UserID !== data?.by) {
+          handleUpdate(data)
+
+          // toast.custom(<ActivityToastMessage title={data?.title} description={data?.description} />)
+        }
       }
     })
 

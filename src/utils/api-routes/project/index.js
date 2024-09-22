@@ -18,7 +18,7 @@ export const viewProject = async id => {
       return res?.data
     })
     .catch(err => {
-      throw err
+      return err
     })
 }
 

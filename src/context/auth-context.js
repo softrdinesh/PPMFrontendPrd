@@ -78,7 +78,6 @@ const AuthProvider = ({ children }) => {
           const responseValue = res?.data
           if (responseValue?.status && responseValue.data?.isVerified) {
             localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue?.data))
-            router.replace(routes.dashboard)
             setLoading(false)
             setUser(responseValue?.data?.userData)
           } else {
