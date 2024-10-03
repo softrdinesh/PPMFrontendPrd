@@ -25,6 +25,9 @@ const getIcon = key => {
     case 'NUM':
       return 'mingcute:dots-fill'
 
+    case 'FLE':
+      return 'lucide:files'
+
     default:
       return 'mingcute:dots-fill'
   }
@@ -93,7 +96,6 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
                   </Box>
                 </Grid>
                 <Grid item xs={12}>
-                  {' '}
                   <Controller
                     name='columnName'
                     control={control}
@@ -108,7 +110,7 @@ const AddColumnsMenu = ({ open, close, columns, taskGroupAllData, refetchTaskGro
                         helperText={errors?.columnName?.message}
                       />
                     )}
-                  />{' '}
+                  />
                 </Grid>
                 <Grid item xs={12}>
                   <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>

@@ -37,6 +37,7 @@ import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
+import DynamicFiles from './dynamic-task-values/dynamic-files'
 
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
@@ -174,6 +175,10 @@ const DataTable = ({
               )
 
               return <DynamicPeople columnData={i} rowData={row} dynamicValue={usersList ?? []} refetch={refetch} />
+
+            case 'FLE':
+              return <DynamicFiles />
+
             default:
               return (
                 <TaskTextValues
