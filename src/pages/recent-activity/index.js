@@ -1,3 +1,4 @@
+import Avatar from '@components/avatar'
 import { Icon } from '@iconify/react'
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material'
 import MuiAccordion from '@mui/material/Accordion'
@@ -5,15 +6,19 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import MuiAccordionSummary from '@mui/material/AccordionSummary'
 import { styled } from '@mui/material/styles'
 import moment from 'moment'
-import { useState } from 'react'
+import Image from 'next/image'
+import { images } from 'src/constants/images'
 
-const Accordion = styled(props => <MuiAccordion disableGutters elevation={0} square {...props} />)(() => ({
-  boxShadow: 'none !important'
-}))
+const Accordion = styled(props => <MuiAccordion defaultExpanded disableGutters elevation={0} square {...props} />)(
+  () => ({
+    boxShadow: 'none !important'
+  })
+)
 
 const AccordionSummary = styled(props => (
   <MuiAccordionSummary expandIcon={<Icon icon={'tabler:chevron-right'} fontSize={22} elevation={0} />} {...props} />
 ))(({ theme }) => ({
+  paddingInline: 0,
   flexDirection: 'row-reverse',
   '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
     transform: 'rotate(90deg)'
@@ -24,7 +29,7 @@ const AccordionSummary = styled(props => (
 }))
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
-  padding: theme?.breakpoints.up('md') && theme.spacing(2)
+  padding: theme?.breakpoints.up('md') && theme.spacing(4)
 }))
 
 const ActivityMessage = () => {
@@ -55,13 +60,66 @@ const ActivityMessage = () => {
   )
 }
 
+const RecentActivityCard = () => {
+  return (
+    <Box
+      border={1}
+      width={'max-content'}
+      display={'flex'}
+      flexDirection={'column'}
+      p={3}
+      borderRadius={1}
+      gap={2}
+      borderColor={'divider'}
+    >
+      <Image src={images.ImgRecentVisitedCard} alt='' />
+      <Box display={'flex'} gap={4} alignItems={'center'}>
+        <Icon icon={'lucide:sidebar'} fontSize={22} />
+        <Typography variant='subtitle1' fontWeight={700}>
+          Project 1
+        </Typography>
+      </Box>
+      <Box display={'flex'} gap={4} alignItems={'center'}>
+        <Image src={images.ImgProjectItemLogo} alt='' width={23} />
+        <Typography variant='subtitle1' fontWeight={500}>
+          {`Project 1 > Workspace`}
+        </Typography>
+      </Box>
+    </Box>
+  )
+}
+
+const WorkspaceCard = () => {
+  return (
+    <Box
+      border={1}
+      width={'100%'}
+      display={'flex'}
+      p={3}
+      borderRadius={1}
+      gap={3}
+      borderColor={'divider'}
+      alignItems={'center'}
+    >
+      <Avatar skin={'filled'} color='warning' variant='rounded' sx={{ width: 50, height: 50, fontSize: 27 }}>
+        M
+      </Avatar>
+      <Box display={'flex'} flexDirection={'column'} gap={1}>
+        <Typography variant='body1' fontWeight={600} fontSize={18}>
+          Main Workspace
+        </Typography>
+        <Box display={'flex'} gap={2} alignItems={'center'}>
+          <Image src={images.ImgProjectItemLogo} alt='' width={23} />
+          <Typography variant='subtitle1' fontWeight={500}>
+            {`Project 1`}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  )
+}
+
 function RecentActivity() {
-  const [expanded, setExpanded] = useState(true)
-
-  const handleExpansion = () => {
-    setExpanded(prevExpanded => !prevExpanded)
-  }
-
   return (
     <Box>
       <Grid container spacing={6}>
@@ -73,17 +131,16 @@ function RecentActivity() {
         <Grid item xs={12} md={6} lg={8}>
           <Card sx={{ minHeight: '70vh' }}>
             <CardContent>
-              <Accordion expanded={expanded} onChange={handleExpansion}>
+              <Accordion>
                 <AccordionSummary aria-controls='panel1-content' id='panel1-header'>
                   <Typography variant='h6' fontWeight={600} ml={2}>
                     Recently visited
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet
-                    blandit leo lobortis eget.
-                  </Typography>
+                  <Box py={2}>
+                    <RecentActivityCard />
+                  </Box>
                 </AccordionDetails>
               </Accordion>
               <Accordion>
@@ -93,17 +150,16 @@ function RecentActivity() {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet
-                    blandit leo lobortis eget.
-                  </Typography>
+                  <Box py={2}>
+                    <WorkspaceCard />
+                  </Box>
                 </AccordionDetails>
               </Accordion>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} md={6} lg={4}>
-          <Card>
+          <Card sx={{ boxShadow: theme => theme.shadows[10] }}>
             <CardContent>
               <Grid container spacing={4}>
                 <Grid item xs={12}>
