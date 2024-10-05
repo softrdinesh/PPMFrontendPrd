@@ -42,6 +42,8 @@ export const menuItems = [
   {
     title: 'Share point',
     type: 'link',
+    inputTitle: 'share point',
+    inputPlaceholder: 'eg. yourcompanyname.sharepoint.com/....',
     regex: [
       /^https:\/\/[a-zA-Z0-9]+\.sharepoint\.com\/:u:\/r\/sites\/[a-zA-Z0-9_]+\/Shared%20Documents\/[a-zA-Z0-9%\/._-]+\?csf=1&web=1&e=[a-zA-Z0-9]+$/,
       /^https:\/\/[a-zA-Z0-9]+\.sharepoint\.com\/:f:\/r\/Shared%20Documents\/[a-zA-Z0-9%\/._-]+\?e=[a-zA-Z0-9]+$/

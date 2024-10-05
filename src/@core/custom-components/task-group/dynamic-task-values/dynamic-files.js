@@ -93,35 +93,118 @@ const DynamicFiles = () => {
                   {/* Form */}
                   <Box flex={1}>
                     {/* File */}
-                    <Controller
-                      control={control}
-                      name='link'
-                      rules={{ required: `Please enter a ${selectedType?.inputTitle ?? ''} link` }}
-                      render={({ field, formState: { errors } }) => (
-                        <>
-                          <Typography
-                            variant='subtitle1'
-                            fontWeight={700}
-                            mb={2}
-                          >{`Paste any ${selectedType?.inputTitle ?? selectedType?.title ?? 'file'} link`}</Typography>
-                          <TextField
-                            fullWidth
-                            {...field}
-                            error={!!errors?.link}
-                            helperText={errors?.link?.message}
-                            size='small'
-                            placeholder={selectedType?.inputPlaceholder ?? 'e.g. Pdf, Xls, Adobe, Miro, Etc.,'}
-                            InputProps={{
-                              startAdornment: (
-                                <Box display={'flex'} mr={2}>
-                                  <Icon icon={selectedType?.icon} fontSize={20} color={theme?.palette.primary.main} />
+                    {selectedType?.type === 'computer' ? (
+                      <Controller
+                        control={control}
+                        name='file'
+                        rules={{ required: `Please upload a file` }}
+                        render={({ field, formState: { errors } }) => (
+                          <>
+                            <Typography
+                              variant='subtitle1'
+                              fontWeight={700}
+                              mb={2}
+                            >{`Upload a file from your device`}</Typography>
+                            {field?.value ? (
+                              <Box
+                                width={'max-content'}
+                                display={'flex'}
+                                flexDirection={'column'}
+                                justifyContent={'center'}
+                                gap={2}
+                              >
+                                <Box
+                                  border={1}
+                                  borderRadius={1}
+                                  width={100}
+                                  height={100}
+                                  display={'flex'}
+                                  alignItems={'center'}
+                                  justifyContent={'center'}
+                                  position={'relative'}
+                                >
+                                  <Icon icon={'mdi:file-outline'} fontSize={30} />
+                                  <Box
+                                    position={'absolute'}
+                                    top={-10}
+                                    right={-10}
+                                    bgcolor={'error.main'}
+                                    borderRadius={100}
+                                  >
+                                    <IconButton size='small' onClick={() => field.onChange(null)}>
+                                      <Icon icon={'mdi:close'} color='white' />
+                                    </IconButton>
+                                  </Box>
                                 </Box>
-                              )
-                            }}
-                          />
-                        </>
-                      )}
-                    />
+                                <Typography
+                                  variant='subtitle2'
+                                  width={'100%'}
+                                  whiteSpace={'nowrap'}
+                                  overflow={'hidden'}
+                                  textOverflow={'ellipsis'}
+                                >
+                                  {field?.value?.name}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <TextField
+                                type='file'
+                                fullWidth
+                                onChange={e => {
+                                  field.onChange(e?.target?.files[0])
+                                }}
+                                error={!!errors?.file}
+                                helperText={errors?.file?.message}
+                                size='small'
+                                placeholder={selectedType?.inputPlaceholder ?? 'e.g. Pdf, Xls, Adobe, Miro, Etc.,'}
+                                InputProps={{
+                                  startAdornment: (
+                                    <Box display={'flex'} mr={2}>
+                                      <Icon
+                                        icon={selectedType?.icon}
+                                        fontSize={20}
+                                        color={theme?.palette.primary.main}
+                                      />
+                                    </Box>
+                                  )
+                                }}
+                              />
+                            )}
+                          </>
+                        )}
+                      />
+                    ) : (
+                      <Controller
+                        control={control}
+                        name='link'
+                        rules={{ required: `Please enter a ${selectedType?.inputTitle ?? ''} link` }}
+                        render={({ field, formState: { errors } }) => (
+                          <>
+                            <Typography
+                              variant='subtitle1'
+                              fontWeight={700}
+                              mb={2}
+                            >{`Paste any ${selectedType?.inputTitle ?? selectedType?.title ?? 'file'} link`}</Typography>
+                            <TextField
+                              fullWidth
+                              {...field}
+                              error={!!errors?.link}
+                              helperText={errors?.link?.message}
+                              size='small'
+                              placeholder={selectedType?.inputPlaceholder ?? 'e.g. Pdf, Xls, Adobe, Miro, Etc.,'}
+                              InputProps={{
+                                startAdornment: (
+                                  <Box display={'flex'} mr={2}>
+                                    <Icon icon={selectedType?.icon} fontSize={20} color={theme?.palette.primary.main} />
+                                  </Box>
+                                )
+                              }}
+                            />
+                          </>
+                        )}
+                      />
+                    )}
+
                     {/* Display Text */}
                     <Controller
                       control={control}
@@ -141,7 +224,7 @@ const DynamicFiles = () => {
                             error={!!errors?.display_name}
                             helperText={errors?.display_name?.message}
                             size='small'
-                            placeholder={selectedType?.inputPlaceholder ?? 'e.g. Pdf, Xls, Adobe, Miro, Etc.,'}
+                            placeholder={'Add your file name here'}
                           />
                         </>
                       )}
