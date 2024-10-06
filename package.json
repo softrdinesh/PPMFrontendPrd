@@ -24,6 +24,7 @@
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.13.0",
     "@iconify/react": "^5.0.2",
+    "@mui/lab": "6.0.0-beta.10",
     "@mui/material": "5.16.7",
     "@mui/styles": "^5.16.7",
     "@mui/x-data-grid": "^7.16.0",
@@ -50,6 +51,8 @@
     "react-query": "^3.39.3",
     "sharp": "^0.33.5",
     "socket.io-client": "^4.8.0",
+    "suneditor": "^2.47.0",
+    "suneditor-react": "^3.6.1",
     "usehooks-ts": "^3.1.0"
   },
   "devDependencies": {

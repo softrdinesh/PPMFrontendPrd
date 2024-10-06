@@ -54,7 +54,7 @@ const UserDropdown = () => {
       <Avatar
         alt={auth?.user?.Name ?? 'John Doe'}
         onClick={handleDropdownOpen}
-        sx={{ width: 40, height: 40, cursor: 'pointer' }}
+        sx={{ width: 40, height: 40, cursor: 'pointer', ml: 2 }}
         src={auth?.user?.image ?? '/images/avatars/1.png'}
       />
       <Menu
