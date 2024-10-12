@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 // ** MUI Imports
 import {
@@ -6,34 +6,46 @@ import {
   Button,
   Dialog,
   DialogActions,
-  DialogContent,
   FormControl,
   Grid,
   IconButton,
   MenuItem,
   Select,
+  Snackbar,
   TextField,
   Typography,
+  useTheme,
   Zoom
 } from '@mui/material'
 
 // ** Custom Imports
-import IconifyIcon from '@components/icon'
-import { Icon } from '@iconify/react'
 
 // ** Hook Imports
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 
 // ** API Imports
 import { addWorkspace } from '@api/workspace'
+import { Icon } from '@iconify/react'
+import { useCopyToClipboard } from 'usehooks-ts'
+import IconifyIcon from '@components/icon'
+import Image from 'next/image'
+import { images } from 'src/constants/images'
+
+const defaultValue = {
+  email: '',
+  role: ''
+}
 
 const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
-  const defaultValue = {
-    email: '',
-    role: ''
-  }
-
   // ** Hooks
+  const theme = useTheme()
+
+  const [copyOpen, setCopyOpen] = useState(false)
+
+  // eslint-disable-next-line no-unused-vars
+  const [cT, copy] = useCopyToClipboard()
+
+  const handleCopyClose = () => setCopyOpen(false)
 
   const handleClose = () => {
     reset()
@@ -44,12 +56,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
     invitations: [defaultValue]
   }
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset
-  } = useForm({ defaultValues })
+  const { handleSubmit, control, reset } = useForm({ defaultValues })
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -67,233 +74,190 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
 
   const roleList = [
     {
-      value: 1,
+      value: 'admin',
       title: 'Admin'
     },
     {
-      value: 2,
+      value: 'member',
       title: 'Member'
     },
     {
-      value: 3,
+      value: 'viewer',
       title: 'Viewer'
     }
   ]
 
   return (
     <Dialog open={openInviteModal} onClose={handleClose} TransitionComponent={Zoom} fullWidth maxWidth='md'>
-      <DialogContent
-        style={{
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap-reverse'
-        }}
-      >
-        <Grid container>
-          <Grid item py={5} lg={9} xs={12} sm={12} px={8}>
+      <Grid container spacing={2} height={'100%'} alignItems={'stretch'}>
+        <Grid item xs={12} md={8}>
+          <Box minHeight={600} width={'100%'} display={'flex'} flexDirection={'column'} p={{ xs: 4, md: 10 }} gap={10}>
+            {/* Title  */}
             <Box>
-              <Typography color={'primary.main'} fontSize={32} fontWeight={600}>
+              <Typography variant='h5' color={'primary.main'} fontWeight={700} mb={3}>
                 Invite your teammates
               </Typography>
-              <Typography mt={2} variant='subtitle1' fontWeight={400} fontSize={16}>
-                Collaborate with your team to get the most out of this WebApp.
+              <Typography whiteSpace={'nowrap'} overflow={'hidden'} textOverflow={'ellipsis'}>
+                Collaborate with your team to get the most out of this WebApp.{' '}
               </Typography>
-              <Box>
-                <Typography mt={3} variant='subtitle1' fontWeight={400} fontSize={14}>
-                  Invite with link (anyone with @figr.design email)
-                </Typography>
-                <Box
-                  display={'flex'}
-                  sx={{
-                    border: '1px solid lightGray',
-                    mt: 3,
-                    mb: 5
-                  }}
-                >
-                  <Typography p={2} flex={1} fontFamily={'Inter'} fontWeight={400} fontSize={12}>
-                    {inviteLink}
-                  </Typography>
-
-                  <Button
+            </Box>
+            <Box display={'flex'} flexDirection={'column'} gap={2}>
+              <Typography>{`Invite with link (anyone with @figr.design email)`}</Typography>
+              <TextField
+                fullWidth
+                size='small'
+                defaultValue={inviteLink}
+                value={inviteLink}
+                InputProps={{
+                  endAdornment: (
+                    <Box
+                      display={'flex'}
+                      alignItems={'center'}
+                      gap={2}
+                      pl={3}
+                      borderLeft={2}
+                      borderColor={'divider'}
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        copy(inviteLink)
+                        setCopyOpen(true)
+                      }}
+                    >
+                      <Icon icon={'akar-icons:copy'} fontSize={22} color={theme.palette.primary.main} />
+                      <Typography>Copy </Typography>
+                    </Box>
+                  )
+                }}
+                inputProps={{ readOnly: true }}
+              />
+            </Box>
+            <Box display={'flex'} flexDirection={'column'} gap={2} flex={1}>
+              <Typography fontWeight={700}>{`Invite with email`}</Typography>
+              {fields?.map((field, index) => (
+                <Box display={'flex'} gap={2} key={field?.id}>
+                  <FormControl fullWidth>
+                    <Controller
+                      name={`invitations.${index}.email`}
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field, formState: { errors } }) => (
+                        <TextField
+                          {...field}
+                          size='small'
+                          placeholder='eg.user@gmail.com'
+                          error={errors?.invitations?.[index]?.email}
+                          helperText={errors?.invitations?.[index]?.email?.message}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                  <FormControl sx={{ minWidth: 110 }}>
+                    <Controller
+                      name={`invitations.${index}.role`}
+                      control={control}
+                      rules={{
+                        required: 'Please select a role'
+                      }}
+                      render={({ field, formState: { errors } }) => (
+                        <Select
+                          {...field}
+                          error={Boolean(errors?.invitations?.[index]?.role)}
+                          displayEmpty
+                          variant='outlined'
+                          size='small'
+                          style={{ backgroundColor: 'common.white' }}
+                        >
+                          {roleList.map(option => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.title}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                  </FormControl>
+                  <IconButton
                     onClick={() => {
-                      // copyToClipboard(inviteLink)
+                      remove(index)
                     }}
-                    startIcon={<Icon icon={'mdi-content-copy'} style={{ marginInline: 2 }} />}
-                    sx={{
-                      borderLeft: 1,
-                      borderRadius: 0,
-                      borderColor: 'lightGray',
-                      textTransform: 'capitalize'
-                    }}
+                    sx={{ color: 'error.main' }}
                   >
-                    Copy
+                    <IconifyIcon icon={'mdi:delete'} />
+                  </IconButton>
+                </Box>
+              ))}
+              {fields.length < 5 && (
+                <Box>
+                  <Button
+                    sx={{
+                      textTransform: 'capitalize',
+                      outline: 'white',
+                      mt: 3
+                    }}
+                    variant='text'
+                    size='small'
+                    onClick={() => {
+                      append(defaultValue)
+                    }}
+                    startIcon={<Icon icon={'ph:plus'} color='primary.main' />}
+                  >
+                    {'Add another'}
                   </Button>
                 </Box>
-              </Box>
-              <Box>
-                <Typography mt={3} variant='subtitle1' fontWeight={600} fontSize={14}>
-                  Invite with email
-                </Typography>
-                <Box
-                  sx={{
-                    maxHeight: 150,
-                    overflowY: 'auto',
-                    borderRadius: 1,
-                    padding: 1.5
-                  }}
-                >
-                  {fields.map((item, index) => {
-                    return (
-                      <Box
-                        key={item.id}
-                        sx={{
-                          flex: 1,
-                          display: 'flex',
-                          marginBottom: 4
-                        }}
-                      >
-                        <FormControl
-                          sx={{
-                            flex: 1,
-                            flexDirection: 'row',
-                            flexWrap: 'wrap'
-                          }}
-                        >
-                          <Controller
-                            name={`invitations.${index}.email`}
-                            control={control}
-                            defaultValue={item.email}
-                            rules={{
-                              required: 'Please enter an email'
-                            }}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                autoFocus
-                                error={Boolean(errors?.invitations?.[index]?.email)}
-                                helperText={
-                                  Boolean(errors?.invitations?.[index]?.email) &&
-                                  errors.invitations[index].email.message
-                                }
-                                fullWidth
-                                id='email'
-                                label='Enter Email'
-                                variant='outlined'
-                                style={{
-                                  backgroundColor: 'common.white',
-                                  borderWidth: 0,
-                                  paddingBottom: 0,
-                                  marginBottom: 0
-                                }}
-                              />
-                            )}
-                          />
-                        </FormControl>
-
-                        <FormControl
-                          sx={{
-                            marginLeft: 2,
-                            minWidth: 120
-                          }}
-                        >
-                          <Controller
-                            name={`invitations.${index}.role`}
-                            control={control}
-                            defaultValue={item.role}
-                            rules={{
-                              required: 'Please select a role'
-                            }}
-                            render={({ field }) => (
-                              <Select
-                                {...field}
-                                error={Boolean(errors?.invitations?.[index]?.role)}
-                                displayEmpty
-                                variant='outlined'
-                                style={{ backgroundColor: 'common.white' }}
-                              >
-                                {roleList.map(option => (
-                                  <MenuItem key={option.value} value={option.value}>
-                                    {option.title}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            )}
-                          />
-                        </FormControl>
-
-                        <IconButton
-                          onClick={() => {
-                            remove(index)
-                          }}
-                          sx={{ color: 'error.main', ml: 1 }}
-                        >
-                          <IconifyIcon icon={'mdi:delete'} />
-                        </IconButton>
-                      </Box>
-                    )
-                  })}
-                </Box>
-                {fields.length < 5 && (
-                  <Box>
-                    <Button
-                      sx={{
-                        textTransform: 'capitalize',
-                        outline: 'white',
-                        mt: 3
-                      }}
-                      variant='text'
-                      size='small'
-                      onClick={() => {
-                        append(defaultValue)
-                      }}
-                      startIcon={<Icon icon={'ph:plus'} color='primary.main' />}
-                    >
-                      {'Add another'}
-                    </Button>
-                  </Box>
-                )}
-              </Box>
-              <DialogActions sx={{ justifyContent: 'space-between' }}>
-                <Button
-                  sx={{
-                    borderRadius: 30,
-                    fontWeight: 400,
-                    fontSize: '14px',
-                    textTransform: 'capitalize'
-                  }}
-                  variant='outlined'
-                  size='large'
-                  onClick={handleClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  sx={{
-                    borderRadius: 30,
-                    fontWeight: 400,
-                    fontSize: '16px',
-                    textTransform: 'capitalize'
-                  }}
-                  variant='contained'
-                  size='large'
-                  onClick={handleSubmit(onSubmit)}
-                >
-                  Invite your team
-                </Button>
-              </DialogActions>
+              )}
             </Box>
-          </Grid>
-          <Grid item lg={3} xs={12} sm={12}>
-            <Box
-              height={'100%'}
-              sx={{
-                backgroundColor: 'common.lightSkyColor'
-              }}
-            ></Box>
-          </Grid>
+            <DialogActions sx={{ justifyContent: 'space-between' }}>
+              <Button
+                sx={{
+                  borderRadius: 30,
+                  fontWeight: 400,
+                  fontSize: '14px',
+                  textTransform: 'capitalize'
+                }}
+                variant='outlined'
+                size='small'
+                onClick={handleClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                sx={{
+                  borderRadius: 30,
+                  fontWeight: 400,
+                  fontSize: '14px',
+                  textTransform: 'capitalize'
+                }}
+                variant='contained'
+                size='small'
+                onClick={handleSubmit(onSubmit)}
+              >
+                Invite your team
+              </Button>
+            </DialogActions>
+          </Box>
         </Grid>
-      </DialogContent>
+        <Grid item xs={12} md={4} display={{ xs: 'none', md: 'flex' }}>
+          <Box
+            bgcolor={theme.palette.primary.light + 22}
+            minHeight={600}
+            width={'100%'}
+            display={'flex'}
+            alignItems={'center'}
+            justifyContent={'center'}
+            flexDirection={'column'}
+            gap={20}
+          >
+            <Image src={images.ImgInviteBg} alt='' />
+          </Box>
+        </Grid>
+      </Grid>
+      <Snackbar
+        open={copyOpen}
+        onClose={handleCopyClose}
+        message='Link Copied'
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      />
     </Dialog>
   )
 }

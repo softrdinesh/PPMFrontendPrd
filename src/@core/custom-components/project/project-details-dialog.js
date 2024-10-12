@@ -21,8 +21,6 @@ const ProjectDetailsDialog = ({ open, close, projectData }) => {
   // States
   const [value, setValue] = useState('details')
 
-  console.log('projectData :', projectData)
-
   const handleChange = (event, newValue) => {
     setValue(newValue)
   }

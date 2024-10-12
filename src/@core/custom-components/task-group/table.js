@@ -246,7 +246,17 @@ const DataTable = ({
           <Typography variant='body2' fontWeight={800}>
             Task
           </Typography>
-        )
+        ),
+        cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          return (
+            <Box display={'flex'} gap={3} alignItems={'center'}>
+              <ColumnTextField getValue={getValue} index={index} id={id} table={table} />
+              <IconButton size='small'>
+                <Icon icon={'lucide:message-circle-more'} fontSize={22} />
+              </IconButton>
+            </Box>
+          )
+        }
       },
       {
         accessorFn: row => row.Owner.Name,
