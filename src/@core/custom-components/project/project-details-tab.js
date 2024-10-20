@@ -1,3 +1,4 @@
+import { updateTask } from '@api/task'
 import Avatar from '@components/avatar'
 import CustomButton from '@components/button'
 import HtmlEditor from '@components/html-editor'
@@ -5,7 +6,7 @@ import { Icon } from '@iconify/react'
 import { useMediaQuery } from '@mui/material'
 import { Box, Grid, IconButton, Typography, useTheme } from '@mui/material'
 import { getInitials } from '@utils/get-initials'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const MobileProjectDetail = ({ theme, projectData }) => {
   return (
@@ -112,15 +113,49 @@ const DesktopProjectDetail = ({ theme, projectData }) => {
   )
 }
 
-const ProjectDetailsTab = ({ projectData }) => {
+const ProjectDetailsTab = ({ projectData, taskData, refetchTasks }) => {
   const theme = useTheme()
   const lgBreakpoint = useMediaQuery(theme => theme.breakpoints.up('lg'))
+
+  const [value, setValue] = useState('')
+
+  const handleChange = async v => {
+    try {
+      const body = { TaskDescription: v }
+      const response = await updateTask({ id: taskData?.TaskID, body })
+      if (response) {
+        refetchTasks()
+      }
+      setValue(v)
+    } catch (error) {
+      console.error('error :', error)
+    }
+  }
+
+  useEffect(() => {
+    setValue(taskData?.TaskDescription)
+  }, [taskData?.TaskDescription])
 
   return (
     <Box height={'100%'}>
       <Grid container spacing={4} alignItems={'stretch'} height={'100%'}>
         <Grid item xs={12} lg={8} order={{ xs: 2, lg: 1 }}>
-          <HtmlEditor placeholder={'Please enter a project description....'} />
+          <Grid container spacing={7}>
+            <Grid item xs={12}>
+              <Typography variant='body2'>{'Task :'}</Typography>
+              <Typography fontWeight={600} variant='h6'>
+                {taskData?.Taskname}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} key={value}>
+              <HtmlEditor
+                placeholder={'Please enter a project description....'}
+                onChange={handleChange}
+                setContent={value}
+                defaultValue={value}
+              />
+            </Grid>
+          </Grid>
         </Grid>
         <Grid item xs={12} lg={4} order={{ xs: 1, lg: 2 }}>
           {lgBreakpoint ? (

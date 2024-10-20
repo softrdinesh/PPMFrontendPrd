@@ -8,7 +8,7 @@ import noDataImage from '@images/cards/no-data.svg'
 import Image from 'next/image'
 import NewTaskDialog from './new-task/dialog'
 
-const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
+const TaskGroupList = ({ id, taskGroups, isLoading, refetch, projectData }) => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => setOpen(true)
@@ -28,6 +28,7 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
               data={item}
               projectID={id}
               refetchTaskGroup={refetch}
+              projectData={projectData}
             />
           ))}
         </Box>

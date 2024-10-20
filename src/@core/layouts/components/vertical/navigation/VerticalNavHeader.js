@@ -15,6 +15,7 @@ import themeConfig from 'src/configs/themeConfig'
 
 import logo from '@images/logos/logo-pp-small.png'
 import logoMain from '@images/logos/logo-pp.png'
+import logoMainDark from '@images/logos/logo-pp-dark.png'
 
 // ** Styled Components
 const MenuHeaderWrapper = styled(Box)(({ theme }) => ({
@@ -117,9 +118,9 @@ const VerticalNavHeader = props => {
           />
           <LinkStyled href='/'>
             <Image
-              src={logoMain}
+              src={theme?.palette.mode === 'dark' ? logoMainDark : logoMain}
               alt={themeConfig.templateName}
-              height={40}
+              height={theme?.palette.mode === 'dark' ? 60 : 40}
               style={{
                 ...menuCollapsedStyles,
                 ...(navCollapsed && !navHover ? {} : { marginLeft: 2 }),

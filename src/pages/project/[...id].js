@@ -119,7 +119,13 @@ function ProjectView() {
         </Box>
       </Grid>
       <Grid item xs={12}>
-        <TaskGroupList id={projectID} refetch={refetchTaskGroup} taskGroups={taskGroups} isLoading={taskLoading} />
+        <TaskGroupList
+          id={projectID}
+          refetch={refetchTaskGroup}
+          taskGroups={taskGroups}
+          isLoading={taskLoading}
+          projectData={data}
+        />
       </Grid>
     </Grid>
   )

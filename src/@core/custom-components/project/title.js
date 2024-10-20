@@ -12,10 +12,8 @@ import { Icon } from '@iconify/react'
 
 // ** API Imports
 import { updateProject } from '@api/project'
-import CustomButton from '@components/button'
 import { ClickAwayListener } from '@mui/material'
 import { WorkspaceContext } from 'src/context/workspace-context'
-import ProjectDetailsDialog from './project-details-dialog'
 
 function ProjectTitle({ data, refetch }) {
   // ** Hooks
@@ -23,7 +21,6 @@ function ProjectTitle({ data, refetch }) {
 
   const [isEditing, setIsEditing] = useState(false)
   const [projectName, setProjectName] = useState('')
-  const [openDetails, setOpenDetails] = useState(false)
 
   const handleEditClick = () => {
     setIsEditing(true)
@@ -55,9 +52,6 @@ function ProjectTitle({ data, refetch }) {
     handleSave()
   }
 
-  const handleOpenDetails = () => setOpenDetails(true)
-  const handleCloseDetails = () => setOpenDetails(false)
-
   useEffect(() => {
     setProjectName(data?.ProjectName)
   }, [data])
@@ -87,13 +81,6 @@ function ProjectTitle({ data, refetch }) {
           </>
         )}
       </Box>
-      <Box display={'flex'} alignItems={'center'} gap={1}>
-        <Typography variant='subtitle2'>Add your board's description here</Typography>
-        <CustomButton variant='text' size='small' onClick={handleOpenDetails}>
-          Edit
-        </CustomButton>
-      </Box>
-      <ProjectDetailsDialog open={openDetails} close={handleCloseDetails} projectData={data} refetch={refetch} />
     </Box>
   )
 }

@@ -13,6 +13,7 @@ function TaskGroupComponent({
   taskGroupData,
   refetch,
   projectID,
+  projectData,
   refetchTaskGroup
 }) {
   // ** States
@@ -77,6 +78,7 @@ function TaskGroupComponent({
             taskGroupData={taskGroupData}
             taskGroupID={taskGroupData?.TaskGroupID}
             refetch={refetch}
+            projectData={projectData}
             refetchTaskGroup={refetchTaskGroup}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}

@@ -6,7 +6,7 @@ import Image from 'next/image'
 
 import classes from './spinner.module.css'
 
-import ppmLogo from '@images/apple-touch-icon.png'
+import ppmLogo from '@images/logos/logo-pp-small.png'
 
 const FallbackSpinner = ({ sx, height }) => {
   return (
@@ -21,7 +21,7 @@ const FallbackSpinner = ({ sx, height }) => {
         ...sx
       }}
     >
-      <Image src={ppmLogo} alt='Loading....' width={100} height={100} className={classes.spinnerImage} />
+      <Image src={ppmLogo} alt='Loading....' width={70} height={70} className={classes.spinnerImage} />
       <div className={classes.ringContainer}>
         <div className={classes.circle} />
         <div className={classes.circle} />

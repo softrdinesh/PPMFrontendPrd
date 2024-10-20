@@ -6,8 +6,16 @@ const SunEditor = dynamic(() => import('suneditor-react'), {
   ssr: false
 })
 
-const HtmlEditor = ({ placeholder, height }) => {
-  return <SunEditor height={height ?? '300'} placeholder={placeholder ?? 'Please enter a project description....'} />
+const HtmlEditor = ({ placeholder, height, onChange, setContent, defaultValue }) => {
+  return (
+    <SunEditor
+      defaultValue={defaultValue}
+      setContent={setContent}
+      height={height ?? '300'}
+      placeholder={placeholder ?? 'Please enter a project description....'}
+      onChange={onChange}
+    />
+  )
 }
 
 export default HtmlEditor

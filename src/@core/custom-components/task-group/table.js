@@ -29,15 +29,16 @@ import useWebSocket from 'src/hooks/useWebSocket'
 import AddColumnsMenu from './add-columns/menu'
 import DynamicDate from './dynamic-task-values/dynamic-date'
 import DynamicDropdown from './dynamic-task-values/dynamic-dropdown'
+import DynamicFiles from './dynamic-task-values/dynamic-files'
 import DynamicPeople from './dynamic-task-values/dynamic-people'
 import DynamicStatus from './dynamic-task-values/dynamic-status'
 import TaskTextValues from './dynamic-task-values/dynamic-value'
 import SubTable from './sub-table'
+import TaskNameCell from './task-list-items/task-name'
 import TaskPeople from './task-list-items/task-people'
 import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
-import DynamicFiles from './dynamic-task-values/dynamic-files'
 
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
@@ -88,6 +89,7 @@ const DataTable = ({
   taskGroupData = null,
   taskGroupID = null,
   projectID = null,
+  projectData,
   refetch = () => {},
   refetchTaskGroup = () => {},
   setSelectedRows
@@ -247,14 +249,14 @@ const DataTable = ({
             Task
           </Typography>
         ),
-        cell: ({ getValue, row: { index }, column: { id }, table }) => {
+        cell: ({ getValue, row: { original, index }, column: { id }, table }) => {
           return (
-            <Box display={'flex'} gap={3} alignItems={'center'}>
-              <ColumnTextField getValue={getValue} index={index} id={id} table={table} />
-              <IconButton size='small'>
-                <Icon icon={'lucide:message-circle-more'} fontSize={22} />
-              </IconButton>
-            </Box>
+            <TaskNameCell
+              renderTextField={<ColumnTextField getValue={getValue} index={index} id={id} table={table} />}
+              rowData={original}
+              projectData={projectData}
+              refetch={refetch}
+            />
           )
         }
       },
@@ -313,7 +315,7 @@ const DataTable = ({
         cell: () => null
       }
     ],
-    [dynamicColumn, handleTaskUpdate, refetch]
+    [dynamicColumn, handleTaskUpdate, projectData, refetch]
   )
 
   const table = useReactTable({

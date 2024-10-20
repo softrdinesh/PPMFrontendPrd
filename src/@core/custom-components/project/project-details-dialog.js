@@ -17,7 +17,7 @@ const StyledTabPanel = styled(TabPanel)(({ theme }) => ({
   height: '60vh'
 }))
 
-const ProjectDetailsDialog = ({ open, close, projectData }) => {
+const ProjectDetailsDialog = ({ open, close, projectData, taskData, refetchTasks = () => {} }) => {
   // States
   const [value, setValue] = useState('details')
 
@@ -44,13 +44,13 @@ const ProjectDetailsDialog = ({ open, close, projectData }) => {
               <Tab value='activity' label='Activity Log' />
             </TabList>
             <StyledTabPanel value='details'>
-              <ProjectDetailsTab projectData={projectData} />
+              <ProjectDetailsTab projectData={projectData} taskData={taskData} refetchTasks={refetchTasks} />
             </StyledTabPanel>
             <StyledTabPanel value='updates'>
-              <ProjectUpdates projectData={projectData} />
+              <ProjectUpdates projectData={projectData} taskData={taskData} />
             </StyledTabPanel>
             <StyledTabPanel value='activity'>
-              <ProjectActivityLogs projectData={projectData} />
+              <ProjectActivityLogs projectData={projectData} taskData={taskData} />
             </StyledTabPanel>
           </TabContext>
         </Box>

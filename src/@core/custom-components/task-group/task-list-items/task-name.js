@@ -3,70 +3,37 @@ import React, { useState } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 
 // ** API Imports
-import { updateTask } from '@api/task'
-import { ClickAwayListener } from '@mui/material'
+import { Icon } from '@iconify/react'
+import { IconButton } from '@mui/material'
+import ProjectDetailsDialog from '@custom-components/project/project-details-dialog'
 
-const TaskNameCell = ({ data, refetch }) => {
-  const [isEditing, setIsEditing] = useState(false)
-  const [taskName, setTaskName] = useState(data?.Taskname)
+const TaskNameCell = ({ renderTextField, rowData, projectData, refetch }) => {
+  const [openTaskView, setOpenTaskView] = useState(false)
 
-  const handleEditClick = () => {
-    !isEditing && setIsEditing(true)
+  const handleTaskViewClick = () => {
+    setOpenTaskView(true)
   }
 
-  const handleSave = () => {
-    if (data?.Taskname !== taskName) {
-      const body = {
-        Taskname: taskName
-      }
-      updateTask({ id: data?.TaskID, body }).then(() => {
-        setIsEditing(false)
-        refetch()
-      })
-    } else {
-      setIsEditing(false)
-    }
-  }
-
-  const handleChange = event => {
-    setTaskName(event.target.value)
-  }
-
-  const handleKeyPress = event => {
-    if (event.key === 'Enter') {
-      handleSave()
-    }
-    if (event?.keyCode == 32) {
-      setTaskName(event.target.value)
-    }
-  }
-
-  const handleClickAway = () => {
-    handleSave()
-  }
+  const handleClose = () => setOpenTaskView(false)
 
   return (
-    <Box display={'flex'} alignItems={'center'} height={'100%'} onClick={handleEditClick}>
-      {isEditing ? (
-        <ClickAwayListener onClickAway={handleClickAway}>
-          <TextField
-            name='Taskname'
-            variant='standard'
-            value={taskName}
-            onChange={handleChange}
-            inputProps={{ maxLength: 50 }}
-            onKeyDown={handleKeyPress}
-            onBlur={handleSave}
-          />
-        </ClickAwayListener>
-      ) : (
-        <Typography onClick={handleEditClick}>{taskName}</Typography>
-      )}
-    </Box>
+    <>
+      <Box display={'flex'} gap={3} alignItems={'center'}>
+        {renderTextField}
+        <IconButton size='small' onClick={handleTaskViewClick}>
+          <Icon icon={'lucide:message-circle-more'} fontSize={22} />
+        </IconButton>
+      </Box>
+      <ProjectDetailsDialog
+        open={openTaskView}
+        close={handleClose}
+        projectData={projectData}
+        taskData={rowData}
+        refetchTasks={refetch}
+      />
+    </>
   )
 }
 
