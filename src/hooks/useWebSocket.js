@@ -14,7 +14,6 @@ const useSocket = (projectId, handleUpdate) => {
 
     // Listen for updates
     socket.current.on('projectUpdate', message => {
-      console.log('message.projectId :', message.projectId)
       if (message.projectId === projectId) {
         let data = message?.data
         try {

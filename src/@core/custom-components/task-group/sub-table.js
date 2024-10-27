@@ -32,6 +32,7 @@ import TaskTextValues from './dynamic-task-values/dynamic-value'
 import SubTaskStatus from './sub-task-list-items/sub-task-status'
 import TaskEffortCell from './task-list-items/task-effort'
 import TaskPeople from './task-list-items/task-people'
+import DynamicFiles from './dynamic-task-values/dynamic-files'
 
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
@@ -166,6 +167,16 @@ const SubTable = ({ taskRow, additionalColumnsType, taskGroupData }) => {
                     isSubTask={true}
                   />
                 )
+              case 'FLE':
+                return (
+                  <DynamicFiles
+                    columnData={i}
+                    rowData={row}
+                    dynamicValue={value}
+                    refetch={refetchSubTask}
+                    isSubTask={true}
+                  />
+                )
               default:
                 return (
                   <TaskTextValues
@@ -265,7 +276,7 @@ const SubTable = ({ taskRow, additionalColumnsType, taskGroupData }) => {
         size: 160,
         maxSize: 160,
         cell: ({ row: { original } }) => {
-          return <TaskPeople data={[original?.Owner]} refetch={refetchSubTask} />
+          return <TaskPeople data={original?.Owner} refetch={refetchSubTask} rowData={original} isSubTask={true} />
         },
         header: () => (
           <Typography variant='body2' fontWeight={800}>
@@ -325,14 +336,23 @@ const SubTable = ({ taskRow, additionalColumnsType, taskGroupData }) => {
       updateData: async (rowIndex, columnId, value) => {
         if (columnId === 'SubTaskName' || columnId === 'effort') {
           try {
-            let body = {}
+            let body = {
+              TaskID: taskRow?.original?.TaskID
+            }
 
             if (columnId === 'SubTaskName') {
               body.SubTaskName = value
+
+              body.Title = 'Sub-task name changed'
+              body.PreviousState = subTaskList?.[rowIndex]?.SubTaskName
+              body.NewState = value
             }
 
             if (columnId === 'effort') {
               body.Effort = value
+              body.Title = 'Sub-task Effort changed'
+              body.PreviousState = subTaskList?.[rowIndex]?.Effort
+              body.NewState = value
             }
 
             const response = await updateSubTask({ id: subTaskList?.[rowIndex]?.SubTaskID, body })

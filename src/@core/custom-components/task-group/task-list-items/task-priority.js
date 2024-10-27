@@ -29,7 +29,13 @@ const PriorityMenuItem = ({ item, row, handlePriorityChange, handleClose, handle
           sx={{ '&:hover': { bgcolor: getHexColor(item?.Colorcode) + '99' } }}
           onClick={() => {
             if (row?.PriorityID != item?.PriorityID) {
-              handlePriorityChange(row, { PriorityID: item?.PriorityID })
+              handlePriorityChange(row, {
+                PriorityID: item?.PriorityID,
+                Title: row?.PriorityID ? 'Priority Changed' : 'Priority Added',
+                Description: 'Task Priority has been updated',
+                PreviousState: row?.Priority?.PriorityName,
+                NewState: item?.PriorityName
+              })
             }
             handleClose()
           }}

@@ -65,3 +65,13 @@ export const deleteDynamicValue = async dynamicId => {
       return err
     })
 }
+
+export const taskFileUpload = async ({ id, body }) => {
+  return callApi({ uriEndPoint: task.fileUpload, pathParams: { id }, body })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}

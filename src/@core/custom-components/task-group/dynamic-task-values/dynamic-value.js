@@ -14,7 +14,10 @@ const TaskTextValues = ({ table, getValue, index, id, columnData, dynamicValue }
     const body = {
       DynamicID: dynamicValue?.DynamicID ?? null,
       AdditionalColumnID: columnData?.AdditionalColumnID,
-      value
+      value,
+      Title: `Column '${columnData?.ColumnName}' was updated`,
+      PreviousState: initialValue,
+      NewState: value
     }
     table.options.meta?.updateData(index, id, body)
   }

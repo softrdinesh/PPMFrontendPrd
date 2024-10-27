@@ -31,7 +31,10 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask }) 
       const body = {
         DynamicID: dynamicValue?.DynamicID ?? null,
         AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: moment(selectedDate).format('LLL')
+        value: moment(selectedDate).format('LLL'),
+        Title: `Column '${columnData?.ColumnName}' was updated`,
+        PreviousState: dynamicValue?.DynamicColumnValues,
+        NewState: moment(selectedDate).format('LLL')
       }
       if (isSubTask) {
         body.TaskID = rowData?.TaskMasterID

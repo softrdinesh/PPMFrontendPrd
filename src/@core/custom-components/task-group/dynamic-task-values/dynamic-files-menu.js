@@ -20,7 +20,7 @@ export const menuItems = [
     type: 'link',
     inputTitle: 'google drive',
     inputPlaceholder: 'eg. drive.google.com/....',
-    regex: [/^https:\/\/drive\.google\.com\/file\/d\/[a-zA-Z0-9_-]+\/(view|edit)\?usp=sharing$/],
+    regex: [/^https:\/\/drive\.google\.com\/file\/d\/[a-zA-Z0-9_-]+\/(view|edit)(\?usp=[a-zA-Z0-9_-]+)?$/],
     icon: 'hugeicons:google-drive',
     prefix: 'drive.google',
     hasBottomBorder: false

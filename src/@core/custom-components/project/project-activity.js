@@ -1,57 +1,24 @@
+import { fetchRecentActivityList } from '@api/recent-activity'
 import Avatar from '@components/avatar'
 import { Icon } from '@iconify/react'
-import { Box, Checkbox, Grid, Menu, Table, TableBody, TableCell, TableRow, Typography, Zoom } from '@mui/material'
+import {
+  Box,
+  Checkbox,
+  CircularProgress,
+  Grid,
+  Menu,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Typography,
+  Zoom
+} from '@mui/material'
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 import { getInitials } from '@utils/get-initials'
 import moment from 'moment'
 import React, { useMemo, useState } from 'react'
-
-const DATA = [
-  {
-    id: 0,
-    created_at: new Date(),
-    created_by: {
-      image: '/images/avatars/3.png',
-      Name: 'Vidya Balan'
-    },
-    subject: 'Added Owner',
-    previousValue: 'vidya@domain.com',
-    newValue: 'Tested as mail'
-  },
-  {
-    id: 0,
-    created_at: new Date(),
-    created_by: {
-      image: '/images/avatars/2.png',
-      Name: 'Cody Fisher'
-    },
-    subject: 'Like',
-    previousValue: '-',
-    newValue: '-'
-  },
-  {
-    id: 0,
-    created_at: new Date(),
-    created_by: {
-      image: '/images/avatars/5.png',
-      Name: 'Esther Howard'
-    },
-    subject: 'Date Changed',
-    previousValue: 'May 20, 2015',
-    newValue: 'May 23, 2015'
-  },
-  {
-    id: 0,
-    created_at: new Date(),
-    created_by: {
-      image: null,
-      Name: 'Marvin McKinney'
-    },
-    subject: 'Subscribed',
-    previousValue: '+',
-    newValue: '-'
-  }
-]
+import { useQuery } from 'react-query'
 
 const FilterMenuItem = () => {
   return (
@@ -62,52 +29,70 @@ const FilterMenuItem = () => {
   )
 }
 
-const ActivityTable = () => {
+const ActivityTable = ({ taskData }) => {
+  const { data: activityData, isLoading } = useQuery({
+    queryKey: ['recent-activity-task', taskData?.TaskID],
+    queryFn: () => fetchRecentActivityList({ taskID: taskData?.TaskID })
+  })
+
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'created_at',
+        accessorKey: 'DoneAt',
         cell: ({ row: { original } }) => {
           return (
             <Box display={'flex'} alignItems={'center'} gap={2}>
               <Icon icon={'mingcute:parking-fill'} fontSize={20} />
-              <Typography variant='subtitle2'>{moment(original).fromNow()}</Typography>
+              <Typography variant='subtitle2'>{moment(original?.DoneAt).fromNow()}</Typography>
             </Box>
           )
         }
       },
       {
-        accessorKey: 'image',
+        accessorKey: 'doneBy',
         cell: ({ row: { original } }) => {
           return (
-            <Avatar variant='circle' skin='light' sx={{ width: 40, height: 40 }} src={original?.created_by?.image}>
-              {getInitials(original?.created_by?.Name)}
-            </Avatar>
+            <Box display={'flex'} alignItems={'center'} gap={4}>
+              <Avatar
+                variant='circle'
+                skin='light'
+                sx={{ width: 40, height: 40 }}
+                src={original?.doneBy?.ProfilePicture}
+              >
+                {getInitials(original?.doneBy?.Name)}
+              </Avatar>
+              <Typography variant='body1'>{original?.doneBy?.Name}</Typography>
+            </Box>
           )
         }
       },
       {
-        accessorKey: 'Name',
+        accessorKey: 'Title',
         cell: ({ row: { original } }) => {
-          return <Typography variant='body1'>{original?.created_by?.Name}</Typography>
+          return <Typography variant='body1'>{original?.Title}</Typography>
         }
       },
       {
-        accessorKey: 'subject',
+        accessorKey: 'PreviousState',
         cell: ({ row: { original } }) => {
-          return <Typography variant='body1'>{original?.subject}</Typography>
+          return (
+            <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
+              <Typography variant='body1' color={original?.IsCritical && 'error.main'}>
+                {original?.PreviousState ?? '-'}
+              </Typography>
+              <Icon icon={'mdi:chevron-right'} fontSize={22} color={original?.IsCritical && 'red'} />
+            </Box>
+          )
         }
       },
       {
-        accessorKey: 'previousValue',
+        accessorKey: 'NewState',
         cell: ({ row: { original } }) => {
-          return <Typography variant='body1'>{original?.previousValue}</Typography>
-        }
-      },
-      {
-        accessorKey: 'newValue',
-        cell: ({ row: { original } }) => {
-          return <Typography variant='body1'>{original?.newValue}</Typography>
+          return (
+            <Typography variant='body1' color={original?.IsCritical && 'error.main'}>
+              {original?.NewState ?? '-'}
+            </Typography>
+          )
         }
       }
     ],
@@ -115,47 +100,55 @@ const ActivityTable = () => {
   )
 
   const table = useReactTable({
-    data: DATA,
+    data: activityData ?? [],
     columns,
     getCoreRowModel: getCoreRowModel()
   })
 
   return (
     <>
-      <Table
-        sx={{
-          minWidth: 'max-content'
-        }}
-      >
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map(row => {
-              return (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => {
-                    return (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    )
-                  })}
-                </TableRow>
-              )
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns?.length}>
-                <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
-                  <Typography>No Data Found</Typography>
-                </Box>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      {isLoading ? (
+        <Box display={'flex'} height={'100%'} alignItems={'center'} justifyContent={'center'}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Table
+          sx={{
+            minWidth: 'max-content',
+            height: '100%',
+            overflowY: 'auto'
+          }}
+        >
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map(row => {
+                return (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map(cell => {
+                      return (
+                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      )
+                    })}
+                  </TableRow>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns?.length}>
+                  <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
+                    <Typography>No Data Found</Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
     </>
   )
 }
 
-const ProjectActivityLogs = () => {
+const ProjectActivityLogs = ({ taskData }) => {
   const [filterMenu, setFilterMenu] = useState(null)
 
   const handleFilterMenuOpen = e => {
@@ -181,7 +174,7 @@ const ProjectActivityLogs = () => {
         </Grid>
         {/* Table */}
         <Grid item xs={12}>
-          <ActivityTable />
+          <ActivityTable taskData={taskData} />
         </Grid>
       </Grid>
     </Box>

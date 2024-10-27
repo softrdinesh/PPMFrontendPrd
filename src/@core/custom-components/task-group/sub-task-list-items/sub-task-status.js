@@ -45,7 +45,14 @@ const StatusMenuItem = ({ item, row, handleStatusChange, handleClose, handleEdit
           alignItems={'center'}
           onClick={() => {
             if (row?.StatusID != item?.StatusID) {
-              handleStatusChange(row, { StatusID: item?.StatusID })
+              handleStatusChange(row, {
+                StatusID: item?.StatusID,
+                TaskID: row?.TaskMasterID,
+                Title: row?.StatusID ? 'Sub Task Status Changed' : 'Sub Task Status Added',
+                Description: 'Status for sub-task was updated',
+                PreviousState: row?.Status?.Statusname,
+                NewState: item?.Statusname
+              })
             }
             handleClose()
           }}

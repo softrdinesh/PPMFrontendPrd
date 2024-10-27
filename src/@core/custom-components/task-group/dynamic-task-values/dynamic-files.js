@@ -1,26 +1,47 @@
+import { updateSubTask } from '@api/sub-task'
+import { taskFileUpload, updateTask } from '@api/task'
+import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Box, Dialog, Grid, IconButton, Menu, MenuItem, TextField, Typography, useTheme, Zoom } from '@mui/material'
+import {
+  Box,
+  Dialog,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+  Tooltip,
+  Typography,
+  useTheme,
+  Zoom
+} from '@mui/material'
 import Image from 'next/image'
 import React, { useState } from 'react'
 import { Controller, Form, useForm } from 'react-hook-form'
 import { images } from 'src/constants/images'
 import { menuItems } from './dynamic-files-menu'
-import CustomButton from '@components/button'
 
 const defaultValues = {
-  link: '',
+  value: '',
   file: null,
-  display_name: ''
+  displayText: ''
 }
 
-const DynamicFiles = () => {
+const DynamicFiles = ({ columnData = null, rowData = null, dynamicValue = null, refetch, isSubTask = false }) => {
+  console.log('dynamicValue :', dynamicValue)
+  console.log('rowData :', rowData)
   const theme = useTheme()
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedType, setSelectedType] = useState(menuItems[0])
   const [open, setOpen] = useState(false)
 
   // ** Hooks
-  const { handleSubmit, control, reset } = useForm({ defaultValues })
+  const {
+    handleSubmit,
+    control,
+    reset,
+    formState: { isSubmitting }
+  } = useForm({ defaultValues })
 
   //** Function
   const handleOpen = event => setAnchorEl(event?.currentTarget)
@@ -39,15 +60,97 @@ const DynamicFiles = () => {
   }
 
   const onSubmit = async data => {
-    console.log('data :', data)
+    if (!data?.file) {
+      try {
+        const body = {
+          DynamicID: dynamicValue?.DynamicID ?? null,
+          AdditionalColumnID: columnData?.AdditionalColumnID,
+          value: data?.value,
+          displayText: data?.displayText,
+          Title: `File was added to column '${columnData?.ColumnName}'`,
+          PreviousState: dynamicValue?.DisplayText,
+          NewState: data?.displayText
+        }
+        if (isSubTask) {
+          body.TaskID = rowData?.TaskMasterID
+          const response = await updateSubTask({ id: rowData?.SubTaskID, body })
+          if (response) {
+            refetch()
+            setOpen(false)
+            handleClose()
+          }
+        } else {
+          const response = await updateTask({ id: rowData?.TaskID, body })
+          if (response) {
+            refetch()
+            setOpen(false)
+            handleClose()
+          }
+        }
+      } catch (error) {
+        console.error('error :', error)
+      }
+    } else {
+      try {
+        const formData = new FormData()
+
+        const body = {
+          DynamicID: dynamicValue?.DynamicID ?? null,
+          AdditionalColumnID: columnData?.AdditionalColumnID,
+          value: data?.value,
+          displayText: data?.displayText,
+          Title: `File was added to column '${columnData?.ColumnName}'`,
+          PreviousState: dynamicValue?.DisplayText,
+          NewState: data?.displayText
+        }
+
+        for (let x in body) {
+          formData.append(x, body[x])
+        }
+        formData.append('file', data?.file)
+
+        await taskFileUpload({ id: rowData?.TaskID, body: formData })
+      } catch (error) {
+        console.error('error ff :', error)
+      }
+    }
   }
 
   return (
     <>
       <Box display={'flex'} height={'100%'} alignItems={'center'}>
-        <IconButton onClick={handleOpen}>
-          <Icon icon={'bi:plus-circle-dotted'} />
-        </IconButton>
+        {!dynamicValue ? (
+          <IconButton onClick={handleOpen}>
+            <Icon icon={'bi:plus-circle-dotted'} />
+          </IconButton>
+        ) : (
+          <Box
+            borderRadius={100}
+            border={1}
+            borderColor={'primary.main'}
+            display={'flex'}
+            alignItems={'center'}
+            gap={2}
+            py={0.5}
+            px={3}
+          >
+            <Tooltip title={dynamicValue?.DisplayText}>
+              <Typography variant='body2' color={'primary.main'} fontSize={13}>
+                {dynamicValue?.DisplayText?.slice(0, 8)}
+              </Typography>
+            </Tooltip>
+            <Box>
+              <IconButton
+                size='small'
+                onClick={() => {
+                  window?.open(dynamicValue?.DynamicColumnValues)
+                }}
+              >
+                <Icon icon={'ion:open-outline'} color={theme?.palette?.primary?.main} />
+              </IconButton>
+            </Box>
+          </Box>
+        )}
       </Box>
 
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleClose} TransitionComponent={Zoom}>
@@ -176,8 +279,22 @@ const DynamicFiles = () => {
                     ) : (
                       <Controller
                         control={control}
-                        name='link'
-                        rules={{ required: `Please enter a ${selectedType?.inputTitle ?? ''} link` }}
+                        name='value'
+                        rules={{
+                          required: `Please enter a ${selectedType?.inputTitle ?? ''} link`,
+                          validate: value => {
+                            if (selectedType?.regex) {
+                              const isValid = selectedType.regex.some(pattern => pattern.test(value))
+
+                              return (
+                                isValid ||
+                                `Please enter a valid ${selectedType?.inputTitle ?? selectedType?.title} link`
+                              )
+                            }
+
+                            return true
+                          }
+                        }}
                         render={({ field, formState: { errors } }) => (
                           <>
                             <Typography
@@ -188,8 +305,8 @@ const DynamicFiles = () => {
                             <TextField
                               fullWidth
                               {...field}
-                              error={!!errors?.link}
-                              helperText={errors?.link?.message}
+                              error={!!errors?.value}
+                              helperText={errors?.value?.message}
                               size='small'
                               placeholder={selectedType?.inputPlaceholder ?? 'e.g. Pdf, Xls, Adobe, Miro, Etc.,'}
                               InputProps={{
@@ -208,7 +325,7 @@ const DynamicFiles = () => {
                     {/* Display Text */}
                     <Controller
                       control={control}
-                      name='display_name'
+                      name='displayText'
                       rules={{ required: 'Please enter a text to display file' }}
                       render={({ field, formState: { errors } }) => (
                         <>
@@ -221,8 +338,8 @@ const DynamicFiles = () => {
                           <TextField
                             fullWidth
                             {...field}
-                            error={!!errors?.display_name}
-                            helperText={errors?.display_name?.message}
+                            error={!!errors?.displayText}
+                            helperText={errors?.displayText?.message}
                             size='small'
                             placeholder={'Add your file name here'}
                           />
@@ -234,8 +351,8 @@ const DynamicFiles = () => {
                     <CustomButton size='small' variant='text' onClick={handleDialogClose}>
                       Cancel
                     </CustomButton>
-                    <CustomButton variant='contained' size='small' type='submit'>
-                      Save
+                    <CustomButton variant='contained' size='small' type='submit' disabled={isSubmitting}>
+                      {isSubmitting ? 'Saving...' : 'Save'}
                     </CustomButton>
                   </Box>
                 </Box>

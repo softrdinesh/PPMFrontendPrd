@@ -14,6 +14,7 @@ import IconifyIcon from 'src/@core/components/icon'
 
 // ** Context Imports
 import { useAuth } from 'src/hooks/useAuth'
+import { getInitials } from '@utils/get-initials'
 
 const UserDropdown = () => {
   // ** States
@@ -55,8 +56,10 @@ const UserDropdown = () => {
         alt={auth?.user?.Name ?? 'John Doe'}
         onClick={handleDropdownOpen}
         sx={{ width: 40, height: 40, cursor: 'pointer', ml: 2 }}
-        src={auth?.user?.image ?? '/images/avatars/1.png'}
-      />
+        src={auth?.user?.ProfilePicture}
+      >
+        {getInitials(auth?.user?.Name)}
+      </Avatar>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -69,9 +72,11 @@ const UserDropdown = () => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               alt={auth?.user?.Name ?? 'John Doe'}
-              src={auth?.user?.image ?? '/images/avatars/1.png'}
+              src={auth?.user?.ProfilePicture}
               sx={{ width: '2.5rem', height: '2.5rem' }}
-            />
+            >
+              {getInitials(auth?.user?.Name)}
+            </Avatar>
 
             <Box sx={{ display: 'flex', marginLeft: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
               <Typography sx={{ fontWeight: 600 }}>{auth?.user?.Name ?? 'John Doe'}</Typography>

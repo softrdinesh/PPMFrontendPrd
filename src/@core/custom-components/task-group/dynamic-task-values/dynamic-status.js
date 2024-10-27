@@ -142,12 +142,16 @@ const DynamicStatus = ({ columnData = null, rowData = null, dynamicValue = null,
     setAnchorEl(null)
   }
 
-  const handleSelectStatus = async ID => {
+  const handleSelectStatus = async (ID, statusName) => {
     try {
       const body = {
         DynamicID: dynamicValue?.DynamicID ?? null,
         AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: ID
+        value: ID,
+        Title: `Column '${columnData?.ColumnName}' was updated`,
+        Description: 'Status for task was updated',
+        PreviousState: dynamicValue?.Status?.Statusname,
+        NewState: statusName
       }
       if (isSubTask) {
         body.TaskID = rowData?.TaskMasterID
@@ -254,7 +258,7 @@ const DynamicStatus = ({ columnData = null, rowData = null, dynamicValue = null,
                   <StatusMenuItem
                     item={item}
                     row={dynamicValue}
-                    handleStatusChange={() => handleSelectStatus(item?.StatusID)}
+                    handleStatusChange={() => handleSelectStatus(item?.StatusID, item?.Statusname)}
                     key={item?.StatusID}
                     handleClose={handleClose}
                   />
@@ -289,7 +293,7 @@ const DynamicStatus = ({ columnData = null, rowData = null, dynamicValue = null,
                   <StatusMenuItem
                     item={item}
                     row={dynamicValue}
-                    handleStatusChange={() => handleSelectStatus(item?.StatusID)}
+                    handleStatusChange={() => handleSelectStatus(item?.StatusID, item?.Statusname)}
                     key={item?.StatusID}
                     handleClose={handleClose}
                     handleEdit={handleEdit}

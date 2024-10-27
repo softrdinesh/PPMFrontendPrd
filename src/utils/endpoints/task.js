@@ -32,5 +32,12 @@ export const task = {
   addSubTask: {
     ...defaults.methods.POST,
     uri: '/api/sub-task'
+  },
+  fileUpload: {
+    ...defaults.methods.POST,
+    uri: '/api/task/fileupload/:id',
+    headerProps: {
+      'Content-Type': 'multipart-formdata'
+    }
   }
 }

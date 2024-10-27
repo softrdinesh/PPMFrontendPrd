@@ -44,7 +44,14 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
 
   const onSubmit = async data => {
     try {
-      await handleTimeLineChange(row, data)
+      await handleTimeLineChange(row, {
+        ...data,
+        Title: row?.TimelineStartDate ? 'Timeline Changed' : 'Timeline Added',
+        Description: 'Default Status for task was updated',
+        PreviousState: `${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format('DD/MM/YY') : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format('DD/MM/YY') : ''}`,
+        NewState: `${moment(data?.TimelineStartDate).format('DD/MM/YY')} - ${moment(data?.TimelineEndDate).format('DD/MM/YY')}`,
+        IsCritical: 1
+      })
       handleClose()
     } catch (error) {
       console.error('error :', error)

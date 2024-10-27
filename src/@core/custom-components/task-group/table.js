@@ -179,7 +179,7 @@ const DataTable = ({
               return <DynamicPeople columnData={i} rowData={row} dynamicValue={usersList ?? []} refetch={refetch} />
 
             case 'FLE':
-              return <DynamicFiles />
+              return <DynamicFiles columnData={i} rowData={row} dynamicValue={value} refetch={refetch} />
 
             default:
               return (
@@ -266,7 +266,7 @@ const DataTable = ({
         size: 150,
         maxSize: 150,
         cell: ({ row: { original } }) => {
-          return <TaskPeople data={[original?.Owner]} refetch={refetch} />
+          return <TaskPeople data={original?.Owner} refetch={refetch} rowData={original} />
         },
         header: () => (
           <Typography variant='body2' fontWeight={800}>
@@ -336,7 +336,12 @@ const DataTable = ({
       updateData: async (rowIndex, columnId, value) => {
         if (columnId === 'Taskname') {
           try {
-            const body = { Taskname: value }
+            const body = {
+              Taskname: value,
+              Title: 'Task Name Changed',
+              PreviousState: taskList?.[rowIndex]?.Taskname,
+              NewState: value
+            }
 
             const response = await updateTask({ id: taskList?.[rowIndex]?.TaskID, body })
             if (response) {

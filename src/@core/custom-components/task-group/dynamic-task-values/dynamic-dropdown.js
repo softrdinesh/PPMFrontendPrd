@@ -63,7 +63,10 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
       const body = {
         DynamicID: null,
         AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: item?.Dynamic_ddl_ID
+        value: item?.Dynamic_ddl_ID,
+        Title: `Column '${columnData?.ColumnName}' was updated`,
+        PreviousState: `${dynamicValue?.length} items selected`,
+        NewState: `${dynamicValue?.length + 1} items selected`
       }
       if (isSubTask) {
         body.TaskID = rowData?.TaskMasterID

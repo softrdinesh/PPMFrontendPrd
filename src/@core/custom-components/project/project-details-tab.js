@@ -121,7 +121,7 @@ const ProjectDetailsTab = ({ projectData, taskData, refetchTasks }) => {
 
   const handleChange = async v => {
     try {
-      const body = { TaskDescription: v }
+      const body = { TaskDescription: v, Title: 'Task Description Changed' }
       const response = await updateTask({ id: taskData?.TaskID, body })
       if (response) {
         refetchTasks()

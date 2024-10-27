@@ -33,7 +33,10 @@ const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], r
       const body = {
         DynamicID: dynamicValue?.DynamicID ?? null,
         AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: 56
+        value: 56,
+        Title: `Column '${columnData?.ColumnName}' was updated`,
+        PreviousState: `${dynamicValue?.length} users`,
+        NewState: `${dynamicValue?.length + 1} users`
       }
       if (isSubTask) {
         body.TaskID = rowData?.TaskMasterID
