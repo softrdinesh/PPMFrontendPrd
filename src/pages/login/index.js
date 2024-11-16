@@ -22,7 +22,6 @@ import { styled } from '@mui/material/styles'
 // ** Icons Imports
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
 
 // ** Layout Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
@@ -30,17 +29,27 @@ import BlankLayout from 'src/@core/layouts/BlankLayout'
 // ** Demo Imports
 import { authConfig } from '@configs/auth'
 import { authentication } from '@endpoints/authentication'
-import { CircularProgress, Grid } from '@mui/material'
+import logoMainDark from '@images/logos/logo-pp-dark.png'
+import logoMain from '@images/logos/logo-pp.png'
+import { CircularProgress, Grid, useTheme } from '@mui/material'
 import { pattern } from '@patterns'
 import { routes } from '@routes'
 import { debounce } from 'lodash'
+import Image from 'next/image'
 import { Controller, useForm } from 'react-hook-form'
 import IconifyIcon from 'src/@core/components/icon'
 import { useAuth } from 'src/hooks/useAuth'
+import { useMediaQuery } from '@mui/material'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '35rem' }
+}))
+
+const LinkStyled = styled(Link)(({ theme }) => ({
+  fontSize: '0.875rem',
+  textDecoration: 'none',
+  color: theme.palette.primary.main
 }))
 
 const FormControlLabel = styled(MuiFormControlLabel)(({ theme }) => ({
@@ -63,6 +72,8 @@ const LoginPage = () => {
 
   // ** Hooks
   const auth = useAuth()
+  const theme = useTheme()
+  const mdEndpoint = useMediaQuery(theme => theme.breakpoints.up('lg'))
 
   const {
     handleSubmit,
@@ -115,12 +126,12 @@ const LoginPage = () => {
 
   return (
     <Box
-      bgcolor={'background.paper'}
+      bgcolor={'background.default'}
       height={'100%'}
       sx={{
         backgroundImage: 'url(/images/pages/login-bg.svg)',
         backgroundRepeat: 'no-repeat',
-        backgroundSize: window?.innerWidth * 0.7
+        backgroundSize: mdEndpoint ? window?.innerWidth * 0.7 : window?.innerWidth
       }}
     >
       <Grid container spacing={5} minHeight={'100dvh'}>
@@ -160,9 +171,18 @@ const LoginPage = () => {
             <Card sx={{ zIndex: 1 }}>
               <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
                 <Box sx={{ mb: 6 }}>
-                  <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5, textAlign: 'center' }}>
-                    Welcome to {themeConfig.templateName}! 👋🏻
-                  </Typography>
+                  <Box display={'flex'} width={'100%'} justifyContent={'center'} mb={3}>
+                    <Box display={'flex'}>
+                      <Image
+                        src={theme.palette.mode === 'dark' ? logoMainDark : logoMain}
+                        alt='PPM-Logo'
+                        width={550}
+                        height={140}
+                        priority
+                        style={{ width: '100%', maxWidth: '550px', height: 'auto' }}
+                      />
+                    </Box>
+                  </Box>
                   <Typography variant='body2' textAlign={'center'}>
                     A Warm welcome <br /> to the new era of the project management application{' '}
                   </Typography>
@@ -264,6 +284,19 @@ const LoginPage = () => {
                     </button>
                   </Box>
                 </form>
+                {!mdEndpoint && (
+                  <Box
+                    mt={4}
+                    sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}
+                  >
+                    <Typography variant='body2' sx={{ marginRight: 2 }}>
+                      Don't have an account?
+                    </Typography>
+                    <Typography variant='body2'>
+                      <LinkStyled href={routes.register}> Sign up</LinkStyled>
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </Box>

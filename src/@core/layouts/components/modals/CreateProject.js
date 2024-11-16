@@ -33,7 +33,8 @@ const CreateProject = ({ open, onCloseModal }) => {
   const { selected, refetchProjects } = useContext(WorkspaceContext)
 
   const defaultValues = {
-    ProjectName: ''
+    ProjectName: '',
+    IsOpen: 1
   }
 
   const {
@@ -45,6 +46,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const onSubmit = async values => {
     values.WorkspaceID = selected?.WorkspaceID
+
     const res = await addProject(values)
     if (res?.status) {
       reset()
@@ -126,11 +128,17 @@ const CreateProject = ({ open, onCloseModal }) => {
               paddingX: 5
             }}
           >
-            <Box sx={{}}>
+            <Box>
               <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Privacy *</Typography>
               <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                 Open
-                <Switch defaultChecked />
+                <Controller
+                  name='IsOpen'
+                  control={control}
+                  render={({ field }) => (
+                    <Switch checked={field?.value === 0} onChange={e => field?.onChange(e?.target?.checked ? 0 : 1)} />
+                  )}
+                />
                 Closed
               </Typography>
             </Box>

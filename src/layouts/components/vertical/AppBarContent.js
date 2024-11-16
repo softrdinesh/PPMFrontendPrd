@@ -11,7 +11,6 @@ import Icon from 'src/@core/components/icon'
 import ModeToggler from 'src/@core/layouts/components/shared-components/ModeToggler'
 import NotificationDropdown from 'src/@core/layouts/components/shared-components/NotificationDropdown'
 import UserDropdown from 'src/@core/layouts/components/shared-components/UserDropdown'
-import OrganizationSelect from 'src/@core/layouts/components/shared-components/OrganizationSelect'
 
 // ** style import
 import * as styles from '@styles-page/app-bar-content/styles'
@@ -35,7 +34,6 @@ const AppBarContent = props => {
               <Icon icon='mdi:menu' />
             </IconButton>
           ) : null}
-          <OrganizationSelect user={auth?.user} />
         </Box>
 
         <Box className='actions-right' sx={styles.rightBoxStyle()}>

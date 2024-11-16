@@ -34,6 +34,7 @@ import { debounce } from 'lodash'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from 'react-query'
 import { useAuth } from 'src/hooks/useAuth'
+import { useMediaQuery } from '@mui/material'
 
 // ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -65,6 +66,7 @@ const RegisterPage = () => {
 
   // ** Hook
   const { registrationData, setLoading, register } = useAuth()
+  const mdEndpoint = useMediaQuery(theme => theme.breakpoints.up('lg'))
 
   // ** Vars
   const rules = registerRules()
@@ -117,12 +119,12 @@ const RegisterPage = () => {
 
   return (
     <Box
-      bgcolor={'background.paper'}
+      bgcolor={'background.default'}
       height={'100%'}
       sx={{
         backgroundImage: 'url(/images/pages/login-bg.svg)',
         backgroundRepeat: 'no-repeat',
-        backgroundSize: window?.innerWidth * 0.7
+        backgroundSize: mdEndpoint ? window?.innerWidth * 0.7 : window?.innerWidth
       }}
     >
       <Grid container spacing={5} minHeight={'100dvh'}>
@@ -160,7 +162,7 @@ const RegisterPage = () => {
         <Grid item xs={12} lg={6} alignSelf={'center'} justifySelf={{ xs: 'center', lg: 'end' }}>
           <Box display={'flex'} justifyContent={{ xs: 'center', lg: 'end' }} px={{ xs: 0, lg: 20 }}>
             <Card sx={{ zIndex: 1 }}>
-              <CardContent sx={{ padding: theme => `${theme.spacing(7, 9, 7)} !important` }}>
+              <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
                 <Box sx={{ mb: 6 }}>
                   <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
                     Adventure starts here 🚀
