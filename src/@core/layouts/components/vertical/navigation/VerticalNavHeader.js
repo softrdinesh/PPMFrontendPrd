@@ -4,17 +4,18 @@ import Link from 'next/link'
 // ** MUI Imports
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
 import { styled, useTheme } from '@mui/material/styles'
 
 // ** Custom Icon Import
 import Icon from 'src/@core/components/icon'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
 import Image from 'next/image'
+import themeConfig from 'src/configs/themeConfig'
 
-import logo from '@images/apple-touch-icon.png'
+import logo from '@images/logos/logo-pp-small.png'
+import logoMain from '@images/logos/logo-pp.png'
+import logoMainDark from '@images/logos/logo-pp-dark.png'
 
 // ** Styled Components
 const MenuHeaderWrapper = styled(Box)(({ theme }) => ({
@@ -27,12 +28,6 @@ const MenuHeaderWrapper = styled(Box)(({ theme }) => ({
   transition: 'padding .25s ease-in-out',
   minHeight: theme.mixins.toolbar.minHeight
 }))
-
-const HeaderTitle = styled(Typography)({
-  fontWeight: 700,
-  lineHeight: 1.2,
-  transition: 'opacity .25s ease-in-out, margin .25s ease-in-out'
-})
 
 const LinkStyled = styled(Link)({
   display: 'flex',
@@ -58,8 +53,11 @@ const VerticalNavHeader = props => {
   const theme = useTheme()
   const { direction, navCollapsed } = settings
 
-  const menuCollapsedStyles = navCollapsed && !navHover ? { opacity: 0 } : { opacity: 1 }
-  const menuCollapsedImageStyle = navCollapsed && !navHover ? { marginLeft: 2 } : { marginLeft: 0 }
+  const menuCollapsedStyles =
+    navCollapsed && !navHover ? { opacity: 0 } : { transform: 'translateX(-10px)', opacity: 1 }
+
+  const menuCollapsedImageStyle =
+    navCollapsed && !navHover ? { marginLeft: 2 } : { transform: 'translateX(-70px)', opacity: 0 }
 
   const svgFillSecondary = () => {
     return theme.palette.text.secondary
@@ -114,22 +112,21 @@ const VerticalNavHeader = props => {
           <Image
             src={logo}
             alt={themeConfig.templateName}
-            width={35}
-            height={35}
+            width={40}
+            height={40}
             style={{ ...menuCollapsedImageStyle, transition: 'all 300ms linear' }}
           />
           <LinkStyled href='/'>
-            <HeaderTitle
-              variant='h6'
-              color={'text.primary'}
-              sx={{
+            <Image
+              src={theme?.palette.mode === 'dark' ? logoMainDark : logoMain}
+              alt={themeConfig.templateName}
+              height={theme?.palette.mode === 'dark' ? 60 : 40}
+              style={{
                 ...menuCollapsedStyles,
-                ...(navCollapsed && !navHover ? {} : { ml: 2 }),
+                ...(navCollapsed && !navHover ? {} : { marginLeft: 2 }),
                 transition: 'all 400ms linear'
               }}
-            >
-              {themeConfig.templateName}
-            </HeaderTitle>
+            />
           </LinkStyled>
         </Box>
       )}

@@ -16,6 +16,8 @@ export const pattern = {
   urlPattern:
     /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi,
   alphaNumericAllowed: /^[A-Z a-z 0-9]+$/i,
+  hexAllowed: /^[A-F a-f 0-9]+$/i,
+  hexValidate: /^#(?:[0-9a-fA-F]{3}){1,2}$/i,
   imageMime: /(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)+$/i,
   partnerEmail: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
   internationalNumber: /^\+\d{2}-\d{3}-\d{3}-\d{4}$/i,

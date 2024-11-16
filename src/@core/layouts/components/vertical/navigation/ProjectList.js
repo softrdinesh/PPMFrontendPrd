@@ -189,7 +189,7 @@ function ProjectListNavMenu({ projects, ...props }) {
               }
             })}
           >
-            <UserIcon icon={'gravity-ui:list-check'} />
+            <UserIcon icon={item?.IsOpen ? 'gravity-ui:list-check' : 'gravity-ui:list-check-lock'} />
           </ListItemIcon>
           <MenuItemTextMetaWrapper
             sx={{

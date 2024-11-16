@@ -14,6 +14,7 @@ import TextField from '@mui/material/TextField'
 import CustomButton from '@components/button'
 import FallbackSpinner from '@components/spinner'
 import { Icon } from '@iconify/react'
+import useWebSocket from 'src/hooks/useWebSocket'
 
 // ** API Imports
 import { viewProject } from '@api/project'
@@ -33,6 +34,16 @@ function ProjectView() {
   const projectID = id?.[0]
 
   const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
+
+  // ** Socket function
+  const handleUpdate = data => {
+    if (data?.value === 'titleUpdate') {
+      refetch()
+    }
+  }
+
+  // ** Web Socket Setup
+  useWebSocket(projectID, handleUpdate)
 
   const {
     data: taskGroups,
@@ -65,7 +76,7 @@ function ProjectView() {
               fullWidth
               size='small'
               placeholder='Search ID, task, Project, Keywords...'
-              InputProps={{ startAdornment: <Icon icon={'mdi:search'} style={{ marginRight: 10 }} fontSize={24} /> }}
+              InputProps={{ startAdornment: <Icon icon={'ion:search'} style={{ marginRight: 10 }} fontSize={24} /> }}
             />
           </Box>
 
@@ -108,7 +119,13 @@ function ProjectView() {
         </Box>
       </Grid>
       <Grid item xs={12}>
-        <TaskGroupList id={projectID} refetch={refetchTaskGroup} taskGroups={taskGroups} isLoading={taskLoading} />
+        <TaskGroupList
+          id={projectID}
+          refetch={refetchTaskGroup}
+          taskGroups={taskGroups}
+          isLoading={taskLoading}
+          projectData={data}
+        />
       </Grid>
     </Grid>
   )

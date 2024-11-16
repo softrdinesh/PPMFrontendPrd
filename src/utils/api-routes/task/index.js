@@ -35,8 +35,6 @@ export const updateTask = async ({ id, body }) => {
 export const addTask = async body => {
   return callApi({ uriEndPoint: task.addTask, body })
     .then(res => {
-      toast.success(res?.message ?? 'Task Added Successfully')
-
       return res
     })
     .catch(err => {
@@ -49,13 +47,31 @@ export const addTask = async body => {
 export const deleteMultipleTask = async body => {
   return callApi({ uriEndPoint: task.deleteMulitpleTask, body: { taskIds: body } })
     .then(res => {
-      toast.success(res?.message ?? 'Tasks Deleted Successfully')
-
       return res
     })
     .catch(err => {
       toast.error(err?.message ?? 'Failed to delete tasks')
 
       return err
+    })
+}
+
+export const deleteDynamicValue = async dynamicId => {
+  return callApi({ uriEndPoint: task.dlDynamicValue, pathParams: { dynamicId } })
+    .then(res => {
+      return res
+    })
+    .catch(err => {
+      return err
+    })
+}
+
+export const taskFileUpload = async ({ id, body }) => {
+  return callApi({ uriEndPoint: task.fileUpload, pathParams: { id }, body })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
     })
 }

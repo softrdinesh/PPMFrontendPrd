@@ -78,7 +78,7 @@ const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
           paddingY: 2
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Create Task Group</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '18px' }}>Create Task Group</Typography>
         <IconButton
           aria-label='close'
           onClick={onCloseModal}
@@ -104,9 +104,7 @@ const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
               paddingX: 5
             }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}>
-              Task Group name *
-            </Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 3 }}>Task Group name *</Typography>
 
             <Controller
               name='groupName'
@@ -140,10 +138,8 @@ const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
             }}
           >
             <Box sx={{}}>
-              <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue' }}>
-                Privacy *
-              </Typography>
-              <Typography sx={{ fontWeight: 400, fontSize: '14px', color: 'common.desaturatedBlue' }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Privacy *</Typography>
+              <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                 Open
                 <Switch defaultChecked />
                 Closed
@@ -152,8 +148,7 @@ const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
             <Typography
               sx={{
                 fontWeight: 400,
-                fontSize: '14px',
-                color: 'common.desaturatedBlue'
+                fontSize: '14px'
               }}
             >
               <span

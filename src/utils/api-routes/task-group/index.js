@@ -45,3 +45,17 @@ export const addTaskGroup = async body => {
       return err
     })
 }
+
+export const createColumn = async body => {
+  return callApi({ uriEndPoint: taskGroup.createColumn, body })
+    .then(res => {
+      toast.success(res?.message ?? 'Created Column Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Failed to create column')
+
+      return err
+    })
+}

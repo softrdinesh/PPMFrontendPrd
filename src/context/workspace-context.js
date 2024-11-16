@@ -17,16 +17,18 @@ const WorkspaceProvider = ({ children }) => {
   const auth = useAuth()
 
   // ** API calls
-  const { data, refetch } = useQuery('workspaces', fetchWorkspaceList, { enabled: Boolean(auth?.user) })
+  const { data, refetch } = useQuery(['workspaces', auth?.user?.UserID], fetchWorkspaceList, {
+    enabled: Boolean(auth?.user)
+  })
 
   // ** States
   const [activeWorkspace, setActiveWorkspace] = useState(null)
 
   const { data: projects, refetch: refetchProjects } = useQuery(
-    'projects',
-    () => fetchProjectList(activeWorkspace?.WorkspaceID),
+    ['projects', auth?.user?.UserID],
+    () => activeWorkspace?.WorkspaceID && fetchProjectList(activeWorkspace?.WorkspaceID),
     {
-      enabled: Boolean(activeWorkspace?.WorkspaceID),
+      enabled: Boolean(activeWorkspace?.WorkspaceID && auth?.user),
       retry: false
     }
   )

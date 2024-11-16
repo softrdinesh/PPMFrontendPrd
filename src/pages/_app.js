@@ -38,7 +38,7 @@ import '../../styles/globals.css'
 // ** Third Party Styles Imports
 import 'react-datepicker/dist/react-datepicker.css'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } })
 
 const clientSideEmotionCache = createEmotionCache()
 

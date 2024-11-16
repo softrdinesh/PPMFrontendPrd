@@ -8,7 +8,7 @@ import noDataImage from '@images/cards/no-data.svg'
 import Image from 'next/image'
 import NewTaskDialog from './new-task/dialog'
 
-const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
+const TaskGroupList = ({ id, taskGroups, isLoading, refetch, projectData }) => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => setOpen(true)
@@ -21,8 +21,15 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch }) => {
     <Card sx={{ borderRadius: '15px' }}>
       {taskGroups?.length ? (
         <Box px={3} py={4}>
-          {taskGroups?.map(item => (
-            <CustomizedAccordions key={item?.TaskGroupID} data={item} />
+          {taskGroups?.map((item, index) => (
+            <CustomizedAccordions
+              key={item?.TaskGroupID}
+              index={index}
+              data={item}
+              projectID={id}
+              refetchTaskGroup={refetch}
+              projectData={projectData}
+            />
           ))}
         </Box>
       ) : (

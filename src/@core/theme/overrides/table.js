@@ -3,14 +3,16 @@ const Table = theme => {
     MuiTableContainer: {
       styleOverrides: {
         root: {
-          boxShadow: theme.shadows[0],
-          borderTopColor: theme.palette.divider
+          boxShadow: theme.shadows[1],
+          borderTopColor: 'none',
+          borderRadius: 1
         }
       }
     },
     MuiTableHead: {
       styleOverrides: {
         root: {
+          backgroundColor: theme.palette.background.paper,
           textTransform: 'uppercase',
           '& .MuiTableCell-head': {
             fontSize: '0.75rem',

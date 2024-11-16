@@ -20,5 +20,24 @@ export const task = {
   deleteMulitpleTask: {
     ...defaults.methods.DELETE,
     uri: '/api/task-delete-mulitple'
+  },
+  dlDynamicValue: {
+    ...defaults.methods.DELETE,
+    uri: '/api/dynamic-task/:dynamicId'
+  },
+  subTaskList: {
+    ...defaults.methods.GET,
+    uri: '/api/sub-task'
+  },
+  addSubTask: {
+    ...defaults.methods.POST,
+    uri: '/api/sub-task'
+  },
+  fileUpload: {
+    ...defaults.methods.POST,
+    uri: '/api/task/fileupload/:id',
+    headerProps: {
+      'Content-Type': 'multipart-formdata'
+    }
   }
 }

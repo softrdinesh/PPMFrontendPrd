@@ -78,7 +78,6 @@ const AuthProvider = ({ children }) => {
           const responseValue = res?.data
           if (responseValue?.status && responseValue.data?.isVerified) {
             localStorage.setItem(authConfig.storageLoginUserData, JSON.stringify(responseValue?.data))
-            router.replace(routes.dashboard)
             setLoading(false)
             setUser(responseValue?.data?.userData)
           } else {
@@ -123,7 +122,7 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Login Failed')
+      toast.error(err?.response?.data?.message ?? err?.message ?? 'Login Failed')
       if (errorCallback) errorCallback(err)
     }
   }
@@ -145,8 +144,7 @@ const AuthProvider = ({ children }) => {
 
       return res
     } catch (err) {
-      console.error('err :', err)
-      toast.error(err?.response?.data?.message ?? 'Registeration Failed')
+      toast.error(err?.response?.data?.message ?? err?.message ?? 'Registeration Failed')
       if (errorCallback) errorCallback(err)
     }
   }

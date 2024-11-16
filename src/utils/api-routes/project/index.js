@@ -18,7 +18,7 @@ export const viewProject = async id => {
       return res?.data
     })
     .catch(err => {
-      throw err
+      return err
     })
 }
 
@@ -46,8 +46,8 @@ export const addProject = async body => {
     })
 }
 
-export const fetchProjectPriorityList = async () => {
-  return callApi({ uriEndPoint: project.priorityList })
+export const fetchProjectPriorityList = async ({ taskGroupID = null }) => {
+  return callApi({ uriEndPoint: project.priorityList, query: { taskGroupID } })
     .then(res => {
       return res?.data
     })
@@ -56,12 +56,52 @@ export const fetchProjectPriorityList = async () => {
     })
 }
 
-export const fetchProjectStatusList = async () => {
-  return callApi({ uriEndPoint: project.statusList })
+export const addProjectPriority = async body => {
+  return callApi({ uriEndPoint: project.priorityAdd, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const updateProjectPriority = async ({ body, id }) => {
+  return callApi({ uriEndPoint: project.priorityUpdate, pathParams: { id }, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const fetchProjectStatusList = async ({ taskGroupID = null }) => {
+  return callApi({ uriEndPoint: project.statusList, query: { taskGroupID } })
     .then(res => {
       return res?.data
     })
     .catch(err => {
       throw err
     })
+}
+
+export const addProjectStatus = async body => {
+  return callApi({ uriEndPoint: project.statusAdd, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const updateProjectStatus = async ({ body, id }) => {
+  return callApi({ uriEndPoint: project.statusUpdate, pathParams: { id }, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const fetchProjectDropDownList = async ({ taskGroupID = null }) => {
+  return callApi({ uriEndPoint: project.dropdownList, query: { taskGroupID } })
+    .then(res => {
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+export const addDropdownItem = async body => {
+  return callApi({ uriEndPoint: project.dropdownAdd, body })
+    .then(res => res)
+    .catch(err => err)
 }

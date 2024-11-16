@@ -81,7 +81,6 @@ function ProjectTitle({ data, refetch }) {
           </>
         )}
       </Box>
-      <Typography variant='subtitle2'>Add your board's description here</Typography>
     </Box>
   )
 }

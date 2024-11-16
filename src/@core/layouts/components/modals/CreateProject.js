@@ -33,7 +33,8 @@ const CreateProject = ({ open, onCloseModal }) => {
   const { selected, refetchProjects } = useContext(WorkspaceContext)
 
   const defaultValues = {
-    ProjectName: ''
+    ProjectName: '',
+    IsOpen: 1
   }
 
   const {
@@ -45,6 +46,7 @@ const CreateProject = ({ open, onCloseModal }) => {
 
   const onSubmit = async values => {
     values.WorkspaceID = selected?.WorkspaceID
+
     const res = await addProject(values)
     if (res?.status) {
       reset()
@@ -54,17 +56,9 @@ const CreateProject = ({ open, onCloseModal }) => {
   }
 
   return (
-    <Dialog
-      open={open}
-      style={{
-        padding: 0
-      }}
-      onClose={onCloseModal}
-      TransitionComponent={Zoom}
-      fullWidth
-      maxWidth='md'
-    >
+    <Dialog open={open} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
       <Box
+        bgcolor={'background.default'}
         sx={{
           display: 'flex',
           flex: 1,
@@ -75,7 +69,7 @@ const CreateProject = ({ open, onCloseModal }) => {
           paddingY: 2
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Create project name</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '18px' }}>Create project name</Typography>
         <IconButton
           aria-label='close'
           onClick={onCloseModal}
@@ -92,7 +86,7 @@ const CreateProject = ({ open, onCloseModal }) => {
       </Box>
       <Divider />
 
-      <Box py={2}>
+      <Box py={2} bgcolor={'background.default'}>
         <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
           {/* workspace name */}
           <FormControl
@@ -101,15 +95,13 @@ const CreateProject = ({ open, onCloseModal }) => {
               paddingX: 5
             }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}>
-              Project name *
-            </Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 3 }}>Project name *</Typography>
 
             <Controller
               name='ProjectName'
               control={control}
               rules={{
-                required: 'Please enter a projectName'
+                required: 'Please enter name of the project'
               }}
               render={({ field: { value, onChange, onBlur } }) => (
                 <TextField
@@ -121,7 +113,7 @@ const CreateProject = ({ open, onCloseModal }) => {
                   helperText={Boolean(errors?.ProjectName) && errors?.ProjectName?.message}
                   fullWidth
                   id='ProjectName'
-                  label='Project Name'
+                  placeholder='Project Name'
                   sx={{ marginBottom: 4 }}
                 />
               )}
@@ -136,21 +128,24 @@ const CreateProject = ({ open, onCloseModal }) => {
               paddingX: 5
             }}
           >
-            <Box sx={{}}>
-              <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue' }}>
-                Privacy *
-              </Typography>
-              <Typography sx={{ fontWeight: 400, fontSize: '14px', color: 'common.desaturatedBlue' }}>
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Privacy *</Typography>
+              <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                 Open
-                <Switch defaultChecked />
+                <Controller
+                  name='IsOpen'
+                  control={control}
+                  render={({ field }) => (
+                    <Switch checked={field?.value === 0} onChange={e => field?.onChange(e?.target?.checked ? 0 : 1)} />
+                  )}
+                />
                 Closed
               </Typography>
             </Box>
             <Typography
               sx={{
                 fontWeight: 400,
-                fontSize: '14px',
-                color: 'common.desaturatedBlue'
+                fontSize: '14px'
               }}
             >
               <span

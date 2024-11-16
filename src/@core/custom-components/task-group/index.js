@@ -1,32 +1,41 @@
-import React, { useMemo, useState, useEffect } from 'react'
-import { Icon } from '@iconify/react'
-import { Box, Card, Grid, TextField, Typography, useTheme } from '@mui/material'
-import DataTable from './data-grid'
+import { deleteMultipleTask } from '@api/task'
 import CustomButton from '@components/button'
 import DeleteDialog from '@custom-components/delete-dialog'
-import { deleteMultipleTask } from '@api/task'
+import { Icon } from '@iconify/react'
+import { Box, Card, Grid, TextField, Typography, useTheme } from '@mui/material'
+import React, { useEffect, useMemo, useState } from 'react'
+import Table from './table'
 
-function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
+function TaskGroupComponent({
+  isLoading,
+  isRefetching,
+  taskList,
+  taskGroupData,
+  refetch,
+  projectID,
+  projectData,
+  refetchTaskGroup
+}) {
   // ** States
-  const [selectedRows, setSelectedRows] = useState([])
+  const [selectedRows, setSelectedRows] = useState({})
   const [showCard, setShowCard] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   // ** Memo
-  const showSelected = useMemo(() => selectedRows?.length !== 0, [selectedRows])
+  const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   // ** Hooks
   const theme = useTheme()
 
-  // ** Functions
-  const handleSelectedRows = values => {
-    setSelectedRows(values)
-  }
-
   const handleDelete = async () => {
-    await deleteMultipleTask(selectedRows)
+    const finalArray = taskList
+      ?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))
+      ?.map(t => t?.TaskID)
+
+    await deleteMultipleTask(finalArray)
     await refetch()
     setDeleteOpen(false)
+    setSelectedRows({})
   }
 
   useEffect(() => {
@@ -40,7 +49,7 @@ function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
   }, [showSelected])
 
   return (
-    <Box px={4} py={8} border={2} borderColor={'divider'} borderRadius={1}>
+    <Box px={[0, 4]} py={[4, 8]} border={[0, 2]} borderColor={['divider', 'divider']} borderRadius={1}>
       <Grid container spacing={7}>
         <Grid item xs={12}>
           <Box display={'flex'} justifyContent={['center', 'end']}>
@@ -50,7 +59,7 @@ function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
               InputProps={{
                 startAdornment: (
                   <Icon
-                    icon={'mdi:search'}
+                    icon={'ion:search'}
                     style={{ marginRight: 10, color: theme?.palette?.secondary?.light }}
                     fontSize={24}
                   />
@@ -59,13 +68,20 @@ function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
             />
           </Box>
         </Grid>
-        <Grid item xs={12}>
-          <DataTable
+        <Grid item xs={12} overflow={'hidden'}>
+          <Table
+            key={taskGroupData?.TaskGroupID}
+            projectID={projectID}
             isLoading={isLoading}
+            isRefetching={isRefetching}
             taskList={taskList}
+            taskGroupData={taskGroupData}
             taskGroupID={taskGroupData?.TaskGroupID}
             refetch={refetch}
-            handleSelectedRows={handleSelectedRows}
+            projectData={projectData}
+            refetchTaskGroup={refetchTaskGroup}
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
           />
         </Grid>
         {showCard && (
@@ -77,7 +93,7 @@ function TaskGroupComponent({ isLoading, taskList, taskGroupData, refetch }) {
               }}
             >
               <Box m={2} p={2} display={'flex'} gap={5} alignItems={'center'}>
-                <Typography fontWeight={600}>{`${selectedRows?.length} entries  selected`}</Typography>
+                <Typography fontWeight={600}>{`${Object?.keys(selectedRows)?.length} entries  selected`}</Typography>
                 <CustomButton
                   variant='contained'
                   size='small'

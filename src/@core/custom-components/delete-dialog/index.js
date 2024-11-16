@@ -1,5 +1,5 @@
 // ** React Imports
-import { forwardRef, useState } from 'react'
+import { forwardRef, useCallback, useMemo, useState } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -18,6 +18,7 @@ import { Icon } from '@iconify/react'
 
 // ** Styles and Styled Components
 import * as styles from './styles'
+import { debounce } from 'lodash'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='down' ref={ref} {...props} />
@@ -37,11 +38,13 @@ export default function DeleteDialog({ open, setOpen, title, description, onConf
     setOpen(false)
   }
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     setIsDeleting(true)
     await onConfirm()
     setIsDeleting(false)
-  }
+  }, [onConfirm])
+
+  const debounceHandleConfirm = useMemo(() => debounce(handleConfirm, 300), [handleConfirm])
 
   return (
     <Dialog
@@ -69,12 +72,12 @@ export default function DeleteDialog({ open, setOpen, title, description, onConf
           <Box sx={styles.buttonsContainer}>
             <Button
               variant='contained'
-              onClick={handleConfirm}
+              onClick={debounceHandleConfirm}
               id={'confirm-delete'}
               disabled={isDeleting}
               data-testid={'confirm-delete-button'}
             >
-              {isDeleting ? <CircularProgress size={22} color='secondary' /> : confirmText ?? `Delete`}
+              {isDeleting ? <CircularProgress size={22} color='secondary' /> : (confirmText ?? `Delete`)}
             </Button>
 
             <Button

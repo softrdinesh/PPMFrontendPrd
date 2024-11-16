@@ -1,63 +1,39 @@
 // ** React Imports
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 
 // ** API Imports
-import { updateTask } from '@api/task'
-import { ClickAwayListener } from '@mui/material'
+import { Icon } from '@iconify/react'
+import { IconButton } from '@mui/material'
+import ProjectDetailsDialog from '@custom-components/project/project-details-dialog'
 
-const TaskNameCell = ({ data, refetch }) => {
-  const [isEditing, setIsEditing] = useState(false)
-  const [taskName, setTaskName] = useState('')
+const TaskNameCell = ({ renderTextField, rowData, projectData, refetch }) => {
+  const [openTaskView, setOpenTaskView] = useState(false)
 
-  const handleEditClick = () => {
-    setIsEditing(true)
+  const handleTaskViewClick = () => {
+    setOpenTaskView(true)
   }
 
-  const handleSave = () => {
-    const body = {
-      Taskname: taskName
-    }
-    updateTask({ id: data?.TaskID, body }).then(() => {
-      setIsEditing(false)
-      refetch()
-    })
-  }
-
-  const handleChange = event => {
-    console.log('event :', event)
-    setTaskName(event.target.value)
-  }
-
-  const handleKeyPress = event => {
-    console.log('event.key :', event.key)
-    if (event.key === 'Enter') {
-      handleSave()
-    }
-  }
-
-  const handleClickAway = () => {
-    handleSave()
-  }
-
-  useEffect(() => {
-    setTaskName(data?.Taskname)
-  }, [data?.Taskname])
+  const handleClose = () => setOpenTaskView(false)
 
   return (
-    <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      {isEditing ? (
-        <ClickAwayListener onClickAway={handleClickAway}>
-          <TextField variant='standard' value={taskName} onChange={handleChange} onKeyPress={handleKeyPress} />
-        </ClickAwayListener>
-      ) : (
-        <Typography onClick={handleEditClick}>{taskName}</Typography>
-      )}
-    </Box>
+    <>
+      <Box display={'flex'} gap={3} alignItems={'center'}>
+        {renderTextField}
+        <IconButton size='small' onClick={handleTaskViewClick}>
+          <Icon icon={'lucide:message-circle-more'} fontSize={22} />
+        </IconButton>
+      </Box>
+      <ProjectDetailsDialog
+        open={openTaskView}
+        close={handleClose}
+        projectData={projectData}
+        taskData={rowData}
+        refetchTasks={refetch}
+      />
+    </>
   )
 }
 

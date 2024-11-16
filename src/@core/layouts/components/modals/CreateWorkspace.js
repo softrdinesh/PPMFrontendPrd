@@ -48,17 +48,8 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
   }
 
   return (
-    <Dialog
-      style={{
-        padding: 0
-      }}
-      open={open}
-      onClose={onCloseModal}
-      TransitionComponent={Zoom}
-      fullWidth
-      maxWidth='md'
-    >
-      <Box>
+    <Dialog open={open} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
+      <Box bgcolor={'background.default'}>
         <Box
           sx={{
             display: 'flex',
@@ -67,10 +58,10 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingX: 5,
-            paddingY: 2
+            py: 4
           }}
         >
-          <Typography sx={{ fontWeight: 700, fontSize: '18px', color: 'common.black' }}>Add workspace name</Typography>
+          <Typography variant='h6'>Add workspace</Typography>
           <IconButton
             aria-label='close'
             onClick={onCloseModal}
@@ -82,7 +73,7 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
               borderRadius: 4
             }}
           >
-            <IconifyIcon icon={'mdi:close'} color={`common.black`} fontSize={24} />
+            <IconifyIcon icon={'mdi:close'} fontSize={24} />
           </IconButton>
         </Box>
         <Divider />
@@ -96,15 +87,13 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
                 paddingX: 5
               }}
             >
-              <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue', marginBottom: 3 }}>
-                Workspace name *
-              </Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 3 }}>Workspace name *</Typography>
 
               <Controller
                 name='workspaceName'
                 control={control}
                 rules={{
-                  required: 'Please enter a workspaceName'
+                  required: 'Please enter a workspace name'
                 }}
                 render={({ field: { value, onChange, onBlur } }) => (
                   <TextField
@@ -116,7 +105,7 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
                     helperText={Boolean(errors?.workspaceName) && errors?.workspaceName?.message}
                     fullWidth
                     id='workspaceName'
-                    label='Workspace Name'
+                    placeholder='Workspace Name'
                     sx={{ marginBottom: 4 }}
                   />
                 )}
@@ -132,10 +121,8 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
               }}
             >
               <Box sx={{}}>
-                <Typography sx={{ fontWeight: 700, fontSize: '12px', color: 'common.desaturatedBlue' }}>
-                  Privacy *
-                </Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: '14px', color: 'common.desaturatedBlue' }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Privacy *</Typography>
+                <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                   Open
                   <Switch defaultChecked />
                   Closed
@@ -145,7 +132,7 @@ const CreateWorkspace = ({ open, onCloseModal, refetchWorkspaces }) => {
                 sx={{
                   fontWeight: 400,
                   fontSize: '14px',
-                  color: 'common.desaturatedBlue',
+
                   width: 1 / 2
                 }}
               >
