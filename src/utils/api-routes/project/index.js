@@ -105,3 +105,9 @@ export const addDropdownItem = async body => {
     .then(res => res)
     .catch(err => err)
 }
+
+export const inviteMember = async body => {
+  return callApi({ uriEndPoint: project.inviteMember, body })
+    .then(res => res)
+    .catch(err => err)
+}

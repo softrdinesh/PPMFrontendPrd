@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 
 // ** Next Imports
 import { useRouter } from 'next/router'
@@ -24,6 +24,7 @@ import TaskGroupList from '@custom-components/task-group/list'
 import NewTask from '@custom-components/task-group/new-task'
 import { useQuery } from 'react-query'
 import { WorkspaceContext } from 'src/context/workspace-context'
+import ProjectInvitePeople from '@custom-components/project/project-invite'
 
 function ProjectView() {
   // ** Hooks
@@ -31,7 +32,7 @@ function ProjectView() {
   const { selected, setSelected, workspace } = useContext(WorkspaceContext)
   const { id } = router.query
 
-  const projectID = id?.[0]
+  const projectID = useMemo(() => id?.[0], [id])
 
   const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
 
@@ -83,13 +84,7 @@ function ProjectView() {
           {/* Buttons */}
           <Box display={'flex'} alignItems={'center'} gap={4} flexWrap={'wrap'} justifyContent={'center'}>
             <NewTask projectID={projectID} refetch={refetchTaskGroup} />
-            <CustomButton
-              variant='outlined'
-              startIcon={<Icon icon={'solar:users-group-rounded-linear'} style={{ marginInline: 2 }} />}
-              sx={{ px: 3.5 }}
-            >
-              Group
-            </CustomButton>
+            <ProjectInvitePeople projectID={projectID} workspaceID={data?.WorkSpaceID} IsOpen={data?.IsOpen} />
             <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
             <Box display={'flex'} alignItems={'center'} gap={2}>
               <CustomButton variant='contained' sx={{ px: 2, minWidth: 'auto' }}>
