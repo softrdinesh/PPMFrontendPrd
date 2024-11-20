@@ -108,6 +108,22 @@ export const addDropdownItem = async body => {
 
 export const inviteMember = async body => {
   return callApi({ uriEndPoint: project.inviteMember, body })
+    .then(res => {
+      toast.success(res?.message ?? 'Invitation sent successfully')
+
+      return res
+    })
+    .catch(err => err)
+}
+
+export const acceptInvitationApi = async id => {
+  return callApi({ uriEndPoint: project.acceptInvite, pathParams: { id } })
     .then(res => res)
+    .catch(err => err)
+}
+
+export const projectMembers = async projectID => {
+  return callApi({ uriEndPoint: project.projectMembers, query: { projectID } })
+    .then(res => res?.data)
     .catch(err => err)
 }

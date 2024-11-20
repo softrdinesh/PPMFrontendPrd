@@ -56,5 +56,13 @@ export const project = {
   inviteMember: {
     ...defaults?.methods?.POST,
     uri: '/api/invite-user'
+  },
+  acceptInvite: {
+    ...defaults.methods.POST,
+    uri: '/api/accept-invite/:id'
+  },
+  projectMembers: {
+    ...defaults.methods.GET,
+    uri: '/api/project-members'
   }
 }

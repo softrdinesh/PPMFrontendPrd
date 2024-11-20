@@ -56,29 +56,16 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, workspac
     setOpenInviteModal(false)
   }
 
-  // const defaultValues = {
-  //   invitations: [defaultValue]
-  // }
-
-  const defaultValues = {
-    invitations: [
-      {
-        email: 'samad.saiyed.ss@gmail.com',
-        roleID: 2
-      },
-      {
-        email: 'samadsaiyed151@gmail.com',
-        roleID: 3
-      }
-    ]
-  }
-
   const {
     handleSubmit,
     control,
     reset,
     formState: { isSubmitting }
-  } = useForm({ defaultValues })
+  } = useForm({
+    defaultValues: {
+      invitations: [defaultValue]
+    }
+  })
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -89,6 +76,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, workspac
     const body = { ...values, projectID, workspaceID, IsOpen }
     try {
       await inviteMember(body)
+      handleClose()
     } catch (error) {
       console.log('error :', error)
     }

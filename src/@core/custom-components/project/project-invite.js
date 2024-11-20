@@ -1,34 +1,15 @@
+import { projectMembers } from '@api/project'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material'
+import { Avatar, Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material'
+import { getInitials } from '@utils/get-initials'
 import React, { useState } from 'react'
+import { useQuery } from 'react-query'
 import InviteMember from 'src/@core/layouts/components/modals/InviteMember'
 
-const users = [
-  {
-    UserID: 1,
-    name: 'Samad Saiyed',
-    Role: {
-      RoleName: 'Admin'
-    }
-  },
-  {
-    UserID: 2,
-    name: 'Dinesh Rajan',
-    Role: {
-      RoleName: 'Member'
-    }
-  },
-  {
-    UserID: 3,
-    name: 'Abdul Vahora',
-    Role: {
-      RoleName: 'Viewer'
-    }
-  }
-]
-
 const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen }) => {
+  const { data: users } = useQuery({ queryKey: ['members-list', projectID], queryFn: () => projectMembers(projectID) })
+  console.log('users :', users)
   const [openDialog, setOpenDialog] = useState(false)
 
   const [inviteUserOpen, setInviteUserOpen] = useState(false)
@@ -69,9 +50,15 @@ const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen }) => {
           <Grid container spacing={5}>
             <Grid item xs={12}></Grid>
             {users?.map(user => (
-              <Grid item xs={12} key={user?.UserID}>
+              <Grid item xs={12} key={user?.UserProjectID}>
                 <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
-                  <Typography>{user?.name}</Typography>
+                  <Box display={'flex'} alignItems={'center'} gap={3}>
+                    <Avatar src={user?.User?.ProfilePicture}>{getInitials(user?.User?.Name)}</Avatar>
+                    <Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
+                      <Typography>{user?.User?.Name}</Typography>
+                      <Typography variant='caption'>{user?.User?.Email?.toLowerCase()}</Typography>
+                    </Box>
+                  </Box>
                   <Box display={'flex'} alignItems={'center'} gap={2}>
                     <Icon
                       icon={
