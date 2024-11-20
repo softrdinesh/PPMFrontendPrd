@@ -1,15 +1,11 @@
-import { projectMembers } from '@api/project'
 import CustomButton from '@components/button'
 import { Icon } from '@iconify/react'
-import { Avatar, Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material'
+import { Avatar, Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography, Zoom } from '@mui/material'
 import { getInitials } from '@utils/get-initials'
 import React, { useState } from 'react'
-import { useQuery } from 'react-query'
 import InviteMember from 'src/@core/layouts/components/modals/InviteMember'
 
-const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen }) => {
-  const { data: users } = useQuery({ queryKey: ['members-list', projectID], queryFn: () => projectMembers(projectID) })
-  console.log('users :', users)
+const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen, role, users }) => {
   const [openDialog, setOpenDialog] = useState(false)
 
   const [inviteUserOpen, setInviteUserOpen] = useState(false)
@@ -29,21 +25,23 @@ const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen }) => {
       >
         Group
       </CustomButton>
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth='sm'>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth='sm' TransitionComponent={Zoom}>
         <DialogTitle>
           <Box display={'flex'} justifyContent={'space-between'}>
             <Typography variant='h6' fontWeight={800}>
               Users
             </Typography>
-            <CustomButton
-              onClick={handleInviteUser}
-              variant='contained'
-              circular
-              size='small'
-              startIcon={<Icon icon={'line-md:plus'} />}
-            >
-              Invite New Member
-            </CustomButton>
+            {role?.RoleName === 'Admin' && (
+              <CustomButton
+                onClick={handleInviteUser}
+                variant='contained'
+                circular
+                size='small'
+                startIcon={<Icon icon={'line-md:plus'} />}
+              >
+                Invite New Member
+              </CustomButton>
+            )}
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -77,9 +75,11 @@ const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen }) => {
                       }
                       fontSize={25}
                     />
-                    <IconButton size='small'>
-                      <Icon icon={'ic:twotone-close'} fontSize={25} />
-                    </IconButton>
+                    {role?.RoleName === 'Admin' && (
+                      <IconButton size='small'>
+                        <Icon icon={'ic:twotone-close'} fontSize={25} />
+                      </IconButton>
+                    )}
                   </Box>
                 </Box>
               </Grid>

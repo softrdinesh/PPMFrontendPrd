@@ -1,8 +1,8 @@
-import { TextField } from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import { pattern } from '@patterns'
 import React, { useEffect, useMemo, useState } from 'react'
 
-const TaskTextValues = ({ table, getValue, index, id, columnData, dynamicValue }) => {
+const TaskTextValues = ({ table, getValue, index, id, columnData, dynamicValue, canEdit }) => {
   const initialValue = getValue()
   const [value, setValue] = useState(initialValue ?? '-')
 
@@ -26,7 +26,7 @@ const TaskTextValues = ({ table, getValue, index, id, columnData, dynamicValue }
     setValue(initialValue)
   }, [initialValue])
 
-  return (
+  return canEdit ? (
     <TextField
       variant='standard'
       sx={{
@@ -53,6 +53,8 @@ const TaskTextValues = ({ table, getValue, index, id, columnData, dynamicValue }
       }}
       onBlur={onBlur}
     />
+  ) : (
+    <Typography>{value ?? '-'}</Typography>
   )
 }
 

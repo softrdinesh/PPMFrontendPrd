@@ -9,7 +9,7 @@ import React, { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from 'react-query'
 
-const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = null, refetch, isSubTask }) => {
+const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = null, refetch, isSubTask, canEdit }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const [createMenu, setCreateMenu] = useState(false)
@@ -28,7 +28,7 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
   }, [dynamicValue, dropdownItems])
 
   const handleOpen = e => {
-    setAnchorEl(e.currentTarget)
+    canEdit && setAnchorEl(e.currentTarget)
   }
 
   const handleClose = () => {
@@ -93,16 +93,18 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box onClick={handleOpen} sx={{ cursor: 'pointer' }}>
+      <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
         {dynamicValue?.length ? (
           <Box display={'flex'} alignItems={'center'} gap={2}>
             <Chip label={dynamicValue?.[0]?.Dropdown?.Valuetxt} />
             {dynamicValue?.length >= 2 && `+${dynamicValue?.length - 1}`}
           </Box>
-        ) : (
+        ) : canEdit ? (
           <IconButton>
             <Icon icon={'bi:plus-circle-dotted'} />
           </IconButton>
+        ) : (
+          '-'
         )}
       </Box>
       <Menu

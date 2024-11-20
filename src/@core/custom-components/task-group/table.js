@@ -83,6 +83,8 @@ const defaultColumn = {
 }
 
 const DataTable = ({
+  users,
+  role,
   isLoading = false,
   taskList = [],
   selectedRows = [],
@@ -114,6 +116,8 @@ const DataTable = ({
 
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
+
+  const canEdit = useMemo(() => role?.RoleName === 'Admin' || role?.RoleName === 'Member', [role?.RoleName])
 
   const handleTaskUpdate = useCallback(
     async (row, body) => {
@@ -160,23 +164,54 @@ const DataTable = ({
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
           switch (i?.ColumnType?.Keyname) {
             case 'DPK':
-              return <DynamicDate columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
+              return (
+                <DynamicDate
+                  canEdit={canEdit}
+                  columnData={i}
+                  rowData={row}
+                  dynamicValue={value ?? null}
+                  refetch={refetch}
+                />
+              )
             case 'DDL':
               const dropdownList = row?.additionalValues?.filter(
                 addVal => addVal?.AdditionalColumnID === i?.AdditionalColumnID
               )
 
               return (
-                <DynamicDropdown columnData={i} rowData={row} dynamicValue={dropdownList ?? null} refetch={refetch} />
+                <DynamicDropdown
+                  canEdit={canEdit}
+                  columnData={i}
+                  rowData={row}
+                  dynamicValue={dropdownList ?? null}
+                  refetch={refetch}
+                />
               )
             case 'LBL':
-              return <DynamicStatus columnData={i} rowData={row} dynamicValue={value ?? null} refetch={refetch} />
+              return (
+                <DynamicStatus
+                  canEdit={canEdit}
+                  columnData={i}
+                  rowData={row}
+                  dynamicValue={value ?? null}
+                  refetch={refetch}
+                />
+              )
             case 'USR':
               const usersList = row?.additionalValues?.filter(
                 addVal => addVal?.AdditionalColumnID === i?.AdditionalColumnID
               )
 
-              return <DynamicPeople columnData={i} rowData={row} dynamicValue={usersList ?? []} refetch={refetch} />
+              return (
+                <DynamicPeople
+                  canEdit={canEdit}
+                  columnData={i}
+                  rowData={row}
+                  dynamicValue={usersList ?? []}
+                  refetch={refetch}
+                  users={users}
+                />
+              )
 
             case 'FLE':
               return <DynamicFiles columnData={i} rowData={row} dynamicValue={value} refetch={refetch} />
@@ -184,6 +219,7 @@ const DataTable = ({
             default:
               return (
                 <TaskTextValues
+                  canEdit={canEdit}
                   getValue={getValue}
                   index={index}
                   id={id}
@@ -196,7 +232,7 @@ const DataTable = ({
         }
       }
     })
-  }, [refetch, taskGroupData?.additionalColumns])
+  }, [canEdit, refetch, taskGroupData?.additionalColumns, users])
 
   // ** Columns
   const columns = useMemo(
@@ -252,7 +288,13 @@ const DataTable = ({
         cell: ({ getValue, row: { original, index }, column: { id }, table }) => {
           return (
             <TaskNameCell
-              renderTextField={<ColumnTextField getValue={getValue} index={index} id={id} table={table} />}
+              renderTextField={
+                canEdit ? (
+                  <ColumnTextField getValue={getValue} index={index} id={id} table={table} />
+                ) : (
+                  <Typography width={'100%'}>{original?.Taskname}</Typography>
+                )
+              }
               rowData={original}
               projectData={projectData}
               refetch={refetch}
@@ -266,7 +308,7 @@ const DataTable = ({
         size: 150,
         maxSize: 150,
         cell: ({ row: { original } }) => {
-          return <TaskPeople data={original?.Owner} refetch={refetch} rowData={original} />
+          return <TaskPeople users={users} data={original?.Owner} refetch={refetch} rowData={original} role={role} />
         },
         header: () => (
           <Typography variant='body2' fontWeight={800}>
@@ -281,7 +323,7 @@ const DataTable = ({
         maxSize: 200,
         headerName: 'Priority',
         cell: ({ row: { original: row } }) => {
-          return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} refetch={refetch} />
+          return <TaskPriority row={row} handlePriorityChange={handleTaskUpdate} refetch={refetch} canEdit={canEdit} />
         }
       },
       {
@@ -291,14 +333,14 @@ const DataTable = ({
         maxSize: 200,
         headerName: 'Status',
         cell: ({ row: { original: row } }) => {
-          return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} refetch={refetch} />
+          return <TaskStatus row={row} handleStatusChange={handleTaskUpdate} refetch={refetch} canEdit={canEdit} />
         }
       },
       {
         accessorKey: 'Timeline',
         headerName: 'Timeline',
         cell: ({ row: { original: row } }) => {
-          return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} refetch={refetch} />
+          return <TaskTimeline row={row} handleTimeLineChange={handleTaskUpdate} refetch={refetch} canEdit={canEdit} />
         }
       },
       ...dynamicColumn(),
@@ -315,14 +357,17 @@ const DataTable = ({
         cell: () => null
       }
     ],
-    [dynamicColumn, handleTaskUpdate, projectData, refetch]
+    [canEdit, dynamicColumn, handleTaskUpdate, projectData, refetch, role, users]
   )
 
   const table = useReactTable({
     data: taskList,
     columns,
     state: {
-      rowSelection: selectedRows
+      rowSelection: selectedRows,
+      columnVisibility: {
+        'add-column': canEdit
+      }
     },
     defaultColumn,
     getRowCanExpand: () => true,
@@ -454,11 +499,18 @@ const DataTable = ({
           )}
         </TableBody>
       </Table>
-      <Box m={2}>
-        <CustomButton variant='text' size='small' endIcon={<Icon icon={'mdi:plus'} />} onClick={debouncedHandleAddTask}>
-          Add Task
-        </CustomButton>
-      </Box>
+      {role?.RoleName !== 'Viewer' && (
+        <Box m={2}>
+          <CustomButton
+            variant='text'
+            size='small'
+            endIcon={<Icon icon={'mdi:plus'} />}
+            onClick={debouncedHandleAddTask}
+          >
+            Add Task
+          </CustomButton>
+        </Box>
+      )}
       <AddColumnsMenu
         open={anchorEl}
         close={handlePlusMenuClose}

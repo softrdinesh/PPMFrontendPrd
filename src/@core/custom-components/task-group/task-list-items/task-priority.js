@@ -61,7 +61,7 @@ const PriorityMenuItem = ({ item, row, handlePriorityChange, handleClose, handle
   )
 }
 
-const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
+const TaskPriority = ({ row, handlePriorityChange, refetch, canEdit }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [formAnchor, setFormAnchor] = useState(null)
   const [isEdit, setIsEdit] = useState(null)
@@ -80,7 +80,7 @@ const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
   } = useForm({ defaultValues: { PriorityName: '', Colorcode: '' } })
 
   const handleOpen = e => {
-    setAnchorEl(e.currentTarget)
+    canEdit && setAnchorEl(e.currentTarget)
   }
 
   const handleClose = () => {
@@ -148,7 +148,7 @@ const TaskPriority = ({ row, handlePriorityChange, refetch }) => {
         border={1}
         borderColor={'divider'}
         onClick={handleOpen}
-        sx={{ cursor: 'pointer' }}
+        sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
       >
         <Tooltip title={row?.Priority?.PriorityName}>
           <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>

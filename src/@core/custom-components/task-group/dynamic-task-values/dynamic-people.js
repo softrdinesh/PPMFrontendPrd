@@ -15,10 +15,19 @@ import {
   Zoom
 } from '@mui/material'
 import { debounce } from 'lodash'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
-const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], refetch, isSubTask }) => {
+const DynamicPeople = ({
+  columnData = null,
+  rowData = null,
+  dynamicValue = [],
+  refetch,
+  isSubTask,
+  canEdit,
+  users
+}) => {
   const [anchorEl, setAnchorEl] = useState(null)
+  const [searchText, setSearchText] = useState('')
 
   const handleOpen = event => {
     setAnchorEl(event.currentTarget)
@@ -28,12 +37,19 @@ const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], r
     setAnchorEl(null)
   }
 
-  const handleSelectUser = async () => {
+  const userFilter = useCallback(
+    user => {
+      return user?.User?.Name?.toLowerCase()?.includes(searchText?.toLowerCase())
+    },
+    [searchText]
+  )
+
+  const handleSelectUser = async selected => {
     try {
       const body = {
         DynamicID: dynamicValue?.DynamicID ?? null,
         AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: 56,
+        value: selected?.UserID,
         Title: `Column '${columnData?.ColumnName}' was updated`,
         PreviousState: `${dynamicValue?.length} users`,
         NewState: `${dynamicValue?.length + 1} users`
@@ -66,18 +82,22 @@ const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], r
           <AvatarGroup max={2}>
             {dynamicValue?.map(item => (
               <Tooltip key={item?.DynamicID} title={item?.User?.Email?.toLowerCase()}>
-                <Avatar alt={item?.User?.Name} src='/images/avatars/3.png' sx={{ width: 32, height: 32 }} />
+                <Avatar alt={item?.User?.Name} src={item?.User?.ProfilePicture} sx={{ width: 32, height: 32 }} />
               </Tooltip>
             ))}
           </AvatarGroup>
-          <IconButton onClick={handleOpen}>
-            <Icon icon={'bi:plus-circle-dotted'} />
-          </IconButton>
+          {canEdit && (
+            <IconButton onClick={handleOpen}>
+              <Icon icon={'bi:plus-circle-dotted'} />
+            </IconButton>
+          )}
         </>
-      ) : (
+      ) : canEdit ? (
         <IconButton onClick={handleOpen}>
           <Icon icon={'bi:plus-circle-dotted'} />
         </IconButton>
+      ) : (
+        <Icon icon={'ph:question-duotone'} fontSize={24} />
       )}
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleClose} TransitionComponent={Zoom}>
         <Box width={280}>
@@ -86,24 +106,40 @@ const DynamicPeople = ({ columnData = null, rowData = null, dynamicValue = [], r
               <Box px={3}>
                 <TextField
                   fullWidth
+                  value={searchText}
                   color='secondary'
                   size='small'
                   placeholder='Search User...'
+                  onChange={e => setSearchText(e?.target?.value)}
                   InputProps={{ startAdornment: <Icon icon={'ion:search'} style={{ marginRight: 6 }} /> }}
                 />
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <Box px={3}>
-                <MenuItem onClick={debouncedClick}>
-                  <Box display={'flex'} alignItems={'center'} gap={3} overflow={'hidden'}>
-                    <Avatar alt={'samad'} src='/images/avatars/3.png' sx={{ width: 32, height: 32 }} />
-                    <Typography overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
-                      Samad Saiyed
-                    </Typography>
-                  </Box>
-                </MenuItem>
-              </Box>
+              {users?.length !== 0
+                ? users?.filter(userFilter)?.map(user => (
+                    <MenuItem
+                      disabled={dynamicValue?.some(val => val?.User?.UserID === user?.User?.UserID)}
+                      onClick={() =>
+                        dynamicValue?.every(val => val?.User?.UserID !== user?.User?.UserID) &&
+                        canEdit &&
+                        debouncedClick(user?.User)
+                      }
+                      key={user?.UserProjectID}
+                    >
+                      <Box display={'flex'} alignItems={'center'} gap={3} py={1} overflow={'hidden'}>
+                        <Avatar
+                          alt={user?.User?.Name}
+                          src={user?.User?.ProfilePicture}
+                          sx={{ width: 32, height: 32 }}
+                        />
+                        <Typography overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+                          {user?.User?.Name}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))
+                : 'No Users Added to Group'}
             </Grid>
           </Grid>
         </Box>
