@@ -214,7 +214,9 @@ const DataTable = ({
               )
 
             case 'FLE':
-              return <DynamicFiles columnData={i} rowData={row} dynamicValue={value} refetch={refetch} />
+              return (
+                <DynamicFiles canEdit={canEdit} columnData={i} rowData={row} dynamicValue={value} refetch={refetch} />
+              )
 
             default:
               return (
@@ -243,13 +245,15 @@ const DataTable = ({
         align: 'right',
         header: ({ table }) => (
           <Box display={'flex'} justifyContent={'end'} pr={0.2}>
-            <Checkbox
-              {...{
-                checked: table.getIsAllRowsSelected(),
-                indeterminate: table.getIsSomeRowsSelected(),
-                onChange: table.getToggleAllRowsSelectedHandler()
-              }}
-            />
+            {canEdit && (
+              <Checkbox
+                {...{
+                  checked: table.getIsAllRowsSelected(),
+                  indeterminate: table.getIsSomeRowsSelected(),
+                  onChange: table.getToggleAllRowsSelectedHandler()
+                }}
+              />
+            )}
           </Box>
         ),
         cell: ({ row }) => (
@@ -265,14 +269,16 @@ const DataTable = ({
                 {row.getIsExpanded() ? <Icon icon={'line-md:chevron-down'} /> : <Icon icon={'line-md:chevron-right'} />}
               </IconButton>
             ) : null}
-            <Checkbox
-              {...{
-                checked: row.getIsSelected(),
-                disabled: !row.getCanSelect(),
-                indeterminate: row.getIsSomeSelected(),
-                onChange: row.getToggleSelectedHandler()
-              }}
-            />
+            {canEdit && (
+              <Checkbox
+                {...{
+                  checked: row.getIsSelected(),
+                  disabled: !row.getCanSelect(),
+                  indeterminate: row.getIsSomeSelected(),
+                  onChange: row.getToggleSelectedHandler()
+                }}
+              />
+            )}
           </Box>
         )
       },
@@ -410,7 +416,10 @@ const DataTable = ({
   const renderSubComponent = ({ row }) => {
     return (
       <SubTable
+        users={users}
+        canEdit={canEdit}
         taskRow={row}
+        role={role}
         key={row?.original?.TaskID}
         additionalColumnsType={additionalColumnsType}
         taskGroupData={{ taskGroupID, projectID, workspaceID: selected?.WorkspaceID }}
