@@ -15,6 +15,8 @@ import IconifyIcon from 'src/@core/components/icon'
 // ** Context Imports
 import { useAuth } from 'src/hooks/useAuth'
 import { getInitials } from '@utils/get-initials'
+import { useRouter } from 'next/router'
+import { routes } from '@routes'
 
 const UserDropdown = () => {
   // ** States
@@ -22,6 +24,7 @@ const UserDropdown = () => {
 
   // ** Hooks
   const auth = useAuth()
+  const router = useRouter()
 
   const handleDropdownOpen = event => {
     setAnchorEl(event.currentTarget)
@@ -29,6 +32,11 @@ const UserDropdown = () => {
 
   const handleDropdownClose = () => {
     setAnchorEl(null)
+  }
+
+  const handleProfilePage = () => {
+    router.push(routes.profile)
+    handleDropdownClose()
   }
 
   const handleLogout = () => {
@@ -84,7 +92,7 @@ const UserDropdown = () => {
           </Box>
         </Box>
         <Divider sx={{ mt: 0, mb: 1 }} />
-        <MenuItem sx={{ p: 0 }} onClick={handleDropdownClose}>
+        <MenuItem sx={{ p: 0 }} onClick={handleProfilePage}>
           <Box sx={styles}>
             <IconifyIcon icon={'mdi:account-outline'} />
             <Typography>Profile</Typography>
