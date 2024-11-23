@@ -27,9 +27,14 @@ const defaultValues = {
   displayText: ''
 }
 
-const DynamicFiles = ({ columnData = null, rowData = null, dynamicValue = null, refetch, isSubTask = false }) => {
-  console.log('dynamicValue :', dynamicValue)
-  console.log('rowData :', rowData)
+const DynamicFiles = ({
+  canEdit,
+  columnData = null,
+  rowData = null,
+  dynamicValue = null,
+  refetch,
+  isSubTask = false
+}) => {
   const theme = useTheme()
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedType, setSelectedType] = useState(menuItems[0])
@@ -120,9 +125,13 @@ const DynamicFiles = ({ columnData = null, rowData = null, dynamicValue = null, 
     <>
       <Box display={'flex'} height={'100%'} alignItems={'center'}>
         {!dynamicValue ? (
-          <IconButton onClick={handleOpen}>
-            <Icon icon={'bi:plus-circle-dotted'} />
-          </IconButton>
+          canEdit ? (
+            <IconButton onClick={handleOpen}>
+              <Icon icon={'bi:plus-circle-dotted'} />
+            </IconButton>
+          ) : (
+            '-'
+          )
         ) : (
           <Box
             borderRadius={100}

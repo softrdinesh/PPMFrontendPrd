@@ -114,6 +114,7 @@ const DesktopProjectDetail = ({ theme, projectData }) => {
 }
 
 const ProjectDetailsTab = ({ projectData, taskData, refetchTasks }) => {
+  console.log('projectData :', projectData)
   const theme = useTheme()
   const lgBreakpoint = useMediaQuery(theme => theme.breakpoints.up('lg'))
 
@@ -148,12 +149,16 @@ const ProjectDetailsTab = ({ projectData, taskData, refetchTasks }) => {
               </Typography>
             </Grid>
             <Grid item xs={12} key={value}>
-              <HtmlEditor
-                placeholder={'Please enter a project description....'}
-                onChange={handleChange}
-                setContent={value}
-                defaultValue={value}
-              />
+              {projectData?.userProjects?.Role?.RoleName === 'Admin' ? (
+                <HtmlEditor
+                  placeholder={'Please enter a project description....'}
+                  onChange={handleChange}
+                  setContent={value}
+                  defaultValue={value}
+                />
+              ) : (
+                <p dangerouslySetInnerHTML={{ __html: value }} />
+              )}
             </Grid>
           </Grid>
         </Grid>

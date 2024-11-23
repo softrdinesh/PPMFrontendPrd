@@ -10,14 +10,16 @@ import React, { memo, useState } from 'react'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
-const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask }) => {
+const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask, canEdit }) => {
   const [openDialog, setOpenDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
 
   const handleOpenDialog = () => {
-    setSelectedDate(dynamicValue?.DynamicColumnValues ?? null)
-    setOpenDialog(true)
+    if (canEdit) {
+      setSelectedDate(dynamicValue?.DynamicColumnValues ?? null)
+      setOpenDialog(true)
+    }
   }
 
   const handleClose = () => {
@@ -69,12 +71,16 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask }) 
       {selectedDate ? (
         <Box display={'flex'} alignItems={'center'} gap={3} justifyContent={'space-between'} pr={2}>
           {selectedDate}
-          <IconButton size='small' onClick={handleOpenDialog}>
-            <Icon icon={'mdi:pencil-outline'} />
-          </IconButton>
+          {canEdit && (
+            <IconButton size='small' onClick={handleOpenDialog}>
+              <Icon icon={'mdi:pencil-outline'} />
+            </IconButton>
+          )}
         </Box>
-      ) : (
+      ) : canEdit ? (
         <Chip label={'Pick a date'} size='small' onClick={handleOpenDialog} />
+      ) : (
+        '-'
       )}
 
       <Dialog

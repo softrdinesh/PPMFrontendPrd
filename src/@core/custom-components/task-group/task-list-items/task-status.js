@@ -88,7 +88,7 @@ const StatusMenuItem = ({ item, row, handleStatusChange, handleClose, handleEdit
   )
 }
 
-const TaskStatus = ({ row, handleStatusChange, refetch }) => {
+const TaskStatus = ({ row, handleStatusChange, refetch, canEdit }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [formAnchor, setFormAnchor] = useState(null)
   const [isEdit, setIsEdit] = useState(null)
@@ -107,7 +107,7 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
   } = useForm({ defaultValues: { Statusname: '', Colorcode: '' } })
 
   const handleOpen = e => {
-    setAnchorEl(e.currentTarget)
+    canEdit && setAnchorEl(e.currentTarget)
   }
 
   const handleClose = () => {
@@ -186,7 +186,7 @@ const TaskStatus = ({ row, handleStatusChange, refetch }) => {
           border={1}
           borderColor={'divider'}
           onClick={handleOpen}
-          sx={{ cursor: 'pointer' }}
+          sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
         >
           <Typography
             fontSize={'0.85rem'}

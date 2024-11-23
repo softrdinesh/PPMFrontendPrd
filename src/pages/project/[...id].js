@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 
 // ** Next Imports
 import { useRouter } from 'next/router'
@@ -17,13 +17,14 @@ import { Icon } from '@iconify/react'
 import useWebSocket from 'src/hooks/useWebSocket'
 
 // ** API Imports
-import { viewProject } from '@api/project'
+import { projectMembers, viewProject } from '@api/project'
 import { fetchTaskGroupList } from '@api/task-group'
 import ProjectTitle from '@custom-components/project/title'
 import TaskGroupList from '@custom-components/task-group/list'
 import NewTask from '@custom-components/task-group/new-task'
 import { useQuery } from 'react-query'
 import { WorkspaceContext } from 'src/context/workspace-context'
+import ProjectInvitePeople from '@custom-components/project/project-invite'
 
 function ProjectView() {
   // ** Hooks
@@ -31,11 +32,26 @@ function ProjectView() {
   const { selected, setSelected, workspace } = useContext(WorkspaceContext)
   const { id } = router.query
 
-  const projectID = id?.[0]
+  const projectID = useMemo(() => id?.[0], [id])
 
-  const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () => viewProject(projectID))
+  const { data, isLoading, refetch } = useQuery(`project-view-${projectID}`, () =>
+    viewProject(projectID).then(res => {
+      if (res?.statusCode === 403) {
+        router.replace('/401')
+      } else {
+        return res
+      }
+    })
+  )
 
-  // ** Socket function
+  const { data: users } = useQuery({
+    queryKey: ['members-list', projectID],
+    queryFn: () => projectMembers(projectID),
+    enabled: !!projectID
+  })
+
+  const role = useMemo(() => data?.userProjects.Role, [data?.userProjects.Role])
+
   const handleUpdate = data => {
     if (data?.value === 'titleUpdate') {
       refetch()
@@ -65,7 +81,7 @@ function ProjectView() {
       <Grid item xs={12}>
         <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
           {/* Project Title */}
-          <ProjectTitle data={data} refetch={refetch} />
+          <ProjectTitle data={data} refetch={refetch} role={role} />
         </Box>
       </Grid>
       <Grid item xs={12}>
@@ -82,14 +98,14 @@ function ProjectView() {
 
           {/* Buttons */}
           <Box display={'flex'} alignItems={'center'} gap={4} flexWrap={'wrap'} justifyContent={'center'}>
-            <NewTask projectID={projectID} refetch={refetchTaskGroup} />
-            <CustomButton
-              variant='outlined'
-              startIcon={<Icon icon={'solar:users-group-rounded-linear'} style={{ marginInline: 2 }} />}
-              sx={{ px: 3.5 }}
-            >
-              Group
-            </CustomButton>
+            {role?.RoleName === 'Admin' && <NewTask projectID={projectID} refetch={refetchTaskGroup} />}
+            <ProjectInvitePeople
+              projectID={projectID}
+              workspaceID={data?.WorkSpaceID}
+              IsOpen={data?.IsOpen}
+              role={role}
+              users={users}
+            />
             <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
             <Box display={'flex'} alignItems={'center'} gap={2}>
               <CustomButton variant='contained' sx={{ px: 2, minWidth: 'auto' }}>
@@ -120,11 +136,13 @@ function ProjectView() {
       </Grid>
       <Grid item xs={12}>
         <TaskGroupList
+          users={users}
           id={projectID}
           refetch={refetchTaskGroup}
           taskGroups={taskGroups}
           isLoading={taskLoading}
           projectData={data}
+          role={role}
         />
       </Grid>
     </Grid>

@@ -52,5 +52,17 @@ export const project = {
   dropdownUpdate: {
     ...defaults.methods.PUT,
     uri: '/api/dropdown-items/:id'
+  },
+  inviteMember: {
+    ...defaults?.methods?.POST,
+    uri: '/api/invite-user'
+  },
+  acceptInvite: {
+    ...defaults.methods.POST,
+    uri: '/api/accept-invite/:id'
+  },
+  projectMembers: {
+    ...defaults.methods.GET,
+    uri: '/api/project-members'
   }
 }

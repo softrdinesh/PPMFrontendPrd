@@ -1,7 +1,7 @@
-import { TextField } from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 
-const TaskEffortCell = ({ table, getValue, index, id }) => {
+const TaskEffortCell = ({ table, getValue, index, id, canEdit }) => {
   const initialValue = getValue()
   const [value, setValue] = useState(initialValue ?? '')
 
@@ -13,7 +13,7 @@ const TaskEffortCell = ({ table, getValue, index, id }) => {
     setValue(initialValue)
   }, [initialValue])
 
-  return (
+  return canEdit ? (
     <TextField
       variant='standard'
       sx={{
@@ -31,6 +31,8 @@ const TaskEffortCell = ({ table, getValue, index, id }) => {
       onChange={e => setValue(e.target.value)}
       onBlur={onBlur}
     />
+  ) : (
+    <Typography width={'100%'}>{value ?? '-'}</Typography>
   )
 }
 

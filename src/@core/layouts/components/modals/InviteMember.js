@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 // ** MUI Imports
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   FormControl,
@@ -24,21 +25,24 @@ import {
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 
 // ** API Imports
-import { addWorkspace } from '@api/workspace'
-import { Icon } from '@iconify/react'
-import { useCopyToClipboard } from 'usehooks-ts'
+import { fetchRolesList } from '@api/roles'
 import IconifyIcon from '@components/icon'
+import { Icon } from '@iconify/react'
 import Image from 'next/image'
+import { useQuery } from 'react-query'
 import { images } from 'src/constants/images'
+import { useCopyToClipboard } from 'usehooks-ts'
+import { inviteMember } from '@api/project'
 
 const defaultValue = {
   email: '',
-  role: ''
+  roleID: ''
 }
 
-const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
+const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, workspaceID, IsOpen }) => {
   // ** Hooks
   const theme = useTheme()
+  const { data: roleList } = useQuery({ queryKey: ['roles'], queryFn: fetchRolesList })
 
   const [copyOpen, setCopyOpen] = useState(false)
 
@@ -52,11 +56,16 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
     setOpenInviteModal(false)
   }
 
-  const defaultValues = {
-    invitations: [defaultValue]
-  }
-
-  const { handleSubmit, control, reset } = useForm({ defaultValues })
+  const {
+    handleSubmit,
+    control,
+    reset,
+    formState: { isSubmitting }
+  } = useForm({
+    defaultValues: {
+      invitations: [defaultValue]
+    }
+  })
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -64,28 +73,16 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
   })
 
   const onSubmit = async values => {
-    await addWorkspace(values)
-
-    reset()
-    handleClose()
+    const body = { ...values, projectID, workspaceID, IsOpen }
+    try {
+      await inviteMember(body)
+      handleClose()
+    } catch (error) {
+      console.log('error :', error)
+    }
   }
 
-  let inviteLink = 'https://figma.com/users/sign_up?invitationId=2690444112...'
-
-  const roleList = [
-    {
-      value: 'admin',
-      title: 'Admin'
-    },
-    {
-      value: 'member',
-      title: 'Member'
-    },
-    {
-      value: 'viewer',
-      title: 'Viewer'
-    }
-  ]
+  const inviteLink = useMemo(() => 'https://figma.com/users/sign_up?invitationId=2690444112...', [])
 
   return (
     <Dialog open={openInviteModal} onClose={handleClose} TransitionComponent={Zoom} fullWidth maxWidth='md'>
@@ -134,7 +131,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
             <Box display={'flex'} flexDirection={'column'} gap={2} flex={1}>
               <Typography fontWeight={700}>{`Invite with email`}</Typography>
               {fields?.map((field, index) => (
-                <Box display={'flex'} gap={2} key={field?.id}>
+                <Box display={'flex'} flexDirection={{ xs: 'column', md: 'row' }} gap={2} key={field?.id}>
                   <FormControl fullWidth>
                     <Controller
                       name={`invitations.${index}.email`}
@@ -153,7 +150,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
                   </FormControl>
                   <FormControl sx={{ minWidth: 110 }}>
                     <Controller
-                      name={`invitations.${index}.role`}
+                      name={`invitations.${index}.roleID`}
                       control={control}
                       rules={{
                         required: 'Please select a role'
@@ -161,22 +158,23 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
                       render={({ field, formState: { errors } }) => (
                         <Select
                           {...field}
-                          error={Boolean(errors?.invitations?.[index]?.role)}
+                          error={Boolean(errors?.invitations?.[index]?.roleID)}
                           displayEmpty
                           variant='outlined'
                           size='small'
-                          style={{ backgroundColor: 'common.white' }}
                         >
                           {roleList.map(option => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.title}
+                            <MenuItem key={option.RoleID} value={option.RoleID}>
+                              {option.RoleName}
                             </MenuItem>
                           ))}
                         </Select>
                       )}
                     />
                   </FormControl>
+
                   <IconButton
+                    disabled={index === 0}
                     onClick={() => {
                       remove(index)
                     }}
@@ -228,10 +226,11 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal }) => {
                   textTransform: 'capitalize'
                 }}
                 variant='contained'
+                disabled={isSubmitting}
                 size='small'
                 onClick={handleSubmit(onSubmit)}
               >
-                Invite your team
+                {isSubmitting ? <CircularProgress size={22} color='secondary' /> : 'Invite your team'}
               </Button>
             </DialogActions>
           </Box>

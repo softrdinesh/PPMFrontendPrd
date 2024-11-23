@@ -26,7 +26,7 @@ import { dateFormatMomentTask, dateFormatPicker } from 'src/constants/formats'
 import { Menu } from '@mui/material'
 import 'react-datepicker/dist/react-datepicker.css'
 
-const TaskTimeline = ({ row, handleTimeLineChange }) => {
+const TaskTimeline = ({ row, handleTimeLineChange, canEdit }) => {
   const [open, setOpen] = useState(false)
 
   const {
@@ -44,14 +44,16 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
 
   const onSubmit = async data => {
     try {
-      await handleTimeLineChange(row, {
-        ...data,
-        Title: row?.TimelineStartDate ? 'Timeline Changed' : 'Timeline Added',
-        Description: 'Default Status for task was updated',
-        PreviousState: `${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format('DD/MM/YY') : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format('DD/MM/YY') : ''}`,
-        NewState: `${moment(data?.TimelineStartDate).format('DD/MM/YY')} - ${moment(data?.TimelineEndDate).format('DD/MM/YY')}`,
-        IsCritical: 1
-      })
+      if (canEdit) {
+        await handleTimeLineChange(row, {
+          ...data,
+          Title: row?.TimelineStartDate ? 'Timeline Changed' : 'Timeline Added',
+          Description: 'Default Status for task was updated',
+          PreviousState: `${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format('DD/MM/YY') : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format('DD/MM/YY') : ''}`,
+          NewState: `${moment(data?.TimelineStartDate).format('DD/MM/YY')} - ${moment(data?.TimelineEndDate).format('DD/MM/YY')}`,
+          IsCritical: 1
+        })
+      }
       handleClose()
     } catch (error) {
       console.error('error :', error)
@@ -69,9 +71,9 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
       {row?.TimelineStartDate || row?.TimelineEndDate ? (
         <Typography
           whiteSpace={'nowrap'}
-          onClick={e => setOpen(e?.currentTarget)}
+          onClick={e => canEdit && setOpen(e?.currentTarget)}
         >{`${row?.TimelineStartDate ? moment(row?.TimelineStartDate).format(dateFormatMomentTask) : ''} - ${row?.TimelineEndDate ? moment(row?.TimelineEndDate).format(dateFormatMomentTask) : ''}`}</Typography>
-      ) : (
+      ) : canEdit ? (
         <Chip
           size='small'
           label='Pick a timeline'
@@ -80,6 +82,8 @@ const TaskTimeline = ({ row, handleTimeLineChange }) => {
           onClick={e => setOpen(e?.currentTarget)}
           sx={{ '&:hover': { backgroundColor: 'inherit' } }}
         />
+      ) : (
+        '-'
       )}
       <Menu
         open={!!open}

@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import Table from './table'
 
 function TaskGroupComponent({
+  users,
   isLoading,
   isRefetching,
   taskList,
@@ -14,7 +15,8 @@ function TaskGroupComponent({
   refetch,
   projectID,
   projectData,
-  refetchTaskGroup
+  refetchTaskGroup,
+  role
 }) {
   // ** States
   const [selectedRows, setSelectedRows] = useState({})
@@ -70,6 +72,8 @@ function TaskGroupComponent({
         </Grid>
         <Grid item xs={12} overflow={'hidden'}>
           <Table
+            users={users}
+            role={role}
             key={taskGroupData?.TaskGroupID}
             projectID={projectID}
             isLoading={isLoading}
@@ -84,7 +88,7 @@ function TaskGroupComponent({
             setSelectedRows={setSelectedRows}
           />
         </Grid>
-        {showCard && (
+        {showCard && role?.RoleName !== 'Viewer' && (
           <Grid item xs={12}>
             <Card
               sx={{

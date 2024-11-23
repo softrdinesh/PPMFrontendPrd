@@ -15,7 +15,7 @@ import { updateProject } from '@api/project'
 import { ClickAwayListener } from '@mui/material'
 import { WorkspaceContext } from 'src/context/workspace-context'
 
-function ProjectTitle({ data, refetch }) {
+function ProjectTitle({ data, refetch, role }) {
   // ** Hooks
   const { refetchProjects } = useContext(WorkspaceContext)
 
@@ -75,9 +75,11 @@ function ProjectTitle({ data, refetch }) {
             <Typography fontWeight={700} fontSize={'1.75rem'}>
               {projectName}
             </Typography>
-            <IconButton onClick={handleEditClick}>
-              <Icon icon={'mdi:pencil'} />
-            </IconButton>
+            {role?.RoleName === 'Admin' && (
+              <IconButton onClick={handleEditClick}>
+                <Icon icon={'mdi:pencil'} />
+              </IconButton>
+            )}
           </>
         )}
       </Box>

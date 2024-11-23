@@ -1,3 +1,4 @@
+import { fetchAllRecentActivities } from '@api/user'
 import Avatar from '@components/avatar'
 import { Icon } from '@iconify/react'
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material'
@@ -5,8 +6,11 @@ import MuiAccordion from '@mui/material/Accordion'
 import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import MuiAccordionSummary from '@mui/material/AccordionSummary'
 import { styled } from '@mui/material/styles'
+import { getInitials } from '@utils/get-initials'
 import moment from 'moment'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
+import { useQuery } from 'react-query'
 import { images } from 'src/constants/images'
 
 const Accordion = styled(props => <MuiAccordion defaultExpanded disableGutters elevation={0} square {...props} />)(
@@ -32,7 +36,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme?.breakpoints.up('md') && theme.spacing(4)
 }))
 
-const ActivityMessage = () => {
+const ActivityMessage = ({ rca }) => {
   return (
     <Box display={'flex'} gap={4} alignItems={'start'}>
       {/* Icon */}
@@ -50,17 +54,18 @@ const ActivityMessage = () => {
       {/* Message */}
       <Box display={'flex'} flexDirection={'column'}>
         <Box>
-          <Typography component={'span'} fontWeight={600}>{`Karen`}</Typography>
-          <Typography component={'span'}>{` `}</Typography>
-          <Typography component={'span'}>{`leave some comments on Konsep Ilustrasi`}</Typography>
+          <Typography component={'span'} fontWeight={600}>{`${rca?.doneBy?.Name}`}</Typography>
         </Box>
-        <Typography variant='body2'>{moment().format('MMM DD')}</Typography>
+        <Typography component={'span'}>{`${rca?.Description}`}</Typography>
+        <Typography variant='body2'>{moment(rca?.DoneAt).format('MMM DD')}</Typography>
       </Box>
     </Box>
   )
 }
 
-const RecentActivityCard = () => {
+const RecentActivityCard = ({ rv }) => {
+  const router = useRouter()
+
   return (
     <Box
       border={1}
@@ -71,25 +76,27 @@ const RecentActivityCard = () => {
       borderRadius={1}
       gap={2}
       borderColor={'divider'}
+      sx={{ cursor: 'pointer' }}
+      onClick={() => router.push(`/project/${rv?.ID}`)}
     >
       <Image src={images.ImgRecentVisitedCard} alt='' />
       <Box display={'flex'} gap={4} alignItems={'center'}>
         <Icon icon={'lucide:sidebar'} fontSize={22} />
         <Typography variant='subtitle1' fontWeight={700}>
-          Project 1
+          {rv?.ProjectName}
         </Typography>
       </Box>
       <Box display={'flex'} gap={4} alignItems={'center'}>
         <Image src={images.ImgProjectItemLogo} alt='' width={23} />
         <Typography variant='subtitle1' fontWeight={500}>
-          {`Project 1 > Workspace`}
+          {`${rv?.ProjectName} > ${rv?.workspace?.WorkspaceName}`}
         </Typography>
       </Box>
     </Box>
   )
 }
 
-const WorkspaceCard = () => {
+const WorkspaceCard = ({ workspace }) => {
   return (
     <Box
       border={1}
@@ -101,25 +108,21 @@ const WorkspaceCard = () => {
       borderColor={'divider'}
       alignItems={'center'}
     >
-      <Avatar skin={'filled'} color='warning' variant='rounded' sx={{ width: 50, height: 50, fontSize: 27 }}>
-        M
+      <Avatar skin={'light'} color={'warning'} variant='rounded' sx={{ width: 50, height: 50, fontSize: 27 }}>
+        {getInitials(workspace?.WorkspaceName)}
       </Avatar>
       <Box display={'flex'} flexDirection={'column'} gap={1}>
         <Typography variant='body1' fontWeight={600} fontSize={18}>
-          Main Workspace
+          {workspace?.WorkspaceName}
         </Typography>
-        <Box display={'flex'} gap={2} alignItems={'center'}>
-          <Image src={images.ImgProjectItemLogo} alt='' width={23} />
-          <Typography variant='subtitle1' fontWeight={500}>
-            {`Project 1`}
-          </Typography>
-        </Box>
       </Box>
     </Box>
   )
 }
 
 function RecentActivity() {
+  const { data } = useQuery({ queryKey: ['recent-activity-page'], queryFn: fetchAllRecentActivities })
+
   return (
     <Box>
       <Grid container spacing={6}>
@@ -138,8 +141,30 @@ function RecentActivity() {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Box py={2}>
-                    <RecentActivityCard />
+                  <Box
+                    display={'flex'}
+                    gap={3}
+                    sx={{
+                      overflowX: 'auto', // Enable horizontal scrolling
+                      whiteSpace: 'nowrap', // Prevent child elements from wrapping to a new line
+                      paddingBottom: 1, // Optional: Adds padding for scroll visibility
+                      '&::-webkit-scrollbar': {
+                        height: '8px' // Customize scrollbar height
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#888', // Customize scrollbar color
+                        borderRadius: '4px'
+                      },
+                      '&::-webkit-scrollbar-thumb:hover': {
+                        backgroundColor: '#555' // Scrollbar on hover
+                      }
+                    }}
+                  >
+                    {data?.recentlyVisited?.map(rv => (
+                      <Box py={2} key={rv?.ID}>
+                        <RecentActivityCard rv={rv} />
+                      </Box>
+                    ))}
                   </Box>
                 </AccordionDetails>
               </Accordion>
@@ -150,9 +175,11 @@ function RecentActivity() {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Box py={2}>
-                    <WorkspaceCard />
-                  </Box>
+                  {data?.myWorkspaces?.map(workspace => (
+                    <Box py={2} key={workspace?.WorkspaceID}>
+                      <WorkspaceCard workspace={workspace} />
+                    </Box>
+                  ))}
                 </AccordionDetails>
               </Accordion>
             </CardContent>
@@ -167,12 +194,11 @@ function RecentActivity() {
                     Recent Activity
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
-                  <ActivityMessage />
-                </Grid>
-                <Grid item xs={12}>
-                  <ActivityMessage />
-                </Grid>
+                {data?.recentActivities?.map(rca => (
+                  <Grid item xs={12} key={rca?.RecentActivityID}>
+                    <ActivityMessage rca={rca} />
+                  </Grid>
+                ))}
               </Grid>
             </CardContent>
           </Card>

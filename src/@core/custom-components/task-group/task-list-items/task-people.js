@@ -15,11 +15,13 @@ import {
   Zoom
 } from '@mui/material'
 import { debounce } from 'lodash'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
-const TaskPeople = ({ rowData = null, refetch, data, isSubTask }) => {
+const TaskPeople = ({ rowData = null, refetch, data, isSubTask, role, users }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedOwner, setSelectedOwner] = useState(data)
+
+  const [searchText, setSearchText] = useState('')
 
   const handleOpen = event => {
     setAnchorEl(event.currentTarget)
@@ -29,18 +31,25 @@ const TaskPeople = ({ rowData = null, refetch, data, isSubTask }) => {
     setAnchorEl(null)
   }
 
+  const userFilter = useCallback(
+    user => {
+      return user?.User?.Name?.toLowerCase()?.includes(searchText?.toLowerCase())
+    },
+    [searchText]
+  )
+
   const handleClear = () => {
     setSelectedOwner(null)
   }
 
-  const handleSelectUser = async () => {
+  const handleSelectUser = async selected => {
     try {
       if (isSubTask) {
         const body = {
-          SubtaskOwner: 56,
+          SubtaskOwner: selected?.UserID,
           Title: data ? 'Task Owner Updated' : 'Task Owner Added!',
           PreviousState: data?.Name,
-          NewState: 'Samad Saiyed'
+          NewState: selected?.Name
         }
         body.TaskID = rowData?.TaskMasterID
         const response = await updateSubTask({ id: rowData?.SubTaskID, body })
@@ -50,10 +59,10 @@ const TaskPeople = ({ rowData = null, refetch, data, isSubTask }) => {
         }
       } else {
         const body = {
-          Taskowner: 56,
+          Taskowner: selected?.UserID,
           Title: data ? 'Task Owner Updated' : 'Task Owner Added!',
           PreviousState: data?.Name,
-          NewState: 'Samad Saiyed'
+          NewState: selected?.Name
         }
         const response = await updateTask({ id: rowData?.TaskID, body })
         if (response) {
@@ -81,14 +90,18 @@ const TaskPeople = ({ rowData = null, refetch, data, isSubTask }) => {
               <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
             </Tooltip>
           </AvatarGroup>
-          <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
-            <Icon icon={'icon-park-twotone:close-one'} color='red' />
-          </IconButton>
+          {role?.RoleName === 'Admin' && (
+            <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
+              <Icon icon={'icon-park-twotone:close-one'} color='red' />
+            </IconButton>
+          )}
         </Box>
-      ) : (
+      ) : role?.RoleName === 'Admin' ? (
         <IconButton onClick={handleOpen}>
           <Icon icon={'bi:plus-circle-dotted'} />
         </IconButton>
+      ) : (
+        <Icon icon={'ph:question-duotone'} fontSize={24} />
       )}
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleClose} TransitionComponent={Zoom}>
         <Box width={280}>
@@ -98,23 +111,39 @@ const TaskPeople = ({ rowData = null, refetch, data, isSubTask }) => {
                 <TextField
                   fullWidth
                   color='secondary'
+                  value={searchText}
                   size='small'
+                  autoComplete='off'
                   placeholder='Search User...'
+                  onChange={e => setSearchText(e?.target?.value)}
                   InputProps={{ startAdornment: <Icon icon={'ion:search'} style={{ marginRight: 6 }} /> }}
                 />
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <Box px={3}>
-                <MenuItem onClick={debouncedClick}>
-                  <Box display={'flex'} alignItems={'center'} gap={3} overflow={'hidden'}>
-                    <Avatar alt={'samad'} src='/images/avatars/3.png' sx={{ width: 32, height: 32 }} />
-                    <Typography overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
-                      Samad Saiyed
-                    </Typography>
-                  </Box>
-                </MenuItem>
-              </Box>
+              {users?.length !== 0
+                ? users?.filter(userFilter)?.map(user => (
+                    <MenuItem
+                      onClick={() =>
+                        selectedOwner?.UserID !== user?.User?.UserID &&
+                        role?.RoleName === 'Admin' &&
+                        debouncedClick(user?.User)
+                      }
+                      key={user?.UserProjectID}
+                    >
+                      <Box display={'flex'} alignItems={'center'} gap={3} py={1} overflow={'hidden'}>
+                        <Avatar
+                          alt={user?.User?.Name}
+                          src={user?.User?.ProfilePicture}
+                          sx={{ width: 32, height: 32 }}
+                        />
+                        <Typography overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+                          {user?.User?.Name}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))
+                : 'No Users Added to Group'}
             </Grid>
           </Grid>
         </Box>

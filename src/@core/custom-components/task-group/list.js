@@ -8,7 +8,7 @@ import noDataImage from '@images/cards/no-data.svg'
 import Image from 'next/image'
 import NewTaskDialog from './new-task/dialog'
 
-const TaskGroupList = ({ id, taskGroups, isLoading, refetch, projectData }) => {
+const TaskGroupList = ({ id, taskGroups, isLoading, refetch, projectData, role, users }) => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => setOpen(true)
@@ -23,12 +23,14 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch, projectData }) => {
         <Box px={3} py={4}>
           {taskGroups?.map((item, index) => (
             <CustomizedAccordions
+              users={users}
               key={item?.TaskGroupID}
               index={index}
               data={item}
               projectID={id}
               refetchTaskGroup={refetch}
               projectData={projectData}
+              role={role}
             />
           ))}
         </Box>
@@ -44,9 +46,11 @@ const TaskGroupList = ({ id, taskGroups, isLoading, refetch, projectData }) => {
         >
           <Image src={noDataImage} alt='NoDataFound' width={300} />
           <Typography fontWeight={600}>No Task Groups Added</Typography>
-          <CustomButton variant='contained' circular onClick={handleOpen}>
-            Add Now
-          </CustomButton>
+          {role?.RoleName === 'Admin' && (
+            <CustomButton variant='contained' circular onClick={handleOpen}>
+              Add Now
+            </CustomButton>
+          )}
           <NewTaskDialog open={open} onCloseModal={handleClose} projectID={id} refetch={refetch} />
         </Box>
       )}
