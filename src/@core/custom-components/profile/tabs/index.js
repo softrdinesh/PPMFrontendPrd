@@ -3,11 +3,11 @@ import { Icon } from '@iconify/react'
 import TabContext from '@mui/lab/TabContext'
 import TabList from '@mui/lab/TabList'
 import TabPanel from '@mui/lab/TabPanel'
-import { Typography } from '@mui/material'
 import Tab from '@mui/material/Tab'
 import { useState } from 'react'
+import ChangePasswordProfile from './change-password'
 
-const ProfileTabs = () => {
+const ProfileTabs = ({ data, refetch }) => {
   // States
   const [value, setValue] = useState('change-password')
 
@@ -26,10 +26,7 @@ const ProfileTabs = () => {
         />
       </TabList>
       <TabPanel value='change-password'>
-        <Typography>
-          Cake apple pie chupa chups biscuit liquorice tootsie roll liquorice sugar plum. Cotton candy wafer wafer jelly
-          cake caramels brownie gummies.
-        </Typography>
+        <ChangePasswordProfile data={data} refetch={refetch} />
       </TabPanel>
     </TabContext>
   )

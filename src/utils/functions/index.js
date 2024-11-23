@@ -120,3 +120,8 @@ export const getStatusIconColor = color => {
 
   return isNumber(luminance) && luminance > 0.9 ? '#444444' : '#FFFFFF'
 }
+
+export function isFile(input) {
+  if ('File' in window && input instanceof File) return true
+  else return false
+}
