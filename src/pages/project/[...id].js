@@ -50,7 +50,7 @@ function ProjectView() {
     enabled: !!projectID
   })
 
-  const role = useMemo(() => data?.userProjects.Role, [data?.userProjects.Role])
+  const role = useMemo(() => data?.userProjects.Role, [data?.userProjects?.Role])
 
   const handleUpdate = data => {
     if (data?.value === 'titleUpdate') {

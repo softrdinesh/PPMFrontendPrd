@@ -114,7 +114,6 @@ const DesktopProjectDetail = ({ theme, projectData }) => {
 }
 
 const ProjectDetailsTab = ({ projectData, taskData, refetchTasks }) => {
-  console.log('projectData :', projectData)
   const theme = useTheme()
   const lgBreakpoint = useMediaQuery(theme => theme.breakpoints.up('lg'))
 
