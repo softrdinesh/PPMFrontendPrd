@@ -1,25 +1,31 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "baseUrl": ".",
     "paths": {
-      // "@styles-page/*": ["src/styles-page/*"],
-      // "@styles-layout/*": ["src/styles-layout/*"],
+      "@images/*": ["public/images/*"],
+      "@json/*": ["json/*"],
+      "@styles-page/*": ["src/styles-page/*"],
+      "@styles-layout/*": ["src/styles-layout/*"],
+      "@breadcrumbs/*": ["src/utils/breadcrumbs/*"],
+      "@validations/*": ["src/utils/validations/*"],
       "@store/*": ["src/store/*"],
       "@pages/*": ["src/pages/*"],
+      "@functions/*": ["src/utils/custom-functions/*"],
+      "@api/*": ["src/utils/api-routes/*"],
       "@strings": ["src/constants/strings"],
       "@patterns": ["src/constants/patterns"],
       "@routes": ["src/constants/routes"],
-      "@colors": ["src/constants/colors"],
-      "@constants/*": ["src/constants/*"],
+      "@currency": ["src/constants/currency"],
+      "@colors": ["src/constants/color"],
+      "@useAuth": ["src/hooks/use-auth"],
       "@endpoints/*": ["src/utils/endpoints/*"],
       "@configs/*": ["src/configs/*"],
-      "@layouts/*": ["src/layouts/*"],
       "@utils/*": ["src/@core/utils/*"],
-      "@components/*": ["src/components/*"],
+      "@components/*": ["src/@core/components/*"],
+      "@custom-components/*": ["src/@core/custom-components/*"],
       "@config": ["./config"],
-      // "@styles/*": ["./src/styles/*"],
-      "@image-path/*": ["./public/*"],
-      "@json/*": ["./json/*"]
+      "@translate/*": ["src/utils/translate/*"]
     }
   },
   "include": ["src"]
