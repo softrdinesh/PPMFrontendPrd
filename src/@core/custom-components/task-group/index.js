@@ -53,7 +53,7 @@ function TaskGroupComponent({
   return (
     <Box px={[0, 4]} py={[4, 8]} border={[0, 2]} borderColor={['divider', 'divider']} borderRadius={1}>
       <Grid container spacing={7}>
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <Box display={'flex'} justifyContent={['center', 'end']}>
             <TextField
               size='small'
@@ -69,7 +69,7 @@ function TaskGroupComponent({
               }}
             />
           </Box>
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} overflow={'hidden'}>
           <Table
             users={users}
