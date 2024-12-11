@@ -70,7 +70,11 @@ const ForgotPasswordPage = () => {
     await verifyEmail(data)
       .then(res => {
         if (res?.status) {
-          const encString = sign({ email: data?.email }, process?.env?.NEXT_PUBLIC_API_SECRET_KEY, { expiresIn: '7m' })
+          const encString = sign(
+            { email: data?.email },
+            process?.env?.NEXT_PUBLIC_API_SECRET_KEY ?? 'THIS_IS_A_SECRET',
+            { expiresIn: '7m' }
+          )
           router.replace(`${routes.verifyEmail}?k=${encString}`)
         }
       })

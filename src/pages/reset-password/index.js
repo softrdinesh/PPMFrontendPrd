@@ -102,7 +102,7 @@ const ResetPasswordPage = () => {
   // ** decode email from url
   useEffect(() => {
     if (data && Object.keys(data)?.length != 0) {
-      verify(data.k, process.env.NEXT_PUBLIC_API_SECRET_KEY, (error, decoded) => {
+      verify(data.k, process?.env?.NEXT_PUBLIC_API_SECRET_KEY ?? 'THIS_IS_A_SECRET', (error, decoded) => {
         if (error) {
           if (error?.name === 'TokenExpiredError') {
             toast.error('Timed out')

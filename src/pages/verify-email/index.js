@@ -105,7 +105,9 @@ const VerifyEmail = () => {
     if (otpValid) {
       await verifyOtp(body).then(res => {
         if (res?.status) {
-          const base64 = jwt.sign(body, process.env.NEXT_PUBLIC_API_SECRET_KEY, { expiresIn: '7m' })
+          const base64 = jwt.sign(body, process?.env?.NEXT_PUBLIC_API_SECRET_KEY ?? 'THIS_IS_A_SECRET', {
+            expiresIn: '7m'
+          })
 
           router.replace({ pathname: routes.resetPassword, query: { k: base64 } })
         }
@@ -121,7 +123,7 @@ const VerifyEmail = () => {
   // ** decode email from url
   useEffect(() => {
     if (data && Object.keys(data)?.length != 0) {
-      jwt.verify(data.k, process.env.NEXT_PUBLIC_API_SECRET_KEY, (error, decoded) => {
+      jwt.verify(data.k, process?.env?.NEXT_PUBLIC_API_SECRET_KEY ?? 'THIS_IS_A_SECRET', (error, decoded) => {
         if (error) {
           if (error?.name === 'TokenExpiredError') {
             toast.error('Timed out')
