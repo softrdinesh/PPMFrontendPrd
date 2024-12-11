@@ -267,7 +267,7 @@ const LoginPage = () => {
                     }}
                   >
                     <FormControlLabel control={<Checkbox />} label='Remember Me' />
-                    {/* <LinkStyled href='/'>Forgot Password?</LinkStyled> */}
+                    <LinkStyled href={routes.forgotPassword}>Forgot Password?</LinkStyled>
                   </Box>
                   <Button fullWidth size='large' variant='contained' type='submit' disabled={isLoggingIn}>
                     {isLoggingIn ? <CircularProgress size={22} /> : 'Login'}

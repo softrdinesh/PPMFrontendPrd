@@ -3,6 +3,7 @@ import Axios from 'axios'
 import { callApi } from '../utils/api-utils'
 import { authentication } from '../utils/endpoints/authentication'
 import { authConfig } from '@configs/auth'
+import toast from 'react-hot-toast'
 
 export const userLogin = async body => {
   return callApi({ uriEndPoint: authentication.login, body })
@@ -77,4 +78,45 @@ export const permissionList = async () => {
     .catch(err => {
       throw err
     })
+}
+
+export const verifyEmail = async body => {
+  return callApi({
+    uriEndPoint: authentication.emailVerification,
+    body
+  })
+    .then(res => {
+      toast.success(res.message)
+
+      return res
+    })
+    .catch(err => toast.error(err.message))
+}
+
+export const resetPassword = async body => {
+  return callApi({
+    uriEndPoint: authentication.resetPassword,
+    body
+  })
+    .then(res => {
+      toast.success(res.message ?? translate('csFrontendResetPasswordSuccess'))
+
+      return res
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+export const verifyOtp = async body => {
+  return callApi({
+    uriEndPoint: authentication.otpVerification,
+    body
+  })
+    .then(res => {
+      toast.success(res.message)
+
+      return res
+    })
+    .catch(err => toast.error(err.message))
 }
