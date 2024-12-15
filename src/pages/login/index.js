@@ -61,7 +61,7 @@ const FormControlLabel = styled(MuiFormControlLabel)(({ theme }) => ({
 
 const defaultValues = {
   email: process?.env?.NODE_ENV === 'development' ? 'samad.saiyed.ss@gmail.com' : '',
-  password: process?.env?.NODE_ENV === 'development' ? 'Abc223133' : ''
+  password: process?.env?.NODE_ENV === 'development' ? 'Abc@223133' : ''
 }
 
 const LoginPage = () => {

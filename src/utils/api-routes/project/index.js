@@ -116,8 +116,20 @@ export const inviteMember = async body => {
     .catch(err => err)
 }
 
+export const getInvitationAPI = async id => {
+  return callApi({ uriEndPoint: project.getInvite, pathParams: { id } })
+    .then(res => res?.data)
+    .catch(err => err)
+}
+
 export const acceptInvitationApi = async id => {
   return callApi({ uriEndPoint: project.acceptInvite, pathParams: { id } })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const registerWithInvitationApi = async body => {
+  return callApi({ uriEndPoint: project.registerWithInvite, body })
     .then(res => res)
     .catch(err => err)
 }

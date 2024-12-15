@@ -1,3 +1,4 @@
+import { sign } from 'jsonwebtoken'
 import { isNumber } from 'lodash'
 import { colorNamesToHex } from 'src/constants/colors'
 
@@ -125,3 +126,9 @@ export function isFile(input) {
   if ('File' in window && input instanceof File) return true
   else return false
 }
+
+export const encryptJWT = async ({ payload, secret, expiresIn }) => {
+  return sign(payload, secret ?? process?.env?.NEXT_PUBLIC_API_SECRET_KEY, { expiresIn: expiresIn ?? '7m' })
+}
+
+export const sleep = delay => new Promise(resolve => setTimeout(resolve, delay))
