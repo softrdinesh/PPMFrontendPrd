@@ -57,9 +57,17 @@ export const project = {
     ...defaults?.methods?.POST,
     uri: '/api/invite-user'
   },
+  getInvite: {
+    ...defaults.methods.GET,
+    uri: '/api/invite/:id'
+  },
   acceptInvite: {
     ...defaults.methods.POST,
     uri: '/api/accept-invite/:id'
+  },
+  registerWithInvite: {
+    ...defaults.methods.POST,
+    uri: '/api/register-invite'
   },
   projectMembers: {
     ...defaults.methods.GET,

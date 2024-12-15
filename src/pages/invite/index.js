@@ -5,16 +5,17 @@ import { useRouter } from 'next/router'
 import React, { useCallback, useEffect, useState } from 'react'
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 
+import CustomButton from '@components/button'
 import acceptedInvite from '@images/pages/accepted-invite.svg'
 import accessDenied from '@images/pages/access-denied.svg'
-import toast from 'react-hot-toast'
-import CustomButton from '@components/button'
 import { routes } from '@routes'
+import toast from 'react-hot-toast'
 import { useWorkspace } from 'src/context/workspace-context'
+import { useAuth } from 'src/hooks/useAuth'
 
 const InvitationManagementPage = () => {
   const router = useRouter()
-
+  const { user } = useAuth()
   const { refetchWorkspaces } = useWorkspace()
 
   const invitationID = router.query?.invitation_id
@@ -25,16 +26,32 @@ const InvitationManagementPage = () => {
     if (invitationID) {
       try {
         const response = await acceptInvitationApi(invitationID)
+        console.log('response :', response)
+
         setResponse(response)
         if (response?.data?.projectID) {
           refetchWorkspaces()
           router.replace(`/project/${response?.data?.projectID}`)
         } else {
           if (response?.statusCode === 307) {
-            router.replace(`/${response?.data?.redirect}?returnUrl=${router.asPath}`)
+            if (response?.data?.redirect === '/register') {
+              router.replace(`/invite/register?invitationID=${router.query?.invitation_id}`)
+            } else {
+              router.replace({
+                pathname: routes.login,
+                query: { returnUrl: router.asPath }
+              })
+            }
           }
           if (response?.statusCode === 403) {
-            toast.error(`You need to be logged in with valid account to accept invitation`)
+            if (user) {
+              toast.error(`You need to be logged in with valid account to accept invitation`)
+            } else {
+              router.replace({
+                pathname: routes.login,
+                query: { returnUrl: router.asPath }
+              })
+            }
           }
         }
       } catch (error) {
@@ -42,7 +59,7 @@ const InvitationManagementPage = () => {
         setResponse(null)
       }
     }
-  }, [invitationID, refetchWorkspaces, router])
+  }, [invitationID, refetchWorkspaces, router, user])
 
   useEffect(() => {
     acceptInvitationApiCall()

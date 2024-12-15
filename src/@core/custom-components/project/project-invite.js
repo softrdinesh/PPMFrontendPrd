@@ -5,7 +5,7 @@ import { getInitials } from '@utils/get-initials'
 import React, { useState } from 'react'
 import InviteMember from 'src/@core/layouts/components/modals/InviteMember'
 
-const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen, role, users }) => {
+const ProjectInvitePeople = ({ projectID, workspaceID, IsOpen, role, users = [] }) => {
   const [openDialog, setOpenDialog] = useState(false)
 
   const [inviteUserOpen, setInviteUserOpen] = useState(false)
