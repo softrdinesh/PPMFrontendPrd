@@ -82,9 +82,7 @@ const ChangePasswordProfile = () => {
       await userChangePassword(body)
       reset()
       toast.success('Changed Password Successfully!!')
-    } catch (error) {
-      console.log('Change Password Error ==> :', error)
-    }
+    } catch {}
   }
 
   return (

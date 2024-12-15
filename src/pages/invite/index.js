@@ -26,7 +26,6 @@ const InvitationManagementPage = () => {
     if (invitationID) {
       try {
         const response = await acceptInvitationApi(invitationID)
-        console.log('response :', response)
 
         setResponse(response)
         if (response?.data?.projectID) {

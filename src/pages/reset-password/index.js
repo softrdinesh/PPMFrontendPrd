@@ -58,7 +58,6 @@ const ResetPasswordPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [emailVerify, setEmailVerify] = useState(null)
-  console.log('emailVerify :', emailVerify)
 
   // ** Hooks
   const theme = useTheme()
