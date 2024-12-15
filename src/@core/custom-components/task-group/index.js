@@ -2,7 +2,7 @@ import { deleteMultipleTask } from '@api/task'
 import CustomButton from '@components/button'
 import DeleteDialog from '@custom-components/delete-dialog'
 import { Icon } from '@iconify/react'
-import { Box, Card, Grid, TextField, Typography, useTheme } from '@mui/material'
+import { Box, Card, Grid, Typography } from '@mui/material'
 import React, { useEffect, useMemo, useState } from 'react'
 import Table from './table'
 
@@ -25,9 +25,6 @@ function TaskGroupComponent({
 
   // ** Memo
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-
-  // ** Hooks
-  const theme = useTheme()
 
   const handleDelete = async () => {
     const finalArray = taskList
