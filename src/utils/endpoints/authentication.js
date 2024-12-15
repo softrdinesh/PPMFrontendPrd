@@ -33,5 +33,20 @@ export const authentication = {
   googleLoginSuccess: {
     ...defaults.methods.GET,
     uri: '/auth/login/success'
+  },
+
+  otpVerification: {
+    ...defaults.methods.POST,
+    uri: '/api/verify-otp'
+  },
+
+  emailVerification: {
+    ...defaults.methods.POST,
+    uri: '/api/forgot-password'
+  },
+
+  resetPassword: {
+    ...defaults.methods.PATCH,
+    uri: '/api/update-password'
   }
 }

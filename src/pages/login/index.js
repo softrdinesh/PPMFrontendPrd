@@ -61,7 +61,7 @@ const FormControlLabel = styled(MuiFormControlLabel)(({ theme }) => ({
 
 const defaultValues = {
   email: process?.env?.NODE_ENV === 'development' ? 'samad.saiyed.ss@gmail.com' : '',
-  password: process?.env?.NODE_ENV === 'development' ? 'Abc223133' : ''
+  password: process?.env?.NODE_ENV === 'development' ? 'Abc@223133' : ''
 }
 
 const LoginPage = () => {
@@ -267,7 +267,7 @@ const LoginPage = () => {
                     }}
                   >
                     <FormControlLabel control={<Checkbox />} label='Remember Me' />
-                    {/* <LinkStyled href='/'>Forgot Password?</LinkStyled> */}
+                    <LinkStyled href={routes.forgotPassword}>Forgot Password?</LinkStyled>
                   </Box>
                   <Button fullWidth size='large' variant='contained' type='submit' disabled={isLoggingIn}>
                     {isLoggingIn ? <CircularProgress size={22} /> : 'Login'}

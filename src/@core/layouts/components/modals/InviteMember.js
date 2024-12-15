@@ -77,9 +77,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, workspac
     try {
       await inviteMember(body)
       handleClose()
-    } catch (error) {
-      console.log('error :', error)
-    }
+    } catch {}
   }
 
   const inviteLink = useMemo(() => 'https://figma.com/users/sign_up?invitationId=2690444112...', [])

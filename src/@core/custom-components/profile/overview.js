@@ -96,7 +96,6 @@ const UpdateProfileDialog = ({ open, close, data, refetch }) => {
 
   const onSubmit = async formData => {
     try {
-      console.log('formData :', formData)
       const body = new FormData()
 
       body.append('Name', formData?.Name)
@@ -104,18 +103,14 @@ const UpdateProfileDialog = ({ open, close, data, refetch }) => {
       body.append('Address', formData?.Address)
 
       if (formData?.ProfilePicture instanceof File) {
-        console.log('IS FILE')
         body?.append('ProfilePicture', formData?.ProfilePicture)
       }
-
-      console.log('BODY ', ...body)
 
       await updateProfile(body)
 
       close()
       refetch()
     } catch (error) {
-      console.log('USER PROFILE UPDATE ERROR :', error)
       refetch()
     }
   }

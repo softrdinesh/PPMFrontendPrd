@@ -28,16 +28,13 @@ const WriteUpdate = ({ taskID }) => {
         message: value,
         taskID
       }
-      console.log('VASLUE', body)
 
       const updateRes = await writeTaskUpdate(body)
 
       if (updateRes?.status) {
         toast.success('Task-Update Message was recorded successfully!')
       }
-    } catch (error) {
-      console.log('handleSendUpdate error :', error)
-    }
+    } catch {}
   }
 
   return (
@@ -58,8 +55,6 @@ const WriteUpdate = ({ taskID }) => {
 }
 
 const UpdateMessage = ({ message }) => {
-  console.log('message :', message)
-
   return (
     <Box bgcolor={'background.default'} p={6} borderRadius={4} sx={{ borderBottomLeftRadius: 0 }}>
       {/* Details of user and Notification */}
