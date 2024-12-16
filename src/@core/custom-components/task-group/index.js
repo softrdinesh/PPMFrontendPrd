@@ -23,7 +23,7 @@ function TaskGroupComponent({
   const [showCard, setShowCard] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
-  // ** Memo
+  // ** Memos
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   const handleDelete = async () => {
