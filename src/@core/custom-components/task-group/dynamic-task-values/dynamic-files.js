@@ -100,7 +100,6 @@ const DynamicFiles = ({
         const formData = new FormData()
 
         const body = {
-          DynamicID: dynamicValue?.DynamicID ?? null,
           AdditionalColumnID: columnData?.AdditionalColumnID,
           value: data?.value,
           displayText: data?.displayText,
@@ -112,9 +111,18 @@ const DynamicFiles = ({
         for (let x in body) {
           formData.append(x, body[x])
         }
+
+        if (dynamicValue?.DynamicID) {
+          formData.append('DynamicID', dynamicValue?.DynamicID)
+        }
         formData.append('file', data?.file)
 
-        await taskFileUpload({ id: rowData?.TaskID, body: formData })
+        const response = await taskFileUpload({ id: rowData?.TaskID, body: formData })
+        if (response) {
+          refetch()
+          setOpen(false)
+          handleClose()
+        }
       } catch (error) {
         console.error('error ff :', error)
       }
