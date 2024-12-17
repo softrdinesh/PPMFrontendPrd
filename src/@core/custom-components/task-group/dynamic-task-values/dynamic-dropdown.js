@@ -35,7 +35,7 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
     setAnchorEl(null)
   }
 
-  const { handleSubmit, control } = useForm({ defaultValues: { dropdown: [] } })
+  const { handleSubmit, control, reset } = useForm({ defaultValues: { dropdown: [] } })
 
   const onSubmit = async data => {
     try {
@@ -50,6 +50,7 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
         const responseData = await addDropdownItem(dropdownAddBody)
         if (responseData?.status) {
           refetchDDL()
+          reset()
           setCreateMenu(false)
         }
       }
@@ -171,7 +172,9 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
                         </li>
                       )}
                       size='small'
-                      renderInput={params => <TextField size='small' fullWidth {...params} />}
+                      renderInput={params => (
+                        <TextField size='small' fullWidth {...params} placeholder='Select a value' />
+                      )}
                       getOptionLabel={option => {
                         return option.Valuetxt || ''
                       }}
@@ -180,9 +183,6 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
                       }}
                     />
                   </FormControl>
-                  <IconButton size='small'>
-                    <Icon icon={'mdi:pencil-outline'} fontSize={25} />
-                  </IconButton>
                 </Box>
               </Grid>
               <Grid item xs={12}>
@@ -212,14 +212,22 @@ const DynamicDropdown = ({ columnData = null, rowData = null, dynamicValue = nul
                       ))}
                     </Box>
                   ) : (
-                    'No DDL SELECTED'
+                    <Box
+                      display={'flex'}
+                      bgcolor={'background.default'}
+                      p={3}
+                      alignItems={'center'}
+                      justifyContent={'center'}
+                    >
+                      None Selected
+                    </Box>
                   )}
                 </Box>
               </Grid>
               <Grid item xs={12}>
                 <Box display={'flex'} alignItems={'center'} justifyContent={'end'} p={2}>
                   <CustomButton onClick={() => setCreateMenu(true)} size='small' variant='contained'>
-                    {'Create a new label'}
+                    {'Create new value'}
                   </CustomButton>
                 </Box>
               </Grid>

@@ -98,18 +98,24 @@ const DataTable = ({
 }) => {
   // ** User
 
+  // ** GET COLUMN TYPES
+  const { data: additionalColumnsType } = useQuery({
+    queryKey: 'column-type',
+    queryFn: () => fetchColumnType()
+  })
+
   // ** Socket function
   const handleUpdate = data => {
     if (data?.value === 'updateTaskList') {
       refetch()
     }
+    if (data?.value === 'createdColumn') {
+      refetchTaskGroup()
+    }
   }
 
   // ** Web Socket Setup
   useWebSocket(projectID, handleUpdate)
-
-  // ** GET COLUMN TYPES
-  const { data: additionalColumnsType } = useQuery({ queryKey: 'column-type', queryFn: () => fetchColumnType() })
 
   // ** Hooks
   const { selected } = useWorkspace()
@@ -234,7 +240,8 @@ const DataTable = ({
         }
       }
     })
-  }, [canEdit, refetch, taskGroupData?.additionalColumns, users])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canEdit, refetch, taskGroupData?.additionalColumns, users, refetchTaskGroup])
 
   // ** Columns
   const columns = useMemo(
