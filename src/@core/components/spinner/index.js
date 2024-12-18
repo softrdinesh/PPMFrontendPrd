@@ -12,6 +12,7 @@ const FallbackSpinner = ({ sx, height }) => {
   return (
     <Box
       sx={{
+        width: '100%',
         height: height ?? '100vh',
         display: 'flex',
         alignItems: 'center',
