@@ -59,3 +59,31 @@ export const createColumn = async body => {
       return err
     })
 }
+
+export const updateColumn = async ({ body, id }) => {
+  return callApi({ uriEndPoint: taskGroup.updateColumn, pathParams: { id }, body })
+    .then(res => {
+      toast.success(res?.message ?? 'Updated Column Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Failed to update column')
+
+      return err
+    })
+}
+
+export const deleteColumn = async id => {
+  return callApi({ uriEndPoint: taskGroup.deleteColumn, pathParams: { id } })
+    .then(res => {
+      toast.success(res?.message ?? 'Deleted Column Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Failed to delete column')
+
+      return err
+    })
+}
