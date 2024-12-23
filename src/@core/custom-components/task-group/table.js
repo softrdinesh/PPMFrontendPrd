@@ -40,6 +40,9 @@ import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
 
+import DynamicTableHeader from './table-header'
+import { TableContainer } from '@mui/material'
+
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
   const [value, setValue] = useState(initialValue)
@@ -165,7 +168,9 @@ const DataTable = ({
         minSize: 250,
         size: 250,
         sortable: false,
-        header: () => i?.ColumnName,
+        header: () => {
+          return <DynamicTableHeader column={i} refetch={refetchTaskGroup} />
+        },
         cell: ({ getValue, row: { index, original: row }, column: { id }, table }) => {
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
           switch (i?.ColumnType?.Keyname) {
@@ -248,6 +253,7 @@ const DataTable = ({
     () => [
       {
         id: 'select',
+        accessorKey: 'select',
         maxSize: 20,
         align: 'right',
         header: ({ table }) => (
@@ -291,8 +297,8 @@ const DataTable = ({
       },
       {
         accessorKey: 'Taskname',
-        minSize: 300,
-        size: 300,
+        minSize: 400,
+        size: 500,
         header: () => (
           <Typography variant='body2' fontWeight={800}>
             Task
@@ -359,6 +365,7 @@ const DataTable = ({
       ...dynamicColumn(),
       {
         id: 'add-column',
+        accessorKey: 'add-column',
         size: 20,
         maxSize: 20,
         align: 'right',
@@ -376,7 +383,9 @@ const DataTable = ({
   const table = useReactTable({
     data: taskList,
     columns,
+    initialState: { columnPinning: { left: ['select', 'Taskname'], right: ['add-column'] } },
     state: {
+      columnPinning: { left: ['select', 'Taskname'] },
       rowSelection: selectedRows,
       columnVisibility: {
         'add-column': canEdit
@@ -445,76 +454,75 @@ const DataTable = ({
   return (
     <Box
       sx={{
-        width: '100%',
-        overflowX: 'auto',
-        '&::-webkit-scrollbar': { height: '1px' },
         border: 1,
         borderRadius: 1,
         boxShadow: theme => theme.shadows[3],
         borderColor: theme => theme.palette.divider
       }}
     >
-      <Table
-        sx={{
-          minWidth: 'max-content'
-        }}
-      >
-        <TableHead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map(header => {
+      <TableContainer>
+        <Table
+          sx={{
+            minWidth: 700
+          }}
+        >
+          <TableHead sx={{ backgroundColor: 'background.default' }}>
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map(header => {
+                  return (
+                    <TableCell
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      align={header?.align ?? 'left'}
+                      sx={{
+                        width: header.getSize() !== 150 ? header.getSize() : undefined,
+                        fontWeight: 600,
+                        pb: 2
+                      }}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <div>{flexRender(header.column.columnDef.header, header.getContext())}</div>
+                      )}
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHead>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map(row => {
                 return (
-                  <TableCell
-                    key={header.id}
-                    colSpan={header.colSpan}
-                    align={header?.align ?? 'left'}
-                    sx={{
-                      width: header.getSize() !== 150 ? header.getSize() : undefined,
-                      fontWeight: 600,
-                      pb: 2
-                    }}
-                  >
-                    {header.isPlaceholder ? null : (
-                      <div>{flexRender(header.column.columnDef.header, header.getContext())}</div>
-                    )}
-                  </TableCell>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHead>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map(row => {
-              return (
-                <>
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell, index) => {
-                      return (
-                        <TableCell key={index}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                      )
-                    })}
-                  </TableRow>
-                  {row.getIsExpanded() && (
+                  <>
                     <TableRow key={row.id}>
-                      {/* 2nd row is a custom 1 cell row */}
-                      <TableCell colSpan={row.getVisibleCells().length}>{renderSubComponent({ row })}</TableCell>
+                      {row.getVisibleCells().map((cell, index) => {
+                        return (
+                          <TableCell key={index}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                        )
+                      })}
                     </TableRow>
-                  )}
-                </>
-              )
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns?.length}>
-                <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
-                  <Typography>No Tasks Added</Typography>
-                </Box>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                    {row.getIsExpanded() && (
+                      <TableRow key={row.id}>
+                        {/* 2nd row is a custom 1 cell row */}
+                        <TableCell colSpan={row.getVisibleCells().length}>{renderSubComponent({ row })}</TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns?.length}>
+                  <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
+                    <Typography>No Tasks Added</Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
       {role?.RoleName !== 'Viewer' && (
         <Box m={2}>
           <CustomButton

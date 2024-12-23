@@ -151,7 +151,13 @@ const TaskPriority = ({ row, handlePriorityChange, refetch, canEdit }) => {
         sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
       >
         <Tooltip title={row?.Priority?.PriorityName}>
-          <Typography fontSize={'0.85rem'} textOverflow={'ellipsis'} overflow={'hidden'} color={'inherit'}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            overflow={'hidden'}
+            color={'inherit'}
+          >
             {row?.Priority?.PriorityName ?? 'None'}
           </Typography>
         </Tooltip>

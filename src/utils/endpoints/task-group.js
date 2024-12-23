@@ -20,5 +20,13 @@ export const taskGroup = {
   createColumn: {
     ...defaults.methods.POST,
     uri: '/api/create-column'
+  },
+  updateColumn: {
+    ...defaults.methods.PUT,
+    uri: '/api/update-column/:id'
+  },
+  deleteColumn: {
+    ...defaults.methods.DELETE,
+    uri: '/api/delete-column/:id'
   }
 }
