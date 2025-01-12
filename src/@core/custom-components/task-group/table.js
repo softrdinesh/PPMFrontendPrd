@@ -61,6 +61,7 @@ const ColumnTextField = ({ table, getValue, index, id }) => {
     <TextField
       variant='standard'
       sx={{
+        minWidth: 250,
         border: 0,
         '& .MuiInputBase-root::before': {
           borderBottom: 0
@@ -91,7 +92,6 @@ const DataTable = ({
   isLoading = false,
   taskList = [],
   selectedRows = [],
-  taskGroupData = null,
   taskGroupID = null,
   projectID = null,
   projectData,
@@ -161,7 +161,7 @@ const DataTable = ({
   const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
   const dynamicColumn = useCallback(() => {
-    return taskGroupData?.additionalColumns?.map(i => {
+    return projectData?.additionalColumns?.map(i => {
       return {
         accessorFn: row => filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])?.DynamicColumnValues,
         id: i?.AdditionalColumnID,
@@ -246,7 +246,7 @@ const DataTable = ({
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canEdit, refetch, taskGroupData?.additionalColumns, users, refetchTaskGroup])
+  }, [canEdit, refetch, projectData?.additionalColumns, users, refetchTaskGroup])
 
   // ** Columns
   const columns = useMemo(
@@ -297,8 +297,8 @@ const DataTable = ({
       },
       {
         accessorKey: 'Taskname',
-        minSize: 400,
-        size: 500,
+        size: 200,
+        maxSize: 1000,
         header: () => (
           <Typography variant='body2' fontWeight={800}>
             Task

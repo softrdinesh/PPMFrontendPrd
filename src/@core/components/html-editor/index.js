@@ -14,6 +14,31 @@ const HtmlEditor = ({ placeholder, height, onChange, setContent, defaultValue })
       height={height ?? '300'}
       placeholder={placeholder ?? 'Please enter a project description....'}
       onChange={onChange}
+      setOptions={{
+        fontSize: [18],
+        buttonList: [
+          [
+            'undo',
+            'redo',
+            'font',
+            'fontSize',
+            'formatBlock',
+            'bold',
+            'underline',
+            'italic',
+            'strike',
+            'fontColor',
+            'hiliteColor',
+            'removeFormat',
+            'align',
+            'horizontalRule',
+            'list',
+            'table',
+            'link',
+            'image'
+          ]
+        ]
+      }}
     />
   )
 }

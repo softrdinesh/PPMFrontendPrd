@@ -138,7 +138,7 @@ function ProjectView() {
         <TaskGroupList
           users={users}
           id={projectID}
-          refetch={refetchTaskGroup}
+          refetch={refetch}
           taskGroups={taskGroups}
           isLoading={taskLoading}
           projectData={data}

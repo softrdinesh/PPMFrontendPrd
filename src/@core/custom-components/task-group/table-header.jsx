@@ -32,6 +32,8 @@ const DynamicTableHeader = ({ column, refetch }) => {
       const updateColumnBody = { columnName: value, projectID: column?.ProjectID }
 
       await updateColumn({ id: column?.AdditionalColumnID, body: updateColumnBody })
+      setEditOpen(false)
+
       refetch()
     } catch (error) {
       console.log('error :', error)
@@ -40,6 +42,7 @@ const DynamicTableHeader = ({ column, refetch }) => {
 
   const onBlur = async () => {
     await updateColumnFn()
+    setEditOpen(false)
     handleMenuClose()
   }
 
@@ -82,10 +85,10 @@ const DynamicTableHeader = ({ column, refetch }) => {
           />
         </ClickAwayListener>
       ) : (
-        <p className='truncate-1'>{column?.ColumnName}</p>
+        <p style={{ whiteSpace: 'nowrap', marginRight: 15 }}>{column?.ColumnName}</p>
       )}
       <IconButton size='small' onClick={handleMenuOpen}>
-        <Icon icon={'solar:menu-dots-bold'} />
+        <Icon icon={'lets-icons:meatballs-menu'} rotate={45} />
       </IconButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleMenuClose} TransitionComponent={Grow}>
         <MenuItem onClick={onEditClick}>
