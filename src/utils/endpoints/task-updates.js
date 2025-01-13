@@ -8,5 +8,13 @@ export const taskUpdates = {
   writeUpdate: {
     ...defaults.methods.POST,
     uri: '/api/task-updates'
+  },
+  likeUpdate: {
+    ...defaults.methods.PUT,
+    uri: '/api/task-updates/like/:id'
+  },
+  replyUpdate: {
+    ...defaults.methods.POST,
+    uri: '/api/task-updates/reply'
   }
 }
