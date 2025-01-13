@@ -39,7 +39,6 @@ export default function CustomizedAccordions({ data, index, users }) {
   const {
     data: taskList,
     isLoading,
-    isRefetching,
     refetch
   } = useQuery({
     queryKey: ['task-list', data?.TaskGroupID],
@@ -60,7 +59,6 @@ export default function CustomizedAccordions({ data, index, users }) {
         <TaskGroupComponent
           users={users}
           isLoading={isLoading}
-          isRefetching={isRefetching}
           taskList={taskList}
           taskGroupData={data}
           refetch={refetch}
