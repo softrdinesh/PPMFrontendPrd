@@ -40,8 +40,9 @@ import TaskPriority from './task-list-items/task-priority'
 import TaskStatus from './task-list-items/task-status'
 import TaskTimeline from './task-list-items/task-timeline'
 
-import DynamicTableHeader from './table-header'
 import { TableContainer } from '@mui/material'
+import { useProject } from 'src/context/project-context'
+import DynamicTableHeader from './table-header'
 
 const ColumnTextField = ({ table, getValue, index, id }) => {
   const initialValue = getValue()
@@ -88,18 +89,15 @@ const defaultColumn = {
 
 const DataTable = ({
   users,
-  role,
   isLoading = false,
   taskList = [],
   selectedRows = [],
   taskGroupID = null,
-  projectID = null,
-  projectData,
   refetch = () => {},
-  refetchTaskGroup = () => {},
   setSelectedRows
 }) => {
-  // ** User
+  // ** Project Context
+  const { project, columnVisibility, refetchProject, role } = useProject()
 
   // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery({
@@ -113,12 +111,12 @@ const DataTable = ({
       refetch()
     }
     if (data?.value === 'createdColumn') {
-      refetchTaskGroup()
+      refetchProject()
     }
   }
 
   // ** Web Socket Setup
-  useWebSocket(projectID, handleUpdate)
+  useWebSocket(project?.ID, handleUpdate)
 
   // ** Hooks
   const { selected } = useWorkspace()
@@ -154,22 +152,23 @@ const DataTable = ({
 
   // ** Functions
   const handleAddTask = useCallback(async () => {
-    await addTask({ taskGroupID, projectID, workspaceID: selected?.WorkspaceID })
+    await addTask({ taskGroupID, projectID: project?.ID, workspaceID: selected?.WorkspaceID })
     refetch()
-  }, [projectID, refetch, selected?.WorkspaceID, taskGroupID])
+  }, [project?.ID, refetch, selected?.WorkspaceID, taskGroupID])
 
   const debouncedHandleAddTask = useMemo(() => debounce(handleAddTask, 300), [handleAddTask])
 
   const dynamicColumn = useCallback(() => {
-    return projectData?.additionalColumns?.map(i => {
+    return project?.additionalColumns?.map(i => {
       return {
         accessorFn: row => filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])?.DynamicColumnValues,
         id: i?.AdditionalColumnID,
+        accessorKey: i?.AdditionalColumnID,
         minSize: 250,
         size: 250,
         sortable: false,
         header: () => {
-          return <DynamicTableHeader column={i} refetch={refetchTaskGroup} />
+          return <DynamicTableHeader column={i} refetch={refetchProject} />
         },
         cell: ({ getValue, row: { index, original: row }, column: { id }, table }) => {
           const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
@@ -246,7 +245,7 @@ const DataTable = ({
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canEdit, refetch, projectData?.additionalColumns, users, refetchTaskGroup])
+  }, [canEdit, refetch, project?.additionalColumns, users, refetchProject])
 
   // ** Columns
   const columns = useMemo(
@@ -315,7 +314,7 @@ const DataTable = ({
                 )
               }
               rowData={original}
-              projectData={projectData}
+              projectData={project}
               refetch={refetch}
             />
           )
@@ -377,7 +376,7 @@ const DataTable = ({
         cell: () => null
       }
     ],
-    [canEdit, dynamicColumn, handleTaskUpdate, projectData, refetch, role, users]
+    [canEdit, dynamicColumn, handleTaskUpdate, project, refetch, role, users]
   )
 
   const table = useReactTable({
@@ -388,6 +387,7 @@ const DataTable = ({
       columnPinning: { left: ['select', 'Taskname'] },
       rowSelection: selectedRows,
       columnVisibility: {
+        ...columnVisibility,
         'add-column': canEdit
       }
     },
@@ -438,7 +438,7 @@ const DataTable = ({
         role={role}
         key={row?.original?.TaskID}
         additionalColumnsType={additionalColumnsType}
-        taskGroupData={{ taskGroupID, projectID, workspaceID: selected?.WorkspaceID }}
+        taskGroupData={{ taskGroupID, projectID: project?.ID, workspaceID: selected?.WorkspaceID }}
       />
     )
   }
@@ -539,8 +539,8 @@ const DataTable = ({
         open={anchorEl}
         close={handlePlusMenuClose}
         columns={additionalColumnsType}
-        refetchTaskGroup={refetchTaskGroup}
-        taskGroupAllData={{ taskGroupID, projectID, workspaceID: selected?.WorkspaceID }}
+        refetchTaskGroup={refetchProject}
+        taskGroupAllData={{ taskGroupID, projectID: project?.ID, workspaceID: selected?.WorkspaceID }}
       />
     </Box>
   )

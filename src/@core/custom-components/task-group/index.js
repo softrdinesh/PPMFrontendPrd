@@ -4,20 +4,12 @@ import DeleteDialog from '@custom-components/delete-dialog'
 import { Icon } from '@iconify/react'
 import { Box, Card, Grid, Typography } from '@mui/material'
 import React, { useEffect, useMemo, useState } from 'react'
+import { useProject } from 'src/context/project-context'
 import Table from './table'
 
-function TaskGroupComponent({
-  users,
-  isLoading,
-  isRefetching,
-  taskList,
-  taskGroupData,
-  refetch,
-  projectID,
-  projectData,
-  refetchTaskGroup,
-  role
-}) {
+function TaskGroupComponent({ users, isLoading, isRefetching, taskList, taskGroupData, refetch }) {
+  const { role } = useProject()
+
   // ** States
   const [selectedRows, setSelectedRows] = useState({})
   const [showCard, setShowCard] = useState(false)
@@ -50,37 +42,16 @@ function TaskGroupComponent({
   return (
     <Box px={[0, 4]} py={[4, 8]} border={[0, 2]} borderColor={['divider', 'divider']} borderRadius={1}>
       <Grid container spacing={7}>
-        {/* <Grid item xs={12}>
-          <Box display={'flex'} justifyContent={['center', 'end']}>
-            <TextField
-              size='small'
-              placeholder='Search'
-              InputProps={{
-                startAdornment: (
-                  <Icon
-                    icon={'ion:search'}
-                    style={{ marginRight: 10, color: theme?.palette?.secondary?.light }}
-                    fontSize={24}
-                  />
-                )
-              }}
-            />
-          </Box>
-        </Grid> */}
         <Grid item xs={12} overflow={'hidden'}>
           <Table
             users={users}
-            role={role}
             key={taskGroupData?.TaskGroupID}
-            projectID={projectID}
             isLoading={isLoading}
             isRefetching={isRefetching}
             taskList={taskList}
             taskGroupData={taskGroupData}
             taskGroupID={taskGroupData?.TaskGroupID}
             refetch={refetch}
-            projectData={projectData}
-            refetchTaskGroup={refetchTaskGroup}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
           />

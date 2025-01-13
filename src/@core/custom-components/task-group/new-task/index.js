@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react'
 import React, { useState } from 'react'
 import NewTaskDialog from './dialog'
 
-const NewTask = ({ projectID, refetch }) => {
+const NewTask = () => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => setOpen(true)
@@ -21,7 +21,7 @@ const NewTask = ({ projectID, refetch }) => {
       >
         New Task
       </CustomButton>
-      <NewTaskDialog open={open} onCloseModal={handleClose} projectID={projectID} refetch={refetch} />
+      <NewTaskDialog open={open} onCloseModal={handleClose} />
     </>
   )
 }
