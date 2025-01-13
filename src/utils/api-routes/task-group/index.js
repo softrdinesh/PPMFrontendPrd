@@ -63,8 +63,6 @@ export const createColumn = async body => {
 export const updateColumn = async ({ body, id }) => {
   return callApi({ uriEndPoint: taskGroup.updateColumn, pathParams: { id }, body })
     .then(res => {
-      toast.success(res?.message ?? 'Updated Column Successfully')
-
       return res
     })
     .catch(err => {

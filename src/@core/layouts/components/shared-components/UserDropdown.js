@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // ** React Imports
 import { Fragment, useState } from 'react'
 
@@ -21,6 +22,7 @@ import { routes } from '@routes'
 const UserDropdown = () => {
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
+  const [imageLoading, setImageLoading] = useState(true)
 
   // ** Hooks
   const auth = useAuth()
@@ -63,6 +65,9 @@ const UserDropdown = () => {
       <Avatar
         alt={auth?.user?.Name ?? 'John Doe'}
         onClick={handleDropdownOpen}
+        onLoad={src => {
+          setImageLoading(false)
+        }}
         sx={{ width: 40, height: 40, cursor: 'pointer', ml: 2 }}
         src={auth?.user?.ProfilePicture}
       >

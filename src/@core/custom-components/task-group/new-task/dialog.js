@@ -25,8 +25,11 @@ import { Controller, useForm } from 'react-hook-form'
 
 // ** API Imports
 import { addTaskGroup } from '@api/task-group'
+import { useProject } from 'src/context/project-context'
 
-const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
+const NewTaskDialog = ({ open, onCloseModal }) => {
+  const { project, refetchTaskGroup } = useProject()
+
   const theme = useTheme()
 
   const defaultValues = {
@@ -41,11 +44,11 @@ const NewTaskDialog = ({ open, onCloseModal, projectID, refetch }) => {
   } = useForm({ defaultValues })
 
   const onSubmit = async values => {
-    values.projectID = projectID
+    values.projectID = project?.ID
     const res = await addTaskGroup(values)
     if (res?.status) {
       reset()
-      refetch()
+      refetchTaskGroup()
       onCloseModal()
     }
   }

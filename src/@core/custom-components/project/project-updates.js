@@ -1,17 +1,18 @@
-import { fetchTaskUpdatesList, writeTaskUpdate } from '@api/task-updates'
+import { fetchTaskUpdatesList, giveReplyToUpdate, likeTaskUpdate, writeTaskUpdate } from '@api/task-updates'
 import CustomButton from '@components/button'
 import HtmlEditor from '@components/html-editor'
 import { Icon } from '@iconify/react'
-import { Avatar, Box, Typography, useTheme } from '@mui/material'
+import { Avatar, Box, Grid, IconButton, InputAdornment, TextField, Typography, useTheme } from '@mui/material'
 import { getInitials } from '@utils/get-initials'
 import moment from 'moment'
 import Image from 'next/image'
 import React, { useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useQuery } from 'react-query'
 import { images } from 'src/constants/images'
 
-const WriteUpdate = ({ taskID }) => {
+const WriteUpdate = ({ taskID, setWriteUpdate, refetch }) => {
   const [value, setValue] = useState('')
 
   const handleChange = async v => {
@@ -30,7 +31,8 @@ const WriteUpdate = ({ taskID }) => {
       }
 
       const updateRes = await writeTaskUpdate(body)
-
+      refetch()
+      setWriteUpdate(false)
       if (updateRes?.status) {
         toast.success('Task-Update Message was recorded successfully!')
       }
@@ -54,37 +56,135 @@ const WriteUpdate = ({ taskID }) => {
   )
 }
 
-const UpdateMessage = ({ message }) => {
+const UpdateMessage = ({ message, refetch }) => {
+  const [giveReply, setGiveReply] = useState(false)
+  const [showReplies, setShowReplies] = useState(false)
+
+  const { control, handleSubmit, reset } = useForm({ defaultValues: { message: '' } })
+
+  const handleLike = async () => {
+    try {
+      await likeTaskUpdate(message?.UpdateID)
+      refetch()
+    } catch {}
+  }
+
+  const onReplyClick = () => {
+    setGiveReply(!giveReply)
+    reset()
+  }
+
+  const onGiveReply = async formData => {
+    const finalBody = {
+      ...formData,
+      updateID: message?.UpdateID,
+      taskID: message?.TaskID
+    }
+    console.log('FINAL BODY', finalBody)
+    await giveReplyToUpdate(finalBody)
+    refetch()
+    reset()
+    setGiveReply(false)
+  }
+
   return (
-    <Box bgcolor={'background.default'} p={6} borderRadius={4} sx={{ borderBottomLeftRadius: 0 }}>
-      {/* Details of user and Notification */}
-      <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
-        <Box display={'flex'} alignItems={'center'} gap={3}>
-          <Avatar src={message?.createdBy?.ProfilePicture} sx={{ width: 50, height: 50 }}>
-            {getInitials(message?.createdBy?.Name)}
-          </Avatar>
-          <Typography fontWeight={600}>{message?.createdBy?.Name}</Typography>
+    <Grid item xs={12}>
+      <Box bgcolor={'background.default'} p={6} borderRadius={4} sx={{ borderBottomLeftRadius: 0 }}>
+        {/* Details of user and Notification */}
+        <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
+          <Box display={'flex'} alignItems={'center'} gap={3}>
+            <Avatar src={message?.createdBy?.ProfilePicture} sx={{ width: 45, height: 45 }}>
+              {getInitials(message?.createdBy?.Name)}
+            </Avatar>
+            <Typography fontWeight={600}>{message?.createdBy?.Name}</Typography>
+          </Box>
+          <Box>
+            <IconButton onClick={() => setShowReplies(!showReplies)}>
+              <Icon
+                icon={'mdi:chevron-right'}
+                rotate={showReplies ? 45 : 0}
+                style={{ transition: 'all linear 300ms' }}
+              />
+            </IconButton>
+          </Box>
         </Box>
-      </Box>
 
-      <Box mt={3} px={5}>
-        <p dangerouslySetInnerHTML={{ __html: message?.Message }} />
-      </Box>
+        <Box mt={3} px={5} ml={4}>
+          <p dangerouslySetInnerHTML={{ __html: message?.Message }} />
+        </Box>
 
-      <Box mt={6} display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
-        <Box display={'flex'} alignItems={'center'} gap={3}>
-          <CustomButton variant='outlined' circular size='small'>
-            Like
-          </CustomButton>
-          <CustomButton variant='outlined' circular size='small'>
-            Reply
-          </CustomButton>
+        {showReplies && message?.replies?.length ? (
+          <Grid container spacing={5} ml={4}>
+            {message?.replies?.map(reply => (
+              <Grid item xs={12} key={reply?.UpdateID}>
+                <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
+                  <Box display={'flex'} alignItems={'center'} gap={3}>
+                    <Avatar src={reply?.createdBy?.ProfilePicture} sx={{ width: 40, height: 40 }}>
+                      {getInitials(reply?.createdBy?.Name)}
+                    </Avatar>
+                    <Typography fontWeight={600}>{reply?.createdBy?.Name}</Typography>
+                  </Box>
+                </Box>
+
+                <Box mt={3} px={5} ml={6}>
+                  <p dangerouslySetInnerHTML={{ __html: reply?.Message }} />
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        ) : null}
+
+        <Box height={giveReply ? 30 : 0} sx={{ transition: 'all linear 300ms' }}>
+          {giveReply && (
+            <form onSubmit={handleSubmit(onGiveReply)}>
+              <Controller
+                control={control}
+                name='message'
+                rules={{ required: 'Please enter something....' }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    size='small'
+                    error={!!fieldState?.error}
+                    fullWidth
+                    placeholder='Write your reply here'
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton type='submit' color='primary' variant='contained'>
+                            <Icon icon={'mynaui:send'} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                )}
+              />
+            </form>
+          )}
         </Box>
-        <Box>
-          <Typography color={'primary'}>{moment(message?.CreatedAt).fromNow()}</Typography>
+
+        <Box mt={6} display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
+          <Box display={'flex'} alignItems={'center'} gap={3}>
+            <CustomButton
+              variant={message?.isLiked ? 'contained' : 'outlined'}
+              circular
+              size='small'
+              onClick={handleLike}
+              color={message?.isLiked ? 'error' : 'primary'}
+            >
+              {message?.isLiked ? 'Liked' : 'Like'}
+            </CustomButton>
+            <CustomButton variant='outlined' circular size='small' onClick={onReplyClick}>
+              {giveReply ? 'Hide' : 'Reply'}
+            </CustomButton>
+          </Box>
+          <Box>
+            <Typography color={'primary'}>{moment(message?.CreatedAt).fromNow()}</Typography>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </Grid>
   )
 }
 
@@ -141,7 +241,11 @@ const ProjectUpdates = ({ projectData, taskData }) => {
         )} */}
       </Box>
       {data?.length ? (
-        data?.map(message => <UpdateMessage key={message?.UpdateID} message={message} taskData={taskData} />)
+        <Grid container spacing={5}>
+          {data?.map(message => (
+            <UpdateMessage key={message?.UpdateID} message={message} taskData={taskData} refetch={refetch} />
+          ))}
+        </Grid>
       ) : (
         <Box
           width={'100%'}
