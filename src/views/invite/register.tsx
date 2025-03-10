@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import Image from 'next/image'
 
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 import {
   Box,
@@ -27,27 +27,28 @@ import toast from 'react-hot-toast'
 
 import { pattern } from '@/constants/patterns'
 
-import logoMain from '@public/images/logos/logo-pp.png'
 import logoMainDark from '@public/images/logos/logo-pp-dark.png'
+import logoMain from '@public/images/logos/logo-pp.png'
 
 import { routes } from '@/constants/routes'
 
 import IconifyIcon from '@components/icon'
 
-import { useAuth } from 'src/hooks/useAuth'
 import { authConfig } from '@/configs/authConfig'
-import { sleep } from '@/utils'
 import { registerWithInvitationApi } from '@/services/modules/invite'
+import { sleep } from '@/utils'
+import { useAuth } from 'src/hooks/useAuth'
 
 const defaultValues = {
   fullName: '',
   password: ''
 }
 
-const RegisterOnInvite = () => {
+const RegisterOnInvite = ({ invitationID }: { invitationID: string }) => {
   // ** Hooks
   const theme = useTheme()
   const router = useRouter()
+
   const auth = useAuth()
 
   // ** States
@@ -66,8 +67,6 @@ const RegisterOnInvite = () => {
   }
 
   const onSubmit = async (formData: any) => {
-    const invitationID = router.query.invitationID
-
     if (!invitationID) {
       toast.error('Invalid URL! Please Check your invitation URL Again', { position: 'top-center' })
 

@@ -8,20 +8,6 @@ import ResetPasswordPage from '@/views/auth/reset-password'
 const Page = async ({ searchParams }: { searchParams: Promise<{ k?: string }> }) => {
   const getParams = await searchParams
 
-  // ** show email de******@gmail.com
-  function obfuscateEmail(email: string) {
-    try {
-      const [localPart, domainPart] = email.split('@')
-
-      const obfuscatedLocalPart =
-        localPart.charAt(0).toUpperCase() + '*'.repeat(localPart.length - 1) + localPart.charAt(localPart.length - 0)
-
-      return `${obfuscatedLocalPart}@${domainPart}`?.toLocaleLowerCase()
-    } catch (error) {
-      return 'Invalid Email'
-    }
-  }
-
   if (!!getParams?.k) {
     return verify(
       getParams?.k as string,
@@ -34,9 +20,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ k?: string }> })
         } else {
           const decodedValue = decoded as { email: string }
 
-          const obfuscate = obfuscateEmail(decodedValue?.email)
-
-          return <ResetPasswordPage obfuscate={obfuscate} email={decodedValue?.email} />
+          return <ResetPasswordPage email={decodedValue?.email} />
         }
       }
     )
