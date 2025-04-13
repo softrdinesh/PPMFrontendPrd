@@ -10,6 +10,7 @@ import UserDropdown from '@components/layout/shared/UserDropdown'
 
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
+import ChangeProfileButton from '../shared/ChangeProfile'
 
 const NavbarContent = () => {
   return (
@@ -18,7 +19,8 @@ const NavbarContent = () => {
         <NavToggle />
         <ModeDropdown />
       </div>
-      <div className='flex items-center'>
+      <div className='flex items-center gap-3'>
+        <ChangeProfileButton />
         <UserDropdown />
       </div>
     </div>

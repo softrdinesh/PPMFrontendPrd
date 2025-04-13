@@ -14,6 +14,7 @@ import { fetchProjectPriorityList } from '@/services/modules/project-priority'
 import type { ProjectPriorityList } from '@/services/modules/project-priority/types'
 import { fetchProjectStatusList } from '@/services/modules/project-status'
 import type { ProjectStatusList } from '@/services/modules/project-status/types'
+import { fetchSprintWorkspaceList } from '@/services/modules/sprint-workspace'
 
 interface WorkspaceContextType {
   workspace: WorkspaceListItem[]
@@ -49,8 +50,8 @@ const WorkspaceProvider: FC<WorkspaceProviderProps> = ({ children }) => {
 
   // ** API calls
   const { data, refetch } = useQuery({
-    queryKey: ['workspaces', auth?.user?.userData?.UserID],
-    queryFn: () => fetchWorkspaceList(),
+    queryKey: ['workspaces', auth?.user?.userData?.UserID, auth?.profile],
+    queryFn: () => (auth?.profile === 'projects' ? fetchWorkspaceList() : fetchSprintWorkspaceList()),
     enabled: !!auth?.user
   })
 
@@ -61,7 +62,7 @@ const WorkspaceProvider: FC<WorkspaceProviderProps> = ({ children }) => {
     queryKey: ['projects', auth?.user?.userData?.UserID],
     queryFn: () =>
       activeWorkspace?.WorkspaceID ? fetchProjectList(activeWorkspace?.WorkspaceID?.toString() || '') : [],
-    enabled: !!activeWorkspace?.WorkspaceID
+    enabled: !!activeWorkspace?.WorkspaceID && auth?.profile === 'projects'
   })
 
   const [{ data: projectPriorityList }, { data: projectStatusList }] = useQueries({
@@ -99,7 +100,6 @@ const WorkspaceProvider: FC<WorkspaceProviderProps> = ({ children }) => {
     projects: projects ?? [],
     priorityList: projectPriorityList ?? [],
     statusList: projectStatusList ?? [],
-
     refetchProjects: refetchProjects,
     selected: activeWorkspace ?? null,
     setSelected: setActiveWorkspace,

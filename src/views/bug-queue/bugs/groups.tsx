@@ -2,13 +2,7 @@
 
 import { useState } from 'react'
 
-import dynamic from 'next/dynamic'
-
 import { Card, CardContent, Collapse, IconButton, Typography } from '@mui/material'
-
-const BugList = dynamic(() => import('./list'), {
-  ssr: false
-})
 
 const BugQueueGroup = () => {
   const [collapse, setCollapse] = useState(true)
@@ -28,9 +22,7 @@ const BugQueueGroup = () => {
       </div>
 
       <Collapse in={collapse}>
-        <CardContent>
-          <BugList />
-        </CardContent>
+        <CardContent>{/* <BugList /> */}</CardContent>
       </Collapse>
     </Card>
   )

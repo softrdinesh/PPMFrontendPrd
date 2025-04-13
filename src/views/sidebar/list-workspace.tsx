@@ -23,6 +23,8 @@ import { deleteWorkspace } from '@/services/modules/workspace'
 import type { WorkspaceListItem } from '@/services/modules/workspace/type'
 import { getInitials } from '@/utils/getInitials'
 import DeleteWorkspaceDialog from './delete-workspace'
+import { useAuth } from '@/hooks/useAuth'
+import { deleteSprintWorkspace } from '@/services/modules/sprint-workspace'
 
 const MenuNavLink = styled(ListItemButton)(() => ({
   width: '100%',
@@ -48,6 +50,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [open, setOpen] = useState(false)
 
+  const { profile } = useAuth()
   const { selected, setSelected, refetchWorkspaces } = useWorkspace()
 
   const { isCollapsed, isHovered, collapsedWidth } = useVerticalNav()
@@ -76,11 +79,20 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
 
   const handleDelete = async () => {
     try {
-      const response = await deleteWorkspace({
-        OrganizationID: workspace.OrganizationID,
-        WorkspaceID: workspace.WorkspaceID?.toString(),
-        WorkspaceName: workspace.WorkspaceName
-      })
+      console.log('profile :', profile)
+
+      const response =
+        profile === 'projects'
+          ? await deleteWorkspace({
+              OrganizationID: workspace.OrganizationID,
+              WorkspaceID: workspace.WorkspaceID?.toString(),
+              WorkspaceName: workspace.WorkspaceName
+            })
+          : await deleteSprintWorkspace({
+              OrganizationID: workspace.OrganizationID,
+              WorkspaceID: workspace.WorkspaceID?.toString(),
+              WorkspaceName: workspace.WorkspaceName
+            })
 
       if (response?.status) {
         refetchWorkspaces()

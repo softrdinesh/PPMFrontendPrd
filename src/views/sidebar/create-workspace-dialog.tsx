@@ -1,5 +1,4 @@
 // ** React Imports
-import { useState } from 'react'
 
 // ** MUI Components
 import { CircularProgress, Dialog, Divider, FormControl, IconButton, Switch, Typography, Zoom } from '@mui/material'
@@ -13,6 +12,8 @@ import { Icon } from '@iconify/react'
 import { Controller, useForm } from 'react-hook-form'
 
 import CustomButton from '@/components/button'
+import { useAuth } from '@/hooks/useAuth'
+import { addSprintWorkspace } from '@/services/modules/sprint-workspace'
 import { addWorkspace } from '@/services/modules/workspace'
 
 interface FormType {
@@ -32,23 +33,23 @@ const defaultValues: FormType = {
 }
 
 const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: CreateWorkspaceDialogProps) => {
-  const [isLoading, setIsLoading] = useState(false)
-
   // ** Hooks
-  // const auth = useAuth()
+  const { profile } = useAuth()
 
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset
   } = useForm<FormType>({ defaultValues })
 
   const onSubmit = async (values: FormType) => {
-    setIsLoading(true)
-    await addWorkspace(values)
+    if (profile === 'projects') {
+      await addWorkspace(values)
+    } else {
+      await addSprintWorkspace(values)
+    }
 
-    setIsLoading(false)
     reset()
     onCloseModal()
     refetchWorkspaces()
@@ -122,7 +123,7 @@ const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: Create
                 Cancel
               </CustomButton>
               <CustomButton circular variant='contained' size='large' type='submit'>
-                {isLoading ? <CircularProgress size={22} color='secondary' /> : 'Create Workspace'}
+                {isSubmitting ? <CircularProgress size={22} color='secondary' /> : 'Create Workspace'}
               </CustomButton>
             </div>
           </form>

@@ -9,6 +9,8 @@ import axios from 'axios'
 
 import toast from 'react-hot-toast'
 
+import { Button, Dialog, DialogContent, Radio, Typography } from '@mui/material'
+
 import type { ApiResponse } from '@/types/api-response'
 
 // ** Config
@@ -24,15 +26,19 @@ export interface LoginParams {
   longitude: number
 }
 
+export type Profiles = 'projects' | 'sprints'
+
 interface AuthContextProps {
   user: User | null
   loading: boolean
-
+  profile: Profiles
   // eslint-disable-next-line no-unused-vars
   setUser: (user: User | null) => void
   verifyToken: () => void
   // eslint-disable-next-line no-unused-vars
   setLoading: (loading: boolean) => void
+  changeProfiles: () => void
+  handleOpenSelection: () => void
   // eslint-disable-next-line no-unused-vars
   login: (params: LoginParams, errorCallback?: (err: any) => ApiResponse) => Promise<void>
   register: (params: any, errorCallback?: (err: any) => ApiResponse) => Promise<void>
@@ -43,9 +49,11 @@ interface AuthContextProps {
 const defaultProvider: AuthContextProps = {
   user: null,
   loading: true,
+  profile: 'projects',
   setUser: () => null,
   setLoading: () => null,
-
+  changeProfiles: () => null,
+  handleOpenSelection: () => null,
   verifyToken: () => Promise.resolve(),
   login: () => Promise.resolve(),
   register: () => Promise.resolve(),
@@ -61,8 +69,10 @@ interface AuthProviderProps {
 const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   // ** States
   const [user, setUser] = useState<User | null>(defaultProvider.user)
-
+  const [profile, setProfile] = useState<Profiles>(defaultProvider?.profile)
   const [loading, setLoading] = useState<boolean>(defaultProvider.loading)
+
+  const [openProfileSelect, setOpenProfileSelect] = useState(false)
 
   // ** Hooks
   const router = useRouter()
@@ -83,6 +93,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   const checkVerifyToken = useCallback(async () => {
     setLoading(true)
+    const storedProfile = window.localStorage.getItem('profile') as Profiles
 
     try {
       const hasCookies = await axios.get('/api/check-cookies')
@@ -93,6 +104,12 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
           if (response?.data?.status) {
             setUser(response?.data?.data)
+
+            if (!storedProfile) {
+              setOpenProfileSelect(true)
+            } else {
+              setProfile(storedProfile)
+            }
           }
         } catch (error) {
           handleLogout()
@@ -122,6 +139,14 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       setUser({ ...responseData })
 
       response?.status && router.replace(routes.dashboard)
+
+      const storedProfile = window.localStorage.getItem('profile') as Profiles
+
+      if (!storedProfile) {
+        setOpenProfileSelect(true)
+      } else {
+        setProfile(storedProfile)
+      }
     } catch (err) {
       setLoading(false)
 
@@ -144,18 +169,101 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  const handleProfileChange = (val: Profiles) => {
+    window.localStorage.setItem('profile', val)
+    setProfile(val)
+  }
+
+  // ** Change Profiles
+  const changeProfiles = (val?: Profiles) => {
+    const currentProfile = val || window.localStorage.getItem('profile') || 'projects'
+
+    console.log('currentProfile :', currentProfile)
+
+    if (currentProfile === 'projects') {
+      handleProfileChange('sprints')
+    } else {
+      handleProfileChange('projects')
+    }
+
+    window.location.reload()
+  }
+
+  const handleOpenSelection = () => {
+    setOpenProfileSelect(true)
+  }
+
   const values: AuthContextProps = {
     user,
     loading,
     setUser,
     setLoading,
+    handleOpenSelection,
     login: handleLogin,
     register: handleRegister,
     verifyToken: checkVerifyToken,
+    profile,
+    changeProfiles,
     logout: handleLogout
   }
 
-  return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={values}>
+      {children}
+
+      <Dialog open={openProfileSelect} fullScreen>
+        <DialogContent>
+          <div className='flex items-center justify-center w-full h-full'>
+            <div className='flex flex-col w-full max-w-lg p-5 bg-backgroundDefault space-y-3 shadow-lg rounded-lg'>
+              <Typography className=' font-semibold'>Please select a profile :</Typography>
+
+              <div
+                onClick={() => setProfile('projects')}
+                className='p-2 border rounded-lg border-textPrimary flex items-center justify-between gap-5'
+              >
+                <Typography>Project Management</Typography>
+
+                <Radio
+                  value='projects'
+                  onChange={() => setProfile('projects')}
+                  name='radio-button-demo'
+                  checked={profile === 'projects'}
+                  inputProps={{ 'aria-label': 'Projects' }}
+                />
+              </div>
+              <div
+                onClick={() => setProfile('sprints')}
+                className='p-2 border rounded-lg border-textPrimary flex items-center justify-between gap-5'
+              >
+                <Typography>Sprint Management</Typography>
+
+                <Radio
+                  value='sprints'
+                  onChange={() => setProfile('sprints')}
+                  name='radio-button-demo'
+                  checked={profile === 'sprints'}
+                  inputProps={{ 'aria-label': 'Projects' }}
+                />
+              </div>
+
+              <div className='w-full flex justify-end mt-4'>
+                <Button
+                  variant='contained'
+                  className='capitalize rounded-xl'
+                  onClick={() => {
+                    handleProfileChange(profile)
+                    window.location.reload()
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </AuthContext.Provider>
+  )
 }
 
 export { AuthContext, AuthProvider }

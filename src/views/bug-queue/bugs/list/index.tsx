@@ -13,6 +13,8 @@ import { fetchBugQueueList } from '@/services/modules/bug-queue'
 const BugList = () => {
   const { data } = useQuery({ queryKey: ['bug-list'], queryFn: () => fetchBugQueueList(), retry: false })
 
+  console.log('data :', data)
+
   const columns: ColumnDef<any>[] = useMemo(
     () => [
       {

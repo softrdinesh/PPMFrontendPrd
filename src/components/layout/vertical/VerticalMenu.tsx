@@ -29,6 +29,9 @@ import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import CreateWorkspace from '@/views/sidebar/create-workspace'
 import ListWorkspaces from '@/views/sidebar/list-workspace'
 import ListProjects from '@/views/sidebar/list-projects'
+import { useAuth } from '@/hooks/useAuth'
+import SprintNavItemsList from '@/views/sidebar/sprint-nav-items'
+import { useWorkspace } from '@/context/workspace-context'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -49,6 +52,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
+  const { profile } = useAuth()
+  const { selected } = useWorkspace()
 
   const isDark = useMemo(() => theme.palette.mode === 'dark', [theme.palette.mode])
 
@@ -92,16 +97,18 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           Recent Activity
         </MenuItem>
 
-        <MenuItem href='/bug-queue' icon={<Icon icon={'ri-information-line'} className='h-6 w-6 text-white' />}>
-          Bug Queue
-        </MenuItem>
+        {profile === 'sprints' && (
+          <MenuItem href='/bug-queue' icon={<Icon icon={'ri-information-line'} className='h-6 w-6 text-white' />}>
+            Bug Queue
+          </MenuItem>
+        )}
 
         <Divider className='my-4 bg-white dark:bg-actionHover' />
         <CreateWorkspace icon={<Icon icon={'f7:plus-app'} className='h-6 w-6 text-white' />} />
 
         <ListWorkspaces />
 
-        <ListProjects />
+        {profile === 'projects' ? <ListProjects /> : selected && <SprintNavItemsList />}
       </Menu>
     </ScrollWrapper>
   )
