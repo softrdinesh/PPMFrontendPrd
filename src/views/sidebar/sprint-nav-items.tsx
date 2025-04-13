@@ -29,7 +29,7 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
   transition: 'opacity .25s ease-in-out'
 }))
 
-const SprintNavItemsList = () => {
+const NavItem = ({ title, path }: { title: string; path: string }) => {
   const pathname = usePathname()
   const router = useRouter()
   const { selected } = useWorkspace()
@@ -40,7 +40,7 @@ const SprintNavItemsList = () => {
 
   // ** Functions
   const isNavLinkActive = () => {
-    if (paths?.[1] === 'project') {
+    if (paths?.[1] === 'workspace' && paths?.[2] === selected?.WorkspaceID?.toString() && paths?.[3] === path) {
       return true
     }
 
@@ -49,7 +49,7 @@ const SprintNavItemsList = () => {
 
   const handleOpenProject = () => {
     if (selected) {
-      router.push(routes.workspaceSprints(selected?.WorkspaceID?.toString()))
+      router.push(routes.workspaceItem(selected?.WorkspaceID?.toString(), path))
     }
   }
 
@@ -98,11 +98,20 @@ const SprintNavItemsList = () => {
               })}
             className={`whitespace-nowrap text-ellipsis overflow-hidden !font-normal ${isNavLinkActive() ? 'text-black' : 'text-white'}`}
           >
-            {'Sprints'}
+            {title}
           </Typography>
         </MenuItemTextMetaWrapper>
       </MenuNavLink>
     </ListItem>
+  )
+}
+
+const SprintNavItemsList = () => {
+  return (
+    <div className='space-y-1'>
+      <NavItem title={'Sprints'} path='sprints' />
+      <NavItem title={'Bug Queue'} path='bug-queue' />
+    </div>
   )
 }
 

@@ -2,10 +2,20 @@
 
 import { useState } from 'react'
 
+import dynamic from 'next/dynamic'
+
 import { Card, CardContent, Collapse, IconButton, Typography } from '@mui/material'
 
+import { useWorkspace } from '@/context/workspace-context'
+
+const BugList = dynamic(() => import('./list'), {
+  ssr: false
+})
+
 const BugQueueGroup = () => {
+  const { selected } = useWorkspace()
   const [collapse, setCollapse] = useState(true)
+  const [selectedRows, setSelectedRows] = useState([])
 
   const toggleCollapse = () => setCollapse(!collapse)
 
@@ -22,7 +32,15 @@ const BugQueueGroup = () => {
       </div>
 
       <Collapse in={collapse}>
-        <CardContent>{/* <BugList /> */}</CardContent>
+        <CardContent>
+          {selected?.WorkspaceID && (
+            <BugList
+              selectedRows={selectedRows}
+              setSelectedRows={setSelectedRows}
+              workspaceID={selected?.WorkspaceID}
+            />
+          )}
+        </CardContent>
       </Collapse>
     </Card>
   )

@@ -25,13 +25,13 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 
-import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
-import CreateWorkspace from '@/views/sidebar/create-workspace'
-import ListWorkspaces from '@/views/sidebar/list-workspace'
-import ListProjects from '@/views/sidebar/list-projects'
-import { useAuth } from '@/hooks/useAuth'
-import SprintNavItemsList from '@/views/sidebar/sprint-nav-items'
 import { useWorkspace } from '@/context/workspace-context'
+import { useAuth } from '@/hooks/useAuth'
+import CreateWorkspace from '@/views/sidebar/create-workspace'
+import ListProjects from '@/views/sidebar/list-projects'
+import ListWorkspaces from '@/views/sidebar/list-workspace'
+import SprintNavItemsList from '@/views/sidebar/sprint-nav-items'
+import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -96,12 +96,6 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         >
           Recent Activity
         </MenuItem>
-
-        {profile === 'sprints' && (
-          <MenuItem href='/bug-queue' icon={<Icon icon={'ri-information-line'} className='h-6 w-6 text-white' />}>
-            Bug Queue
-          </MenuItem>
-        )}
 
         <Divider className='my-4 bg-white dark:bg-actionHover' />
         <CreateWorkspace icon={<Icon icon={'f7:plus-app'} className='h-6 w-6 text-white' />} />

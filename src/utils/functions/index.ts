@@ -3,11 +3,11 @@ import { isNumber } from 'lodash'
 import { colorNamesToHex } from 'src/constants/colors'
 
 export function getHexColor(color: string) {
-  if (color.startsWith('#')) {
+  if (color?.startsWith('#')) {
     return color
   }
 
-  return colorNamesToHex[color.toLowerCase()] || '#000000' // Default to black if color not found
+  return colorNamesToHex[color?.toLowerCase()] || '#000000' // Default to black if color not found
 }
 
 // Utility function to calculate luminance

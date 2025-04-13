@@ -186,7 +186,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       handleProfileChange('projects')
     }
 
-    window.location.reload()
+    window.location.replace(routes.dashboard)
   }
 
   const handleOpenSelection = () => {

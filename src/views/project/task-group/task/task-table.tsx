@@ -66,6 +66,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
   setSelectedRows
 }) => {
   // ** Project Context
+  console.log('taskList :', taskList)
   const { project, columnVisibility, role, refetchProject, users } = useProject()
 
   // ** Hooks

@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import Grid from '@mui/material/Grid2'
 
 import { Divider, TextField, Typography } from '@mui/material'
@@ -8,12 +10,23 @@ import { Icon } from '@iconify/react'
 
 import CustomButton from '@/components/button'
 import { BugQueueProvider } from '@/context/bug-queue-context'
+import { useWorkspace } from '@/context/workspace-context'
+import BugQueueGroup from './bugs/groups'
+import NewBugQueue from './main-screen/add-button'
 import ProjectFilterButton from './main-screen/filters'
 import ProjectInvitePeople from './main-screen/invite-people'
-import NewBugQueue from './main-screen/add-button'
-import BugQueueGroup from './bugs/groups'
 
-const BugQueueComponent = () => {
+const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
+  const { selected, setSelected, workspace } = useWorkspace()
+
+  useEffect(() => {
+    if (workspaceID && !selected) {
+      const activeData = workspace?.find(value => value?.WorkspaceID?.toString() === workspaceID)
+
+      if (activeData) setSelected(activeData)
+    }
+  }, [selected, setSelected, workspace, workspaceID])
+
   return (
     <BugQueueProvider>
       <Grid container spacing={6}>

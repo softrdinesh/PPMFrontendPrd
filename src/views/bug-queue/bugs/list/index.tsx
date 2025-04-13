@@ -1,52 +1,160 @@
 'use client'
 
-import { Fragment, memo, useMemo } from 'react'
+import { memo, useMemo } from 'react'
 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from '@mui/material'
 
 import { useQuery } from '@tanstack/react-query'
+
 import type { ColumnDef } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table'
 
-import { fetchBugQueueList } from '@/services/modules/bug-queue'
+import IconifyIcon from '@/components/icon'
+import { createBugAPI, fetchBugQueueList } from '@/services/modules/bug-queue'
+import type { BugQueueListAPI } from '@/services/modules/bug-queue/types'
+import BugPriority from './columns/priority'
 
-const BugList = () => {
-  const { data } = useQuery({ queryKey: ['bug-list'], queryFn: () => fetchBugQueueList(), retry: false })
+interface BugListProps {
+  selectedRows: any
+  setSelectedRows: (a: any) => void
+  workspaceID: number
+}
 
-  console.log('data :', data)
+const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) => {
+  const { data = [], refetch } = useQuery({
+    queryKey: ['bug-list', workspaceID],
+    queryFn: () => fetchBugQueueList(workspaceID),
+    enabled: !!workspaceID
+  })
 
-  const columns: ColumnDef<any>[] = useMemo(
+  const columns: ColumnDef<BugQueueListAPI>[] = useMemo(
     () => [
       {
-        accessorKey: 'Taskname',
-        header: () => (
-          <Typography variant='body2' fontWeight={800}>
-            Task
-          </Typography>
-        ),
-        cell: ({ row: { original } }) => {
-          return <Typography width={'100%'}>{original?.Taskname ?? '—'}</Typography>
+        id: 'select',
+        accessorKey: 'select',
+        size: 20,
+        maxSize: 20,
+        header: ({ table }) => {
+          return (
+            <div className='flex px-1 w-11'>
+              <Checkbox
+                checked={!!table?.getIsAllRowsSelected?.()} // ✅ Avoids undefined error
+                indeterminate={!!table?.getIsSomeRowsSelected?.()}
+                onChange={table?.getToggleAllRowsSelectedHandler?.()}
+              />
+            </div>
+          )
+        },
+        cell: ({ row }) => (
+          <div className='flex px-1 !w-11'>
+            {row.getCanExpand() ? (
+              <IconButton
+                size='small'
+                {...{
+                  onClick: row.getToggleExpandedHandler(),
+                  style: { cursor: 'pointer' }
+                }}
+              >
+                {row.getIsExpanded() ? (
+                  <IconifyIcon icon={'line-md:chevron-down'} />
+                ) : (
+                  <IconifyIcon icon={'line-md:chevron-right'} />
+                )}
+              </IconButton>
+            ) : null}
+            <Checkbox
+              {...{
+                checked: row.getIsSelected(),
+                disabled: !row.getCanSelect(),
+                indeterminate: row.getIsSomeSelected(),
+                onChange: row.getToggleSelectedHandler()
+              }}
+            />
+          </div>
+        )
+      },
+      {
+        id: 'BugID',
+        accessorKey: 'BugID',
+        header: 'Bug ID',
+        cell: ({ row }) => {
+          return <>{row?.original?.BugID}</>
+        }
+      },
+      {
+        id: 'Reporter',
+        accessorKey: 'Reporter',
+        header: 'Reporter',
+        cell: ({ row }) => {
+          return (
+            <Avatar
+              alt={row?.original?.createdBy?.Name}
+              src={row?.original?.createdBy?.ProfilePicture}
+              sx={{ width: 32, height: 32 }}
+            />
+          )
+        }
+      },
+      {
+        id: 'BugName',
+        accessorKey: 'BugName',
+        header: 'Bug Details',
+        cell: ({ row }) => {
+          return <>{row?.original?.BugName}</>
+        }
+      },
+      {
+        id: 'time',
+        accessorKey: 'time',
+        header: 'Time until resolution',
+        cell: ({}) => {
+          return <>{'20 hours'}</>
+        }
+      },
+      {
+        accessorFn: row => row.PriorityID,
+        id: 'Priority',
+        size: 200,
+        maxSize: 200,
+        headerName: 'Priority',
+        cell: ({ row: { original: row } }) => {
+          return <BugPriority row={row} refetch={refetch} canEdit={true} workspaceID={workspaceID} />
         }
       }
     ],
-    []
+    [refetch, workspaceID]
   )
 
   const table = useReactTable({
-    data: [
-      {
-        Taskname: 'Fix login bug',
-        Owner: { Name: 'Alice', Email: 'email', ProfilePicture: 'profile.jpg', UserID: 1 }
-      },
-      {
-        Taskname: '2 Fix login bug',
-        Owner: { Name: 'Alice', Email: 'email', ProfilePicture: 'profile.jpg', UserID: 1 }
-      }
-    ] as any[],
+    data: (data ?? []) as BugQueueListAPI[],
     columns,
+    state: {
+      rowSelection: selectedRows
+    },
+    enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setSelectedRows,
     getPaginationRowModel: getPaginationRowModel()
   })
+
+  const handleBugCreate = async () => {
+    if (workspaceID) {
+      await createBugAPI({ workspaceID })
+      refetch()
+    }
+  }
 
   return (
     <div>
@@ -70,13 +178,11 @@ const BugList = () => {
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
-                <Fragment key={row.id}>
-                  <TableRow>
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    ))}
-                  </TableRow>
-                </Fragment>
+                <TableRow key={row?.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
               ))
             ) : (
               <TableRow>
@@ -90,6 +196,9 @@ const BugList = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Button startIcon={<i className='ri-add-line' />} onClick={handleBugCreate}>
+        Add Bug
+      </Button>
     </div>
   )
 }
