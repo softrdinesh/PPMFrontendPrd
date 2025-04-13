@@ -92,6 +92,10 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           Recent Activity
         </MenuItem>
 
+        <MenuItem href='/bug-queue' icon={<Icon icon={'ri-information-line'} className='h-6 w-6 text-white' />}>
+          Bug Queue
+        </MenuItem>
+
         <Divider className='my-4 bg-white dark:bg-actionHover' />
         <CreateWorkspace icon={<Icon icon={'f7:plus-app'} className='h-6 w-6 text-white' />} />
 
