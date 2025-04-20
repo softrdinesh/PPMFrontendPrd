@@ -154,18 +154,24 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
           sx={{
             ...(isCollapsed && !isHovered ? { opacity: 0 } : { opacity: 1 })
           }}
+          className='truncate'
         >
           <Typography
             {...(!isCollapsed &&
               !isHovered && {
                 noWrap: true
               })}
-            className={`whitespace-nowrap text-ellipsis overflow-hidden !font-normal ${isNavLinkActive() ? 'text-black' : 'text-white'}`}
+            className={`truncate !font-normal ${isNavLinkActive() ? 'text-black' : 'text-white'}`}
           >
             {workspace?.WorkspaceName}
           </Typography>
           <IconButton size='small' onClick={handleOpenMenu}>
-            <Icon icon={'solar:menu-dots-bold'} fontSize={'0.2rem'} color={!isNavLinkActive() ? 'white' : 'black'} />
+            <Icon
+              icon={'solar:menu-dots-bold'}
+              className='shrink-0'
+              fontSize={'0.2rem'}
+              color={!isNavLinkActive() ? 'white' : 'black'}
+            />
           </IconButton>
           <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleOpenClose} TransitionComponent={Zoom}>
             <MenuItem onClick={handleDeleteOpen}>

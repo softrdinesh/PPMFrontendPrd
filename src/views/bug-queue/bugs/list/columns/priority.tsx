@@ -11,9 +11,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getContrastingTextColor, getHexColor } from 'src/utils/functions'
 
 import { pattern } from '@/constants/patterns'
-import { fetchBugPriorityList, updateBug } from '@/services/modules/bug-queue'
+import { addBugPriority, fetchBugPriorityList, updateBug, updateBugPriority } from '@/services/modules/bug-queue'
 import type { BugPriorityList, BugQueueListAPI } from '@/services/modules/bug-queue/types'
-import { addProjectPriority, updateProjectPriority } from '@/services/modules/project-priority'
 import CustomButton from '@components/button'
 import { useWorkspace } from 'src/context/workspace-context'
 
@@ -101,8 +100,6 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
     queryFn: () => fetchBugPriorityList({ workspaceID })
   })
 
-  console.log('dynamicPriority :', dynamicPriority)
-
   const {
     handleSubmit,
     control,
@@ -147,7 +144,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
     }
 
     if (isEdit) {
-      const response = await updateProjectPriority({ body, id: isEdit })
+      const response = await updateBugPriority({ body, id: isEdit })
 
       if (response?.status) {
         refetchPriorityList()
@@ -156,7 +153,9 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
         handleFormClose()
       }
     } else {
-      const response = await addProjectPriority(body)
+      console.log('body :', body)
+
+      const response = await addBugPriority({ ...body, WorkspaceID: workspaceID })
 
       if (response?.status) {
         refetchPriorityList()

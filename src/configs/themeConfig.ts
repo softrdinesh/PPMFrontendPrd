@@ -53,7 +53,7 @@ const themeConfig: Config = {
   templateName: 'PPM',
   homePageUrl: '/dashboard',
   settingsCookieName: 'ppm-project-management-dashboard-settings',
-  mode: 'light', // 'system', 'light', 'dark'
+  mode: 'system', // 'system', 'light', 'dark'
   skin: 'default', // 'default', 'bordered'
   semiDark: false, // true, false
   layout: 'vertical', // 'vertical', 'collapsed', 'horizontal'

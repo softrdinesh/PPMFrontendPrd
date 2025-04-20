@@ -5,6 +5,8 @@ type Endpoints = {
   add: ApiEndpoint
   update: ApiEndpoint
   priorityList: ApiEndpoint
+  addPriority: ApiEndpoint
+  updatePriority: ApiEndpoint
 }
 
 export const bugQueue: Endpoints = {
@@ -23,5 +25,13 @@ export const bugQueue: Endpoints = {
   priorityList: {
     method: 'GET',
     uri: '/api/bug-queue-priority'
+  },
+  addPriority: {
+    method: 'POST',
+    uri: '/api/bug-queue-priority'
+  },
+  updatePriority: {
+    method: 'PUT',
+    uri: '/api/bug-queue-priority/:id'
   }
 }

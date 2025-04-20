@@ -48,3 +48,15 @@ export const fetchBugPriorityList = async ({ workspaceID }: { workspaceID?: numb
       return []
     })
 }
+
+export const addBugPriority = async (body: any) => {
+  return callApi({ uriEndPoint: bugQueue.addPriority, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const updateBugPriority = async ({ body, id }: { body: any; id: string }) => {
+  return callApi({ uriEndPoint: bugQueue.updatePriority, pathParams: { id }, body })
+    .then(res => res)
+    .catch(err => err)
+}

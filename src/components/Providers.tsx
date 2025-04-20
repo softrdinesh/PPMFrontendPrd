@@ -27,14 +27,14 @@ const Providers = async (props: Props) => {
 
   return (
     <VerticalNavProvider>
-      <ClientProviders>
-        <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
-          <ThemeProvider direction={direction} systemMode={systemMode}>
+      <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+        <ThemeProvider direction={direction} systemMode={systemMode}>
+          <ClientProviders>
             {children}
             <Toaster />
-          </ThemeProvider>
-        </SettingsProvider>
-      </ClientProviders>
+          </ClientProviders>
+        </ThemeProvider>
+      </SettingsProvider>
     </VerticalNavProvider>
   )
 }

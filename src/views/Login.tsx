@@ -169,7 +169,7 @@ const LoginV2 = () => {
                         src={theme.palette.mode === 'dark' ? logoMainDark : logoMain}
                         alt='PPM-Logo'
                         width={550}
-                        height={140}
+                        height={100}
                         priority
                         style={{ width: '100%', maxWidth: '550px', height: 'auto' }}
                       />
