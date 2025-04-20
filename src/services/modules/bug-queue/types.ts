@@ -4,6 +4,7 @@ export interface BugQueueListAPI {
   BugDescription: any
   Reporter: any
   IsDelete: number
+  TimerStart: boolean
   StatusID: any
   PriorityID: number
   Priority: Priority
@@ -11,6 +12,7 @@ export interface BugQueueListAPI {
   CreateBy: number
   DeletedDate: any
   Deletedby: any
+  TimeResolution: string | null
   SprintTaskID: any
   SprintID: any
   WorkSpaceID: any

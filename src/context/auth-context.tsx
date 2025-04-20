@@ -178,8 +178,6 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const changeProfiles = (val?: Profiles) => {
     const currentProfile = val || window.localStorage.getItem('profile') || 'projects'
 
-    console.log('currentProfile :', currentProfile)
-
     if (currentProfile === 'projects') {
       handleProfileChange('sprints')
     } else {

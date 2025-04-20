@@ -2,7 +2,7 @@ import { callApi } from 'src/utils/api-utils'
 import { bugQueue } from './endpoint'
 import type { BugPriorityList, BugQueueListAPI } from './types'
 
-export const fetchBugQueueList = async (workspaceID: number): Promise<BugQueueListAPI[]> => {
+export const fetchBugQueueList = async (workspaceID: string): Promise<BugQueueListAPI[]> => {
   return callApi({ uriEndPoint: bugQueue.list, query: { workspaceID } })
     .then(res => {
       return res?.data
@@ -57,6 +57,12 @@ export const addBugPriority = async (body: any) => {
 
 export const updateBugPriority = async ({ body, id }: { body: any; id: string }) => {
   return callApi({ uriEndPoint: bugQueue.updatePriority, pathParams: { id }, body })
+    .then(res => res)
+    .catch(err => err)
+}
+
+export const deleteBugApi = async (body: any) => {
+  return callApi({ uriEndPoint: bugQueue.deleteBug, body: { bugs: body } })
     .then(res => res)
     .catch(err => err)
 }

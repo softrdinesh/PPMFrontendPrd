@@ -111,8 +111,7 @@ const WorkspaceProvider: FC<WorkspaceProviderProps> = ({ children }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeWorkspace, auth?.profile, data, refetchProjects])
-  console.log('projectPriorityList :', projectPriorityList)
+  }, [auth?.profile, data, refetchProjects])
 
   const values = {
     workspace: data || defaultProvider?.workspace,

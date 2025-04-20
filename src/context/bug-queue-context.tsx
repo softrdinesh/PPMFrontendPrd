@@ -2,19 +2,40 @@
 import type { ReactNode } from 'react'
 import { createContext, useContext } from 'react'
 
-interface BugQueueContextType {}
+import { useQuery } from '@tanstack/react-query'
+
+import { fetchBugQueueList } from '@/services/modules/bug-queue'
+import type { BugQueueListAPI } from '@/services/modules/bug-queue/types'
+
+interface BugQueueContextType {
+  data: BugQueueListAPI[]
+  refetch: () => void
+}
 
 // ** Defaults
-const defaultProvider: BugQueueContextType = {}
+const defaultProvider: BugQueueContextType = {
+  data: [],
+  refetch: () => {}
+}
 
 const BugQueueContext = createContext<BugQueueContextType>(defaultProvider)
 
 interface BugQueueProviderProps {
   children: ReactNode
+  workspaceID: string
 }
 
-const BugQueueProvider = ({ children }: BugQueueProviderProps) => {
-  const values: BugQueueContextType = {}
+const BugQueueProvider = ({ children, workspaceID }: BugQueueProviderProps) => {
+  const { data = [], refetch } = useQuery({
+    queryKey: ['bug-list', workspaceID],
+    queryFn: () => fetchBugQueueList(workspaceID),
+    enabled: !!workspaceID
+  })
+
+  const values: BugQueueContextType = {
+    data,
+    refetch
+  }
 
   return <BugQueueContext.Provider value={values}>{children}</BugQueueContext.Provider>
 }

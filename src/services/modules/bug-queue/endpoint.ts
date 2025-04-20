@@ -7,6 +7,7 @@ type Endpoints = {
   priorityList: ApiEndpoint
   addPriority: ApiEndpoint
   updatePriority: ApiEndpoint
+  deleteBug: ApiEndpoint
 }
 
 export const bugQueue: Endpoints = {
@@ -33,5 +34,9 @@ export const bugQueue: Endpoints = {
   updatePriority: {
     method: 'PUT',
     uri: '/api/bug-queue-priority/:id'
+  },
+  deleteBug: {
+    method: 'DELETE',
+    uri: '/api/bug-delete'
   }
 }

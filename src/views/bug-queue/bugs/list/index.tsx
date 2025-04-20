@@ -16,15 +16,15 @@ import {
   Typography
 } from '@mui/material'
 
-import { useQuery } from '@tanstack/react-query'
-
 import type { ColumnDef } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table'
 
 import IconifyIcon from '@/components/icon'
-import { createBugAPI, fetchBugQueueList } from '@/services/modules/bug-queue'
+import { useBugQueue } from '@/context/bug-queue-context'
+import { createBugAPI } from '@/services/modules/bug-queue'
 import type { BugQueueListAPI } from '@/services/modules/bug-queue/types'
 import BugPriority from './columns/priority'
+import TimeResolutionColumn from './columns/time-resolution'
 
 interface BugListProps {
   selectedRows: any
@@ -33,11 +33,7 @@ interface BugListProps {
 }
 
 const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) => {
-  const { data = [], refetch } = useQuery({
-    queryKey: ['bug-list', workspaceID],
-    queryFn: () => fetchBugQueueList(workspaceID),
-    enabled: !!workspaceID
-  })
+  const { data, refetch } = useBugQueue()
 
   const columns: ColumnDef<BugQueueListAPI>[] = useMemo(
     () => [
@@ -119,8 +115,8 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
         id: 'time',
         accessorKey: 'time',
         header: 'Time until resolution',
-        cell: ({}) => {
-          return <>{'20 hours'}</>
+        cell: ({ row: { original } }) => {
+          return <TimeResolutionColumn bug={original} refetch={refetch} />
         }
       },
       {

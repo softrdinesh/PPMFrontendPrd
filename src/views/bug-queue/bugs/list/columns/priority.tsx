@@ -93,8 +93,6 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
   const [isEdit, setIsEdit] = useState<string | null>(null)
   const { priorityList = [] } = useWorkspace()
 
-  console.log('workspaceID :', workspaceID)
-
   const { data: dynamicPriority, refetch: refetchPriorityList } = useQuery({
     queryKey: ['project-priority'],
     queryFn: () => fetchBugPriorityList({ workspaceID })

@@ -1,23 +1,33 @@
 'use client'
 
-import { useState } from 'react'
-
-import dynamic from 'next/dynamic'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Card, CardContent, Collapse, IconButton, Typography } from '@mui/material'
 
 import { useWorkspace } from '@/context/workspace-context'
 
-const BugList = dynamic(() => import('./list'), {
-  ssr: false
-})
+import BugList from './list'
+import DeleteBugsComponent from './delete-bugs'
 
 const BugQueueGroup = () => {
   const { selected } = useWorkspace()
   const [collapse, setCollapse] = useState(true)
   const [selectedRows, setSelectedRows] = useState([])
+  const [showCard, setShowCard] = useState(false)
+
+  const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   const toggleCollapse = () => setCollapse(!collapse)
+
+  useEffect(() => {
+    if (showSelected) {
+      setShowCard(true)
+    } else {
+      const timeout = setTimeout(() => setShowCard(false), 200) // Duration of the unmounting animation
+
+      return () => clearTimeout(timeout)
+    }
+  }, [showSelected])
 
   return (
     <Card className='rounded-lg'>
@@ -32,7 +42,7 @@ const BugQueueGroup = () => {
       </div>
 
       <Collapse in={collapse}>
-        <CardContent>
+        <CardContent className='space-y-4'>
           {selected?.WorkspaceID && (
             <BugList
               selectedRows={selectedRows}
@@ -40,6 +50,8 @@ const BugQueueGroup = () => {
               workspaceID={selected?.WorkspaceID}
             />
           )}
+
+          <DeleteBugsComponent showCard={showCard} selectedRows={selectedRows} setSelectedRows={setSelectedRows} />
         </CardContent>
       </Collapse>
     </Card>

@@ -28,7 +28,7 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
   }, [selected, setSelected, workspace, workspaceID])
 
   return (
-    <BugQueueProvider>
+    <BugQueueProvider workspaceID={workspaceID}>
       <Grid container spacing={6}>
         <Grid size={12}>
           <div className='flex items-center justify-between'>
