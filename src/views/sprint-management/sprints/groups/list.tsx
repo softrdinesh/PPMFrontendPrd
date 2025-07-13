@@ -5,6 +5,7 @@ import { Card, CardContent, Collapse, IconButton, Menu, MenuItem, Typography } f
 import { useSprintManagement } from '@/context/sprint-context'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 import CreateSprintGroupDialog from '../components/create-group-dialog'
+import SprintList from './sprint-list'
 
 const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
   const [collapse, setCollapse] = useState(false)
@@ -60,7 +61,7 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
       {openEdit && <CreateSprintGroupDialog open={openEdit} setOpen={setOpenEdit} group={sg} />}
 
       <Collapse in={collapse}>
-        <CardContent className='space-y-4'></CardContent>
+        <SprintList sg={sg} />
       </Collapse>
     </Card>
   )
