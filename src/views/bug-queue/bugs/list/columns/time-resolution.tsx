@@ -146,13 +146,15 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         </IconButton>
       )}
 
-      {bug?.TimeResolution ? (
-        <div>
-          <Typography className='text-sm font-medium'>{countdown || bug?.TimeResolution || 'Add Time'}</Typography>
+      {!!bug?.TimerStart && bug?.TimeResolution ? (
+        <div className='px-2'>
+          <Typography className='text-sm font-medium text-primary'>
+            {countdown || bug?.TimeResolution || 'Add Time'}
+          </Typography>
         </div>
       ) : (
-        <Button size='small' onClick={handleOpen}>
-          Add Time
+        <Button size='small' className='text-sm' onClick={handleOpen}>
+          {bug?.TimeResolution || 'Add Time'}
         </Button>
       )}
 
