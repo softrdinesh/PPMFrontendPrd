@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Card, CardContent, Collapse, IconButton, Menu, MenuItem, Typography } from '@mui/material'
+import { Card, Collapse, IconButton, Menu, MenuItem, Typography } from '@mui/material'
 
 import { useSprintManagement } from '@/context/sprint-context'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'

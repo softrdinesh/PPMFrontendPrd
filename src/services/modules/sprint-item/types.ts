@@ -5,8 +5,8 @@ export interface SprintItem {
   SprintGroupID: number
   Goals: string
   SprintStatus: 'Not Started' | 'Active' | 'Paused' | 'Completed'
-  SprintTimelineStart: string
-  SprintTimelineEnd: string
+  SprintTimelineStart: Date
+  SprintTimelineEnd: Date
   IsDelete: boolean
   DeletedDate: any
   Deletedby: any

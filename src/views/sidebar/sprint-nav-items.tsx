@@ -109,6 +109,7 @@ const NavItem = ({ title, path }: { title: string; path: string }) => {
 const SprintNavItemsList = () => {
   return (
     <div className='space-y-1'>
+      <NavItem title={'Tasks'} path='tasks-sprint' />
       <NavItem title={'Sprints'} path='sprints' />
       <NavItem title={'Bug Queue'} path='bug-queue' />
     </div>

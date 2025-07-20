@@ -1,12 +1,9 @@
-import IconifyIcon from '@/components/icon'
-import { SprintGroupItem } from '@/services/modules/sprint-group/type'
-import { fetchSprintList } from '@/services/modules/sprint-item'
-import { SprintItem } from '@/services/modules/sprint-item/types'
+import { useMemo, useState } from 'react'
+
 import {
   Box,
   Checkbox,
   CircularProgress,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -14,9 +11,12 @@ import {
   TableRow,
   Typography
 } from '@mui/material'
+
 import { useQuery } from '@tanstack/react-query'
+
+import type { ColumnDef } from '@tanstack/react-table'
+
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
@@ -24,12 +24,20 @@ import {
   getPaginationRowModel,
   useReactTable
 } from '@tanstack/react-table'
-import { useState } from 'react'
-import { useMemo } from 'react'
+
+import { debounce } from 'lodash'
+
+import CustomButton from '@/components/button'
+import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
+import { createSprint, fetchSprintList, updateSprint } from '@/services/modules/sprint-item'
+import type { SprintItem } from '@/services/modules/sprint-item/types'
+import SprintTimelineManagement from './timeline'
+import { ColumnTextField } from '@/views/project/task-group/task/columns/default-column'
 
 const SprintList = ({ sg }: { sg: SprintGroupItem }) => {
   // ** States
   const [selectedRows, setSelectedRows] = useState<any>({})
+  const [adding, setAdding] = useState(false)
 
   const sprintListApi = useQuery({
     queryKey: ['sprint-list', sg?.SprintGroupID],
@@ -76,8 +84,8 @@ const SprintList = ({ sg }: { sg: SprintGroupItem }) => {
             Sprint
           </Typography>
         ),
-        cell: ({ row: { original } }) => {
-          return <>{original?.Name}</>
+        cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          return <ColumnTextField canEdit={true} getValue={getValue} index={index} id={id} table={table} />
         }
       },
       {
@@ -99,21 +107,37 @@ const SprintList = ({ sg }: { sg: SprintGroupItem }) => {
           </Typography>
         ),
         cell: ({ row: { original } }) => {
-          if (original?.SprintStatus === 'Active')
-            return (
-              <>
-                <i className='ri-check-line' />
-              </>
-            )
-          return (
-            <>
-              <i className='ri-check-line' />
-            </>
-          )
+          if (original?.SprintStatus === 'Active') return <i className='ri-check-line' />
+
+          return <></>
+        }
+      },
+      {
+        accessorKey: 'SprintTimeline',
+        header: () => (
+          <Typography variant='body2' fontWeight={800}>
+            Sprint Timeline
+          </Typography>
+        ),
+        cell: ({ row: { original } }) => (
+          <SprintTimelineManagement original={original} refetch={sprintListApi?.refetch} />
+        )
+      },
+      {
+        accessorKey: 'Completed',
+        header: () => (
+          <Typography variant='body2' fontWeight={800}>
+            Completed ?
+          </Typography>
+        ),
+        cell: ({ row: { original } }) => {
+          if (original?.SprintStatus === 'Completed') return <i className='ri-check-line' />
+
+          return <></>
         }
       }
     ],
-    []
+    [sprintListApi?.refetch]
   )
 
   const table = useReactTable({
@@ -129,12 +153,46 @@ const SprintList = ({ sg }: { sg: SprintGroupItem }) => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getExpandedRowModel: getExpandedRowModel()
+    getExpandedRowModel: getExpandedRowModel(),
+    meta: {
+      updateData: async (rowIndex: number, columnId: any, value: { AdditionalColumnID: string }) => {
+        if (columnId === 'Name' && sprintListApi?.data?.data?.[rowIndex]?.SprintID) {
+          try {
+            const response = await updateSprint({
+              id: sprintListApi?.data?.data?.[rowIndex]?.SprintID?.toString(),
+              body: { Name: value }
+            })
+
+            if (response) {
+              sprintListApi?.refetch()
+            }
+          } catch (error) {
+            console.error('error :', error)
+          }
+        }
+      }
+    }
   })
 
-  if (sprintListApi?.isLoading || sprintListApi?.isFetching)
+  const handleAddSprint = async () => {
+    setAdding(true)
+
+    const body = {
+      workspaceID: sg?.WorkspaceID,
+      sprintGroupID: sg?.SprintGroupID
+    }
+
+    await createSprint(body)
+    sprintListApi.refetch()
+
+    setAdding(false)
+  }
+
+  const debouncedHandleAddSprint = debounce(handleAddSprint, 500)
+
+  if (sprintListApi?.isLoading)
     return (
-      <div>
+      <div className='w-full flex justify-center'>
         <CircularProgress />
       </div>
     )
@@ -187,6 +245,16 @@ const SprintList = ({ sg }: { sg: SprintGroupItem }) => {
           )}
         </TableBody>
       </Table>
+      <div className='flex justify-between items-center gap-2 m-2'>
+        <CustomButton
+          variant='text'
+          size='small'
+          endIcon={<i className='ri-add-line' />}
+          onClick={debouncedHandleAddSprint}
+        >
+          {adding ? 'Adding...' : 'Add Sprint'}
+        </CustomButton>
+      </div>
     </div>
   )
 }
