@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Button } from '@mui/material'
 
@@ -52,6 +52,11 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
       refetch()
     }
   }
+
+  useEffect(() => {
+    if (original?.SprintTimelineStart) setStartDate(moment(original?.SprintTimelineStart).toDate())
+    if (original?.SprintTimelineEnd) setEndDate(moment(original?.SprintTimelineEnd).toDate())
+  }, [original?.SprintTimelineStart, original?.SprintTimelineEnd])
 
   if (!original?.SprintTimelineStart || !original?.SprintTimelineEnd)
     return (
