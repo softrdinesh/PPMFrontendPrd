@@ -71,7 +71,7 @@ const LoginV2 = () => {
     handleSubmit,
     control,
     formState: { isSubmitting }
-  } = useForm<FormFields>({ defaultValues })
+  } = useForm<FormFields>({  })
 
   // Hooks
   const auth = useContext(AuthContext)

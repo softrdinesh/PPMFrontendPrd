@@ -77,7 +77,7 @@ const ForgotPassword = () => {
     handleSubmit,
     control,
     formState: { errors }
-  } = useForm<FormValidate>({ defaultValues })
+  } = useForm<FormValidate>({  })
 
   const onSubmit = async (data: FormValidate) => {
     setIsLoggingIn(true)
