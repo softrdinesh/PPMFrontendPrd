@@ -112,14 +112,14 @@ const ProjectManagementPage = ({ projectID }: { projectID: string }) => {
                   orientation='vertical'
                   sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }}
                 />
-                <div className='flex items-center gap-3'>
+                {/* <div className='flex items-center gap-3'>
                   <CustomButton variant='contained' sx={{ px: 2, minWidth: 'auto' }}>
                     <Icon icon={'fluent:pause-24-filled'} rotate={90} fontSize={20} />
                   </CustomButton>
                   <CustomButton variant='text' sx={{ px: 2, minWidth: 'auto' }}>
                     <Icon icon={'hugeicons:menu-circle'} rotate={90} fontSize={20} />
                   </CustomButton>
-                </div>
+                </div> */}
 
                 {/* Filter Button */}
                 <ProjectFilterButton />
