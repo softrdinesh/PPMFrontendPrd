@@ -1,4 +1,4 @@
-import { useMemo, useState, useContext, useEffect } from 'react'
+import { useMemo, useState, useContext } from 'react'
 
 import {
   Box,
@@ -34,7 +34,7 @@ import type { SprintItem } from '@/services/modules/sprint-item/types'
 import SprintTimelineManagement from './timeline'
 import { ColumnTextField } from '@/views/project/task-group/task/columns/default-column'
 import { SprintManagement } from 'src/context/sprint-context'
-import DeleteTasksComponent from '../../components/Delete-sprint'
+
 const SprintList = ({ 
   sg, 
   selectedSprint, 
@@ -44,29 +44,10 @@ const SprintList = ({
   selectedSprint?: any;
   sprintSearchTerm?: string;
 }) => {
-// ** States
+  // ** States
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [adding, setAdding] = useState(false)
-      const [showCard, setShowCard] = useState(false)
-  const [selectedSprint1, setSelectedSprint1] = useState<any>(null) // NEW: Track selected sprint
-
-
-   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-
-
- useEffect(() => {
-    if (showSelected) {
-      setShowCard(true)
-    } else {
-      const timeout = setTimeout(() => setShowCard(false), 200) // Duration of the unmounting animation
-
-      return () => clearTimeout(timeout)
-    }
-  }, [showSelected])
-
-
-
-
+  
   // Get column visibility from sprint context
   const { columnVisibility: sprintColumnVisibility } = useContext(SprintManagement)
 
@@ -75,11 +56,6 @@ const SprintList = ({
     queryFn: () => fetchSprintList({ SprintGroupID: sg?.SprintGroupID })
   })
 
-    const { data: sprintListData = [], refetch: refetchSprints } = useQuery({
-      queryKey: ['sprint-list',  sg?.SprintGroupID],
-      queryFn: () => fetchSprintList({SprintGroupID:  sg?.SprintGroupID}),
-      enabled: !! sg?.SprintGroupID
-    })
   // Filter sprint data based on selected sprint and search term
   const filteredSprintData = useMemo(() => {
     const originalData = sprintListApi?.data?.data ?? []
@@ -150,8 +126,18 @@ const SprintList = ({
             Sprint
           </Typography>
         ),
-        cell: ({ getValue, row: { index }, column: { id }, table }) => {
-          return <ColumnTextField canEdit={true} getValue={getValue} index={index} id={id} table={table} />
+        cell: ({ getValue, row: { index, original }, column: { id }, table }) => {
+          // Highlight selected sprint
+          const isSelectedSprint = selectedSprint && original.SprintID === selectedSprint.SprintID
+          
+          return (
+            <div 
+              className={isSelectedSprint ? 'bg-blue-50 border-l-4 border-blue-500 pl-2' : ''}
+              style={isSelectedSprint ? { fontWeight: 600, color: '#1976d2' } : {}}
+            >
+              <ColumnTextField canEdit={true} getValue={getValue} index={index} id={id} table={table} />
+            </div>
+          )
         }
       },
       {
@@ -162,7 +148,16 @@ const SprintList = ({
           </Typography>
         ),
         cell: ({ row: { original } }) => {
-          return <>{original?.Goals || '-'}</>
+          const isSelectedSprint = selectedSprint && original.SprintID === selectedSprint.SprintID
+          
+          return (
+            <div 
+              className={isSelectedSprint ? 'bg-blue-50' : ''}
+              style={isSelectedSprint ? { fontWeight: 600, color: '#1976d2' } : {}}
+            >
+              {original?.Goals || '-'}
+            </div>
+          )
         }
       },
       {
@@ -173,9 +168,13 @@ const SprintList = ({
           </Typography>
         ),
         cell: ({ row: { original } }) => {
-          if (original?.SprintStatus === 'Active') return <i className='ri-check-line' />
-
-          return <></>
+          const isSelectedSprint = selectedSprint && original.SprintID === selectedSprint.SprintID
+          
+          return (
+            <div className={isSelectedSprint ? 'bg-blue-50' : ''}>
+              {original?.SprintStatus === 'Active' ? <i className='ri-check-line' /> : <></>}
+            </div>
+          )
         }
       },
       {
@@ -185,9 +184,15 @@ const SprintList = ({
             Sprint Timeline
           </Typography>
         ),
-        cell: ({ row: { original } }) => (
-          <SprintTimelineManagement original={original} refetch={sprintListApi?.refetch} />
-        )
+        cell: ({ row: { original } }) => {
+          const isSelectedSprint = selectedSprint && original.SprintID === selectedSprint.SprintID
+          
+          return (
+            <div className={isSelectedSprint ? 'bg-blue-50' : ''}>
+              <SprintTimelineManagement original={original} refetch={sprintListApi?.refetch} />
+            </div>
+          )
+        }
       },
       {
         accessorKey: 'Completed',
@@ -197,13 +202,17 @@ const SprintList = ({
           </Typography>
         ),
         cell: ({ row: { original } }) => {
-          if (original?.SprintStatus === 'Completed') return <i className='ri-check-line' />
-
-          return <></>
+          const isSelectedSprint = selectedSprint && original.SprintID === selectedSprint.SprintID
+          
+          return (
+            <div className={isSelectedSprint ? 'bg-blue-50' : ''}>
+              {original?.SprintStatus === 'Completed' ? <i className='ri-check-line' /> : <></>}
+            </div>
+          )
         }
       }
     ],
-    [sprintListApi?.refetch]
+    [sprintListApi?.refetch, selectedSprint]
   )
 
   // Filter columns based on visibility from sprint context
@@ -325,10 +334,10 @@ const SprintList = ({
                 <TableRow 
                   key={row.id}
                   sx={isSelectedSprint ? { 
-                    backgroundColor: 'none',
+                    backgroundColor: '#e3f2fd',
                     '& td': { 
-                      // borderColor: '#1976d2',
-                     // borderWidth: '1px 0'
+                      borderColor: '#1976d2',
+                      borderWidth: '1px 0'
                     }
                   } : {}}
                 >
@@ -363,14 +372,6 @@ const SprintList = ({
           {adding ? 'Adding...' : 'Add Sprint'}
         </CustomButton>
       </div>
-{showCard &&
-       <DeleteTasksComponent
-                showCard={showCard}
-                selectedRows={selectedRows}
-                sprintlist={sprintListApi.data?.data}
-                refetch={refetchSprints}
-                setSelectedRows={setSelectedRows}
-              />}
     </div>
   )
 }

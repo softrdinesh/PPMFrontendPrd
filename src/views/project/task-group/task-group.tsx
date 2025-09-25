@@ -90,7 +90,7 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
           <Typography ml={3} fontWeight={700}>
             {data?.TaskGroupName ?? '-'}
           </Typography>
-          <TaskGroupActions />
+          <TaskGroupActions groupName={data.TaskGroupName} id={data.TaskGroupID} />
         </div>
       </AccordionSummary>
       <AccordionDetails>

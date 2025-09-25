@@ -1,21 +1,45 @@
 // ** React Imports
 import type { ReactNode } from 'react'
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchSprintListBasic } from '@/services/modules/sprint-item'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
+import type { SprintTaskItem } from '@/services/modules/sprint-tasks/types'
+
+type ColumnVisibility = {
+  Taskname: boolean
+  ActualSP: boolean
+  IsUnplanned: boolean
+  EstimatedSP: boolean
+  [key: string]: boolean
+}
 
 interface SprintTaskManagementType {
   data: SprintItem[]
   refetch: () => void
+  columnVisibility: ColumnVisibility
+  setColumnVisibility: (visibility: ColumnVisibility) => void
+  toggleColumnVisibility: (columnKey: keyof ColumnVisibility) => void
+  visibleColumns: string[]
 }
 
 // ** Defaults
+const defaultColumnVisibility: ColumnVisibility = {
+  Taskname: true,
+  ActualSP: true,
+  IsUnplanned: true,
+  EstimatedSP: true
+}
+
 const defaultProvider: SprintTaskManagementType = {
   data: [],
-  refetch: () => {}
+  refetch: () => {},
+  columnVisibility: defaultColumnVisibility,
+  setColumnVisibility: () => {},
+  toggleColumnVisibility: () => {},
+  visibleColumns: Object.keys(defaultColumnVisibility).filter(key => defaultColumnVisibility[key])
 }
 
 const SprintTaskManagement = createContext<SprintTaskManagementType>(defaultProvider)
@@ -32,9 +56,26 @@ const SprintTaskManagementProvider = ({ children, workspaceID }: SprintTaskManag
     enabled: !!workspaceID
   })
 
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(defaultColumnVisibility)
+
+  // Toggle visibility for a specific column
+  const toggleColumnVisibility = useCallback((columnKey: keyof ColumnVisibility) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [columnKey]: !prev[columnKey]
+    }))
+  }, [])
+
+  // Get array of visible column keys
+  const visibleColumns = Object.keys(columnVisibility).filter(key => columnVisibility[key])
+
   const values: SprintTaskManagementType = {
     data,
-    refetch
+    refetch,
+    columnVisibility,
+    setColumnVisibility,
+    toggleColumnVisibility,
+    visibleColumns
   }
 
   return <SprintTaskManagement.Provider value={values}>{children}</SprintTaskManagement.Provider>

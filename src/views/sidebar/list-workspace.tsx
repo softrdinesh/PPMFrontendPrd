@@ -25,6 +25,8 @@ import { getInitials } from '@/utils/getInitials'
 import DeleteWorkspaceDialog from './delete-workspace'
 import { useAuth } from '@/hooks/useAuth'
 import { deleteSprintWorkspace } from '@/services/modules/sprint-workspace'
+import CreateWorkspaceDialog from './create-workspace-dialog'
+import CreateProject from './create-project-dialog'
 
 const MenuNavLink = styled(ListItemButton)(() => ({
   width: '100%',
@@ -49,6 +51,8 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
   const [open, setOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [open1, setOpen1] = useState(false)
 
   const { profile } = useAuth()
   const { selected, setSelected, refetchWorkspaces } = useWorkspace()
@@ -76,6 +80,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
     setOpen(true)
     handleOpenClose()
   }
+  const handleClose = () => setOpen1(false)
 
   const handleDelete = async () => {
     try {
@@ -174,7 +179,24 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
             />
           </IconButton>
           <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleOpenClose} TransitionComponent={Zoom}>
-            <MenuItem onClick={handleDeleteOpen}>
+         
+              <MenuItem onClick={()=>setIsModalOpen(true)}>
+              <Box display={'flex'} alignItems={'center'} gap={2}>
+                {/* <Icon icon={'mdi:delete-outline'} /> */}
+<Icon icon={'mdi:plus-circle-outline'} />
+
+                <Typography>Create WorkSpace</Typography>
+              </Box>
+            </MenuItem>
+               <MenuItem onClick={()=>setOpen1(true)}>
+              <Box display={'flex'} alignItems={'center'} gap={2}>
+                {/* <Icon icon={'mdi:delete-outline'} /> */}
+<Icon icon={'mdi:plus-circle-outline'} />
+
+                <Typography>Create Project</Typography>
+              </Box>
+            </MenuItem>
+               <MenuItem onClick={handleDeleteOpen}>
               <Box display={'flex'} alignItems={'center'} gap={2}>
                 <Icon icon={'mdi:delete-outline'} />
                 <Typography>Delete</Typography>
@@ -184,6 +206,13 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
           <DeleteWorkspaceDialog open={open} setOpen={setOpen} onConfirm={debouncedDelete} />
         </MenuItemTextMetaWrapper>
       </MenuNavLink>
+                  <CreateProject open={open1} onCloseModal={handleClose} />
+
+       <CreateWorkspaceDialog
+        open={isModalOpen}
+        onCloseModal={() => setIsModalOpen(false)}
+        refetchWorkspaces={refetchWorkspaces}
+      />
     </ListItem>
   )
 }

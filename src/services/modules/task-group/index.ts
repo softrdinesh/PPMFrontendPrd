@@ -25,9 +25,13 @@ export const viewTaskGroup = async (id: string) => {
 }
 
 export const updateTaskGroup = async ({ id, body }: { id: string; body: any }) => {
+  console.log(body,'body')
   return callApi({ uriEndPoint: taskGroup.update, pathParams: { id }, body })
     .then(res => {
+            toast.success(res?.message ?? 'Project Added Successfully')
+
       return res?.data
+      
     })
     .catch(err => {
       throw err

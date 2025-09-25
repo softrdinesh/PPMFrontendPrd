@@ -68,10 +68,10 @@ const PriorityMenuItem = ({ item, row, handleClose, handleEdit, refetch }: Prior
             {item?.PriorityName}
           </Typography>
         </Box>
-        {!item?.IsDefault && item?.TaskgroupID && (
-          <IconButton size='small' className='p-1' onClick={() => handleEdit && handleEdit(item)}>
-            <Icon icon={'mdi:pencil-outline'} fontSize={11} />
-          </IconButton>
+        {!item?.IsDefault && item?.PriorityID && (
+                 <IconButton size='small' className='p-1' onClick={() => handleEdit && handleEdit(item)}>
+                   <Icon icon={'mdi:pencil-outline'} fontSize={11} />
+                 </IconButton>
         )}
       </Box>
     </Grid>
@@ -200,7 +200,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
             <Grid size={6}>
               <Box pb={2}>
                 <Typography fontWeight={700} fontSize={14}>
-                  ESSENTIALS
+                  ESSENTIALSsdfsf
                 </Typography>
                 <Typography variant='subtitle2' fontSize={12}>
                   Add or edit labels
@@ -223,6 +223,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
                     key={item?.PriorityID}
                     handleClose={handleClose}
                     refetch={refetch}
+
                   />
                 ))}
               </Grid>

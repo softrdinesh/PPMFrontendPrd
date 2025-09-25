@@ -7,13 +7,23 @@ import { Box, Checkbox, Divider, FormControlLabel, Grow, Menu, Typography } from
 import CustomButton from '@components/button'
 
 import { useProject } from 'src/context/project-context'
-
+import { useBugQueue } from 'src/context/bug-queue-context'
 const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
-  const { columnVisibility, setColumnVisibility } = useProject()
+  // const { columnVisibility, setColumnVisibility } = useProject()
+  const { columnVisibility, setColumnVisibility, toggleColumnVisibility } = useBugQueue()
 
-  const handleChange = () => {
-    setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
+ 
+   const handleChange = () => {
+    // Use either setColumnVisibility or toggleColumnVisibility
+    // Option 1: Using toggleColumnVisibility (more direct)
+    toggleColumnVisibility(menuID as keyof typeof columnVisibility)
+    
+    // Option 2: Using setColumnVisibility (if you prefer this approach)
+    // setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
   }
+  // const handleChange = () => {
+  //   setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
+  // }
 
   return (
     <Box px={4} py={2} sx={{ minWidth: 200 }}>
@@ -27,20 +37,29 @@ const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
 
 const ProjectFilterButton = () => {
   // Hooks
-  const { columnVisibility, additionalColumns, seeAllColumns } = useProject()
+  const { columnVisibility, setColumnVisibility, visibleColumns } = useBugQueue()
   const [anchorEl, setAnchorEl] = useState(null)
 
   const handleOpen = (e: any) => setAnchorEl(e?.currentTarget)
 
   const handleClose = () => setAnchorEl(null)
-
+  const seeAllColumns = () => {
+    const allVisible: typeof columnVisibility = {
+      BugID:true,
+  Reporter: true,
+  BugDescription: true,
+  TimeResolution: true,
+  Priority: true
+    }
+    setColumnVisibility(allVisible)
+  }
   const allSelected = useMemo(() => {
     return Object.keys(columnVisibility)?.every(key => columnVisibility[key])
   }, [columnVisibility])
 
   const selectedCount = useMemo(() => {
-    return Object.keys(columnVisibility)?.filter(v => columnVisibility[v])?.length
-  }, [columnVisibility])
+    return visibleColumns?.length
+  }, [visibleColumns])
 
   return (
     <>
@@ -73,18 +92,12 @@ const ProjectFilterButton = () => {
             ITEMS COLUMNS
           </Typography>
         </Box>
-        <FilterMenuItem menuID='Taskname' name={'Task'} />
-        <FilterMenuItem menuID='owner' name='Owner' />
+        <FilterMenuItem menuID='BugID' name={'Bug ID'} />
+        <FilterMenuItem menuID='Reporter' name='Reporter' />
+        <FilterMenuItem menuID='BugDescription' name='Bug Details' />
+        <FilterMenuItem menuID='TimeResolution' name='Time Resolution' />
         <FilterMenuItem menuID='Priority' name='Priority' />
-        <FilterMenuItem menuID='Status' name='Status' />
-        <FilterMenuItem menuID='Timeline' name='Timeline' />
-        {additionalColumns?.map(cols => (
-          <FilterMenuItem
-            key={cols?.AdditionalColumnID}
-            menuID={cols?.AdditionalColumnID?.toString()}
-            name={cols?.ColumnName}
-          />
-        ))}
+   
       </Menu>
     </>
   )

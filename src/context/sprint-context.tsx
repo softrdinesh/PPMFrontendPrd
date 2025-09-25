@@ -1,21 +1,56 @@
 // ** React Imports
 import type { ReactNode } from 'react'
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchSprintGroups } from '@/services/modules/sprint-group'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 
+
+
+type ColumnVisibility = {
+  Name:boolean
+  Goals: boolean
+  SprintTimeline: boolean
+  SprintStatus: boolean
+  ActiveSprint: boolean
+  [key: string]: boolean
+}
+
+
+
+
+
 interface SprintManagementType {
   data: SprintGroupItem[]
   refetch: () => void
+   columnVisibility: ColumnVisibility
+  setColumnVisibility: (visibility: ColumnVisibility) => void
+  toggleColumnVisibility: (columnKey: keyof ColumnVisibility) => void
+  visibleColumns: string[]
 }
+
+const defaultColumnVisibility: ColumnVisibility = {
+  Name:true,
+  Goals: true,
+  SprintTimeline: true,
+  SprintStatus: true,
+  ActiveSprint:true
+
+}
+
+
+
 
 // ** Defaults
 const defaultProvider: SprintManagementType = {
   data: [],
-  refetch: () => {}
+  refetch: () => {},
+  columnVisibility: defaultColumnVisibility,
+  setColumnVisibility: () => {},
+  toggleColumnVisibility: () => {},
+  visibleColumns: Object.keys(defaultColumnVisibility).filter(key => defaultColumnVisibility[key])
 }
 
 const SprintManagement = createContext<SprintManagementType>(defaultProvider)
@@ -32,10 +67,22 @@ const SprintManagementProvider = ({ children, workspaceID }: SprintManagementPro
     enabled: !!workspaceID
   })
 
+    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(defaultColumnVisibility)
+    const toggleColumnVisibility = useCallback((columnKey: keyof ColumnVisibility) => {
+      setColumnVisibility(prev => ({
+        ...prev,
+        [columnKey]: !prev[columnKey]
+      }))
+    }, [])
+    const visibleColumns = Object.keys(columnVisibility).filter(key => columnVisibility[key])
+
   const values: SprintManagementType = {
     data,
-    refetch
-  }
+refetch,
+    columnVisibility,
+    setColumnVisibility,
+    toggleColumnVisibility,
+    visibleColumns  }
 
   return <SprintManagement.Provider value={values}>{children}</SprintManagement.Provider>
 }

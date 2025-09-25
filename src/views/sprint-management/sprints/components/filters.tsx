@@ -6,14 +6,21 @@ import { Box, Checkbox, Divider, FormControlLabel, Grow, Menu, Typography } from
 
 import CustomButton from '@components/button'
 
-import { useProject } from 'src/context/project-context'
+import { useSprintManagement } from 'src/context/sprint-context' 
 
 const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
-  const { columnVisibility, setColumnVisibility } = useProject()
+  const { columnVisibility, setColumnVisibility, toggleColumnVisibility } = useSprintManagement()
 
-  const handleChange = () => {
-    setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
+ 
+   const handleChange = () => {
+    // Use either setColumnVisibility or toggleColumnVisibility
+    // Option 1: Using toggleColumnVisibility (more direct)
+    toggleColumnVisibility(menuID as keyof typeof columnVisibility)
+    
+    // Option 2: Using setColumnVisibility (if you prefer this approach)
+    // setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
   }
+
 
   return (
     <Box px={4} py={2} sx={{ minWidth: 200 }}>
@@ -27,20 +34,30 @@ const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
 
 const SprintFilterButton = () => {
   // Hooks
-  const { columnVisibility, additionalColumns, seeAllColumns } = useProject()
+  const { columnVisibility, setColumnVisibility, visibleColumns } = useSprintManagement()
   const [anchorEl, setAnchorEl] = useState(null)
 
   const handleOpen = (e: any) => setAnchorEl(e?.currentTarget)
 
   const handleClose = () => setAnchorEl(null)
+  const seeAllColumns = () => {
+    const allVisible: typeof columnVisibility = {
+      Name:true,
+    Goals: true,
+   SprintTimeline: true,
+    SprintStatus: true,
+    ActiveSprint:true
+    }
+    setColumnVisibility(allVisible)
+  }
 
   const allSelected = useMemo(() => {
     return Object.keys(columnVisibility)?.every(key => columnVisibility[key])
   }, [columnVisibility])
 
   const selectedCount = useMemo(() => {
-    return Object.keys(columnVisibility)?.filter(v => columnVisibility[v])?.length
-  }, [columnVisibility])
+    return visibleColumns?.length
+  }, [visibleColumns])
 
   return (
     <>
@@ -73,18 +90,13 @@ const SprintFilterButton = () => {
             ITEMS COLUMNS
           </Typography>
         </Box>
-        <FilterMenuItem menuID='Taskname' name={'Task'} />
-        <FilterMenuItem menuID='owner' name='Owner' />
-        <FilterMenuItem menuID='Priority' name='Priority' />
-        <FilterMenuItem menuID='Status' name='Status' />
-        <FilterMenuItem menuID='Timeline' name='Timeline' />
-        {additionalColumns?.map(cols => (
-          <FilterMenuItem
-            key={cols?.AdditionalColumnID}
-            menuID={cols?.AdditionalColumnID?.toString()}
-            name={cols?.ColumnName}
-          />
-        ))}
+        <FilterMenuItem menuID='Name' name={'Sprint'} />
+        <FilterMenuItem menuID='Goals' name='Goals' />
+      <FilterMenuItem menuID='ActiveSprint' name='Active Sprint' />
+
+        <FilterMenuItem menuID='SprintTimeline' name='Sprint Timeline' />
+        <FilterMenuItem menuID='SprintStatus' name='Completed' />
+       
       </Menu>
     </>
   )

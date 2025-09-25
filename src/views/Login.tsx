@@ -65,13 +65,16 @@ const LoginV2 = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [bgSize, setBgSize] = useState<number | string>('100vw')
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   // Form
   const {
     handleSubmit,
     control,
     formState: { isSubmitting }
-  } = useForm<FormFields>({  })
+  } = useForm<FormFields>({
+    
+  })
 
   // Hooks
   const auth = useContext(AuthContext)
@@ -89,45 +92,165 @@ const LoginV2 = () => {
     await auth.login(body)
   }
 
-  const handleGoogleSignin = () => {
-    window?.localStorage?.setItem(authConfig.loginWithGoogle, '1')
-    const redirectUri = process.env.NEXT_PUBLIC_API_URL + authentication.googleLogin?.uri
+  const handleGoogleSignin = async () => {
+    try {
+      setIsGoogleLoading(true)
+      
+      // Validate environment variables
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      if (!baseUrl) {
+        console.error('NEXT_PUBLIC_API_URL is not defined')
+        throw new Error('Google login configuration error. Please contact support.')
+      }
 
-    window?.open(redirectUri, '_self')
+      // Validate authentication config
+      const googleLoginUri = authentication?.googleLogin?.uri
+      if (!googleLoginUri) {
+        console.error('Google login URI is not defined in authentication config')
+        throw new Error('Google login configuration error. Please contact support.')
+      }
+
+      // Set localStorage flag if available
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          window.localStorage.setItem(authConfig.loginWithGoogle, '1')
+        } catch (storageError) {
+          console.warn('Failed to set localStorage item:', storageError)
+          // Continue with login even if localStorage fails
+        }
+      }
+
+      // Build the redirect URI
+      const redirectUri = `${baseUrl.replace(/\/$/, '')}${googleLoginUri.startsWith('/') ? googleLoginUri : '/' + googleLoginUri}`
+      
+      // Add location parameters if available
+      const urlParams = new URLSearchParams()
+      if (location?.latitude && location?.longitude) {
+        urlParams.append('latitude', location.latitude.toString())
+        urlParams.append('longitude', location.longitude.toString())
+      }
+      
+      // Add current page as return URL
+      urlParams.append('returnUrl', window.location.origin + window.location.pathname)
+      
+      const finalRedirectUri = urlParams.toString() 
+        ? `${redirectUri}${redirectUri.includes('?') ? '&' : '?'}${urlParams.toString()}`
+        : redirectUri
+
+      console.log('Redirecting to Google login:', finalRedirectUri)
+
+      // Small delay to ensure state is set before redirect
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Perform redirect
+      window.location.href = finalRedirectUri
+      
+    } catch (error) {
+      console.error('Error during Google signin:', error)
+      
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'Failed to initiate Google login. Please try again.'
+      
+      // You can replace alert with your preferred notification system
+      if (typeof window !== 'undefined') {
+        alert(errorMessage)
+      }
+      
+      setIsGoogleLoading(false)
+    }
   }
 
+  // Get user location
   useEffect(() => {
+    // Check if geolocation is supported
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser')
+      return
+    }
+
+    const locationOptions = {
+      enableHighAccuracy: false, // Set to false for faster response
+      timeout: 15000, // Increased timeout to 15 seconds
+      maximumAge: 600000 // Accept cached position up to 10 minutes old
+    }
+
     navigator.geolocation.getCurrentPosition(
-      position => {
+      (position) => {
         const latitude = position.coords.latitude
         const longitude = position.coords.longitude
 
         setLocation({ latitude, longitude })
+        console.log('Location obtained:', { latitude, longitude })
       },
-      error => {
-        console.error('Error getting location:', error)
+      (error) => {
+        console.warn('Error getting location:', error.message)
+        // Don't block the app if location fails - just continue without location
+        setLocation(null)
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      }
+      locationOptions
     )
   }, [])
 
+  // Handle background sizing
   useEffect(() => {
     const calculateBgSize = () => {
-      setBgSize(mdEndpoint ? (window.innerWidth ? window.innerWidth * 0.7 : '100vw') : window.innerWidth || '100vw')
+      const width = window.innerWidth || document.documentElement.clientWidth
+      setBgSize(mdEndpoint ? width * 0.7 : width)
     }
 
     // Initial calculation
     calculateBgSize()
 
-    // Recalculate on resize
-    window.addEventListener('resize', calculateBgSize)
+    // Recalculate on resize with debounce
+    let timeoutId: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(calculateBgSize, 100)
+    }
 
-    return () => window.removeEventListener('resize', calculateBgSize)
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timeoutId)
+    }
   }, [mdEndpoint])
+
+  // Handle Google login callback
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search)
+      const googleLoginSuccess = urlParams.get('google_login')
+      const error = urlParams.get('error')
+      
+      if (googleLoginSuccess === 'success') {
+        console.log('Google login successful')
+        
+        // Clear the URL parameters to clean up the URL
+        const newUrl = window.location.pathname
+        window.history.replaceState({}, document.title, newUrl)
+        
+        // Call auth context method if needed
+        // auth.handleGoogleLoginSuccess?.()
+        
+      } else if (googleLoginSuccess === 'error' || error) {
+        console.error('Google login failed:', error || 'Unknown error')
+        
+        // Clear the URL parameters
+        const newUrl = window.location.pathname
+        window.history.replaceState({}, document.title, newUrl)
+        
+        // Show error message
+        const errorMsg = error || 'Google login failed. Please try again.'
+        alert(`Google Login Error: ${errorMsg}`)
+      }
+    } catch (callbackError) {
+      console.error('Error handling Google login callback:', callbackError)
+    }
+  }, [])
 
   return (
     <Box
@@ -147,7 +270,7 @@ const LoginV2 = () => {
               <Typography className='text-5xl leading-tight font-bold text-primary'>Manage</Typography>
               <Typography className='text-5xl text-textPrimary leading-tight font-bold'>fantastic thing</Typography>
               <Typography className='text-2xl text-textPrimary font-bold' mt={6}>
-                {`If you don’t have an account`}
+                {`If you don't have an account`}
               </Typography>
               <Typography className='text-2xl text-textPrimary font-bold'>
                 {` you can `}
@@ -245,10 +368,17 @@ const LoginV2 = () => {
                   <div className='flex justify-center items-center gap-2'>
                     <Button
                       onClick={handleGoogleSignin}
+                      disabled={isGoogleLoading || isSubmitting}
                       className='text-textPrimary shadow-md'
-                      startIcon={<i className='ri-google-fill text-googlePlus' />}
+                      variant='outlined'
+                      fullWidth
+                      startIcon={
+                        isGoogleLoading ? 
+                        <CircularProgress size={16} color='inherit' /> : 
+                        <i className='ri-google-fill text-googlePlus' />
+                      }
                     >
-                      Sign in with Google
+                      {isGoogleLoading ? 'Redirecting to Google...' : 'Sign in with Google'}
                     </Button>
                   </div>
                 </form>

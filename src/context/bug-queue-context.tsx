@@ -1,21 +1,54 @@
 // ** React Imports
 import type { ReactNode } from 'react'
-import { createContext, useContext } from 'react'
+import { createContext,useState, useContext,useCallback } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchBugQueueList } from '@/services/modules/bug-queue'
 import type { BugQueueListAPI } from '@/services/modules/bug-queue/types'
 
+
+
+type ColumnVisibility = {
+  BugID:boolean
+  Reporter: boolean
+  BugDescription: boolean
+  TimeResolution: boolean
+  Priority: boolean
+  [key: string]: boolean
+}
+
+
+
+
+
 interface BugQueueContextType {
   data: BugQueueListAPI[]
-  refetch: () => void
+  refetch: () => void,
+   columnVisibility: ColumnVisibility
+  setColumnVisibility: (visibility: ColumnVisibility) => void
+  toggleColumnVisibility: (columnKey: keyof ColumnVisibility) => void
+  visibleColumns: string[]
 }
+
+const defaultColumnVisibility: ColumnVisibility = {
+  BugID:true,
+  Reporter: true,
+  BugDescription: true,
+  TimeResolution: true,
+  Priority: true
+}
+
 
 // ** Defaults
 const defaultProvider: BugQueueContextType = {
   data: [],
-  refetch: () => {}
+  refetch: () => {},  
+  columnVisibility: defaultColumnVisibility,
+  setColumnVisibility: () => {},
+  toggleColumnVisibility: () => {},
+  visibleColumns: Object.keys(defaultColumnVisibility).filter(key => defaultColumnVisibility[key])
+
 }
 
 const BugQueueContext = createContext<BugQueueContextType>(defaultProvider)
@@ -31,10 +64,25 @@ const BugQueueProvider = ({ children, workspaceID }: BugQueueProviderProps) => {
     queryFn: () => fetchBugQueueList(workspaceID),
     enabled: !!workspaceID
   })
+    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(defaultColumnVisibility)
+   // Toggle visibility for a specific column
+    const toggleColumnVisibility = useCallback((columnKey: keyof ColumnVisibility) => {
+      setColumnVisibility(prev => ({
+        ...prev,
+        [columnKey]: !prev[columnKey]
+      }))
+    }, [])
+
+      const visibleColumns = Object.keys(columnVisibility).filter(key => columnVisibility[key])
+
 
   const values: BugQueueContextType = {
     data,
-    refetch
+    refetch,
+     columnVisibility,
+    setColumnVisibility,
+    toggleColumnVisibility,
+    visibleColumns
   }
 
   return <BugQueueContext.Provider value={values}>{children}</BugQueueContext.Provider>

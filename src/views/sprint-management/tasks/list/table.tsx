@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useContext } from 'react'
 
 import {
   Box,
@@ -32,11 +32,23 @@ import type { SprintItem } from '@/services/modules/sprint-item/types'
 import { createSprintTasks, fetchSprintTaskList, updateSprintTask } from '@/services/modules/sprint-tasks'
 import { ColumnTextField } from '@/views/project/task-group/task/columns/default-column'
 import type { SprintTaskItem } from '@/services/modules/sprint-tasks/types'
+import { SprintTaskManagement } from 'src/context/sprint-tast-context' // Update import path as needed
 
-const TaskTableSprint = ({ enabled, sp }: { enabled: boolean; sp: SprintItem }) => {
+const TaskTableSprint = ({ 
+  enabled, 
+  sp, 
+  selectedTask 
+}: { 
+  enabled: boolean; 
+  sp: SprintItem;
+  selectedTask?: { id: string; name: string; sprintID: string; Taskname: string; SprintTaskID: string } | null
+}) => {
   // ** States
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [adding, setAdding] = useState(false)
+
+  // Get column visibility from sprint context
+  const { columnVisibility: sprintColumnVisibility } = useContext(SprintTaskManagement)
 
   const sprintListApi = useQuery({
     queryKey: ['sprint-list', sp?.SprintID],
@@ -44,7 +56,16 @@ const TaskTableSprint = ({ enabled, sp }: { enabled: boolean; sp: SprintItem }) 
     enabled
   })
 
-  console.log('sprintListApi', sprintListApi?.data?.data)
+  // Filter data based on selected task
+  const filteredData = useMemo(() => {
+    const rawData = (sprintListApi?.data?.data ?? []) as SprintTaskItem[]
+    
+    if (selectedTask && selectedTask.SprintTaskID) {
+      return rawData.filter(task => task.SprintTaskID === selectedTask.SprintTaskID)
+    }
+    
+    return rawData
+  }, [sprintListApi?.data?.data, selectedTask])
 
   const columns: ColumnDef<SprintTaskItem>[] = useMemo(
     () => [
@@ -105,7 +126,7 @@ const TaskTableSprint = ({ enabled, sp }: { enabled: boolean; sp: SprintItem }) 
         accessorKey: 'IsUnplanned',
         header: () => (
           <Typography variant='body2' fontWeight={800}>
-            Is Unplanned?
+            Is Unplanned
           </Typography>
         ),
         cell: ({ row: { original } }) => {
@@ -114,7 +135,6 @@ const TaskTableSprint = ({ enabled, sp }: { enabled: boolean; sp: SprintItem }) 
           return <></>
         }
       },
-
       {
         accessorKey: 'EstimatedSP',
         header: () => (
@@ -130,9 +150,18 @@ const TaskTableSprint = ({ enabled, sp }: { enabled: boolean; sp: SprintItem }) 
     []
   )
 
+  // Filter columns based on visibility from sprint context
+  const visibleColumns = useMemo(() => {
+    return columns.filter(column => {
+      const accessorKey = column.accessorKey as string
+      // Always show select column, filter others based on visibility
+      return accessorKey === 'select' || sprintColumnVisibility[accessorKey]
+    })
+  }, [columns, sprintColumnVisibility])
+
   const table = useReactTable({
-    data: (sprintListApi?.data?.data ?? []) as SprintTaskItem[],
-    columns,
+    data: filteredData, // Use filtered data instead of raw data
+    columns: visibleColumns, // Use filtered columns
     initialState: { columnPinning: { left: ['select', 'Taskname'], right: ['add-column'] } },
     state: {
       rowSelection: selectedRows
@@ -225,7 +254,7 @@ const TaskTableSprint = ({ enabled, sp }: { enabled: boolean; sp: SprintItem }) 
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={columns?.length}>
+              <TableCell colSpan={visibleColumns?.length}>
                 <Box display={'flex'} alignItems={'center'} justifyContent={'center'} height={70} width={'100%'}>
                   <Typography>No Data Found</Typography>
                 </Box>

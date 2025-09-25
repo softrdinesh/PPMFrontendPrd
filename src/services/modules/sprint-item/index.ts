@@ -24,3 +24,6 @@ export const createSprint = async (body: any) => {
 export const updateSprint = async ({ id, body }: { id: string; body: any }) => {
   return callApi({ uriEndPoint: sprint.update, pathParams: { id }, body })
 }
+export const deleteSprint = async (id: string) => {
+  return callApi({ uriEndPoint: sprint.deleteItem, pathParams: { id } })
+}

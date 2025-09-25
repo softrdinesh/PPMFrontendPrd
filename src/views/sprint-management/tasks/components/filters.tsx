@@ -6,13 +6,18 @@ import { Box, Checkbox, Divider, FormControlLabel, Grow, Menu, Typography } from
 
 import CustomButton from '@components/button'
 
-import { useProject } from 'src/context/project-context'
+import { useSprintTaskManagement } from 'src/context/sprint-tast-context' // Update the import path as needed
 
 const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
-  const { columnVisibility, setColumnVisibility } = useProject()
+  const { columnVisibility, setColumnVisibility, toggleColumnVisibility } = useSprintTaskManagement()
 
   const handleChange = () => {
-    setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
+    // Use either setColumnVisibility or toggleColumnVisibility
+    // Option 1: Using toggleColumnVisibility (more direct)
+    toggleColumnVisibility(menuID as keyof typeof columnVisibility)
+    
+    // Option 2: Using setColumnVisibility (if you prefer this approach)
+    // setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
   }
 
   return (
@@ -26,21 +31,31 @@ const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
 }
 
 const SprintFilterButton = () => {
-  // Hooks
-  const { columnVisibility, additionalColumns, seeAllColumns } = useProject()
+  // Hooks - use sprint context instead of project context
+  const { columnVisibility, setColumnVisibility, visibleColumns } = useSprintTaskManagement()
   const [anchorEl, setAnchorEl] = useState(null)
 
   const handleOpen = (e: any) => setAnchorEl(e?.currentTarget)
-
   const handleClose = () => setAnchorEl(null)
+
+  // Custom seeAllColumns function for sprint context
+  const seeAllColumns = () => {
+    const allVisible: typeof columnVisibility = {
+      Taskname: true,
+      ActualSP: true,
+      IsUnplanned: true,
+      EstimatedSP: true
+    }
+    setColumnVisibility(allVisible)
+  }
 
   const allSelected = useMemo(() => {
     return Object.keys(columnVisibility)?.every(key => columnVisibility[key])
   }, [columnVisibility])
 
   const selectedCount = useMemo(() => {
-    return Object.keys(columnVisibility)?.filter(v => columnVisibility[v])?.length
-  }, [columnVisibility])
+    return visibleColumns?.length
+  }, [visibleColumns])
 
   return (
     <>
@@ -70,21 +85,13 @@ const SprintFilterButton = () => {
         <Divider />
         <Box px={2} py={2}>
           <Typography fontWeight={600} fontSize={15}>
-            ITEMS COLUMNS
+            SPRINT COLUMNS
           </Typography>
         </Box>
         <FilterMenuItem menuID='Taskname' name={'Task'} />
-        <FilterMenuItem menuID='owner' name='Owner' />
-        <FilterMenuItem menuID='Priority' name='Priority' />
-        <FilterMenuItem menuID='Status' name='Status' />
-        <FilterMenuItem menuID='Timeline' name='Timeline' />
-        {additionalColumns?.map(cols => (
-          <FilterMenuItem
-            key={cols?.AdditionalColumnID}
-            menuID={cols?.AdditionalColumnID?.toString()}
-            name={cols?.ColumnName}
-          />
-        ))}
+        <FilterMenuItem menuID='ActualSP' name='Actual SP' />
+        <FilterMenuItem menuID='IsUnplanned' name='Unplanned' />
+        <FilterMenuItem menuID='EstimatedSP' name='Estimated SP' />
       </Menu>
     </>
   )

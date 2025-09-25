@@ -1,17 +1,18 @@
 import { useState } from 'react'
-
 import { Card, Collapse, IconButton, Menu, MenuItem, Typography } from '@mui/material'
-
 import { useSprintManagement } from '@/context/sprint-context'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 import CreateSprintGroupDialog from '../components/create-group-dialog'
 import SprintList from './sprint-list'
 
-const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
-  const [collapse, setCollapse] = useState(false)
+const GroupItem = ({ sg, selectedSprint, sprintSearchTerm }: { 
+  sg: SprintGroupItem;
+  selectedSprint?: any;
+  sprintSearchTerm?: string;
+}) => {
+  const [collapse, setCollapse] = useState(true)
   const [openEdit, setOpenEdit] = useState(false)
   const [anchorEl, setAnchorEl] = useState<any | null>(null)
-    const [showCard, setShowCard] = useState(false)
 
   const toggleCollapse = () => setCollapse(!collapse)
 
@@ -62,17 +63,60 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
       {openEdit && <CreateSprintGroupDialog open={openEdit} setOpen={setOpenEdit} group={sg} />}
 
       <Collapse in={collapse}>
-        <SprintList sg={sg} />
+        <SprintList 
+          sg={sg} 
+          selectedSprint={selectedSprint}
+          sprintSearchTerm={sprintSearchTerm}
+        />
       </Collapse>
-     
     </Card>
   )
 }
 
-const GroupList = () => {
+const SearchGroupList = ({ 
+  searchTerm, 
+  selectedGroups, 
+  selectedSprint, 
+  sprintSearchTerm 
+}: { 
+  searchTerm?: string; 
+  selectedGroups?: any[];
+  selectedSprint?: any;
+  sprintSearchTerm?: string;
+}) => {
   const { data } = useSprintManagement()
 
-  return <div className='space-y-9'>{data?.map(sg => <GroupItem key={sg?.SprintGroupID} sg={sg} />)}</div>
+  // Filter data based on search term OR selected groups
+  const filteredData = data?.filter(sg => {
+    // If there are selected groups, show only those groups
+    if (selectedGroups && selectedGroups.length > 0) {
+      return selectedGroups.some(selected => selected.id === sg.SprintGroupID || selected.SprintGroupID === sg.SprintGroupID)
+    }
+    
+    // If no search term, return all
+    if (!searchTerm) return true
+    
+    // If there's a search term, filter by it
+    const searchLower = searchTerm.toLowerCase()
+    
+    return (
+      sg?.GroupName?.toLowerCase().includes(searchLower) ||
+      sg?.SprintGroupID?.toString().includes(searchLower)
+    )
+  })
+
+  return (
+    <div className='space-y-9'>
+      {filteredData?.map(sg => (
+        <GroupItem 
+          key={sg?.SprintGroupID} 
+          sg={sg}
+          selectedSprint={selectedSprint}
+          sprintSearchTerm={sprintSearchTerm}
+        />
+      ))}
+    </div>
+  )
 }
 
-export default GroupList
+export default SearchGroupList

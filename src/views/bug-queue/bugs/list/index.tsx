@@ -1,7 +1,6 @@
 'use client'
 
-import { memo, useMemo } from 'react'
-
+import { useMemo, memo, useContext } from 'react'
 import {
   Avatar,
   Button,
@@ -15,16 +14,15 @@ import {
   TableRow,
   Typography
 } from '@mui/material'
-
 import type { ColumnDef } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table'
-
 import IconifyIcon from '@/components/icon'
 import { useBugQueue } from '@/context/bug-queue-context'
 import { createBugAPI } from '@/services/modules/bug-queue'
 import type { BugQueueListAPI } from '@/services/modules/bug-queue/types'
 import BugPriority from './columns/priority'
 import TimeResolutionColumn from './columns/time-resolution'
+import { BugQueueContext } from 'src/context/bug-queue-context'
 
 interface BugListProps {
   selectedRows: any
@@ -34,6 +32,7 @@ interface BugListProps {
 
 const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) => {
   const { data, refetch } = useBugQueue()
+  const { columnVisibility: sprintColumnVisibility } = useContext(BugQueueContext)
 
   const columns: ColumnDef<BugQueueListAPI>[] = useMemo(
     () => [
@@ -46,7 +45,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
           return (
             <div className='flex px-1 w-11'>
               <Checkbox
-                checked={!!table?.getIsAllRowsSelected?.()} // ✅ Avoids undefined error
+                checked={!!table?.getIsAllRowsSelected?.()}
                 indeterminate={!!table?.getIsSomeRowsSelected?.()}
                 onChange={table?.getToggleAllRowsSelectedHandler?.()}
               />
@@ -120,11 +119,11 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
         }
       },
       {
-        accessorFn: row => row.PriorityID,
         id: 'Priority',
+        accessorFn: row => row.PriorityID,
         size: 200,
         maxSize: 200,
-        headerName: 'Priority',
+        header: 'Priority',
         cell: ({ row: { original: row } }) => {
           return <BugPriority row={row} refetch={refetch} canEdit={true} workspaceID={workspaceID} />
         }
@@ -133,9 +132,19 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
     [refetch, workspaceID]
   )
 
+  // Filter columns based on visibility from sprint context
+  const visibleColumns = useMemo(() => {
+    return columns.filter(column => {
+      const columnId = column.id as string
+      // Always show select column, filter others based on visibility
+      // Default to true if visibility setting is not found
+      return columnId === 'select' || sprintColumnVisibility[columnId] !== false
+    })
+  }, [columns, sprintColumnVisibility])
+
   const table = useReactTable({
     data: (data ?? []) as BugQueueListAPI[],
-    columns,
+    columns: visibleColumns,
     state: {
       rowSelection: selectedRows
     },
@@ -182,7 +191,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length}>
+                <TableCell colSpan={visibleColumns.length}>
                   <div className='flex items-center justify-center h-20 w-full'>
                     <Typography>No Tasks Added</Typography>
                   </div>

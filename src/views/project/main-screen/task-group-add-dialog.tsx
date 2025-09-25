@@ -16,43 +16,85 @@ import IconifyIcon from '@components/icon'
 import { useProject } from 'src/context/project-context'
 
 // ** API Imports
-import { addTaskGroup } from '@/services/modules/task-group'
+import { addTaskGroup, updateTaskGroup } from '@/services/modules/task-group'
 
 type FormFields = {
   groupName: string
   projectID?: number
+  TaskGroupID?: string // Add TaskGroupID for update operations
 }
 
-const NewTaskDialog = ({ open, onCloseModal }: { open: boolean; onCloseModal: () => void }) => {
-  const { project, refetchTaskGroup } = useProject()
+interface NewTaskDialogProps {
+  open: boolean
+  onCloseModal: () => void
+  initialGroupName?: string
+  isEdit?: boolean
+  TaskGroupID?: string // Add TaskGroupID prop for edit mode
+}
 
-  const defaultValues = {
-    groupName: ''
-  }
+const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '',isEdit = false, TaskGroupID }: NewTaskDialogProps) => {
+  const { project, refetchTaskGroup } = useProject()
 
   const {
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
-    reset
-  } = useForm<FormFields>({ defaultValues })
+    reset,
+    setValue
+  } = useForm<FormFields>({ 
+    defaultValues: {
+      groupName: ''
+    }
+  })
 
   const onSubmit = async (values: FormFields) => {
+   console.log(values.groupName,TaskGroupID,'vvvv')
     values.projectID = project?.ID
-    const res = await addTaskGroup(values)
+        const body = {
+        groupName: values.groupName,
+       
+      }
 
-    if (res?.status) {
-      reset()
-      refetchTaskGroup()
-      onCloseModal()
-    }
+      if (TaskGroupID) {
+        await updateTaskGroup({ id: TaskGroupID?.toString(), body })
+         refetchTaskGroup()
+           reset()
+           onCloseModal()
+      } else {
+        await addTaskGroup(values)
+           refetchTaskGroup()
+             onCloseModal()
+      }
+    // let res
+    // if (isEdit && TaskGroupID) {
+    //   // Update existing task group
+    //   values.TaskGroupID = TaskGroupID
+    //   res = await updateTaskGroup(TaskGroupID)
+    // } else {
+    //   // Create new task group
+    //   res = await addTaskGroup(values)
+    // }
+
+    // if (res?.status) {
+    //   reset()
+    //   refetchTaskGroup()
+    //   onCloseModal()
+    // }
   }
 
   useEffect(() => {
     if (open) {
-      reset()
+      // Set the value directly when dialog opens
+      setValue('groupName', initialGroupName)
     }
-  }, [open, reset])
+  }, [open, initialGroupName, setValue])
+
+  // Additional useEffect to handle initialGroupName changes
+  useEffect(() => {
+    if (initialGroupName) {
+      setValue('groupName', initialGroupName)
+    }
+  }, [initialGroupName, setValue])
 
   return (
     <Dialog
@@ -76,7 +118,9 @@ const NewTaskDialog = ({ open, onCloseModal }: { open: boolean; onCloseModal: ()
           paddingY: 2
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '18px' }}>Create Task Group</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '18px' }}>
+          {isEdit ? 'Edit Task Group' : 'Create Task Group'}
+        </Typography>
         <IconButton
           aria-label='close'
           onClick={onCloseModal}
@@ -196,7 +240,7 @@ const NewTaskDialog = ({ open, onCloseModal }: { open: boolean; onCloseModal: ()
               size='large'
               type='submit'
             >
-              {isSubmitting ? <CircularProgress size={15} color='inherit' /> : 'Create'}
+              {isSubmitting ? <CircularProgress size={15} color='inherit' /> : isEdit ? 'Update' : 'Create'}
             </Button>
           </Box>
         </form>
