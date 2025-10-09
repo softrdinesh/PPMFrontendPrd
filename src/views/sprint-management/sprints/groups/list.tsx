@@ -6,20 +6,37 @@ import { useSprintManagement } from '@/context/sprint-context'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 import CreateSprintGroupDialog from '../components/create-group-dialog'
 import SprintList from './sprint-list'
+import DeleteDialog from '@/components/dialog/delete-dialog'
+import { useBugQueue } from '@/context/bug-queue-context'
 
 const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
   const [collapse, setCollapse] = useState(false)
   const [openEdit, setOpenEdit] = useState(false)
-  const [anchorEl, setAnchorEl] = useState<any | null>(null)
     const [showCard, setShowCard] = useState(false)
-
+  const [anchorEl, setAnchorEl] = useState<any>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const toggleCollapse = () => setCollapse(!collapse)
-
+  const { data, refetch } = useBugQueue()
   const handleMenuClose = () => setAnchorEl(null)
 
   const handleMenuOpen = (e: any) => {
     setAnchorEl(e?.currentTarget)
   }
+  
+const handleDelete = async () => {
+  try {
+    // Prepare the body payload
+    
+
+    // await (id, body)
+         await refetch() 
+    setDeleteOpen(false)
+ 
+  } catch (error) {
+    console.log('Delete failed:', error)
+  }
+}
+
 
   return (
     <Card className='rounded-lg'>
@@ -49,7 +66,13 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
                 Edit
               </div>
             </MenuItem>
-            <MenuItem>
+            <MenuItem 
+             onClick={() => {
+                setAnchorEl(null)
+                setDeleteOpen(true)
+              }}
+            
+            >
               <div className='flex items-center gap-3'>
                 <i className='ri-delete-bin-line size-4' />
                 Delete
@@ -57,10 +80,17 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
             </MenuItem>
           </Menu>
         </div>
-      </div>
+      </div>s
 
       {openEdit && <CreateSprintGroupDialog open={openEdit} setOpen={setOpenEdit} group={sg} />}
-
+ <DeleteDialog
+        open={deleteOpen}
+        setOpen={val => setDeleteOpen(!!val)}
+        title={`Delete this Sprint Group ?`}
+        onConfirm={handleDelete}
+        refetch={refetch}
+        description={'You wont be able to revert this action'}
+      />
       <Collapse in={collapse}>
         <SprintList sg={sg} />
       </Collapse>

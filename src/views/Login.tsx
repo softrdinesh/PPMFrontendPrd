@@ -43,8 +43,8 @@ import { authentication } from '@/services/auth/endpoint'
 import { authConfig } from '@/configs/authConfig'
 
 const defaultValues = {
-  email: process?.env?.NODE_ENV === 'development' ? 'samad.saiyed.ss@gmail.com' : '',
-  password: process?.env?.NODE_ENV === 'development' ? 'Abc@223133' : ''
+  email: process?.env?.NODE_ENV === 'development' ? 'dhamukotti123@gmail.com' : '',
+  password: process?.env?.NODE_ENV === 'development' ? 'Dhamu123@' : ''
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -73,7 +73,12 @@ const LoginV2 = () => {
     control,
     formState: { isSubmitting }
   } = useForm<FormFields>({
-    
+    defaultValues: {
+      email: defaultValues.email,
+      password: defaultValues.password,
+      latitude: 0,
+      longitude: 0
+    }
   })
 
   // Hooks

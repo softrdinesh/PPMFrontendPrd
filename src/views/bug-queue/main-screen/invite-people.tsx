@@ -23,6 +23,7 @@ const ProjectInvitePeople = ({ IsOpen, users = [] }: { IsOpen: boolean; users?: 
     setInviteUserOpen(true)
   }
 
+  console.log('ddd')
   return (
     <>
       <CustomButton
@@ -37,7 +38,7 @@ const ProjectInvitePeople = ({ IsOpen, users = [] }: { IsOpen: boolean; users?: 
         <DialogTitle>
           <Box display={'flex'} justifyContent={'space-between'}>
             <Typography variant='h6' fontWeight={800}>
-              Users
+              Usersssss
             </Typography>
             {role?.RoleName === 'Admin' && (
               <CustomButton

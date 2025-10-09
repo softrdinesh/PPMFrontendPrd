@@ -52,6 +52,25 @@ export const addTaskGroup = async (body: any) => {
     })
 }
 
+
+export const DeleteTaskgroup = async (id: string, body: { projectID: number; groupName: string }) => {
+  return callApi({
+    uriEndPoint: taskGroup.deleteItem,
+    pathParams: { id },   // URL param
+    body                  // request body
+  }).then(res => {
+      toast.success(res?.message ?? 'Task Group Deleted  Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Task Group Deleted  Successfully')
+
+      return err
+    })
+}
+
+
 export const createColumn = async (body: any) => {
   return callApi({ uriEndPoint: taskGroup.createColumn, body })
     .then(res => {

@@ -72,6 +72,7 @@ const DeleteTasksComponent = ({
       </Card>
       <DeleteDialog
         open={deleteOpen}
+        refetch={refetch}
         setOpen={val => setDeleteOpen(!!val)}
         description={`All selected rows will be permenantly deleted! You cannot revert once deleted.`}
         onConfirm={handleDelete}

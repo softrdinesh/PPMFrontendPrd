@@ -50,6 +50,7 @@ const ProjectManagementPage = ({ projectID }: { projectID: string }) => {
         }
       })
   })
+  console.log(projectID,'projectID')
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   
@@ -441,7 +442,7 @@ const filteredTasks = currentTasks.filter((task: any) => {
     >
       {data?.TaskGroupName ?? '-'}
     </Typography>
-    <TaskGroupActions groupName={data?.TaskGroupName} id={data?.TaskGroupID} />
+    <TaskGroupActions groupName={data?.TaskGroupName} id={data?.TaskGroupID} ProjectID={data.ProjectID} refetch={fetchTaskGroupList}  />
   </div>
 ))}
 

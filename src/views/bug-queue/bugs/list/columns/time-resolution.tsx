@@ -26,6 +26,9 @@ type FormType = {
 const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   const [open, setOpen] = useState<any>(null)
   const [countdown, setCountdown] = useState<string | null>(null)
+  const [timerStartTime, setTimerStartTime] = useState<number | null>(null)
+  const [overtimeSeconds, setOvertimeSeconds] = useState<number>(0)
+  const [isOvertime, setIsOvertime] = useState<boolean>(false)
 
   const form = useForm<FormType>({ defaultValues: { TimeResolution: null } })
 
@@ -52,28 +55,19 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         const formatted = `${hours}h ${minutes}m ${seconds}s`
 
         const body = {
-          TimeResolution: formatted
+          TimeResolution: formatted,
+          TimerStart: 0 // Changed from 1 to 0 to prevent auto-start
         }
 
         await updateBug({ body, id: bug?.BugID?.toString() })
+        // Removed setTimerStartTime(Date.now()) to prevent auto-start
       } else {
         toast.error('TimeResolution is in the past.')
       }
 
       refetch()
-
       setOpen(null)
     }
-  }
-
-  const handleTimerToggle = async () => {
-    if (bug?.TimerStart) {
-      await updateBug({ body: { TimerStart: 0, TimeResolution: countdown }, id: bug?.BugID?.toString() })
-    } else {
-      await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
-    }
-
-    refetch()
   }
 
   const parseResolutionToSeconds = (resolution: string) => {
@@ -97,42 +91,260 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
     return `${h}h ${m}m ${s}s`
   }
 
+  // Function to update overtime in backend
+  const updateOvertimeInBackend = async (overtimeSeconds: number) => {
+    try {
+      const formattedOvertime = formatCountdown(overtimeSeconds)
+      await updateBug({
+        body: {
+          TimeResolution: formattedOvertime,
+          TimerStart: 1 // Keep timer running
+        },
+        id: bug?.BugID?.toString()
+      })
+    } catch (error) {
+      console.error('Failed to update overtime in backend:', error)
+    }
+  }
+
+  const handleTimerToggle = async () => {
+    if (bug?.TimerStart) {
+      // Pause timer - store current countdown including overtime
+      const currentCountdown = countdown || bug?.TimeResolution || '0h 0m 0s'
+      const currentSeconds = parseResolutionToSeconds(currentCountdown)
+
+      await updateBug({
+        body: {
+          TimerStart: 0,
+          TimeResolution: currentCountdown
+        },
+        id: bug?.BugID?.toString()
+      })
+      setTimerStartTime(null)
+
+      // Save paused state so resume can reconstruct exact overtime moment
+      if (bug?.BugID) {
+        localStorage.setItem(`pausedCountdownSeconds_${bug.BugID}`, currentSeconds.toString())
+        localStorage.setItem(`pausedMode_${bug.BugID}`, isOvertime ? 'overtime' : 'countdown')
+
+        // Remove active run start markers (we're paused)
+        localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
+        localStorage.removeItem(`timerStartTime_${bug.BugID}`)
+      }
+    } else {
+      // Resume timer
+      const pausedSecondsStr = bug?.BugID ? localStorage.getItem(`pausedCountdownSeconds_${bug.BugID}`) : null
+      const pausedMode = bug?.BugID ? localStorage.getItem(`pausedMode_${bug.BugID}`) : null
+
+      if (pausedSecondsStr && pausedMode === 'overtime' && bug?.BugID) {
+        // Resuming from a paused overtime: reconstruct overtimeStartTime so elapsed calculation picks up where it left off
+        const pausedSeconds = parseInt(pausedSecondsStr, 10)
+        const overtimeStart = Date.now() - pausedSeconds * 1000
+        localStorage.setItem(`overtimeStartTime_${bug.BugID}`, overtimeStart.toString())
+
+        // Inform backend timer is running again (we keep TimeResolution as-is; backend will get overtime updates)
+        await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
+
+        // Clean up paused keys
+        localStorage.removeItem(`pausedCountdownSeconds_${bug.BugID}`)
+        localStorage.removeItem(`pausedMode_${bug.BugID}`)
+
+        // Do NOT set timerStartTime here — overtime path uses overtimeStartTime
+        setTimerStartTime(null)
+      } else {
+        // Normal start/resume for countdown path
+        await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
+        const now = Date.now()
+        setTimerStartTime(now)
+        if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, now.toString())
+
+        // Clean up any paused markers
+        if (bug?.BugID) {
+          localStorage.removeItem(`pausedCountdownSeconds_${bug.BugID}`)
+          localStorage.removeItem(`pausedMode_${bug.BugID}`)
+        }
+      }
+    }
+
+    refetch()
+  }
+
   useEffect(() => {
     let countdownInterval: NodeJS.Timeout
     let syncInterval: NodeJS.Timeout
+    let overtimeInterval: NodeJS.Timeout
 
     if (bug?.TimeResolution && bug?.TimerStart) {
-      let remainingSeconds = parseResolutionToSeconds(bug.TimeResolution)
+      // Prefer overtimeStart when it exists (this fixes resume-from-overtime issues)
+      const storedOvertimeStart = bug?.BugID ? localStorage.getItem(`overtimeStartTime_${bug.BugID}`) : null
+      const storedStartTime = bug?.BugID ? localStorage.getItem(`timerStartTime_${bug.BugID}`) : null
 
-      setCountdown(formatCountdown(remainingSeconds))
+      const now = Date.now()
 
-      countdownInterval = setInterval(() => {
-        if (remainingSeconds > 0) {
-          remainingSeconds -= 1
-          setCountdown(formatCountdown(remainingSeconds))
+      if (storedOvertimeStart) {
+        // We are in overtime and have a stored overtime start time (resume or active overtime)
+        const overtimeStartTime = parseInt(storedOvertimeStart, 10)
+        let overtime = Math.floor((now - overtimeStartTime) / 1000)
+        if (overtime < 0) overtime = 0
+
+        setIsOvertime(true)
+        setOvertimeSeconds(overtime)
+        setCountdown(formatCountdown(overtime))
+
+        overtimeInterval = setInterval(() => {
+          setOvertimeSeconds(prev => {
+            const newSeconds = prev + 1
+            const formatted = formatCountdown(newSeconds)
+            setCountdown(formatted)
+
+            if (newSeconds % 10 === 0) {
+              updateOvertimeInBackend(newSeconds)
+            }
+
+            return newSeconds
+          })
+        }, 1000)
+      } else {
+        // Normal countdown / not currently saved as overtime
+        const totalSeconds = parseResolutionToSeconds(bug.TimeResolution)
+
+        // Decide startTime for countdown (preserve any previously stored timerStartTime)
+        let startTime: number
+
+        if (storedStartTime && timerStartTime) {
+          startTime = timerStartTime
+        } else if (storedStartTime) {
+          startTime = parseInt(storedStartTime, 10)
+          setTimerStartTime(startTime)
         } else {
-          clearInterval(countdownInterval)
-          clearInterval(syncInterval)
-          setCountdown('0h 0m 0s')
+          startTime = Date.now()
+          setTimerStartTime(startTime)
+          if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, startTime.toString())
         }
-      }, 1000)
 
-      // 🔄 Sync with backend every 10 seconds
-      syncInterval = setInterval(() => {
-        const formatted = formatCountdown(remainingSeconds)
+        // Calculate elapsed time since timer started
+        const elapsedSeconds = Math.floor((now - startTime) / 1000)
 
-        updateBug({ body: { TimeResolution: formatted }, id: bug?.BugID?.toString() })
-      }, 10000)
+        // Calculate remaining seconds
+        let remainingSeconds = totalSeconds - elapsedSeconds
+
+        // Check if we're already in overtime
+        const currentIsOvertime = remainingSeconds < 0
+        setIsOvertime(currentIsOvertime)
+
+        if (currentIsOvertime) {
+          // We're in overtime - set overtime start time (if not present) and switch to overtime handling
+          let overtime: number
+
+          // If there's a leftover overtimeStart stored (shouldn't be here because we checked above),
+          // compute overtime using that. Otherwise, create one now based on when countdown hit zero.
+          const storedOvertimeStartNow = bug?.BugID ? localStorage.getItem(`overtimeStartTime_${bug.BugID}`) : null
+
+          if (storedOvertimeStartNow) {
+            const overtimeStartValue = parseInt(storedOvertimeStartNow, 10)
+            overtime = Math.floor((now - overtimeStartValue) / 1000)
+          } else {
+            // First time entering overtime: compute start as the moment countdown reached zero
+            const overtimeStartTime = now - Math.abs(remainingSeconds) * 1000
+            if (bug?.BugID) localStorage.setItem(`overtimeStartTime_${bug.BugID}`, overtimeStartTime.toString())
+            overtime = Math.abs(remainingSeconds)
+          }
+
+          setOvertimeSeconds(overtime)
+          setCountdown(formatCountdown(overtime))
+
+          // Start overtime counter
+          overtimeInterval = setInterval(() => {
+            setOvertimeSeconds(prev => {
+              const newSeconds = prev + 1
+              const formatted = formatCountdown(newSeconds)
+              setCountdown(formatted)
+
+              // Update backend every 10 seconds when in overtime
+              if (newSeconds % 10 === 0) {
+                updateOvertimeInBackend(newSeconds)
+              }
+
+              return newSeconds
+            })
+          }, 1000)
+        } else {
+          // Normal countdown
+          setCountdown(formatCountdown(remainingSeconds))
+
+          countdownInterval = setInterval(() => {
+            remainingSeconds -= 1
+
+            if (remainingSeconds <= 0) {
+              clearInterval(countdownInterval)
+              clearInterval(syncInterval)
+              setCountdown('0h 0m 0s')
+              setIsOvertime(true)
+              setOvertimeSeconds(0)
+
+              // Store overtime start time
+              if (bug?.BugID) localStorage.setItem(`overtimeStartTime_${bug.BugID}`, Date.now().toString())
+
+              // Update backend when timer reaches 0
+              updateOvertimeInBackend(0)
+
+              // Start overtime counter when timer reaches 0
+              overtimeInterval = setInterval(() => {
+                setOvertimeSeconds(prev => {
+                  const newSeconds = prev + 1
+                  const formatted = formatCountdown(newSeconds)
+                  setCountdown(formatted)
+
+                  // Update backend every 10 seconds when in overtime
+                  if (newSeconds % 10 === 0) {
+                    updateOvertimeInBackend(newSeconds)
+                  }
+
+                  return newSeconds
+                })
+              }, 1000)
+            } else {
+              setCountdown(formatCountdown(remainingSeconds))
+            }
+          }, 1000)
+
+          // 🔄 Sync with backend every 10 seconds
+          syncInterval = setInterval(() => {
+            if (remainingSeconds > 0) {
+              const formatted = formatCountdown(remainingSeconds)
+              updateBug({ body: { TimeResolution: formatted }, id: bug?.BugID?.toString() })
+            }
+          }, 10000)
+        }
+      }
     } else {
       setCountdown(null)
+      setTimerStartTime(null)
+      setOvertimeSeconds(0)
+      setIsOvertime(false)
+      if (bug?.BugID) {
+        localStorage.removeItem(`timerStartTime_${bug.BugID}`)
+        localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
+      }
     }
 
     return () => {
       clearInterval(countdownInterval)
       clearInterval(syncInterval)
+      clearInterval(overtimeInterval)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bug?.TimeResolution, bug?.TimerStart])
+  }, [bug?.TimeResolution, bug?.TimerStart, bug?.BugID, timerStartTime])
+
+  // Clean up localStorage on component unmount
+  useEffect(() => {
+    return () => {
+      if (bug?.BugID) {
+        localStorage.removeItem(`timerStartTime_${bug.BugID}`)
+        localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
+      }
+    }
+  }, [bug?.BugID])
 
   return (
     <div className='flex items-center gap-2'>
@@ -148,8 +360,11 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
 
       {!!bug?.TimerStart && bug?.TimeResolution ? (
         <div className='px-2'>
-          <Typography className='text-sm font-medium text-primary'>
+          {/* <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}> */}
+                      <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
+
             {countdown || bug?.TimeResolution || 'Add Time'}
+          {/* //  {isOvertime && ' (overtime)'} */}
           </Typography>
         </div>
       ) : (

@@ -66,16 +66,18 @@ const DeleteTasksComponent = ({
             onClick={() => setDeleteOpen(true)}
             startIcon={<IconifyIcon icon={'solar:trash-bin-minimalistic-2-bold'} color='red' />}
           >
-            Delete
+            DeleteSSS
           </CustomButton>
         </div>
       </Card>
       <DeleteDialog
-        open={deleteOpen}
-        setOpen={val => setDeleteOpen(!!val)}
-        description={`All selected rows will be permenantly deleted! You cannot revert once deleted.`}
-        onConfirm={handleDelete}
-      />
+            open={deleteOpen}
+            setOpen={val => setDeleteOpen(!!val)}
+            title={`Delete this taskgroup ?`}
+            onConfirm={handleDelete}
+            refetch={refetch}
+            description={'You wont be able to revert this action'}
+          />
     </Grid2>
   )
 }

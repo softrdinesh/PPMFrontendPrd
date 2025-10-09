@@ -8,6 +8,7 @@ export const PROTECTED_ROUTES = [
   '/bug-queue',
   routes.project,
   routes.profile,
+  routes.invite,
   routes.workspace
 ]
 export const PUBLIC_ROUTES = ['/invite', '/404']

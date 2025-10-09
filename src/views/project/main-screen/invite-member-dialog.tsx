@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 // ** MUI Imports
 
@@ -60,9 +60,29 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
   const { selected } = useWorkspace()
   const theme = useTheme()
   const { data: roleList = [] } = useQuery({ queryKey: ['roles'], queryFn: () => fetchRolesList() })
+  const [userId, setUserId] = useState(null);
 
   const [copyOpen, setCopyOpen] = useState(false)
 
+  useEffect(() => {
+    // Get the data from localStorage
+    const userData = localStorage.getItem('userData');
+    
+    if (userData) {
+      try {
+
+        const parsedData = JSON.parse(userData);
+        
+ 
+        const userId = parsedData.userData.UserID;
+        setUserId(userId);
+        
+        console.log('User ID:', userId);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, copy] = useCopyToClipboard()
 
@@ -90,7 +110,15 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
   })
 
   const onSubmit = async (values: FormField) => {
-    const body = { ...values, projectID, workspaceID: selected?.WorkspaceID, IsOpen }
+
+
+const body ={
+ inviteEmailAddress: values.invitations[0].email,
+  inviteBy: userId, 
+  workspaceid:Number(selected?.WorkspaceID),
+  roleID: values.invitations[0].roleID,
+  projectID:Number(projectID)
+}
 
     try {
       await inviteMember(body)
@@ -114,7 +142,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
                 Collaborate with your team to get the most out of this WebApp.{' '}
               </Typography>
             </Box>
-            <Box display={'flex'} flexDirection={'column'} gap={2}>
+            {/* <Box display={'flex'} flexDirection={'column'} gap={2}>
               <Typography>{`Invite with link (anyone with @figr.design email)`}</Typography>
               <TextField
                 fullWidth
@@ -143,7 +171,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
                 }}
                 inputProps={{ readOnly: true }}
               />
-            </Box>
+            </Box> */}
             <Box display={'flex'} flexDirection={'column'} gap={2} flex={1}>
               <Typography fontWeight={700}>{`Invite with email`}</Typography>
               {fields?.map((field, index) => (
