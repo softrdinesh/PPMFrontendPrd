@@ -66,7 +66,7 @@ const DeleteTasksComponent = ({
             onClick={() => setDeleteOpen(true)}
             startIcon={<IconifyIcon icon={'solar:trash-bin-minimalistic-2-bold'} color='red' />}
           >
-            DeleteSSS
+            Delete
           </CustomButton>
         </div>
       </Card>

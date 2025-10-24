@@ -11,7 +11,7 @@ import {
   TableRow,
   Typography
 } from '@mui/material'
-
+import moment from 'moment'
 import { useQuery } from '@tanstack/react-query'
 
 import type { ColumnDef } from '@tanstack/react-table'
@@ -26,15 +26,21 @@ import {
 } from '@tanstack/react-table'
 
 import { debounce } from 'lodash'
+import { useAuth } from '@/hooks/useAuth'
 
 import CustomButton from '@/components/button'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
-import { createSprint, fetchSprintList, updateSprint } from '@/services/modules/sprint-item'
+import { createSprint, fetchSprintList, updateSprint,createSprintItems,UpdateSrpintItem } from '@/services/modules/sprint-item'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
 import SprintTimelineManagement from './timeline'
 import { ColumnTextField } from '@/views/project/task-group/task/columns/default-column'
+import { GoalsTextfiled } from '@/views/project/task-group/task/columns/GoalsDefaultcolum'
 import { SprintManagement } from 'src/context/sprint-context'
 import DeleteTasksComponent from '../../components/Delete-sprint'
+import CreateColumnMenu from '@/views/sprint-management/tasks/create-column'
+import TaskPeople from '@/views/sprint-management/tasks/columns/Tasks'
+import Task from '@/views/sprint-management/tasks/columns/Tasks'
+
 const SprintList = ({ 
   sg, 
   selectedSprint, 
@@ -49,10 +55,11 @@ const SprintList = ({
   const [adding, setAdding] = useState(false)
       const [showCard, setShowCard] = useState(false)
   const [selectedSprint1, setSelectedSprint1] = useState<any>(null) // NEW: Track selected sprint
-
+  const [addColumnAnchor, setAddColumnAnchor] = useState<any>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
    const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-
+  const { profile,user } = useAuth()
 
  useEffect(() => {
     if (showSelected) {
@@ -63,8 +70,7 @@ const SprintList = ({
       return () => clearTimeout(timeout)
     }
   }, [showSelected])
-
-
+ 
 
 
   // Get column visibility from sprint context
@@ -161,8 +167,11 @@ const SprintList = ({
             Goals
           </Typography>
         ),
-        cell: ({ row: { original } }) => {
-          return <>{original?.Goals || '-'}</>
+        // cell: ({ row: { original } }) => {
+        //   return <>{original?.Goals || '-'}</>
+        // }
+          cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          return <GoalsTextfiled canEdit={true} getValue={getValue} index={index} id={id} table={table} />
         }
       },
       {
@@ -178,6 +187,7 @@ const SprintList = ({
           return <></>
         }
       },
+     
       {
         accessorKey: 'SprintTimeline',
         header: () => (
@@ -253,11 +263,38 @@ const SprintList = ({
       updateData: async (rowIndex: number, columnId: any, value: { AdditionalColumnID: string }) => {
         if (columnId === 'Name' && filteredSprintData?.[rowIndex]?.SprintID) {
           try {
-            const response = await updateSprint({
-              id: filteredSprintData?.[rowIndex]?.SprintID?.toString(),
-              body: { Name: value }
-            })
+            // const response = await updateSprint({
+            //   id: filteredSprintData?.[rowIndex]?.SprintID?.toString(),
+            //   body: { Name: value }
+            // })
+            const formattedData = filteredSprintData.map(item => ({
+  ...item,
+  formattedSprintTimelineStart: moment(item.SprintTimelineStart).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+  formattedSprintTimelineEnd: moment(item.SprintTimelineEnd).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+}));
+            
+            
+            
+            const value1 = localStorage.getItem('userData')
+            const data1 = JSON.parse(value1);
+            const userId = data1.userData.UserID;
 
+            const bodyvalue = {
+              Sprintname:value,
+              Goals:formattedData[0].Goals ?? "-",
+            ///  startdate:formattedData[0].formattedSprintTimelineStart == "Invalid date" ? "" :formattedData[0].formattedSprintTimelineStart,
+            ///  endate: formattedData[0].formattedSprintTimelineEnd == "Invalid date" ? "": formattedData[0].formattedSprintTimelineEnd,
+              LoginuserID:userId,
+              SprintgroupID:formattedData[0].SprintGroupID,
+              WorkspaceID:formattedData[0].WorkSpaceID,
+              sprintID:filteredSprintData?.[rowIndex]?.SprintID?.toString()
+            }
+
+            console.log(bodyvalue,'vv')
+               const response = await UpdateSrpintItem(bodyvalue
+              // id: filteredSprintData?.[rowIndex]?.SprintID?.toString(),
+              // body: { Name: value }
+            )
             if (response) {
               sprintListApi?.refetch()
             }
@@ -265,19 +302,71 @@ const SprintList = ({
             console.error('error :', error)
           }
         }
+
+
+
+
+        if (columnId === 'Goals' && filteredSprintData?.[rowIndex]?.SprintID) {
+    try {
+
+
+
+      const value1 = localStorage.getItem('userData')
+      const data = JSON.parse(value1);
+      const userId = data.userData.UserID;
+
+            const formattedData = filteredSprintData.map(item => ({
+  ...item,
+  formattedSprintTimelineStart: moment(item.SprintTimelineStart).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+  formattedSprintTimelineEnd: moment(item.SprintTimelineEnd).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+}));
+           
+
+
+
+      const bodyvalue = {
+        Sprintname: filteredSprintData?.[rowIndex]?.Name || "New Sprint",
+        Goals: value || "New Goal",
+        LoginuserID: userId,
+        SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
+        WorkspaceID: filteredSprintData?.[rowIndex]?.WorkSpaceID,
+        sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
       }
+
+      const response = await UpdateSrpintItem(bodyvalue)
+      if (response) {
+        sprintListApi?.refetch()
+      }
+    } catch (error) {
+      console.error('error :', error)
     }
+  }
+
+        
+      }
+
+      
+    }
+    
   })
 
   const handleAddSprint = async () => {
     setAdding(true)
 
-    const body = {
-      workspaceID: sg?.WorkspaceID,
-      sprintGroupID: sg?.SprintGroupID
-    }
+    // const body11 = {
+    //   workspaceID: sg?.WorkspaceID,
+    //   sprintGroupID: sg?.SprintGroupID
+    // }s
 
-    await createSprint(body)
+
+    const body={
+      Sprintname: "New Sprint",
+      LoginuserID: user?.id,
+      SprintgroupID:sg?.SprintGroupID,
+      WorkspaceID:sg?.WorkspaceID
+    }
+     await createSprintItems(body)
+    // await createSprint(body)
     sprintListApi.refetch()
 
     setAdding(false)
@@ -362,6 +451,19 @@ const SprintList = ({
         >
           {adding ? 'Adding...' : 'Add Sprint'}
         </CustomButton>
+         
+  <CustomButton
+             variant='outlined'
+             circular
+             size='small'
+             color='secondary'
+             startIcon={<i className='ri-add-line' />}
+             onClick={e => {
+               setAnchorEl(e?.currentTarget)
+             }}
+           >
+             Add New Column
+           </CustomButton>
       </div>
 {showCard &&
        <DeleteTasksComponent
@@ -371,6 +473,17 @@ const SprintList = ({
                 refetch={refetchSprints}
                 setSelectedRows={setSelectedRows}
               />}
+
+<CreateColumnMenu
+  anchorEl={anchorEl}
+  setAnchorEl={setAnchorEl}
+  onSubmit={(data) => {
+    // data contains: { columnName: string, columnTypeID: number }
+    console.log(data)
+  }}
+   spintid={sg.WorkspaceID}
+/>
+
     </div>
   )
 }

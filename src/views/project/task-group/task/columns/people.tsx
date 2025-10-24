@@ -19,9 +19,7 @@ import { debounce } from 'lodash'
 import { useProject } from '@/context/project-context'
 import type { ProjectUsers, User } from '@/services/modules/invite/types'
 import type { AdditionalColumn } from '@/services/modules/project/types'
-import { updateSubTask } from '@/services/modules/sub-task'
 import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/types'
-import { updateTasks } from '@/services/modules/task'
 import type { Owner, TaskListItemType } from '@/services/modules/task/types'
 
 interface TaskPeopleProps {
@@ -65,86 +63,20 @@ const TaskPeople = ({
 
   const handleClear = () => {
     setSelectedOwner(null)
+    handleClose()
   }
 
   const handleSelectUser = async (selected: User) => {
-    let body: any = {}
-
-    try {
-      body = {
-        DynamicID: dynamicValue?.DynamicID ?? null,
-        AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: selected?.UserID,
-        Title: `Column '${columnData?.ColumnName}' was updated`,
-        PreviousState: `${dynamicValue?.length} users`,
-        NewState: `${dynamicValue?.length + 1} users`
-      }
-
-      if (isSubTask) {
-        const subRowData = rowData as AdditionalSubTaskListItem
-
-        body.TaskID = subRowData?.TaskMasterID
-        const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          handleClose()
-        }
-      } else {
-        const response = await updateTasks({ id: rowData?.TaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          handleClose()
-        }
-      }
-    } catch (error) {
-      console.error('error :', error)
-    }
+    // Design only - no API call
+    console.log('User selected:', selected)
+    handleClose()
   }
 
   const handleSelectOwner = async (selected: User) => {
-    let body: any = {}
-
-    try {
-      if (isSubTask) {
-        const subRowData = rowData as AdditionalSubTaskListItem
-
-        body = {
-          SubtaskOwner: selected?.UserID,
-          Title: subRowData ? 'Task Owner Updated' : 'Task Owner Added!',
-          PreviousState: subRowData?.Owner?.Name,
-          NewState: selected?.Name
-        }
-
-        body.TaskID = subRowData?.TaskMasterID
-
-        const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          handleClose()
-        }
-      } else {
-        const taskRowData = rowData as TaskListItemType
-
-        body = {
-          Taskowner: selected?.UserID,
-          Title: taskRowData ? 'Task Owner Updated' : 'Task Owner Added!',
-          PreviousState: taskRowData?.Owner?.Name,
-          NewState: selected?.Name
-        }
-
-        const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          handleClose()
-        }
-      }
-    } catch (error) {
-      console.log('error :', error)
-    }
+    // Design only - no API call
+    setSelectedOwner(selected)
+    console.log('Owner selected:', selected)
+    handleClose()
   }
 
   const debouncedClick = debounce(handleSelectUser, 500)

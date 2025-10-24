@@ -29,10 +29,11 @@ import { debounce } from 'lodash'
 
 import CustomButton from '@/components/button'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
-import { createSprintTasks, fetchSprintTaskList, updateSprintTask } from '@/services/modules/sprint-tasks'
+import { createSprintTasks, CREATESPRINTTASKS, fetchSprintTaskList, updateSprintTask } from '@/services/modules/sprint-tasks'
 import { ColumnTextField } from '@/views/project/task-group/task/columns/default-column'
 import type { SprintTaskItem } from '@/services/modules/sprint-tasks/types'
 import { SprintTaskManagement } from 'src/context/sprint-tast-context' // Update import path as needed
+import { useAuth } from '@/hooks/useAuth'
 
 const TaskTableSprint = ({ 
   enabled, 
@@ -46,7 +47,8 @@ const TaskTableSprint = ({
   // ** States
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [adding, setAdding] = useState(false)
-
+  const { profile,user } = useAuth()
+  console.log(profile,user.id)
   // Get column visibility from sprint context
   const { columnVisibility: sprintColumnVisibility } = useContext(SprintTaskManagement)
 
@@ -196,11 +198,19 @@ const TaskTableSprint = ({
   const handleAddSprint = async () => {
     setAdding(true)
 
+
+
     const body = {
-      sprintID: sp?.SprintID
+    taskname:"New Task",
+     SprintID:sp?.SprintID,
+     LoginuserID:user.id
     }
 
-    await createSprintTasks(body)
+await CREATESPRINTTASKS(body)
+
+
+ //   await createSprintTasks(body)
+  //  sprintID: sp?.SprintID
     sprintListApi.refetch()
 
     setAdding(false)

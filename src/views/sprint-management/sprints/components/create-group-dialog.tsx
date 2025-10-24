@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle, Divider, IconButton, TextField, Typ
 import { Controller, useForm } from 'react-hook-form'
 
 import CustomButton from '@/components/button'
-import { addSprintGroups, updateSprintGroups } from '@/services/modules/sprint-group'
+import { addSprintGroups, updateSprintGroups,CreateSprintGroup } from '@/services/modules/sprint-group'
 import { useWorkspace } from '@/context/workspace-context'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 import { useSprintManagement } from '@/context/sprint-context'
@@ -40,7 +40,11 @@ const CreateSprintGroupDialog = ({ open, setOpen, group }: Props) => {
         await updateSprintGroups({ id: group?.SprintGroupID?.toString(), body })
         refetch()
       } else {
-        await addSprintGroups(body)
+        const values ={
+          Groupname:data?.name,
+          WorkspaceID:selected?.WorkspaceID
+        }
+        await CreateSprintGroup(values)
         refetch()
       }
 

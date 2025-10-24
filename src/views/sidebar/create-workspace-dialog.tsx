@@ -14,6 +14,7 @@ import { Controller, useForm } from 'react-hook-form'
 import CustomButton from '@/components/button'
 import { useAuth } from '@/hooks/useAuth'
 import { addSprintWorkspace } from '@/services/modules/sprint-workspace'
+import { CreateSprintWorkspace } from '@/services/modules/sprint-workspace'
 import { addWorkspace } from '@/services/modules/workspace'
 
 interface FormType {
@@ -34,7 +35,7 @@ const defaultValues: FormType = {
 
 const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: CreateWorkspaceDialogProps) => {
   // ** Hooks
-  const { profile } = useAuth()
+  const { profile,user } = useAuth()
 
   const {
     handleSubmit,
@@ -44,10 +45,19 @@ const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: Create
   } = useForm<FormType>({ defaultValues })
 
   const onSubmit = async (values: FormType) => {
+    console.log(values,'value')
     if (profile === 'projects') {
-      await addWorkspace(values)
+    await addWorkspace(values)
     } else {
-      await addSprintWorkspace(values)
+
+  const body = {
+        Workspacename: values.workspaceName,
+        OrganizationID: values.organizationID,
+        LoginuserID: user.id,
+      };
+
+      //await CreateSprintWorkspace(body)
+        await addSprintWorkspace(values)
     }
 
     reset()

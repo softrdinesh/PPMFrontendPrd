@@ -7,6 +7,8 @@ import moment from 'moment'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
 import AppReactDatepicker from '@/libs/styles/AppReactDatepicker'
 import { updateSprint } from '@/services/modules/sprint-item'
+import { UpdateSrpintItem } from '@/services/modules/sprint-item'
+import { useAuth } from '@/hooks/useAuth'
 
 const DatePickerDynamic = ({
   startDate,
@@ -35,7 +37,7 @@ const DatePickerDynamic = ({
 const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem; refetch: () => void }) => {
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
-
+  const { profile,user } = useAuth()
   const handleDateChange = async (dates: [Date | null, Date | null]) => {
     if (!dates) return
 
@@ -44,11 +46,33 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
     setStartDate(start)
     setEndDate(end)
 
+    console.log(start,end)
     if (start && end) {
       await updateSprint({
         id: original?.SprintID?.toString(),
         body: { SprintTimelineStart: start, SprintTimelineEnd: end }
       })
+//        const value = localStorage.getItem('userData')
+  
+
+//  const bodyvalue = {
+//               Sprintname:original.Name,
+//               Goals:"-",
+//               startdate: moment(start).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+//               endate:moment(end).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+//               LoginuserID:user?.id,
+//               SprintgroupID:original.SprintGroupID,
+//               WorkspaceID:original.WorkSpaceID,
+//               sprintID:original?.SprintID?.toString()
+//             }
+
+            //    //const response = await UpdateSrpintItem(bodyvalue
+            //   // id: filteredSprintData?.[rowIndex]?.SprintID?.toString(),
+            //   // body: { Name: value }
+            // )
+
+
+
       refetch()
     }
   }

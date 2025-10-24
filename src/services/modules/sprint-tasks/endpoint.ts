@@ -4,7 +4,8 @@ type SprintEndpoints = {
   list: ApiEndpoint
   add: ApiEndpoint
   update: ApiEndpoint
-  deleteItem: ApiEndpoint
+  deleteItem: ApiEndpoint,
+  Createsprinttask:ApiEndpoint
 }
 
 export const sprint: SprintEndpoints = {
@@ -24,5 +25,9 @@ export const sprint: SprintEndpoints = {
   deleteItem: {
     method: 'DELETE',
     uri: '/api/sprint-tasks/:id'
+  },
+  Createsprinttask:{
+    method: 'POST',
+    uri: '/SprintTaskcreate'
   }
 }

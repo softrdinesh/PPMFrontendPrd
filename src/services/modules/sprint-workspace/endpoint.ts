@@ -4,6 +4,7 @@ type WorkspaceEndpoints = {
   list: ApiEndpoint
   add: ApiEndpoint
   deleteItem: ApiEndpoint
+  addworkspace:ApiEndpoint,
 }
 
 export const workspace: WorkspaceEndpoints = {
@@ -11,6 +12,7 @@ export const workspace: WorkspaceEndpoints = {
     method: 'GET',
     uri: '/api/sprint-workspace'
   },
+
   add: {
     method: 'POST',
 
@@ -19,5 +21,11 @@ export const workspace: WorkspaceEndpoints = {
   deleteItem: {
     method: 'DELETE',
     uri: '/api/sprint-workspace/:id'
-  }
+  },
+  addworkspace:{
+   method: 'POST',
+    uri: '/CreateSprintworkspace'
+  },
+
+  
 }

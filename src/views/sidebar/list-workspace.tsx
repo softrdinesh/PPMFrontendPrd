@@ -188,6 +188,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
                 <Typography>Create WorkSpace</Typography>
               </Box>
             </MenuItem>
+            {profile === 'projects' &&
                <MenuItem onClick={()=>setOpen1(true)}>
               <Box display={'flex'} alignItems={'center'} gap={2}>
                 {/* <Icon icon={'mdi:delete-outline'} /> */}
@@ -195,7 +196,9 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
 
                 <Typography>Create Project</Typography>
               </Box>
+
             </MenuItem>
+}
                <MenuItem onClick={handleDeleteOpen}>
               <Box display={'flex'} alignItems={'center'} gap={2}>
                 <Icon icon={'mdi:delete-outline'} />

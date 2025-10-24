@@ -61,3 +61,22 @@ export const deleteSprintWorkspace = async ({
       throw err
     })
 }
+
+
+export const CreateSprintGroup = async (body: any) => {
+  return callApi({ uriEndPoint: sprintGroup.Create,
+     body,
+     query: body, // Changed from body to queryParams
+    useSecondApi: true
+   
+     })
+    .then(res => {
+      toast.success(res?.message ?? 'Workspace Added Successfully')
+
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+

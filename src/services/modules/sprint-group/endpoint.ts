@@ -4,7 +4,8 @@ type Endpoints = {
   list: ApiEndpoint
   add: ApiEndpoint
   update: ApiEndpoint
-  deleteItem: ApiEndpoint
+  deleteItem: ApiEndpoint,
+  Create:ApiEndpoint,
 }
 
 export const sprintGroup: Endpoints = {
@@ -23,5 +24,9 @@ export const sprintGroup: Endpoints = {
   deleteItem: {
     method: 'DELETE',
     uri: '/api/sprint-workspace/:id'
-  }
+  },
+   Create: {
+    method: 'POST',
+    uri: '/CreateSprintGroup'
+  },
 }

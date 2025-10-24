@@ -6,6 +6,10 @@ type SprintEndpoints = {
   add: ApiEndpoint
   update: ApiEndpoint
   deleteItem: ApiEndpoint
+  CreateSprintItem:ApiEndpoint,
+  UpdateSrpintItem:ApiEndpoint,
+  UpdateSprinttimeline: ApiEndpoint,
+  Createdynamicolumn:ApiEndpoint,
 }
 
 export const sprint: SprintEndpoints = {
@@ -28,5 +32,24 @@ export const sprint: SprintEndpoints = {
   deleteItem: {
     method: 'DELETE',
     uri: '/api/sprints/:id'
+  },
+  //New apis
+  CreateSprintItem: {
+    method: 'POST',
+    uri: '/SprintCreate'
+  },
+  UpdateSrpintItem:{
+      method: 'POST',
+    uri: '/SprintUpdate'
+
+  },
+  UpdateSprinttimeline:{
+      method: 'POST',
+    uri: '/SprintTimelineUpdate'
+
+  },
+  Createdynamicolumn:{
+      method: 'POST',
+    uri: '/SprintDynamicColumnCreate'
   }
 }

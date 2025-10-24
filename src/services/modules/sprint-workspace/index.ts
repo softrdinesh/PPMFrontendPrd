@@ -26,6 +26,28 @@ export const addSprintWorkspace = async (body: any) => {
     })
 }
 
+
+export const CreateSprintWorkspace = async (body: any) => {
+  return callApi({ uriEndPoint: workspace.addworkspace,
+     body,
+     query: body, // Changed from body to queryParams
+    useSecondApi: true
+   
+     })
+    .then(res => {
+      toast.success(res?.message ?? 'Workspace Added Successfully')
+
+      return res?.data
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+
+
+
+
 export const deleteSprintWorkspace = async ({
   WorkspaceID,
   OrganizationID,

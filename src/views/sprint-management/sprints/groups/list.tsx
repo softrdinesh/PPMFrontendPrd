@@ -1,16 +1,18 @@
 import { useState } from 'react'
 
 import { Card, Collapse, IconButton, Menu, MenuItem, Typography } from '@mui/material'
+import toast from 'react-hot-toast'
 
 import { useSprintManagement } from '@/context/sprint-context'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 import CreateSprintGroupDialog from '../components/create-group-dialog'
 import SprintList from './sprint-list'
+import { useAuth } from '@/hooks/useAuth'
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import { useBugQueue } from '@/context/bug-queue-context'
-
+import axios from 'axios'
 const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
-  const [collapse, setCollapse] = useState(false)
+  const [collapse, setCollapse] = useState(true)
   const [openEdit, setOpenEdit] = useState(false)
     const [showCard, setShowCard] = useState(false)
   const [anchorEl, setAnchorEl] = useState<any>(null)
@@ -18,17 +20,22 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
   const toggleCollapse = () => setCollapse(!collapse)
   const { data, refetch } = useBugQueue()
   const handleMenuClose = () => setAnchorEl(null)
+  const { profile,user } = useAuth()
 
   const handleMenuOpen = (e: any) => {
     setAnchorEl(e?.currentTarget)
   }
+
+
+
   
 const handleDelete = async () => {
-  try {
-    // Prepare the body payload
-    
 
-    // await (id, body)
+
+
+  try {
+  deleteSprintGroup()
+
          await refetch() 
     setDeleteOpen(false)
  
@@ -36,6 +43,34 @@ const handleDelete = async () => {
     console.log('Delete failed:', error)
   }
 }
+
+
+const deleteSprintGroup = async () => {
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/SprintGroupDelete`,
+      null,
+      {
+        params: {
+          Sprintgroupid: sg.SprintGroupID,
+          LoginUserID: user?.id
+        }
+      }
+    );
+
+    console.log('Sprint group deleted successfully:', response.data);
+    // You can return the response if needed
+    // return response.data;
+    toast.success(`Sprint group deleted successfully`)
+
+  } catch (error) {
+    console.error('Error deleting sprint group:', error);
+    // Optional: throw or handle error
+    throw error;
+  }
+};
 
 
   return (
@@ -80,7 +115,7 @@ const handleDelete = async () => {
             </MenuItem>
           </Menu>
         </div>
-      </div>s
+      </div>
 
       {openEdit && <CreateSprintGroupDialog open={openEdit} setOpen={setOpenEdit} group={sg} />}
  <DeleteDialog

@@ -16,3 +16,9 @@ export interface SprintItem {
   UpdateBy: number
   SprintTimeElapsedInSeconds: number
 }
+
+export interface TColumnType {
+  ColumnTypeID: number
+  Key: 'USR' | 'TXT' | 'DDL' | 'DPK' | 'LBL' | 'NUM' | 'FLE'
+  Title: string
+}
