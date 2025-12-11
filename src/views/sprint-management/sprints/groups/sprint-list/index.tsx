@@ -38,8 +38,7 @@ import { GoalsTextfiled } from '@/views/project/task-group/task/columns/GoalsDef
 import { SprintManagement } from 'src/context/sprint-context'
 import DeleteTasksComponent from '../../components/Delete-sprint'
 import CreateColumnMenu from '@/views/sprint-management/tasks/create-column'
-import TaskPeople from '@/views/sprint-management/tasks/columns/Tasks'
-import Task from '@/views/sprint-management/tasks/columns/Tasks'
+
 
 const SprintList = ({ 
   sg, 
