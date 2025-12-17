@@ -10,6 +10,9 @@ import SprintList from './sprint-list'
 import { useAuth } from '@/hooks/useAuth'
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import { useBugQueue } from '@/context/bug-queue-context'
+import { fetchSprintGroups } from '@/services/modules/sprint-group'
+import { useQuery } from '@tanstack/react-query'
+
 import axios from 'axios'
 const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
   const [collapse, setCollapse] = useState(true)
@@ -18,15 +21,20 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const toggleCollapse = () => setCollapse(!collapse)
-  const { data, refetch } = useBugQueue()
+  const { data, refetch } = useSprintManagement()
   const handleMenuClose = () => setAnchorEl(null)
   const { profile,user } = useAuth()
-
+  // const { data1,refetch } = useSprintManagement()
   const handleMenuOpen = (e: any) => {
     setAnchorEl(e?.currentTarget)
   }
 
-
+  const { data: groupsData = [], refetch: refetchGroups } = useQuery({
+    queryKey: ['sprint-groups', sg.WorkspaceID],
+    queryFn: () => fetchSprintGroups(sg.WorkspaceID),
+    enabled: !!sg.WorkspaceID
+  })
+  console.log(groupsData,'groupsData')
 
   
 const handleDelete = async () => {
@@ -36,7 +44,7 @@ const handleDelete = async () => {
   try {
   deleteSprintGroup()
 
-         await refetch() 
+          refetch() 
     setDeleteOpen(false)
  
   } catch (error) {
@@ -59,7 +67,7 @@ const deleteSprintGroup = async () => {
         }
       }
     );
-
+refetchGroups()
     console.log('Sprint group deleted successfully:', response.data);
     // You can return the response if needed
     // return response.data;
