@@ -211,6 +211,7 @@ const SprintList = ({
           )
         }
       }
+      
     ],
     [sprintListApi?.refetch, selectedSprint]
   )

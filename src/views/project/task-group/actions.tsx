@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { Box, IconButton, Menu, MenuItem, Typography } from '@mui/material'
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import NewTaskDialog from '../main-screen/task-group-add-dialog'
-import { DeleteTaskgroup,fetchTaskGroupList } from '@/services/modules/task-group'
-
+import { DeleteTaskgroup,fetchTaskGroupList,Deleteprojectgroup } from '@/services/modules/task-group'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 interface TaskGroupActionsProps {
   groupName?: string
   id?: Number,
@@ -52,19 +53,32 @@ const [projectId, setprojectId] = useState('')
       setEditGroupName('')
     }, 100)
   }
+const deletegroup = async() => {
+  try {
+    const value = await axios.post(`https://uat.ppmbackend.projectpulse360.com/ProjectTaskGroupDelete?TaskGroupID=${id}&LoginuserID=76`);
+    console.log(value.data);
+    toast.success('Task Group Deleted Successfully');
+    refetch();
+  } catch (error) {
+    console.error('Error deleting task group:', error);
+    toast.error('Failed to delete Task Group');
+  }
+}
+
 
   
 const handleDelete = async () => {
   console.log(groupName,id,ProjectID,'values of ')
   try {
     // Prepare the body payload
-    const body = {
-      projectID: ProjectID,      // your projectID
-      groupName: groupName    // your groupName
-    }
+    // const body = {
+    //   projectID: ProjectID,      // your projectID
+    //   groupName: groupName    // your groupName
+    // }
+    deletegroup()
 
-    await DeleteTaskgroup(id, body)
-         await refetch() 
+    // await Deleteprojectgroup(id,76)
+        // await refetch() 
     setDeleteOpen(false)
  
   } catch (error) {

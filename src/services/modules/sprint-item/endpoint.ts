@@ -10,6 +10,7 @@ type SprintEndpoints = {
   UpdateSrpintItem:ApiEndpoint,
   UpdateSprinttimeline: ApiEndpoint,
   Createdynamicolumn:ApiEndpoint,
+  Dynamiccolumns:ApiEndpoint
 }
 
 export const sprint: SprintEndpoints = {
@@ -37,6 +38,11 @@ export const sprint: SprintEndpoints = {
   CreateSprintItem: {
     method: 'POST',
     uri: '/SprintCreate'
+  },
+
+   Dynamiccolumns: {
+    method: 'POST',
+    uri: '/GetSprintDynamiccolumnLlist'
   },
   UpdateSrpintItem:{
       method: 'POST',

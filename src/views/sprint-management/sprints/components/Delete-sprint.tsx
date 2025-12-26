@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo,useEffect, useState } from 'react'
 
 import { Card, Grid2, Typography } from '@mui/material'
 
@@ -29,6 +29,7 @@ const DeleteTasksComponent = ({
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   const handleDelete = async () => {
+
     const finalArray = sprintlist
       ?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))
       ?.map(t => t?.SprintID)
@@ -38,6 +39,12 @@ const DeleteTasksComponent = ({
     setDeleteOpen(false)
     setSelectedRows({})
   }
+useEffect(() => {
+    const fetchData = async () => {
+      const data = await refetch()
+    }
+    fetchData()
+  }, [selectedRows]) // Add dependencies as needed
 
   return (
     <Grid2 size={12}>

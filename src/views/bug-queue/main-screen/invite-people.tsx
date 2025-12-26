@@ -38,7 +38,7 @@ const ProjectInvitePeople = ({ IsOpen, users = [] }: { IsOpen: boolean; users?: 
         <DialogTitle>
           <Box display={'flex'} justifyContent={'space-between'}>
             <Typography variant='h6' fontWeight={800}>
-              Usersssss
+              Users
             </Typography>
             {role?.RoleName === 'Admin' && (
               <CustomButton

@@ -127,3 +127,44 @@ export const addDropdownItem = async (body: any) => {
     .then(res => res)
     .catch(err => err)
 }
+
+
+
+// new api 
+// export const Deleteprojectgroup = async (
+//   TaskGroupID: string, 
+//   LoginuserID: string
+// ) => {
+//   return callApi({
+//     uriEndPoint: taskGroup.Deleteprojectgroup,
+    
+//     query: { 
+//       TaskGroupID, 
+//       LoginuserID 
+//     }
+//   }).then(res => {
+//       toast.success(res?.message ?? 'Task Group Deleted Successfully')
+//       return res
+//     })
+//     .catch(err => {
+//       toast.error(err?.message ?? 'Task Group Deletion Failed')
+//       return err
+//     })
+// }
+export const Deleteprojectgroup = async (
+  TaskGroupID: string, 
+  LoginuserID: string
+) => {
+  return callApi({
+    uriEndPoint: taskGroup.Deleteprojectgroup,
+    useSecondApi: true,
+    query: `TaskGroupID=${TaskGroupID}&&LoginuserID=${LoginuserID}` // Raw query string
+  }).then(res => {
+      toast.success(res?.message ?? 'Task Group Deleted Successfully')
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Task Group Deletion Failed')
+      return err
+    })
+}

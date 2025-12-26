@@ -29,12 +29,12 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
     setAnchorEl(e?.currentTarget)
   }
 
-  const { data: groupsData = [], refetch: refetchGroups } = useQuery({
-    queryKey: ['sprint-groups', sg.WorkspaceID],
-    queryFn: () => fetchSprintGroups(sg.WorkspaceID),
-    enabled: !!sg.WorkspaceID
-  })
-  console.log(groupsData,'groupsData')
+  // const { data: groupsData = [], refetch: refetchGroups } = useQuery({
+  //   queryKey: ['sprint-groups', sg.WorkspaceID],
+  //   queryFn: () => fetchSprintGroups(sg.WorkspaceID),
+  //   enabled: !!sg.WorkspaceID
+  // })
+  // console.log(groupsData,'groupsData')
 
   
 const handleDelete = async () => {
@@ -44,7 +44,7 @@ const handleDelete = async () => {
   try {
   deleteSprintGroup()
 
-          refetch() 
+          // refetch() 
     setDeleteOpen(false)
  
   } catch (error) {
@@ -67,7 +67,8 @@ const deleteSprintGroup = async () => {
         }
       }
     );
-refetchGroups()
+    refetch()
+// refetchGroups()
     console.log('Sprint group deleted successfully:', response.data);
     // You can return the response if needed
     // return response.data;

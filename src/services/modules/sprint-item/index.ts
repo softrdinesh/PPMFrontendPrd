@@ -18,6 +18,15 @@ export const fetchSprintList = async (params: any): Promise<ApiResponse<SprintIt
   return callApi({ uriEndPoint: sprint.list, query: params })
 }
 
+export const fetchdynamiccolumns = async (params: any): Promise<ApiResponse<SprintItem[]>> => {
+  return callApi({ uriEndPoint: sprint.Dynamiccolumns,
+        useSecondApi:true,
+    query: params })
+}
+
+
+
+
 export const createSprint = async (body: any) => {
   return callApi({ uriEndPoint: sprint.add, body })
 }

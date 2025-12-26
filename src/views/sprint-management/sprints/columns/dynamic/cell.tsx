@@ -2,9 +2,8 @@ import { useMemo } from 'react'
 
 import type { Getter } from '@tanstack/react-table'
 
-import type { AdditionalColumn } from '@/services/modules/project/types'
-import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/types'
-import type { TaskListItemType } from '@/services/modules/task/types'
+import type { AdditionalColumn } from '@/services/modules/sprint-item/types'
+import type { SprintItem } from '@/services/modules/sprint-item/types'
 import TaskPeople from '../people'
 import TaskStatus from '../status'
 import DynamicDate from './date-type'
@@ -15,18 +14,17 @@ import TaskTextValues from './text-value'
 interface DynamicColumnCellProps {
   getValue: Getter<unknown>
   index: number
-  row: TaskListItemType | AdditionalSubTaskListItem
+  row: SprintItem 
   id: string
   columnItem: AdditionalColumn
   table: any
   value: any
   refetch: () => void
-  isSubTask: boolean
 }
 
 const DynamicColumnCell = (props: DynamicColumnCellProps) => {
   // ** PROPS
-  const { getValue, index, row, id, table, columnItem, value, refetch, isSubTask = false } = props
+  const { getValue, index, row, id, table, columnItem, value, refetch } = props
 
   const getColumnTypeName = useMemo(() => columnItem?.ColumnType.Keyname, [columnItem?.ColumnType.Keyname])
 
@@ -41,15 +39,13 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
     )
 
     return (
-      // <TaskPeople
-      //   refetch={refetch}
-      //   rowData={row}
-      //   dynamicValue={usersList}
-      //   columnData={columnItem}
-      //   canEdit={true}
-      //   isSubTask={isSubTask}
-      // />
-      <TaskPeople rowData={row} refetch={refetch} />
+      <TaskPeople
+        refetch={refetch}
+        rowData={row}
+        dynamicValue={usersList}
+        columnData={columnItem}
+        canEdit={true}
+      />
     )
   }
 
@@ -62,13 +58,12 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
         row={row}
         dynamicValue={value}
         columnData={columnItem}
-        isSubTask={isSubTask}
       />
     )
 
   // ** "DROPDOWN" TYPE COLUMN
   if (getColumnTypeName === 'DDL') {
-    const taskRow = row as TaskListItemType
+    const taskRow = row as SprintItem
 
     const dropdownList = taskRow?.additionalValues?.filter(
       addVal => addVal?.AdditionalColumnID === columnItem?.AdditionalColumnID
@@ -81,7 +76,6 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
         rowData={row}
         dynamicValue={dropdownList}
         columnData={columnItem}
-        isSubTask={isSubTask}
       />
     )
   }
@@ -95,9 +89,6 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
         rowData={row}
         dynamicValue={value}
         columnData={columnItem}
-        isSubTask={isSubTask}
-        value={"3"}
-        diplaytext='df'
       />
     )
 
