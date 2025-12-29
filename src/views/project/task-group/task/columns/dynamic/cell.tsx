@@ -32,7 +32,7 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
 
   // ** "DATE" TYPE COLUMN
   if (getColumnTypeName === 'DPK')
-    return <DynamicDate canEdit={true} refetch={refetch} rowData={row} dynamicValue={value} columnData={columnItem} />
+    return <DynamicDate canEdit={true} isSubTask={isSubTask} refetch={refetch} rowData={row} dynamicValue={value} columnData={columnItem} />
 
   // ** "USER" TYPE COLUMN
   if (getColumnTypeName === 'USR') {
@@ -41,15 +41,15 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
     )
 
     return (
-      // <TaskPeople
-      //   refetch={refetch}
-      //   rowData={row}
-      //   dynamicValue={usersList}
-      //   columnData={columnItem}
-      //   canEdit={true}
-      //   isSubTask={isSubTask}
-      // />
-      <TaskPeople rowData={row} refetch={refetch} />
+      <TaskPeople
+        refetch={refetch}
+        rowData={row}
+        dynamicValue={usersList}
+        columnData={columnItem}
+        canEdit={true}
+        isSubTask={isSubTask}
+      />
+      // <TaskPeople rowData={row} refetch={refetch} />
     )
   }
 

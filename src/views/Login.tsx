@@ -44,7 +44,7 @@ import { authConfig } from '@/configs/authConfig'
 
 const defaultValues = {
   email: process?.env?.NODE_ENV === 'development' ? 'dhamukotti123@gmail.com' : '',
-  password: process?.env?.NODE_ENV === 'development' ? 'Dhamu123@' : ''
+  password: process?.env?.NODE_ENV === 'development' ? 'Abc@223133' : ''
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({

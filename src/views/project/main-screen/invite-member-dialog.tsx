@@ -110,14 +110,16 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
   })
 
   const onSubmit = async (values: FormField) => {
-
+console.log(values,'dd')
 
 const body ={
- inviteEmailAddress: values.invitations[0].email,
+  inviteEmailAddress: values.invitations.map(inv => inv.email).join(', '), // Join all emails with comma
+
   inviteBy: userId, 
   workspaceid:Number(selected?.WorkspaceID),
   roleID: values.invitations[0].roleID,
-  projectID:Number(projectID)
+  projectID:Number(projectID),
+  isMultiple: true
 }
 
     try {

@@ -4,7 +4,7 @@ import { Icon } from '@iconify/react'
 import { Box, Chip, Dialog, DialogContent, Grid2 as Grid, IconButton, Typography } from '@mui/material'
 import { debounce } from 'lodash'
 import moment from 'moment'
-
+import axios from 'axios'
 import AppReactDatepicker from '@/libs/styles/AppReactDatepicker'
 import type { AdditionalColumn } from '@/services/modules/project/types'
 import { updateSubTask } from '@/services/modules/sub-task'
@@ -12,6 +12,7 @@ import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/type
 import { updateTasks } from '@/services/modules/task'
 import type { TaskListItemType } from '@/services/modules/task/types'
 import CustomButton from '@components/button'
+import { useAuth } from '@/hooks/useAuth'
 
 interface DynamicDateProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
@@ -22,11 +23,11 @@ interface DynamicDateProps {
   canEdit?: boolean
 }
 
-const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask, canEdit }: DynamicDateProps) => {
+const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask=false, canEdit }: DynamicDateProps) => {
   const [openDialog, setOpenDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
-
+const { profile,user } = useAuth()
   const handleOpenDialog = () => {
     if (canEdit) {
       setSelectedDate(dynamicValue?.DynamicColumnValues ?? null)
@@ -38,46 +39,99 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask, ca
     setOpenDialog(false)
   }
 
-  const handleSave = async () => {
-    try {
-      setIsSubmitting(true)
+//   const handleSave = async () => {
+//     try {
+//       setIsSubmitting(true)
 
-      const body: any = {
-        DynamicID: dynamicValue?.DynamicID ?? null,
-        AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: moment(selectedDate).format('LLL'),
-        Title: `Column '${columnData?.ColumnName}' was updated`,
-        PreviousState: dynamicValue?.DynamicColumnValues,
-        NewState: moment(selectedDate).format('LLL')
-      }
+//       const body: any = {
+//         DynamicID: dynamicValue?.DynamicID ?? null,
+//         AdditionalColumnID: columnData?.AdditionalColumnID,
+//         value: moment(selectedDate).format('LLL'),
+//         Title: `Column '${columnData?.ColumnName}' was updated`,
+//         PreviousState: dynamicValue?.DynamicColumnValues,
+//         NewState: moment(selectedDate).format('LLL')
+//       }
 
-      if (isSubTask) {
-        const subRowData = rowData as AdditionalSubTaskListItem
+//       if (isSubTask) {
+//         console.log('called')
+//         const subRowData = rowData as AdditionalSubTaskListItem
+//      const taskRowData = rowData as TaskListItemType
+//         body.TaskID = subRowData?.TaskMasterID
+//         // const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+//    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
-        body.TaskID = subRowData?.TaskMasterID
-        const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+// const response = await axios.post(`${BASE_URL}/UpdateDyanmicDateSubtask?TaskID=${taskRowData?.TaskID?.toString()}&LoginuserID=${user?.id}&Subtaskid=${subRowData?.SubTaskID?.toString()}&IsRemove=0&AdditionalColumnID=${columnData?.AdditionalColumnID}&DateValue=${moment(selectedDate).format('LLL')}`).then((res)=>{
+//   console.log(res.data)
+//    refetch()
+//        handleClose()
+// })
+//         // if (response) {
+//         //   refetch()
+//         //   handleClose()
+//         // }
+//       } else {
+//         const taskRowData = rowData as TaskListItemType
+//         console.log('called')
+//         const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
 
-        if (response) {
-          refetch()
-          handleClose()
-        }
-      } else {
-        const taskRowData = rowData as TaskListItemType
+//         if (response) {
+//           refetch()
+//           setOpenDialog(false)
+//         }
+//       }
+//     } catch (error) {
+//       console.error('error :', error)
+//     } finally {
+//       setIsSubmitting(false)
+//     }
+//   }
+const handleSave = async () => {
+  try {
+    setIsSubmitting(true)
 
-        const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          setOpenDialog(false)
-        }
-      }
-    } catch (error) {
-      console.error('error :', error)
-    } finally {
-      setIsSubmitting(false)
+    const body: any = {
+      DynamicID: dynamicValue?.DynamicID ?? null,
+      AdditionalColumnID: columnData?.AdditionalColumnID,
+      value: moment(selectedDate).format('LLL'),
+      Title: `Column '${columnData?.ColumnName}' was updated`,
+      PreviousState: dynamicValue?.DynamicColumnValues,
+      NewState: moment(selectedDate).format('LLL')
     }
-  }
 
+    if (isSubTask) {
+      console.log('sub',isSubTask)
+      const subRowData = rowData as AdditionalSubTaskListItem
+      const taskRowData = rowData as TaskListItemType
+      body.TaskID = subRowData?.TaskMasterID
+      
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+      
+      // Fixed: Properly await the axios call
+      const response = await axios.post(`${BASE_URL}/UpdateDyanmicDateSubtask?TaskID=${taskRowData?.TaskID?.toString()}&LoginuserID=${user?.id}&Subtaskid=${subRowData?.SubTaskID?.toString()}&IsRemove=0&AdditionalColumnID=${columnData?.AdditionalColumnID}&DateValue=${moment(selectedDate).format('LLL')}`)
+      
+      console.log(response.data)
+      
+      if (response.data) { // Check if response has data
+        refetch()
+        handleClose()
+      }
+    } else {
+      const taskRowData = rowData as TaskListItemType
+      console.log('new',isSubTask)
+      const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+
+      if (response) {
+        refetch()
+        setOpenDialog(false)
+      }
+    }
+  } catch (error) {
+    console.error('error :', error)
+    // Optionally add error handling UI here
+  } finally {
+    setIsSubmitting(false)
+  }
+}
   const handleDateChange = (date: Date | null) => {
     setIsSubmitting(false)
     setSelectedDate(moment(date).format('LLL'))
