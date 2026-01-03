@@ -154,23 +154,15 @@ const { profile,user } = useAuth()
   }
 
   const onSubmit = async (data: FormValidateType) => {
-    console.log(data,'dat')
     if (!data?.file) {
       try {
         const body: any = {
-          // DynamicID: dynamicValue?.DynamicID ?? null,
-          // AdditionalColumnID: columnData?.AdditionalColumnID,
-          // value: data?.value,
-          // displayText: data?.displayText,
-          // Title: `File was added to column '${columnData?.ColumnName}'`,
-          // PreviousState: dynamicValue?.DisplayText,
-          // NewState: data?.displayText
-             DynamicID:  null,
+          DynamicID: dynamicValue?.DynamicID ?? null,
           AdditionalColumnID: columnData?.AdditionalColumnID,
           value: data?.value,
           displayText: data?.displayText,
           Title: `File was added to column '${columnData?.ColumnName}'`,
-          // PreviousState: dynamicValue?.DisplayText,
+          PreviousState: dynamicValue?.DisplayText,
           NewState: data?.displayText
         }
 
@@ -234,8 +226,8 @@ const { profile,user } = useAuth()
         // Use different endpoint based on isSubTask and include TaskID/SubTaskID
           const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
         const uploadEndpoint = isSubTask 
-          ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskId}/${subTaskId}/${user?.id}`
-          : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskId}/${user?.id}`
+          ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/'0'/${data?.displayText}/${taskId}/${subTaskId}/${user?.id}`
+          : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/'0'/${data?.displayText}/${taskId}/${user?.id}`
         
         const response = await axios.post(
           uploadEndpoint,
@@ -275,39 +267,21 @@ const { profile,user } = useAuth()
     }
   }
   const handleclear = async () => {
-    try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
-      let taskId: string | number
-      let subTaskId: string | number | undefined
-      
-      if (isSubTask) {
-        const subRowData = rowData as AdditionalSubTaskListItem
-        taskId = subRowData?.TaskMasterID
-        subTaskId = subRowData?.SubTaskID
-        
-        // Use SubTask endpoint for subtasks
-        await axios.post(`${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/true/${"-"}/${taskId}/${subTaskId}/${user?.id}`)
-      } else {
-        const taskRowData = rowData as TaskListItemType
-        taskId = taskRowData?.TaskID
-        
-        // Use Task endpoint for tasks
-        await axios.post(`${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/true/${"-"}/${taskId}/${user?.id}`)
-      }
-      
-      refetch()
-      setSuccessAlert('File removed successfully!')
-    } catch (error) {
-      console.error('File removal failed:', error)
-      setErrorAlert('Failed to remove file. Please try again.')
-    }
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+        let taskId: string | number
+        let subTaskId: string | number | undefined
+          const subRowData = rowData as AdditionalSubTaskListItem
+          taskId = subRowData?.TaskMasterID
+          console.log(subRowData.TaskID)
+  const data = await axios.post(`${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/1/${"-"}/${subRowData?.TaskID}/${user?.id}`).then((res)=>{
+refetch()
+  })
+
   }
   return (
     <>
       <Box display={'flex'} height={'100%'} alignItems={'center'}>
-        {/* {!dynamicValue ? ( */}
-              {!dynamicValue || !dynamicValue?.DisplayText ? (
-
+        {!dynamicValue ? (
           canEdit ? (
             <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />

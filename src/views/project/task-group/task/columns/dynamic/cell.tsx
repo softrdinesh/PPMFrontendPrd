@@ -96,8 +96,7 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
         dynamicValue={value}
         columnData={columnItem}
         isSubTask={isSubTask}
-        value={"3"}
-        diplaytext='df'
+        
       />
     )
 
