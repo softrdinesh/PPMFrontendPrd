@@ -153,32 +153,173 @@ const { profile,user } = useAuth()
     return true
   }
 
-  const onSubmit = async (data: FormValidateType) => {
+//   const onSubmit = async (data: FormValidateType) => {
+//     console.log(data,'dat')
+//     if (!data?.file) {
+//       try {
+//         const body: any = {
+         
+//              DynamicID:  null,
+//           AdditionalColumnID: columnData?.AdditionalColumnID,
+//           value: data?.value,
+//           displayText: data?.displayText,
+//           Title: `File was added to column '${columnData?.ColumnName}'`,
+//           PreviousState: dynamicValue?.DisplayText,
+//           NewState: data?.displayText
+//         }
+// console.log(data.value,'value')
+//         if (isSubTask) {
+//           const subRowData = rowData as AdditionalSubTaskListItem
+
+//           body.TaskID = subRowData?.TaskMasterID
+//           const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+
+
+
+//           if (response) {
+//             refetch()
+//             setOpen(false)
+//             handleClose()
+//           }
+//         } else {
+//           const taskRowData = rowData as TaskListItemType
+//                     const subRowData = rowData as AdditionalSubTaskListItem
+
+//         const formData = new FormData()
+//         formData.append("file", '')
+//           const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+//         const uploadEndpoint = isSubTask 
+//           ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskRowData?.TaskID}/${subRowData?.SubTaskID}/${user?.id}/${data?.value}`
+//           : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskRowData?.TaskID}/${user?.id}/${data?.value}`
+        
+//         const response = await axios.post(
+//           uploadEndpoint,
+//           formData,
+//           {
+//             headers: {
+//               "Content-Type": "multipart/form-data",
+//             },
+//             timeout: 300000,
+            
+//             onUploadProgress: (progressEvent) => {
+//               const percentCompleted = Math.round(
+//                 (progressEvent.loaded * 100) / (progressEvent.total || 1)
+//               )
+//               setUploadProgress(percentCompleted)
+//             },
+            
+//             maxContentLength: Infinity,
+//             maxBodyLength: Infinity,
+//           }
+//         )
+//           // const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+
+//           if (response) {
+//             refetch()
+//             setOpen(false)
+//             handleClose()
+//           }
+//         }
+//       } catch (error) {
+//         console.error('error :', error)
+//         setErrorAlert('Failed to update. Please try again.')
+//       }
+//     } else {
+//       // Validate file size before upload
+//       if (!validateFileSize(data.file)) {
+//         return
+//       }
+
+//       // Validate file type before upload
+//       if (!validateFileType(data.file)) {
+//         return
+//       }
+
+//       try {
+//         setIsUploading(true)
+//         setUploadProgress(0)
+
+//         const formData = new FormData()
+//         formData.append("file", data?.file)
+        
+//         // Get TaskID and SubTaskID based on whether it's a subtask or task
+//         let taskId: string | number
+//         let subTaskId: string | number | undefined
+        
+//         if (isSubTask) {
+//           const subRowData = rowData as AdditionalSubTaskListItem
+//           taskId = subRowData?.TaskMasterID
+//           subTaskId = subRowData?.SubTaskID
+//         } else {
+//           const taskRowData = rowData as TaskListItemType
+//           taskId = taskRowData?.TaskID
+//         }
+        
+//         // Use different endpoint based on isSubTask and include TaskID/SubTaskID
+//           const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+//         const uploadEndpoint = isSubTask 
+//           ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskId}/${subTaskId}/${user?.id}/${data?.value}`
+//           : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskId}/${user?.id}/${data?.value}`
+        
+//         const response = await axios.post(
+//           uploadEndpoint,
+//           formData,
+//           {
+//             headers: {
+//               "Content-Type": "multipart/form-data",
+//             },
+//             timeout: 300000,
+            
+//             onUploadProgress: (progressEvent) => {
+//               const percentCompleted = Math.round(
+//                 (progressEvent.loaded * 100) / (progressEvent.total || 1)
+//               )
+//               setUploadProgress(percentCompleted)
+//             },
+            
+//             maxContentLength: Infinity,
+//             maxBodyLength: Infinity,
+//           }
+//         )
+        
+//         if (response) {
+//           refetch()
+//           setOpen(false)
+//           handleClose()
+//           setIsUploading(false)
+//           setUploadProgress(0)
+//           setSuccessAlert('File uploaded successfully!')
+//         }
+//       } catch (error) {
+//         console.error('File upload failed:', error)
+//         setErrorAlert('File upload failed. Please try again.')
+//         setIsUploading(false)
+//         setUploadProgress(0)
+//       }
+//     }
+//   }
+const onSubmit = async (data: FormValidateType) => {
     console.log(data,'dat')
     if (!data?.file) {
       try {
         const body: any = {
-          // DynamicID: dynamicValue?.DynamicID ?? null,
-          // AdditionalColumnID: columnData?.AdditionalColumnID,
-          // value: data?.value,
-          // displayText: data?.displayText,
-          // Title: `File was added to column '${columnData?.ColumnName}'`,
-          // PreviousState: dynamicValue?.DisplayText,
-          // NewState: data?.displayText
+         
              DynamicID:  null,
           AdditionalColumnID: columnData?.AdditionalColumnID,
           value: data?.value,
           displayText: data?.displayText,
           Title: `File was added to column '${columnData?.ColumnName}'`,
-          // PreviousState: dynamicValue?.DisplayText,
+          PreviousState: dynamicValue?.DisplayText,
           NewState: data?.displayText
         }
-
+console.log(data.value,'value')
         if (isSubTask) {
           const subRowData = rowData as AdditionalSubTaskListItem
 
           body.TaskID = subRowData?.TaskMasterID
           const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+
+
 
           if (response) {
             refetch()
@@ -187,8 +328,36 @@ const { profile,user } = useAuth()
           }
         } else {
           const taskRowData = rowData as TaskListItemType
+                    const subRowData = rowData as AdditionalSubTaskListItem
 
-          const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+        const formData = new FormData()
+        formData.append("file", '')
+          const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+        const uploadEndpoint = isSubTask 
+          ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/false/${encodeURIComponent(data?.displayText)}/${taskRowData?.TaskID}/${subRowData?.SubTaskID}/${user?.id}/${encodeURIComponent(data?.value)}`
+          : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/false/${encodeURIComponent(data?.displayText)}/${taskRowData?.TaskID}/${user?.id}/${encodeURIComponent(data?.value)}`
+        
+        const response = await axios.post(
+          uploadEndpoint,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            timeout: 300000,
+            
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / (progressEvent.total || 1)
+              )
+              setUploadProgress(percentCompleted)
+            },
+            
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+          }
+        )
+          // const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
 
           if (response) {
             refetch()
@@ -234,8 +403,8 @@ const { profile,user } = useAuth()
         // Use different endpoint based on isSubTask and include TaskID/SubTaskID
           const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
         const uploadEndpoint = isSubTask 
-          ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskId}/${subTaskId}/${user?.id}`
-          : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/false/${data?.displayText}/${taskId}/${user?.id}`
+          ? `${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/false/${encodeURIComponent(data?.displayText)}/${taskId}/${subTaskId}/${user?.id}/-`
+          : `${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/false/${encodeURIComponent(data?.displayText)}/${taskId}/${user?.id}/-`
         
         const response = await axios.post(
           uploadEndpoint,
@@ -286,13 +455,13 @@ const { profile,user } = useAuth()
         subTaskId = subRowData?.SubTaskID
         
         // Use SubTask endpoint for subtasks
-        await axios.post(`${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/true/${"-"}/${taskId}/${subTaskId}/${user?.id}`)
+        await axios.post(`${BASE_URL}/UploadSubTaskDocument/${columnData?.AdditionalColumnID}/true/${"-"}/${taskId}/${subTaskId}/${user?.id}/-`)
       } else {
         const taskRowData = rowData as TaskListItemType
         taskId = taskRowData?.TaskID
         
         // Use Task endpoint for tasks
-        await axios.post(`${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/true/${"-"}/${taskId}/${user?.id}`)
+        await axios.post(`${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/true/${"-"}/${taskId}/${user?.id}/-`)
       }
       
       refetch()
@@ -342,14 +511,27 @@ const { profile,user } = useAuth()
   </IconButton>
   
   {/* Share Icon */}
-  <IconButton
+  {/* <IconButton
     size='small'
     onClick={() => {
       window?.open(dynamicValue?.DynamicColumnValues)
     }}
   >
     <i className='ri-share-box-line text-primary h-4 w-4' />
-  </IconButton>
+  </IconButton> */}
+
+  <IconButton
+  size='small'
+  onClick={() => {
+    const url = dynamicValue?.DynamicColumnValues;
+    if (url) {
+      const decodedUrl = decodeURIComponent(url);
+      window.open(decodedUrl, '_blank', 'noopener,noreferrer');
+    }
+  }}
+>
+  <i className='ri-share-box-line text-primary h-4 w-4' />
+</IconButton>
 </Box>
         
           </div>
