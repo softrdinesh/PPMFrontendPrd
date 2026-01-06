@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
-import { Box, Dialog, DialogContent, DialogTitle, Typography } from '@mui/material'
+import { Box, Dialog, DialogContent, DialogTitle, Typography,IconButton } from '@mui/material'
+import { Icon } from '@iconify/react'
 
 // MUI Imports
 import TabContext from '@mui/lab/TabContext'
@@ -40,12 +41,26 @@ const TaskDetailsDialog = ({ open, close, taskData, refetchTasks }: TaskDetailsP
   return (
     <Dialog open={open} onClose={close} fullWidth maxWidth='lg'>
       <DialogTitle>
+         <IconButton
+        aria-label="close"
+        onClick={close}
+        sx={{
+          position: 'absolute',
+          right: 8,
+          top: 8,
+          color: (theme) => theme.palette.grey[500],
+        }}
+      >
+        <Icon icon="mdi:close" />
+      </IconButton>
         <Box>
           <Typography variant='h5' color={'primary.main'} fontWeight={700} mb={1}>
             {projectData?.ProjectName}
           </Typography>
           <Typography>Kindly update your information</Typography>
+          
         </Box>
+     
       </DialogTitle>
       <DialogContent>
         <Box>
