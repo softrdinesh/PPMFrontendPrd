@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { Box, Dialog, DialogContent, DialogTitle, Typography,IconButton } from '@mui/material'
+import { Box, Dialog, DialogContent, DialogTitle, Typography, IconButton } from '@mui/material'
 import { Icon } from '@iconify/react'
 
 // MUI Imports
@@ -26,9 +26,11 @@ interface TaskDetailsProps {
   close: () => void
   taskData: TaskListItemType
   refetchTasks: () => void
+  // onRefreshMessageCount may accept an optional message payload from children
+  onRefreshMessageCount?: (data?: any) => void
 }
 
-const TaskDetailsDialog = ({ open, close, taskData, refetchTasks }: TaskDetailsProps) => {
+const TaskDetailsDialog = ({ open, close, taskData, refetchTasks, onRefreshMessageCount }: TaskDetailsProps) => {
   const { project: projectData } = useProject()
 
   // States
@@ -36,31 +38,33 @@ const TaskDetailsDialog = ({ open, close, taskData, refetchTasks }: TaskDetailsP
 
   const handleChange = (event: any, newValue: string) => {
     setValue(newValue)
+    // Notify parent when switching to updates tab
+    if (newValue === 'updates' && onRefreshMessageCount) {
+      onRefreshMessageCount()
+    }
   }
 
   return (
     <Dialog open={open} onClose={close} fullWidth maxWidth='lg'>
       <DialogTitle>
-         <IconButton
-        aria-label="close"
-        onClick={close}
-        sx={{
-          position: 'absolute',
-          right: 8,
-          top: 8,
-          color: (theme) => theme.palette.grey[500],
-        }}
-      >
-        <Icon icon="mdi:close" />
-      </IconButton>
+        <IconButton
+          aria-label="close"
+          onClick={close}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <Icon icon="mdi:close" />
+        </IconButton>
         <Box>
           <Typography variant='h5' color={'primary.main'} fontWeight={700} mb={1}>
             {projectData?.ProjectName}
           </Typography>
           <Typography>Kindly update your information</Typography>
-          
         </Box>
-     
       </DialogTitle>
       <DialogContent>
         <Box>
@@ -74,7 +78,10 @@ const TaskDetailsDialog = ({ open, close, taskData, refetchTasks }: TaskDetailsP
               <ProjectDetailsTab taskData={taskData} refetchTasks={refetchTasks} />
             </StyledTabPanel>
             <StyledTabPanel value='updates'>
-              <ProjectUpdates taskData={taskData} />
+              <ProjectUpdates 
+                taskData={taskData} 
+                onRefreshMessageCount={onRefreshMessageCount}
+              />
             </StyledTabPanel>
             <StyledTabPanel value='activity'>
               <ProjectActivityLogs taskData={taskData} />
