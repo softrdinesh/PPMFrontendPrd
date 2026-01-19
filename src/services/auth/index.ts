@@ -44,11 +44,19 @@ const paymentcheck = async (userId: number) => {
     
     if (res.data && res.data.length > 0) {
       const paymentData = {
-       //isExpired: res.data[0].isExpired
-             isExpired: true
+       isExpired: res.data[0].isExpired,
+       projectCount:res.data[0].projectCount,
+       workspaceCount:res.data[0].workspaceCount,
+       taskGroupCount:res.data[0].taskGroupCount,
+       boardCount:res.data[0].boardCount,
+       boardsectionCount:res.data[0].boardsectionCount,
+       boardTaskCount:res.data[0].boardTaskCount,
+       amount:res.data[0].amount
+            //  isExpired: true
       }
       // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
             localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+
 
     }
   } catch (error) {

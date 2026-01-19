@@ -50,7 +50,6 @@ const ProjectManagementPage = ({ projectID }: { projectID: string }) => {
         }
       })
   })
-  console.log(projectID,'projectID')
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
   
@@ -387,7 +386,7 @@ const filteredTasks = currentTasks.filter((task: any) => {
                 </div>
 
                 <div className='flex items-center gap-5 flex-wrap justify-center'>
-                  {role?.RoleName === 'Admin' && <NewTask />}
+                  {role?.RoleName === 'Admin' && <NewTask projectlength={filteredTaskGroups} />}
                   <ProjectInvitePeople IsOpen={data?.IsOpen} users={users} />
                   <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
                   <ProjectFilterButton />
@@ -434,7 +433,6 @@ const filteredTasks = currentTasks.filter((task: any) => {
       ml={3} 
       fontWeight={700}
       onClick={() => {
-        console.log('Task Group Data:', data);
         // Your logic here - you have access to all data properties:
         // data.TaskGroupID, data.TaskGroupName, etc.
       }}

@@ -11,7 +11,8 @@ import { usePathname } from 'next/navigation'
 import type { CSSObject } from '@emotion/styled'
 import classnames from 'classnames'
 import { useUpdateEffect } from 'react-use'
-
+import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
+import { useRazorpayPayment } from '../paymentpopup/useRazorpayPayment'
 // Type Imports
 import MenuButton from '@/@menu/components/vertical-menu/MenuButton'
 import useVerticalMenu from '@/@menu/hooks/useVerticalMenu'
@@ -23,6 +24,7 @@ import { menuClasses } from '@/@menu/utils/menuClasses'
 import { renderMenuIcon } from '@/@menu/utils/menuUtils'
 import CreateWorkspaceDialog from './create-workspace-dialog'
 import { useWorkspace } from '@/context/workspace-context'
+import { useAuth } from '@/hooks/useAuth'
 
 export type MenuItemProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'prefix'> &
   RootStylesType &
@@ -59,12 +61,15 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
   // States
   const [active, setActive] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showTrialPopup, setShowTrialPopup] = useState(false)
+  const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
+  const { profile, user } = useAuth()
 
   // Hooks
   const pathname = usePathname()
-  const { refetchWorkspaces } = useWorkspace()
+  const { refetchWorkspaces, workspace } = useWorkspace()
   const { menuItemStyles, renderExpandedMenuItemIcon, textTruncate } = useVerticalMenu()
-
+  const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const { isCollapsed, isPopoutWhenCollapsed, isBreakpointReached } = useVerticalNav()
 
   // Get the styles for the specified element.
@@ -84,6 +89,9 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
       }
     }
   }
+
+  const workspaceLength = workspace?.length || 0
+  console.log(workspaceLength, 'dfsf334')
 
   // Change active state when the url changes
   useEffect(() => {
@@ -105,6 +113,72 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
     onActiveChange?.(active)
   }, [active])
 
+  const handleCreateWorkspaceClick = () => {
+    try {
+      const localStorageData = localStorage.getItem('paymentStatus')
+      
+      if (localStorageData) {
+        const parsedData = JSON.parse(localStorageData)
+        
+        if (parsedData?.workspaceCount === 1 && workspaceLength >= 1) {
+          setShowPaymentExpiredDialog(true)
+        } else {
+          setShowPaymentExpiredDialog(true)
+        }
+      } else {
+        setShowPaymentExpiredDialog(true)
+      }
+    } catch (error) {
+      console.error('Error parsing localStorage:', error)
+      setIsModalOpen(true)
+    }
+  }
+ const handleClosePaymentDialog = () => {
+    setShowPaymentExpiredDialog(false)
+  }
+    const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
+    userId: Number(user?.id),
+    onPaymentSuccess: () => {
+      const canOpen = checkPaymentStatus()
+      setShouldOpenDialog(canOpen)
+      setShowPaymentExpiredDialog(false)
+    },
+    onPaymentFailure: () => {
+      const canOpen = checkPaymentStatus()
+      setShouldOpenDialog(canOpen)
+      setShowPaymentExpiredDialog(true)
+    }
+  })
+  const checkPaymentStatus = () => {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+
+    try {
+      if (paymentStatus) {
+        const parsed = JSON.parse(paymentStatus)
+        // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
+        if (parsed.isExpired === true) {
+          setShowPaymentExpiredDialog(true)
+          return false
+        }
+        // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
+        if (parsed.isExpired === false) {
+          setShowPaymentExpiredDialog(false)
+          return true
+        }
+        // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
+        setShowPaymentExpiredDialog(true)
+        return false
+      }
+      // No stored status → treat as expired by default (user must renew)
+      setShowPaymentExpiredDialog(true)
+      return false
+    } catch (error) {
+      console.error('Error parsing payment status:', error)
+      // On parse error, treat as expired to be safe
+      setShowPaymentExpiredDialog(true)
+      return false
+    }
+  }
   return (
     <>
       <StyledVerticalMenuItem
@@ -121,9 +195,7 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
           className={classnames(menuClasses.button, { [menuClasses.active]: active }, !isCollapsed && 'gap-2')}
           component={component}
           tabIndex={disabled ? -1 : 0}
-          onClick={() => {
-            setIsModalOpen(true)
-          }}
+          onClick={handleCreateWorkspaceClick}
         >
           {/* Menu Item Label */}
           <StyledMenuLabel
@@ -131,7 +203,7 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
             rootStyles={getMenuItemStyles('label')}
             textTruncate={textTruncate}
           >
-            {'Create Workspace'}
+            {'Create Workspaces'}
           </StyledMenuLabel>
 
           {/* Menu Item Icon */}
@@ -150,6 +222,42 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
         onCloseModal={() => setIsModalOpen(false)}
         refetchWorkspaces={refetchWorkspaces}
       />
+         <SubscriptionExpiredDialog
+        open={showPaymentExpiredDialog}
+        onClose={handleClosePaymentDialog}
+        onRenew={generateRazorPayOrder}
+        isLoading={isLoading}
+        razorpayLoaded={razorpayLoaded}
+      />
+      
+      {/* Trial Version Expired Popup */}
+      {showTrialPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h2 className="text-xl font-semibold mb-4">Trial Version Expired</h2>
+            <p className="text-gray-600 mb-6">
+              Subscribe and enjoy the premium features!
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowTrialPopup(false)}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setShowTrialPopup(false)
+                  // Add your subscription redirect logic here
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Subscribe Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
