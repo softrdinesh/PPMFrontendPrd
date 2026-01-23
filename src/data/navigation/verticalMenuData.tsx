@@ -17,6 +17,7 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     href: '/bug-queue',
     icon: 'ri-information-line'
   }
+  
 ]
 
 export default verticalMenuData

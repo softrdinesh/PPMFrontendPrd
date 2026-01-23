@@ -24,6 +24,7 @@ import CustomizedAccordions from './task-group'
 import { useProject } from '@/context/project-context'
 import TaskGroupActions from '././task-group/actions'
 import DeleteTasksComponent from './task-group/task/delete-tasks'
+import NewBoard from './main-screen/newBoard'
 
 const ProjectManagementPage = ({ projectID }: { projectID: string }) => {
   // ** Hooks
@@ -386,6 +387,8 @@ const filteredTasks = currentTasks.filter((task: any) => {
                 </div>
 
                 <div className='flex items-center gap-5 flex-wrap justify-center'>
+                                    {role?.RoleName === 'Admin' && <NewBoard projectlength={filteredTaskGroups} />}
+
                   {role?.RoleName === 'Admin' && <NewTask projectlength={filteredTaskGroups} />}
                   <ProjectInvitePeople IsOpen={data?.IsOpen} users={users} />
                   <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />

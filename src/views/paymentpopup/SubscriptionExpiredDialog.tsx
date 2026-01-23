@@ -59,7 +59,7 @@ const SubscriptionExpiredDialog: React.FC<Props> = ({ open, onClose, onRenew, is
               size="large"
               onClick={onClose}
               fullWidth
-              disabled={isLoading}
+              //disabled={isLoading}
             >
               Cancel
             </CustomButton>
@@ -69,7 +69,7 @@ const SubscriptionExpiredDialog: React.FC<Props> = ({ open, onClose, onRenew, is
               size="large"
               onClick={onRenew}
               fullWidth
-              disabled={isLoading || !razorpayLoaded}
+            //  disabled={isLoading || !razorpayLoaded}
               sx={{
                 backgroundColor: 'primary.main',
                 '&:hover': {

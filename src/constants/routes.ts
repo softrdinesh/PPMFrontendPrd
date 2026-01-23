@@ -9,6 +9,7 @@ export const routes = {
   dashboard: '/dashboard',
   project: '/project',
   invite: '/invite/',
+  boards:'/boards',
 
   // ** Sprints
   workspace: '/workspace/',
