@@ -25,14 +25,15 @@ import {
   FormControl,
   InputLabel,
   Alert,
-  Snackbar,
-  Grid
+  Grid,
+  CircularProgress
 } from '@mui/material'
 import { Icon } from '@iconify/react'
 import { HexColorPicker, HexColorInput } from 'react-colorful'
 import TaskColumn from './TaskColumn'
 import {NewTaskDialog} from '../../views/project/main-screen/Taskboard'
 import axios from 'axios'
+import toast, { Toaster } from 'react-hot-toast'
 
 interface Task {
   id: string
@@ -58,6 +59,7 @@ interface Column {
   iconColor: string
   lightBg: string
   count: number
+  boardCategoryID?: number // Add API ID field
 }
 
 const YourFeaturePage = () => {
@@ -71,6 +73,10 @@ const YourFeaturePage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDialog, setOpenDialog] = useState(false)
   const teamMembers = ['John Doe', 'Jane Smith', 'Bob Johnson']
+  
+  // Loading states
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Edit states
   const [editCategoryDialog, setEditCategoryDialog] = useState(false)
@@ -88,12 +94,10 @@ const YourFeaturePage = () => {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [selectedColor, setSelectedColor] = useState('#2196F3') // Default primary color
   
-  // Snackbar
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error'
-  })
+  // Remove snackbar state since we're using react-hot-toast
+  // Validation errors for create category
+  const [categoryValidationErrors, setCategoryValidationErrors] = useState<{name?: string, color?: string}>({})
+  const [categoryLoading, setCategoryLoading] = useState(false)
 
   // Get icon based on category name
   const getCategoryIcon = (categoryName: string) => {
@@ -106,6 +110,10 @@ const YourFeaturePage = () => {
       'blocked': 'mdi:alert-circle-outline',
       'testing': 'mdi:test-tube',
       'deployed': 'mdi:rocket-launch-outline',
+      'category': 'mdi:format-list-checks',
+      'dev': 'mdi:code-braces',
+      'dd': 'mdi:dots-horizontal-circle',
+      'valeu': 'mdi:check-circle-outline',
     }
     
     const defaultIcons = [
@@ -137,46 +145,130 @@ const YourFeaturePage = () => {
     ]
   })
 
-  const [columns, setColumns] = useState<Column[]>([
-    { 
-      id: 'todo', 
-      title: 'To Do', 
-      color: '#2196F3', // Primary color
-      icon: 'mdi:clipboard-list-outline',
-      iconColor: '#2196F3',
-      lightBg: alpha('#2196F3', 0.08),
-      count: 0
-    },
-    { 
-      id: 'inProgress', 
-      title: 'In Progress', 
-      color: '#FF9800', // Warning color
-      icon: 'mdi:progress-clock',
-      iconColor: '#FF9800',
-      lightBg: alpha('#FF9800', 0.08),
-      count: 0
-    },
-    { 
-      id: 'review', 
-      title: 'Review', 
-      color: '#00BCD4', // Info color
-      icon: 'mdi:eye-check-outline',
-      iconColor: '#00BCD4',
-      lightBg: alpha('#00BCD4', 0.08),
-      count: 0
-    },
-    { 
-      id: 'done', 
-      title: 'Done', 
-      color: '#4CAF50', // Success color
-      icon: 'mdi:checkbox-marked-circle-outline',
-      iconColor: '#4CAF50',
-      lightBg: alpha('#4CAF50', 0.08),
-      count: 0
-    }
-  ])
+  // Initialize with empty array - will be populated from API
+  const [columns, setColumns] = useState<Column[]>([])
 
-  // Update columns count
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await axios.get('https://uat.ppmbackend.projectpulse360.com/GetBoardList?LoginuserID=76')
+      
+      if (response.data && Array.isArray(response.data)) {
+        // Map API response to Column format
+        const apiColumns: Column[] = response.data.map((item: any) => {
+          // Generate ID from category name (lowercase, no spaces)
+          const columnId = item.categoryname.toLowerCase().replace(/\s+/g, '')
+          
+          return {
+            id: columnId,
+            title: item.categoryname,
+            color: item.colorCode || '#2196F3',
+            icon: getCategoryIcon(item.categoryname),
+            iconColor: item.colorCode || '#2196F3',
+            lightBg: alpha(item.colorCode || '#2196F3', 0.08),
+            count: tasks[columnId]?.length || 0,
+            boardCategoryID: item.boardCategoryID
+          }
+        })
+        
+        setColumns(apiColumns)
+        
+        // Initialize empty task arrays for any new categories from API
+        const updatedTasks = { ...tasks }
+        apiColumns.forEach(col => {
+          if (!updatedTasks[col.id]) {
+            updatedTasks[col.id] = []
+          }
+        })
+        setTasks(updatedTasks)
+        
+        // Use toast instead of snackbar
+       
+      } else {
+        throw new Error('Invalid API response format')
+      }
+    } catch (error: any) {
+      console.error('Error fetching categories:', error)
+      setError('Failed to load categories from API')
+      
+      // Use toast instead of snackbar
+      toast.error('Failed to load categories from API', {
+        position: 'top-center',
+        duration: 4000,
+        style: {
+          background: 'white',
+          color: 'black',
+          padding: '12px 20px',
+          borderRadius: '12px',
+          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          maxWidth: '400px',
+          fontSize: '14px',
+          fontWeight: 500,
+        },
+      })
+      
+      // Fallback to default columns if API fails
+      const defaultColumns: Column[] = [
+        { 
+          id: 'todo', 
+          title: 'To Do', 
+          color: '#2196F3', // Primary color
+          icon: 'mdi:clipboard-list-outline',
+          iconColor: '#2196F3',
+          lightBg: alpha('#2196F3', 0.08),
+          count: 0
+        },
+        { 
+          id: 'inprogress', 
+          title: 'In Progress', 
+          color: '#FF9800', // Warning color
+          icon: 'mdi:progress-clock',
+          iconColor: '#FF9800',
+          lightBg: alpha('#FF9800', 0.08),
+          count: 0
+        },
+        { 
+          id: 'review', 
+          title: 'Review', 
+          color: '#00BCD4', // Info color
+          icon: 'mdi:eye-check-outline',
+          iconColor: '#00BCD4',
+          lightBg: alpha('#00BCD4', 0.08),
+          count: 0
+        },
+        { 
+          id: 'done', 
+          title: 'Done', 
+          color: '#4CAF50', // Success color
+          icon: 'mdi:checkbox-marked-circle-outline',
+          iconColor: '#4CAF50',
+          lightBg: alpha('#4CAF50', 0.08),
+          count: 0
+        }
+      ]
+      setColumns(defaultColumns)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  // Update columns count when tasks change
+  useEffect(() => {
+    const updatedColumns = columns.map(col => ({
+      ...col,
+      count: tasks[col.id]?.length || 0
+    }))
+    setColumns(updatedColumns)
+  }, [tasks])
+
   const columnsWithCount = columns.map(col => ({
     ...col,
     count: tasks[col.id]?.length || 0
@@ -186,7 +278,7 @@ const YourFeaturePage = () => {
 
   const handleDrop = (taskId: string, columnId: string) => {
     let taskToMove: Task | null = null
-    let sourceColumn: string = 'todo'
+    let sourceColumn: string = ''
     
     Object.entries(tasks).forEach(([colId, columnTasks]) => {
       const task = columnTasks.find(t => t.id === taskId)
@@ -224,31 +316,46 @@ const YourFeaturePage = () => {
   const handleOpenCreateCategory = () => {
     setNewCategoryName('')
     setSelectedColor('#2196F3')
+    setCategoryValidationErrors({})
     setCreateCategoryDialog(true)
   }
 
   const handleCreateCategory = async () => {
+    // Clear previous validation errors
+    setCategoryValidationErrors({})
+    
+    let hasError = false
+    const errors: {name?: string, color?: string} = {}
+
+    // Validate category name
     if (!newCategoryName.trim()) {
-      setSnackbar({
-        open: true,
-        message: 'Please enter a category name',
-        severity: 'error'
-      })
+      errors.name = 'Category name is required'
+      hasError = true
+    } else if (newCategoryName.length > 50) {
+      errors.name = 'Category name must be less than 50 characters'
+      hasError = true
+    }
+
+    // Validate category name already exists
+    const newId = newCategoryName.toLowerCase().replace(/\s+/g, '')
+    if (columns.find(col => col.id === newId)) {
+      errors.name = 'Category with this name already exists'
+      hasError = true
+    }
+
+    // Validate color format
+    const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+    if (!colorRegex.test(selectedColor)) {
+      errors.color = 'Invalid color format. Use hex format like #2196F3'
+      hasError = true
+    }
+
+    if (hasError) {
+      setCategoryValidationErrors(errors)
       return
     }
 
-    // Generate ID from category name
-    const newId = newCategoryName.toLowerCase().replace(/\s+/g, '')
-    
-    // Check if category already exists locally
-    if (columns.find(col => col.id === newId)) {
-      setSnackbar({
-        open: true,
-        message: 'Category with this name already exists',
-        severity: 'error'
-      })
-      return
-    }
+    setCategoryLoading(true)
 
     try {
       // Prepare API request parameters
@@ -256,42 +363,35 @@ const YourFeaturePage = () => {
       const colorCode = encodeURIComponent(selectedColor) // URL encode the color code
       
       // Make API call to create board category
-      const apiUrl = `https://uat.ppmbackend.projectpulse360.com/CreateBoardCategory?Categoryname=${(newCategoryName)}&ColorCode=${colorCode}&LoginuserID=${loginUserId}`
+      const apiUrl = `https://uat.ppmbackend.projectpulse360.com/CreateBoardCategory?Categoryname=${encodeURIComponent(newCategoryName)}&ColorCode=${colorCode}&LoginuserID=${loginUserId}`
       
       const response = await axios.post(apiUrl)
       
       // Check if API call was successful
       if (response.data) {
-        // You may want to check specific response structure based on your API
-        // For now, assuming success if we get a response
+        // Refresh categories from API after successful creation
+        await fetchCategories()
         
-        const newColumn: Column = {
-          id: newId,
-          title: newCategoryName,
-          color: selectedColor,
-          icon: getCategoryIcon(newCategoryName),
-          iconColor: selectedColor,
-          lightBg: alpha(selectedColor, 0.08),
-          count: 0
-        }
-
-        // Add new column locally
-        setColumns([...columns, newColumn])
-        
-        // Initialize empty task array for new category
-        setTasks({
-          ...tasks,
-          [newId]: []
-        })
-
         setCreateCategoryDialog(false)
         setNewCategoryName('')
         setSelectedColor('#2196F3')
+        setCategoryValidationErrors({})
         
-        setSnackbar({
-          open: true,
-          message: 'Category created successfully',
-          severity: 'success'
+        // Use toast instead of snackbar
+        toast.success('Category created successfully', {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
         })
       } else {
         throw new Error('Failed to create category')
@@ -305,6 +405,11 @@ const YourFeaturePage = () => {
       if (error.response) {
         // Server responded with error status
         errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
+        
+        // Handle duplicate category error from server
+        if (error.response.status === 400 || (error.response.data?.message && error.response.data.message.toLowerCase().includes('already exists'))) {
+          setCategoryValidationErrors({ name: 'Category with this name already exists on the server' })
+        }
       } else if (error.request) {
         // Request made but no response received
         errorMessage = 'Network error: No response from server'
@@ -313,12 +418,34 @@ const YourFeaturePage = () => {
         errorMessage = error.message || 'Unknown error occurred'
       }
       
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error'
-      })
+      // Only show toast if there's no field-specific error
+      if (!categoryValidationErrors.name) {
+        toast.error(errorMessage, {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+        })
+      }
+    } finally {
+      setCategoryLoading(false)
     }
+  }
+
+  const handleCloseCreateCategoryDialog = () => {
+    setCreateCategoryDialog(false)
+    setCategoryValidationErrors({})
+    setNewCategoryName('')
+    setSelectedColor('#2196F3')
   }
 
   // Edit Category handlers
@@ -327,19 +454,79 @@ const YourFeaturePage = () => {
     setEditCategoryDialog(true)
   }
 
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     if (editingCategory) {
-      const updatedColumns = columns.map(col => 
-        col.id === editingCategory.id ? editingCategory : col
-      )
-      setColumns(updatedColumns)
-      setEditCategoryDialog(false)
-      setEditingCategory(null)
-      setSnackbar({
-        open: true,
-        message: 'Category updated successfully',
-        severity: 'success'
-      })
+      try {
+        // Prepare API request parameters for update
+        const loginUserId = '76' // Static LoginuserID
+        const colorCode = encodeURIComponent(editingCategory.color) // URL encode the color code
+        
+        // Make API call to update board category
+        // Using the exact API format you provided: https://uat.ppmbackend.projectpulse360.com/UpdateBoardCategory?Categoryname=DEV&ColorCode=%232196F3&LoginuserID=1&CategoryID=2
+        const apiUrl = `https://uat.ppmbackend.projectpulse360.com/UpdateBoardCategory?Categoryname=${encodeURIComponent(editingCategory.title)}&ColorCode=${colorCode}&LoginuserID=${loginUserId}&CategoryID=${editingCategory.boardCategoryID}`
+        
+        const response = await axios.post(apiUrl)
+        
+        // Check if API call was successful
+        if (response.data) {
+          // Refresh categories from API after successful update
+          await fetchCategories()
+          
+          setEditCategoryDialog(false)
+          setEditingCategory(null)
+          
+          // Use toast instead of snackbar
+          toast.success('Category updated successfully', {
+            position: 'top-center',
+            duration: 4000,
+            style: {
+              background: 'white',
+              color: 'black',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              maxWidth: '400px',
+              fontSize: '14px',
+              fontWeight: 500,
+            },
+          })
+        } else {
+          throw new Error('Failed to update category')
+        }
+      } catch (error: any) {
+        console.error('Error updating category:', error)
+        
+        // Handle specific error cases
+        let errorMessage = 'Failed to update category'
+        
+        if (error.response) {
+          // Server responded with error status
+          errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
+        } else if (error.request) {
+          // Request made but no response received
+          errorMessage = 'Network error: No response from server'
+        } else {
+          // Something else happened
+          errorMessage = error.message || 'Unknown error occurred'
+        }
+        
+        toast.error(errorMessage, {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+        })
+      }
     }
   }
 
@@ -349,39 +536,103 @@ const YourFeaturePage = () => {
     setDeleteCategoryDialog(true)
   }
 
-  const handleConfirmDeleteCategory = () => {
+  const handleConfirmDeleteCategory = async () => {
     if (categoryToDelete) {
       // Check if there are tasks in the category
       const tasksInCategory = tasks[categoryToDelete.id] || []
       
       if (tasksInCategory.length > 0) {
-        setSnackbar({
-          open: true,
-          message: `Cannot delete category with ${tasksInCategory.length} task(s). Move or delete tasks first.`,
-          severity: 'error'
+        toast.error(`Cannot delete category with ${tasksInCategory.length} task(s). Move or delete tasks first.`, {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
         })
         setDeleteCategoryDialog(false)
         setCategoryToDelete(null)
         return
       }
 
-      // Remove the column from columns array
-      const updatedColumns = columns.filter(col => col.id !== categoryToDelete.id)
-      setColumns(updatedColumns)
-      
-      // Remove the category from tasks
-      const updatedTasks = { ...tasks }
-      delete updatedTasks[categoryToDelete.id]
-      setTasks(updatedTasks)
-      
-      setDeleteCategoryDialog(false)
-      setCategoryToDelete(null)
-      
-      setSnackbar({
-        open: true,
-        message: 'Category deleted successfully',
-        severity: 'success'
-      })
+      try {
+        // Check if category has an ID from API
+        if (!categoryToDelete.boardCategoryID) {
+          throw new Error('Category does not have a valid ID')
+        }
+
+        // Make API call to delete category using the exact API format you provided:
+        // https://uat.ppmbackend.projectpulse360.com/RemoveBoardCategory?LoginuserID=76&CategoryID=6
+        const apiUrl = `https://uat.ppmbackend.projectpulse360.com/RemoveBoardCategory?LoginuserID=76&CategoryID=${categoryToDelete.boardCategoryID}`
+        
+        const response = await axios.post(apiUrl)
+        
+        // Check if API call was successful
+        if (response.data) {
+          // Refresh categories from API after successful deletion
+          await fetchCategories()
+          
+          setDeleteCategoryDialog(false)
+          setCategoryToDelete(null)
+          
+          toast.success('Category deleted successfully', {
+            position: 'top-center',
+            duration: 4000,
+            style: {
+              background: 'white',
+              color: 'black',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              maxWidth: '400px',
+              fontSize: '14px',
+              fontWeight: 500,
+            },
+          })
+        } else {
+          throw new Error('Failed to delete category')
+        }
+      } catch (error: any) {
+        console.error('Error deleting category:', error)
+        
+        // Handle specific error cases
+        let errorMessage = 'Failed to delete category'
+        
+        if (error.response) {
+          // Server responded with error status
+          errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
+        } else if (error.request) {
+          // Request made but no response received
+          errorMessage = 'Network error: No response from server'
+        } else {
+          // Something else happened
+          errorMessage = error.message || 'Unknown error occurred'
+        }
+        
+        toast.error(errorMessage, {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+        })
+      }
     }
   }
 
@@ -402,10 +653,21 @@ const YourFeaturePage = () => {
       setEditTaskDialog(false)
       setEditingTask(null)
       setEditingTaskColumn(null)
-      setSnackbar({
-        open: true,
-        message: 'Task updated successfully',
-        severity: 'success'
+      
+      toast.success('Task updated successfully', {
+        position: 'top-center',
+        duration: 4000,
+        style: {
+          background: 'white',
+          color: 'black',
+          padding: '12px 20px',
+          borderRadius: '12px',
+          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          maxWidth: '400px',
+          fontSize: '14px',
+          fontWeight: 500,
+        },
       })
     }
   }
@@ -414,15 +676,29 @@ const YourFeaturePage = () => {
     const updatedTasks = { ...tasks }
     updatedTasks[columnId] = updatedTasks[columnId].filter(t => t.id !== taskId)
     setTasks(updatedTasks)
-    setSnackbar({
-      open: true,
-      message: 'Task deleted successfully',
-      severity: 'success'
+    
+    toast.success('Task deleted successfully', {
+      position: 'top-center',
+      duration: 4000,
+      style: {
+        background: 'white',
+        color: 'black',
+        padding: '12px 20px',
+        borderRadius: '12px',
+        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        maxWidth: '400px',
+        fontSize: '14px',
+        fontWeight: 500,
+      },
     })
   }
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false })
+  // Remove handleCloseSnackbar function since we're using toast
+
+  // Add refresh function
+  const handleRefreshCategories = () => {
+    fetchCategories()
   }
 
   return (
@@ -433,6 +709,38 @@ const YourFeaturePage = () => {
         backgroundColor: theme.palette.background.default
       }}
     >
+      {/* Add Toaster component */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+          success: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#4CAF50',
+              secondary: 'white',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#f44336',
+              secondary: 'white',
+            },
+          },
+        }}
+      />
+      
       {/* Header */}
       <Paper 
         elevation={0}
@@ -511,6 +819,11 @@ const YourFeaturePage = () => {
                 }}
               >
                 Manage your team's workflow and track progress
+                {error && (
+                  <Typography variant="caption" color="error" display="block">
+                    {error}
+                  </Typography>
+                )}
               </Typography>
             </Box>
           </Box>
@@ -520,6 +833,7 @@ const YourFeaturePage = () => {
             width: { xs: '100%', sm: 'auto' },
             mt: { xs: 1, sm: 0 }
           }}>
+
             <Button
               variant="outlined"
               startIcon={<Icon icon="mdi:plus" width={20} />}
@@ -534,7 +848,7 @@ const YourFeaturePage = () => {
                 fontWeight: 600,
                 textTransform: 'none',
                 whiteSpace: 'nowrap',
-                width: { xs: '50%', sm: 'auto' },
+                width: { xs: 'auto', sm: 'auto' },
                 '&:hover': {
                   borderColor: theme.palette.primary.main,
                   backgroundColor: alpha(theme.palette.primary.main, 0.04)
@@ -556,7 +870,7 @@ const YourFeaturePage = () => {
                 fontWeight: 600,
                 textTransform: 'none',
                 whiteSpace: 'nowrap',
-                width: { xs: '50%', sm: 'auto' },
+                width: { xs: 'auto', sm: 'auto' },
                 boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
                 '&:hover': {
                   backgroundColor: theme.palette.primary.dark,
@@ -663,10 +977,7 @@ const YourFeaturePage = () => {
                 borderRadius: '10px',
                 height: { xs: '35px', sm: '40px' },
                 ml: { xs: 0, sm: 'auto' },
-                marginLeft: 300,
                 px: 1.5,
-                alignSelf: 'flex-end',
-                justifyContent: 'flex-end',
                 '& .MuiChip-label': {
                   fontSize: '0.9375rem',
                   fontWeight: 600,
@@ -752,11 +1063,19 @@ const YourFeaturePage = () => {
         </Box>
       </Drawer>
 
+      {/* Loading State */}
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+          <CircularProgress />
+          <Typography sx={{ ml: 2 }}>Loading categories from API...</Typography>
+        </Box>
+      )}
+
       {/* Create Category Dialog */}
       <Dialog 
         open={createCategoryDialog} 
-        onClose={() => setCreateCategoryDialog(false)}
-        maxWidth="md"
+        onClose={handleCloseCreateCategoryDialog}
+        maxWidth="sm"
         fullWidth
       >
         <DialogTitle sx={{ fontWeight: 600 }}>Create New Category</DialogTitle>
@@ -765,118 +1084,244 @@ const YourFeaturePage = () => {
             fullWidth
             label="Category Name"
             value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            sx={{ mt: 2, mb: 3 }}
+            onChange={(e) => {
+              setNewCategoryName(e.target.value)
+              if (categoryValidationErrors.name) {
+                setCategoryValidationErrors(prev => ({ ...prev, name: '' }))
+              }
+            }}
+            sx={{ mt: 2, mb: 1 }}
             placeholder="Enter category name (e.g., Backlog, Testing)"
             autoFocus
+            error={!!categoryValidationErrors.name}
+            helperText={categoryValidationErrors.name}
+            disabled={categoryLoading}
+            inputProps={{
+              maxLength: 50
+            }}
+            InputProps={{
+              endAdornment: (
+                <Typography variant="caption" color="textSecondary">
+                  {newCategoryName.length}/50
+                </Typography>
+              )
+            }}
           />
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: theme.palette.text.primary }}>
-            Select Color
+          
+          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: theme.palette.text.primary }}>
+            Category Color
           </Typography>
           
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 3 }}>
-            {/* Color Picker */}
-            <Box sx={{ flex: 1 }}>
-              <HexColorPicker
-                color={selectedColor}
-                onChange={setSelectedColor}
-                style={{ 
-                  width: '50%', 
-                  height: '100px',
-                  borderRadius: '8px'
+          {/* Compact Color Picker with Input */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            mb: 1
+          }}>
+            <Box
+              sx={{
+                position: 'relative',
+                width: 48,
+                height: 48,
+                borderRadius: '8px',
+                backgroundColor: selectedColor,
+                border: `2px solid ${categoryValidationErrors.color ? theme.palette.error.main : theme.palette.divider}`,
+                cursor: 'pointer',
+                flexShrink: 0,
+                boxShadow: `0 2px 8px ${alpha(selectedColor, 0.3)}`,
+                '&:hover': {
+                  boxShadow: `0 4px 12px ${alpha(selectedColor, 0.4)}`
+                }
+              }}
+            >
+              <input
+                type="color"
+                value={selectedColor}
+                onChange={(e) => {
+                  setSelectedColor(e.target.value)
+                  if (categoryValidationErrors.color) {
+                    setCategoryValidationErrors(prev => ({ ...prev, color: '' }))
+                  }
                 }}
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  opacity: 0,
+                  cursor: 'pointer'
+                }}
+                disabled={categoryLoading}
               />
             </Box>
             
-            {/* Color Preview and Input */}
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {/* Color Preview */}
-              {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: '10px',
-                    backgroundColor: selectedColor,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`
-                  }}
-                />
-                {/* <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.secondary }}>
-                    Selected Color
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-                    {selectedColor.toUpperCase()}
-                  </Typography>
-                </Box> */}
-              {/* </Box> */} 
-              
-              {/* Color Input */}
-              <Box>
-                {/* <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: theme.palette.text.secondary }}>
-                  Hex Color Code
-                </Typography> */}
-                <HexColorInput
-                  color={selectedColor}
-                  onChange={setSelectedColor}
-                  prefixed
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: `2px solid ${theme.palette.divider}`,
-                    fontSize: '16px',
-                    fontFamily: theme.typography.fontFamily,
-                    backgroundColor: theme.palette.background.paper,
-                    color: theme.palette.text.primary,
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    transition: 'border-color 0.2s ease',
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = theme.palette.primary.main;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = theme.palette.divider;
-                  }}
-                />
-              </Box>
-              
-              {/* Quick Color Presets */}
-          
-            </Box>
+            <TextField
+              fullWidth
+              value={selectedColor}
+              onChange={(e) => {
+                setSelectedColor(e.target.value)
+                if (categoryValidationErrors.color) {
+                  setCategoryValidationErrors(prev => ({ ...prev, color: '' }))
+                }
+              }}
+              placeholder="#2196F3"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontFamily: 'monospace',
+                  fontSize: '0.9375rem'
+                }
+              }}
+              error={!!categoryValidationErrors.color}
+              helperText={categoryValidationErrors.color}
+              disabled={categoryLoading}
+              inputProps={{
+                pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                title: 'Hex color format (e.g., #2196F3 or #FFF)'
+              }}
+            />
           </Box>
+          
+          {categoryValidationErrors.color && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mt: 1,
+                '& .MuiAlert-icon': {
+                  alignItems: 'center'
+                }
+              }}
+              icon={<Icon icon="mdi:alert-circle" />}
+            >
+              {categoryValidationErrors.color}
+            </Alert>
+          )}
+          
+          {/* Color format hint */}
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+            Use hex format (e.g., #2196F3 for blue, #4CAF50 for green)
+          </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setCreateCategoryDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleCreateCategory}>Create Category</Button>
+          <Button 
+            onClick={handleCloseCreateCategoryDialog}
+            disabled={categoryLoading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleCreateCategory}
+            disabled={categoryLoading}
+            startIcon={categoryLoading ? <CircularProgress size={20} /> : <Icon icon="mdi:check" />}
+          >
+            {categoryLoading ? 'Creating...' : 'Create Category'}
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Edit Category Dialog */}
-      <Dialog 
-        open={editCategoryDialog} 
-        onClose={() => setEditCategoryDialog(false)}
-        maxWidth="sm"
-        fullWidth
+{/* Edit Category Dialog */}
+<Dialog 
+  open={editCategoryDialog} 
+  onClose={() => setEditCategoryDialog(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle sx={{ fontWeight: 600 }}>Edit Category</DialogTitle>
+  <DialogContent>
+    <TextField
+      fullWidth
+      label="Category Name"
+      value={editingCategory?.title || ''}
+      onChange={(e) => setEditingCategory(editingCategory ? {...editingCategory, title: e.target.value} : null)}
+      sx={{ mt: 2, mb: 1 }}
+      placeholder="Enter category name"
+      autoFocus
+    />
+    
+    <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: theme.palette.text.primary }}>
+      Category Color
+    </Typography>
+    
+    {/* Compact Color Picker with Input */}
+    <Box sx={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 2,
+      mb: 1
+    }}>
+      <Box
+        sx={{
+          position: 'relative',
+          width: 48,
+          height: 48,
+          borderRadius: '8px',
+          backgroundColor: editingCategory?.color || '#2196F3',
+          border: `2px solid ${theme.palette.divider}`,
+          cursor: 'pointer',
+          flexShrink: 0,
+          boxShadow: `0 2px 8px ${alpha(editingCategory?.color || '#2196F3', 0.3)}`,
+          '&:hover': {
+            boxShadow: `0 4px 12px ${alpha(editingCategory?.color || '#2196F3', 0.4)}`
+          }
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Edit Category</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Category Name"
-            value={editingCategory?.title || ''}
-            onChange={(e) => setEditingCategory(editingCategory ? {...editingCategory, title: e.target.value} : null)}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setEditCategoryDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveCategory}>Save</Button>
-        </DialogActions>
-      </Dialog>
-
+        <input
+          type="color"
+          value={editingCategory?.color || '#2196F3'}
+          onChange={(e) => setEditingCategory(editingCategory ? {...editingCategory, color: e.target.value} : null)}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            opacity: 0,
+            cursor: 'pointer'
+          }}
+        />
+      </Box>
+      
+      <TextField
+        fullWidth
+        value={editingCategory?.color || '#2196F3'}
+        onChange={(e) => setEditingCategory(editingCategory ? {...editingCategory, color: e.target.value} : null)}
+        placeholder="#2196F3"
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            fontFamily: 'monospace',
+            fontSize: '0.9375rem'
+          }
+        }}
+        inputProps={{
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+          title: 'Hex color format (e.g., #2196F3 or #FFF)'
+        }}
+      />
+    </Box>
+    
+    {/* Color format hint */}
+    <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+      Use hex format (e.g., #2196F3 for blue, #4CAF50 for green)
+    </Typography>
+    
+    {/* Display Category ID if available */}
+    {editingCategory?.boardCategoryID && (
+      <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 2 }}>
+        Category ID: {editingCategory.boardCategoryID}
+      </Typography>
+    )}
+  </DialogContent>
+  <DialogActions sx={{ px: 3, pb: 2 }}>
+    <Button onClick={() => setEditCategoryDialog(false)}>
+      Cancel
+    </Button>
+    <Button 
+      variant="contained" 
+      onClick={handleSaveCategory}
+      startIcon={<Icon icon="mdi:check" />}
+    >
+      Save Changes
+    </Button>
+  </DialogActions>
+</Dialog>
       {/* Delete Category Dialog */}
       <Dialog 
         open={deleteCategoryDialog} 
@@ -888,11 +1333,21 @@ const YourFeaturePage = () => {
         <DialogContent>
           <Typography>
             Are you sure you want to delete the category "{categoryToDelete?.title}"?
+            {categoryToDelete?.boardCategoryID && (
+              <Typography variant="caption" display="block" color="textSecondary">
+                Category ID: {categoryToDelete.boardCategoryID}
+              </Typography>
+            )}
           </Typography>
           {categoryToDelete && tasks[categoryToDelete.id]?.length > 0 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
               This category contains {tasks[categoryToDelete.id].length} task(s). 
               You must move or delete all tasks before deleting this category.
+            </Alert>
+          )}
+          {categoryToDelete && tasks[categoryToDelete.id]?.length === 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              This category is empty and can be safely deleted.
             </Alert>
           )}
         </DialogContent>
@@ -904,7 +1359,7 @@ const YourFeaturePage = () => {
             onClick={handleConfirmDeleteCategory}
             disabled={categoryToDelete && tasks[categoryToDelete.id]?.length > 0}
           >
-            Delete
+            Delete Category
           </Button>
         </DialogActions>
       </Dialog>
@@ -966,220 +1421,210 @@ const YourFeaturePage = () => {
       </Dialog>
 
       {/* Board */}
-      <Box 
-        sx={{ 
-          overflowX: 'auto',
-          height: { xs: 'auto', sm: 'calc(100vh - 180px)' },
-          minHeight: { xs: 'calc(100vh - 220px)', sm: 'auto' },
-          backgroundColor: theme.palette.background.default,
-          '&::-webkit-scrollbar': {
-            height: '8px'
-          },
-          '&::-webkit-scrollbar-track': {
-            background: theme.palette.action.hover,
-            borderRadius: '4px'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: theme.palette.action.disabled,
-            borderRadius: '4px',
-            '&:hover': {
-              background: theme.palette.action.active
-            }
-          }
-        }}
-      >
+      {!loading && (
         <Box 
           sx={{ 
-            display: 'flex',
-            gap: { xs: 2, sm: 3 },
-            p: { xs: 2, sm: 3, md: 4 },
-            height: '100%',
-            minWidth: 'fit-content',
-            flexDirection: { xs: 'column', lg: 'row' },
-            [theme.breakpoints.down('lg')]: {
-              flexDirection: 'row',
-              flexWrap: 'wrap'
+            overflowX: 'auto',
+            height: { xs: 'auto', sm: 'calc(100vh - 180px)' },
+            minHeight: { xs: 'calc(100vh - 220px)', sm: 'auto' },
+            backgroundColor: theme.palette.background.default,
+            '&::-webkit-scrollbar': {
+              height: '8px'
             },
-            [theme.breakpoints.down('sm')]: {
-              flexDirection: 'column'
+            '&::-webkit-scrollbar-track': {
+              background: theme.palette.action.hover,
+              borderRadius: '4px'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: theme.palette.action.disabled,
+              borderRadius: '4px',
+              '&:hover': {
+                background: theme.palette.action.active
+              }
             }
           }}
         >
-          {columnsWithCount.map((column) => (
-            <Box
-              key={column.id}
-              sx={{
-                minWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
-                maxWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
-                display: 'flex',
-                flexDirection: 'column',
-                flexShrink: 0,
-                [theme.breakpoints.down('lg')]: {
-                  minWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' },
-                  maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' }
-                },
-                [theme.breakpoints.down('sm')]: {
-                  minWidth: '100%',
-                  maxWidth: '100%'
-                }
-              }}
-            >
-              {/* Column Header */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: { xs: 2, sm: 2.5 },
-                  mb: 2,
-                  borderRadius: '12px',
-                  backgroundColor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.divider}`,
-                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.15 : 0.05)}`
-                }}
-              >
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  width: '100%'
-                }}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 1.5, 
-                    flex: 1, 
-                    minWidth: 0,
-                    mr: 2
-                  }}>
-                    <Box
-                      sx={{
-                        width: { xs: 40, sm: 44 },
-                        height: { xs: 40, sm: 44 },
-                        borderRadius: '10px',
-                        backgroundColor: column.iconColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}
-                    >
-                      <Icon 
-                        icon={column.icon} 
-                        style={{ 
-                          fontSize: '22px', 
-                          color: 'white' 
-                        }} 
-                      />
-                    </Box>
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography 
-                        variant="subtitle1"
+          <Box 
+            sx={{ 
+              display: 'flex',
+              gap: { xs: 2, sm: 3 },
+              p: { xs: 2, sm: 3, md: 4 },
+              height: '100%',
+              minWidth: 'fit-content',
+              flexDirection: { xs: 'column', lg: 'row' },
+              [theme.breakpoints.down('lg')]: {
+                flexDirection: 'row',
+                flexWrap: 'wrap'
+              },
+              [theme.breakpoints.down('sm')]: {
+                flexDirection: 'column'
+              }
+            }}
+          >
+            {columnsWithCount.length === 0 && !loading ? (
+              <Box sx={{ textAlign: 'center', width: '100%', py: 8 }}>
+                <Typography variant="h6" color="textSecondary">
+                  No categories found. Create your first category!
+                </Typography>
+              </Box>
+            ) : (
+              columnsWithCount.map((column) => (
+                <Box
+                  key={column.id}
+                  sx={{
+                    minWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
+                    maxWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexShrink: 0,
+                    [theme.breakpoints.down('lg')]: {
+                      minWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' },
+                      maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' }
+                    },
+                    [theme.breakpoints.down('sm')]: {
+                      minWidth: '100%',
+                      maxWidth: '100%'
+                    }
+                  }}
+                >
+                  {/* Compact Column Header */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 2,
+                      p: 2,
+                      borderRadius: '10px',
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      boxShadow: `0 2px 4px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.1 : 0.05)}`
+                    }}
+                  >
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1.5, 
+                      flex: 1, 
+                      minWidth: 0,
+                      mr: 1
+                    }}>
+                      {/* Compact Icon */}
+                      <Box
                         sx={{
-                          fontWeight: 600,
-                          color: theme.palette.text.primary,
-                          fontSize: { xs: '1rem', sm: '1.0625rem' },
-                          letterSpacing: '-0.01em',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          width: 36,
+                          height: 36,
+                          borderRadius: '8px',
+                          backgroundColor: column.iconColor,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
                         }}
                       >
-                        {column.title}
-                      </Typography>
-                      <Typography 
-                        variant="caption"
+                        <Icon 
+                          icon={column.icon} 
+                          style={{ 
+                            fontSize: '18px', 
+                            color: 'white' 
+                          }} 
+                        />
+                      </Box>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography 
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 600,
+                            color: theme.palette.text.primary,
+                            fontSize: '0.9375rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {column.title}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography 
+                            variant="caption"
+                            sx={{
+                              color: theme.palette.text.secondary,
+                              fontWeight: 500,
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            {column.count} tasks
+                          </Typography>
+                          {column.boardCategoryID && (
+                            <Typography 
+                              variant="caption"
+                              sx={{
+                                color: theme.palette.text.disabled,
+                                fontSize: '0.65rem'
+                              }}
+                            >
+                             
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Box>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      flexShrink: 0
+                    }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEditCategory(column)}
                         sx={{
                           color: theme.palette.text.secondary,
-                          fontWeight: 500,
-                          display: 'block'
+                          '&:hover': {
+                            backgroundColor: alpha(column.iconColor, 0.1),
+                            color: column.iconColor
+                          },
+                          width: 32,
+                          height: 32
                         }}
                       >
-                        {column.count} {column.count === 1 ? 'task' : 'tasks'}
-                      </Typography>
+                        <Icon icon="mdi:pencil" width={16} />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteCategory(column)}
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.error.main, 0.1),
+                            color: theme.palette.error.main
+                          },
+                          width: 32,
+                          height: 32
+                        }}
+                      >
+                        <Icon icon="mdi:delete" width={16} />
+                      </IconButton>
                     </Box>
                   </Box>
-                  <Box sx={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    flexShrink: 0
-                  }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleEditCategory(column)}
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        '&:hover': {
-                          backgroundColor: alpha(column.iconColor, 0.1),
-                          color: column.iconColor
-                        }
-                      }}
-                    >
-                      <Icon icon="mdi:pencil" width={18} />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDeleteCategory(column)}
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.error.main, 0.1),
-                          color: theme.palette.error.main
-                        }
-                      }}
-                    >
-                      <Icon icon="mdi:delete" width={18} />
-                    </IconButton>
-                    <Chip
-                      label={column.count}
-                      size="small"
-                      sx={{
-                        backgroundColor: column.lightBg,
-                        color: column.iconColor,
-                        fontWeight: 700,
-                        fontSize: '0.8125rem',
-                        height: '28px',
-                        minWidth: '36px',
-                        border: `1px solid ${alpha(column.iconColor, 0.3)}`,
-                        '& .MuiChip-label': {
-                          px: 1.5
-                        }
-                      }}
-                    />
-                  </Box>
+
+                  {/* Task Column */}
+                  <TaskColumn
+                    title={column.title}
+                    tasks={tasks[column.id] || []}
+                    columnId={column.id}
+                    onDrop={handleDrop}
+                    color={column.color}
+                    isMobile={isMobile}
+                    onEditTask={handleEditTask}
+                    onDeleteTask={handleDeleteTask}
+                  />
                 </Box>
-              </Paper>
-
-              {/* Task Column */}
-              <TaskColumn
-                title={column.title}
-                tasks={tasks[column.id] || []}
-                columnId={column.id}
-                onDrop={handleDrop}
-                color={column.color}
-                isMobile={isMobile}
-                onEditTask={handleEditTask}
-                onDeleteTask={handleDeleteTask}
-              />
-            </Box>
-          ))}
+              ))
+            )}
+          </Box>
         </Box>
-      </Box>
-
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity} 
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      )}
     </Box>
   )
 }
