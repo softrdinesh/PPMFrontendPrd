@@ -152,14 +152,11 @@ const WorkspaceItem = ({ workspace, onBoardClick }: { workspace: WorkspaceListIt
             color: 'white'
           }}
         >
-          <CustomAvatar
-            skin={isNavLinkActive() ? 'light' : 'filled'}
-            color='error'
-            variant='circular'
-            sx={{ width: 28, height: 28, fontSize: '1rem' }}
-          >
-            {getInitials(workspace?.WorkspaceName)}
-          </CustomAvatar>
+          <Icon
+            icon='mdi:view-dashboard-outline'
+            fontSize={24}
+            color={isNavLinkActive() ? 'black' : 'white'}
+          />
         </ListItemIcon>
 
         <MenuItemTextMetaWrapper
@@ -193,21 +190,6 @@ const WorkspaceItem = ({ workspace, onBoardClick }: { workspace: WorkspaceListIt
                 <Typography>Create WorkSpace</Typography>
               </Box> */}
             </MenuItem>
-            {/* {profile === 'projects' &&
-               <MenuItem onClick={()=>setOpen1(true)}>
-              <Box display={'flex'} alignItems={'center'} gap={2}>
-                <Icon icon={'mdi:plus-circle-outline'} />
-                <Typography>Create Project</Typography>
-              </Box>
-
-            </MenuItem>
-}
-               <MenuItem onClick={handleDeleteOpen}>
-              <Box display={'flex'} alignItems={'center'} gap={2}>
-                <Icon icon={'mdi:delete-outline'} />
-                <Typography>Delete</Typography>
-              </Box>
-            </MenuItem> */}
           </Menu>
           <DeleteWorkspaceDialog open={open} setOpen={setOpen} onConfirm={debouncedDelete} />
         </MenuItemTextMetaWrapper>
@@ -219,11 +201,11 @@ const WorkspaceItem = ({ workspace, onBoardClick }: { workspace: WorkspaceListIt
 }
 
 const ListBoards = ({ onBoardClick }: { onBoardClick?: (boardId: string) => void }) => {
-  // Hardcoded value showing "Zippy Boards"
+  // Only showing "Boards" item
   const hardcodedWorkspaceList: WorkspaceListItem[] = [
     {
       WorkspaceID: 1,
-      WorkspaceName: 'Zippy Boards',
+      WorkspaceName: 'Boards',
       OrganizationID: 1,
       // Add any other required properties from WorkspaceListItem type
       CreatedBy: '',

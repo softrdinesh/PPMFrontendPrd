@@ -70,7 +70,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   // Add board click handler
   const handleBoardClick = (boardId: string) => {
     // Navigate to the board page
-    router.push(`/boards`)
+    router.push(routes.boards)
   }
 
   return (
@@ -126,7 +126,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               }}
               
             >
-              Board
+              Boardsss
             </Typography>
           </Divider>
         </Box>

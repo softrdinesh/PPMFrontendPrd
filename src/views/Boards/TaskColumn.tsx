@@ -16,7 +16,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button
+  Button,
+  Tooltip
 } from '@mui/material'
 import { Icon } from '@iconify/react'
 
@@ -26,6 +27,15 @@ interface Task {
   description: string
   priority: 'high' | 'medium' | 'low'
   assignee: string
+  taskID?: number
+  priorityID?: number
+  priorityName?: string
+  priorityColorCode?: string
+  projectTaskID?: number
+  createDate?: string
+  attachmentLink?: string
+  categoryID?: number
+  categoryName?: string
 }
 
 interface TaskColumnProps {
@@ -37,6 +47,7 @@ interface TaskColumnProps {
   isMobile: boolean
   onEditTask: (task: Task, columnId: any) => void
   onDeleteTask: (taskId: string, columnId: any) => void
+  onViewTask?: (task: Task) => void // Added this prop
 }
 
 const TaskColumn = ({ 
@@ -47,7 +58,8 @@ const TaskColumn = ({
   color, 
   isMobile,
   onEditTask,
-  onDeleteTask
+  onDeleteTask,
+  onViewTask // Added this prop
 }: TaskColumnProps) => {
   const theme = useTheme()
   const [draggedOver, setDraggedOver] = useState(false)
@@ -90,6 +102,13 @@ const TaskColumn = ({
   const handleEdit = () => {
     if (selectedTask) {
       onEditTask(selectedTask, columnId)
+    }
+    handleMenuClose()
+  }
+
+  const handleView = () => {
+    if (selectedTask && onViewTask) {
+      onViewTask(selectedTask)
     }
     handleMenuClose()
   }
@@ -201,33 +220,65 @@ const TaskColumn = ({
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  fontWeight: 600,
-                  color: theme.palette.text.primary,
-                  fontSize: { xs: '0.9375rem', sm: '1rem' },
-                  flex: 1,
-                  pr: 1,
-                  lineHeight: 1.4
-                }}
-              >
-                {task.title}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={(e) => handleMenuClick(e, task)}
-                sx={{
-                  color: theme.palette.text.secondary,
-                  padding: '4px',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main
-                  }
-                }}
-              >
-                <Icon icon="mdi:dots-vertical" width={18} />
-              </IconButton>
+              <Box sx={{ flex: 1, pr: 1, cursor: 'pointer' }} onClick={() => onViewTask && onViewTask(task)}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: theme.palette.text.primary,
+                    fontSize: { xs: '0.9375rem', sm: '1rem' },
+                    lineHeight: 1.4,
+                    mb: 0.5,
+                    '&:hover': {
+                      color: theme.palette.primary.main
+                    }
+                  }}
+                >
+                  {task.title}
+                </Typography>
+       
+              </Box>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                {/* View Button */}
+                {onViewTask && (
+                  <Tooltip title="View Details">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onViewTask(task)
+                      }}
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        padding: '4px',
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.info.main, 0.1),
+                          color: theme.palette.info.main
+                        }
+                      }}
+                    >
+                      <Icon icon="mdi:eye-outline" width={16} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                
+                {/* Menu Button */}
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleMenuClick(e, task)}
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    padding: '4px',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main
+                    }
+                  }}
+                >
+                  <Icon icon="mdi:dots-vertical" width={18} />
+                </IconButton>
+              </Box>
             </Box>
             
             <Typography 
@@ -236,8 +287,14 @@ const TaskColumn = ({
                 color: theme.palette.text.secondary,
                 mb: 2,
                 fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                lineHeight: 1.5
+                lineHeight: 1.5,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                cursor: 'pointer'
               }}
+              onClick={() => onViewTask && onViewTask(task)}
             >
               {task.description}
             </Typography>
@@ -245,7 +302,7 @@ const TaskColumn = ({
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
               <Chip
                 icon={<Icon icon={getPriorityIcon(task.priority)} style={{ fontSize: '14px' }} />}
-                label={task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                label={task.priorityName || task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                 size="small"
                 sx={{
                   backgroundColor: alpha(getPriorityColor(task.priority), 0.1),
@@ -282,13 +339,67 @@ const TaskColumn = ({
                   sx={{ 
                     fontWeight: 600,
                     color: theme.palette.primary.main,
-                    fontSize: { xs: '0.6875rem', sm: '0.75rem' }
+                    fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                    maxWidth: { xs: '60px', sm: '80px' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {task.assignee}
                 </Typography>
               </Box>
             </Box>
+            
+            {/* Additional Metadata */}
+            {(task.createDate || task.attachmentLink) && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mt: 1.5,
+                pt: 1.5,
+                borderTop: `1px solid ${theme.palette.divider}`
+              }}>
+                {task.createDate && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Icon 
+                      icon="mdi:calendar" 
+                      style={{ 
+                        fontSize: '14px', 
+                        color: theme.palette.text.secondary 
+                      }} 
+                    />
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: theme.palette.text.secondary,
+                        fontSize: '0.75rem'
+                      }}
+                    >
+                      {task.createDate}
+                    </Typography>
+                  </Box>
+                )}
+                
+                {task.attachmentLink && (
+                  <Tooltip title="Has Attachment">
+                    <Icon 
+                      icon="mdi:paperclip" 
+                      style={{ 
+                        fontSize: '14px', 
+                        color: theme.palette.info.main,
+                        cursor: 'pointer'
+                      }} 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        window.open(task.attachmentLink, '_blank')
+                      }}
+                    />
+                  </Tooltip>
+                )}
+              </Box>
+            )}
           </Paper>
         ))}
 
@@ -328,6 +439,12 @@ const TaskColumn = ({
           }
         }}
       >
+        {onViewTask && (
+          <MenuItem onClick={handleView}>
+            <Icon icon="mdi:eye" style={{ marginRight: 12, color: theme.palette.info.main }} />
+            View Details
+          </MenuItem>
+        )}
         <MenuItem onClick={handleEdit}>
           <Icon icon="mdi:pencil" style={{ marginRight: 12, color: theme.palette.primary.main }} />
           Edit

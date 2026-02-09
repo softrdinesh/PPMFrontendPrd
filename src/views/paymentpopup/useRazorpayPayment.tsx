@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
-
+import axios from 'axios'
 interface UseRazorpayPaymentProps {
   userId: number
   onPaymentSuccess?: () => void
@@ -34,30 +34,133 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
   const [isLoading, setIsLoading] = useState(false)
   const [razorpayLoaded, setRazorpayLoaded] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState('')
+  const [scriptLoadAttempts, setScriptLoadAttempts] = useState(0)
   const logoImage = 'https://appsuresolutions.netlify.app/assets/header_logo-Bj3Dgdu3.svg'
 
-  // Load Razorpay SDK once
+  // Improved script loading with retry mechanism
+  const loadRazorpayScript = useCallback(() => {
+    return new Promise<void>((resolve, reject) => {
+      const scriptId = 'razorpay-sdk'
+      const existingScript = document.getElementById(scriptId) as HTMLScriptElement
+      
+      // If script is already loaded and Razorpay is available
+      if (existingScript && window.Razorpay) {
+        setRazorpayLoaded(true)
+        resolve()
+        return
+      }
+      
+      // If script exists but Razorpay is not available yet, wait for it
+      if (existingScript) {
+        const checkRazorpay = () => {
+          if (window.Razorpay) {
+            setRazorpayLoaded(true)
+            resolve()
+          } else {
+            setTimeout(checkRazorpay, 100)
+          }
+        }
+        setTimeout(checkRazorpay, 100)
+        return
+      }
+
+      // Create and load new script
+      const script = document.createElement('script')
+      script.id = scriptId
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.async = true
+      
+      script.onload = () => {
+        // Give some time for Razorpay to initialize
+        const checkLoad = () => {
+          if (window.Razorpay) {
+            setRazorpayLoaded(true)
+            setScriptLoadAttempts(0)
+            resolve()
+          } else {
+            // If not loaded yet, wait more
+            setTimeout(checkLoad, 100)
+          }
+        }
+        setTimeout(checkLoad, 100)
+      }
+      
+      script.onerror = () => {
+        console.error('Failed to load Razorpay SDK')
+        // Remove failed script
+        if (script.parentNode) {
+          script.parentNode.removeChild(script)
+        }
+        
+        // Retry up to 3 times
+        if (scriptLoadAttempts < 3) {
+          setScriptLoadAttempts(prev => prev + 1)
+          setTimeout(() => {
+            loadRazorpayScript().then(resolve).catch(reject)
+          }, 1000 * scriptLoadAttempts) // Exponential backoff
+        } else {
+          setRazorpayLoaded(false)
+          reject(new Error('Failed to load Razorpay SDK after 3 attempts'))
+        }
+      }
+      
+      document.body.appendChild(script)
+    })
+  }, [scriptLoadAttempts])
+
+  // Load Razorpay SDK once with retry capability
   useEffect(() => {
-    const scriptId = 'razorpay-sdk'
-    if (document.getElementById(scriptId)) {
-      setRazorpayLoaded(Boolean((window as any).Razorpay))
-      return
+    let mounted = true
+    
+    const initializeRazorpay = async () => {
+      try {
+        await loadRazorpayScript()
+        if (mounted) {
+          setRazorpayLoaded(true)
+        }
+      } catch (error) {
+        console.error('Failed to initialize Razorpay:', error)
+        if (mounted) {
+          setRazorpayLoaded(false)
+        }
+      }
     }
+    
+    initializeRazorpay()
+    
+    return () => {
+      mounted = false
+    }
+  }, [loadRazorpayScript])
+const paymentcheck = async () => {
+  const Baseurl = process.env.NEXT_PUBLIC_API_URL1
+  const userid = localStorage.getItem('userData')
+  const value= JSON.parse(userid)
+  try {
+    const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userData?.UserID}`)
+    console.log(res.data)
+    
+    if (res.data && res.data.length > 0) {
+      const paymentData = {
+       isExpired: res.data[0].isExpired,
+       projectCount:res.data[0].projectCount,
+       workspaceCount:res.data[0].workspaceCount,
+       taskGroupCount:res.data[0].taskGroupCount,
+       boardCount:res.data[0].boardCount,
+       boardsectionCount:res.data[0].boardsectionCount,
+       boardTaskCount:res.data[0].boardTaskCount,
+       amount:res.data[0].amount
+            //  isExpired: true
+      }
+      // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+            localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
 
-    const script = document.createElement('script')
-    script.id = scriptId
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-    script.async = true
-    script.onload = () => {
-      setRazorpayLoaded(true)
-    }
-    script.onerror = () => {
-      console.error('Failed to load Razorpay SDK')
-      setRazorpayLoaded(false)
-    }
-    document.body.appendChild(script)
-  }, [])
 
+    }
+  } catch (error) {
+    console.error('Payment check error:', error)
+  }
+}
   const updatePaymentConfirmation = async (
     userIdParam: number,
     paymentId?: string | null,
@@ -78,10 +181,12 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
       const text = await resp.text()
 
       const isExpired = status !== 'Success'
-      const paymentData = {
-        isExpired
-      }
-      localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+      // const paymentData = {
+      //   isExpired
+      // }
+
+      paymentcheck()
+      // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
 
       return { ok: resp.ok, status: resp.status, body: text }
     } catch (err) {
@@ -99,10 +204,18 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
   }
 
   const openRazorPaySdk = async (razorPayOrderId: string, amount: number) => {
+    // Ensure Razorpay is loaded before proceeding
     if (!razorpayLoaded || !window.Razorpay) {
-      alert('Razorpay SDK is not loaded yet. Please wait and try again.')
-      console.error('Razorpay SDK not loaded')
-      return
+      console.log('Razorpay not loaded, attempting to load...')
+      try {
+        setIsLoading(true)
+        await loadRazorpayScript()
+      } catch (error) {
+        console.error('Failed to load Razorpay SDK:', error)
+        alert('Unable to load payment gateway. Please check your internet connection and try again.')
+        setIsLoading(false)
+        return
+      }
     }
 
     setIsLoading(false)
@@ -231,12 +344,23 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
       rzp1.open()
     } catch (error) {
       console.error('Error opening Razorpay:', error)
+      toast.error('Error initializing payment gateway. Please try again.')
     }
   }
 
   const generateRazorPayOrder = async () => {
-    if (!razorpayLoaded) {
-      return
+    // Check and ensure Razorpay is loaded
+    if (!razorpayLoaded || !window.Razorpay) {
+      console.log('Razorpay not ready, loading...')
+      try {
+        setIsLoading(true)
+        await loadRazorpayScript()
+      } catch (error) {
+        console.error('Failed to load Razorpay SDK:', error)
+        toast.error('Unable to load payment gateway. Please check your internet connection.')
+        setIsLoading(false)
+        return
+      }
     }
 
     setIsLoading(true)
@@ -244,7 +368,10 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
 
     try {
       const formData = new FormData()
-      formData.append('amount', '100')
+            const value = localStorage.getItem('paymentStatus')
+            const parsed = JSON.parse(value)
+            const finalamount = (parsed.amount *100)
+      formData.append('amount', finalamount)
 
       const response = await fetch(`https://uat.ppmbackend.projectpulse360.com/GenerateRazorID/`, {
         method: 'POST',
@@ -268,6 +395,7 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
       console.error('generateRazorPayOrder Error:', error)
       setPaymentStatus('Error generating order')
       setIsLoading(false)
+      toast.error('Failed to create payment order. Please try again.')
     }
   }
 
