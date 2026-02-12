@@ -81,7 +81,6 @@ const VerifyEmail = ({ obfuscate, email }: { obfuscate: string; email: string })
 
     if (otpValid) {
       await verifyOtp(body).then((res: ApiResponse) => {
-        console.log('res :', res)
 
         if (res?.status) {
           const base64 = jwt.sign(body, process?.env?.NEXT_PUBLIC_API_SECRET_KEY ?? 'THIS_IS_A_SECRET', {

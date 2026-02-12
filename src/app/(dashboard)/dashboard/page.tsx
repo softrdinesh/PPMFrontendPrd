@@ -1,5 +1,5 @@
 import DashboardPage from '@/views/dashboard'
-import YourFeatureView from '@views/Boards/page'
+import YourFeatureView from '@/views/boards/BoardsView'
 export default function Page() {
-  return <YourFeatureView />
+  return <DashboardPage />
 }

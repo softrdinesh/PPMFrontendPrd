@@ -28,7 +28,6 @@ import {
   Grid,
   CircularProgress,
   Checkbox,
-  FormControlLabel,
   ListItemText,
   ListItemIcon,
   Avatar,
@@ -44,7 +43,8 @@ import { useAuth } from '@/hooks/useAuth'
 import toast, { Toaster } from 'react-hot-toast'
 import { useProject } from '@/context/project-context'
 import type { ProjectUsers, User } from '@/services/modules/invite/types'
-
+import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
+import { useRazorpayPayment } from '../paymentpopup/useRazorpayPayment'
 const Baseurl = process.env.NEXT_PUBLIC_API_URL1
 
 interface Task {
@@ -53,6 +53,7 @@ interface Task {
   description: string
   priority: 'high' | 'medium' | 'low'
   assignee: string
+  assigneeId?: string  // ADD THIS LINE
   taskID?: number
   priorityID?: number
   priorityName?: string
@@ -120,7 +121,10 @@ interface ApiPriority {
   priorityname: string
   colorcode: string
 }
-
+interface ProjectTask {
+  taskID: number;
+  taskname: string;
+}
 // Task Details Dialog Component
 const TaskDetailsDialog = ({ 
   open, 
@@ -599,12 +603,6 @@ const TaskDetailsDialog = ({
                     gridTemplateColumns: '1fr 1fr',
                     gap: 1.5
                   }}>
-                    {/* Task ID */}
-                   
-
-                    {/* Project Task ID */}
-                  
-
                     {/* Create Date */}
                     <Box sx={{ 
                       p: 1.5,
@@ -622,29 +620,6 @@ const TaskDetailsDialog = ({
                         {task.createDate || 'N/A'}
                       </Typography>
                     </Box>
-
-                    {/* Status */}
-                    {/* <Box sx={{ 
-                      p: 1.5,
-                      borderRadius: 1.5,
-                      bgcolor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
-                    }}>
-                      <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
-                        Status
-                      </Typography>
-                      <Chip
-                        label="Active"
-                        size="small"
-                        sx={{
-                          bgcolor: alpha(theme.palette.success.main, 0.1),
-                          color: theme.palette.success.main,
-                          fontWeight: 500,
-                          fontSize: '0.7rem',
-                          height: 20
-                        }}
-                      />
-                    </Box> */}
                   </Box>
                 </Box>
               </Box>
@@ -689,18 +664,32 @@ const YourFeaturePage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'))
   const { user } = useAuth()
+  const [createCategoryDialog, setCreateCategoryDialog] = useState(false)
+  const [projectTasks, setProjectTasks] = useState<ProjectTask[]>([]);
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDialog, setOpenDialog] = useState(false)
- // const teamMembers = ['John Doe', 'Jane Smith', 'Bob Johnson']
   const { users, role } = useProject()
   const [searchText, setSearchText] = useState('')
-const [teamMembers, setTeamMembers] = useState<string[]>([])  // Loading states
+  const [teamMembers, setTeamMembers] = useState<any[]>([])  // Loading states
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
+  const [showTaskPaymentDialog, setShowTaskPaymentDialog] = useState(false) // NEW: Separate dialog for task creation
   const [teamMembersLoading, setTeamMembersLoading] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<string>('');
+  
+  // Add this state for filtered columns and tasks
+  const [filteredByUserColumns, setFilteredByUserColumns] = useState<Column[]>([]);
+  const [filteredByUserTasks, setFilteredByUserTasks] = useState<TaskColumns>({
+    todo: [],
+    inProgress: [],
+    review: [],
+    done: []
+  });
+  
   const userFilter = useCallback(
     (user: ProjectUsers) => {
       return user?.User?.Name?.toLowerCase()?.includes(searchText?.toLowerCase())
@@ -714,6 +703,168 @@ interface ApiTeamMember {
   email: string
   profilepicture: string
 }
+
+  // Initialize with empty tasks - will be populated from API
+  const [tasks, setTasks] = useState<TaskColumns>({
+    todo: [],
+    inProgress: [],
+    review: [],
+    done: []
+  })
+
+  // Initialize with empty array - will be populated from API
+  const [columns, setColumns] = useState<Column[]>([])
+useEffect(() => {
+  fetchProjectTasks()
+}, [])
+  // Helper function to convert priority name to priority level
+  const getPriorityLevel = (priorityName: string): 'high' | 'medium' | 'low' => {
+    if (!priorityName) return 'medium'
+    
+    const lowerPriority = priorityName.toLowerCase()
+    if (lowerPriority.includes('high')) return 'high'
+    if (lowerPriority.includes('low')) return 'low'
+    if (lowerPriority.includes('medium')) return 'medium'
+    
+    // Fallback: check for any other patterns
+    if (lowerPriority.includes('urgent') || lowerPriority.includes('critical')) return 'high'
+    if (lowerPriority.includes('minor') || lowerPriority.includes('trivial')) return 'low'
+    
+    return 'medium'
+  }
+const fetchProjectTasks = async () => {
+  try {
+    const response = await axios.get(`${Baseurl}/GetProjectTaskList?LoginuserID=${user?.id}`);
+    
+    if (response.data && Array.isArray(response.data)) {
+      const formattedTasks = response.data.map((item: any) => ({
+        taskID: item.taskID || 0,
+        taskname: item.taskname || 'Unnamed Task'
+      }));
+      
+      setProjectTasks(formattedTasks);
+    }
+  } catch (error: any) {
+    console.error('Error fetching project tasks:', error);
+    toast.error('Failed to load project tasks from API', {
+      position: 'top-center',
+      duration: 4000,
+      style: {
+        background: 'white',
+        color: 'black',
+        padding: '12px 20px',
+        borderRadius: '12px',
+        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        maxWidth: '400px',
+        fontSize: '14px',
+        fontWeight: 500,
+      },
+    });
+  }
+};
+  // Check payment status - USING API COUNTS
+  const checkPaymentStatus = () => {
+    try {
+      const paymentStatus = localStorage.getItem('paymentStatus')
+      
+      if (!paymentStatus) {
+        // No payment status found - treat as expired
+        setShowPaymentExpiredDialog(true)
+        return false
+      }
+      
+      const parsed = JSON.parse(paymentStatus)
+      
+      // Check if payment is explicitly expired
+      if (parsed.isExpired === true) {
+        setShowPaymentExpiredDialog(true)
+        return false
+      }
+      
+      // Calculate current task count from API data stored in tasks state
+      let currentTaskCount = 0;
+      Object.values(tasks).forEach(columnTasks => {
+        currentTaskCount += columnTasks.length;
+      });
+      
+      // Get current category count from columns state (from GetBoardList API)
+      const currentCategoryCount = columns.length;
+     
+      
+      // Check if user has reached their category limit
+      if (parsed.boardSectionCount !== undefined && parsed.boardSectionCount !== null) {
+        if (currentCategoryCount >= parsed.boardSectionCount) {
+          setShowPaymentExpiredDialog(true)
+          return false
+        }
+      }
+      
+      // Check if user has reached their task limit
+      if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
+        if (currentTaskCount >= parsed.boardTaskCount) {
+          setShowTaskPaymentDialog(true)
+          return false
+        }
+      }
+      
+      // Payment is valid
+      setShowPaymentExpiredDialog(false)
+      setShowTaskPaymentDialog(false)
+      return true
+    } catch (error) {
+      console.error('Error checking payment status:', error)
+      // On error, be conservative - show payment dialog
+      setShowPaymentExpiredDialog(true)
+      return false
+    }
+  }
+
+  // Check task payment status - NEW: Separate function for task creation
+  const checkTaskPaymentStatus = () => {
+    try {
+      const paymentStatus = localStorage.getItem('paymentStatus')
+      
+      if (!paymentStatus) {
+        // No payment status found - treat as expired
+        setShowTaskPaymentDialog(true)
+        return false
+      }
+      
+      const parsed = JSON.parse(paymentStatus)
+      
+      // Check if payment is explicitly expired
+      if (parsed.isExpired === true) {
+        setShowTaskPaymentDialog(true)
+        return false
+      }
+      
+      // Calculate current task count from API data stored in tasks state
+      let currentTaskCount = 0;
+      Object.values(tasks).forEach(columnTasks => {
+        currentTaskCount += columnTasks.length;
+      });
+      
+     
+      
+      // Check if user has reached their task limit
+      if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
+        if (currentTaskCount >= parsed.boardTaskCount) {
+          setShowTaskPaymentDialog(true)
+          return false
+        }
+      }
+      
+      // Payment is valid for task creation
+      setShowTaskPaymentDialog(false)
+      return true
+    } catch (error) {
+      console.error('Error checking payment status:', error)
+      setShowTaskPaymentDialog(true)
+      return false
+    }
+  }
+
 // Fetch team members from API - ADDED FUNCTION
 const fetchTeamMembers = async () => {
   if (!user?.id) return;
@@ -733,9 +884,12 @@ const fetchTeamMembers = async () => {
       }, []);
       
       // Extract just the names for the teamMembers array
-      const memberNames = uniqueMembers.map((member: ApiTeamMember) => member.name);
-      setTeamMembers(memberNames);
-      console.log('Team members loaded from API:', memberNames);
+      const formattedMembers = uniqueMembers.map((member: ApiTeamMember) => ({
+        label: member.name,
+        value: member.userID.toString()
+      }));
+      setTeamMembers(formattedMembers);
+
     }
   } catch (error: any) {
     console.error('Error fetching team members:', error);
@@ -760,7 +914,6 @@ const fetchTeamMembers = async () => {
     setTeamMembersLoading(false);
   }
 }
-  console.log(users,'dfdf')
 
   // Edit states
   const [editCategoryDialog, setEditCategoryDialog] = useState(false)
@@ -774,7 +927,6 @@ const fetchTeamMembers = async () => {
   const [categoryToDelete, setCategoryToDelete] = useState<Column | null>(null)
   
   // Create category states
-  const [createCategoryDialog, setCreateCategoryDialog] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [selectedColor, setSelectedColor] = useState('#2196F3') // Default primary color
   
@@ -833,32 +985,49 @@ const fetchTeamMembers = async () => {
     return icons[key] || defaultIcons[Math.floor(Math.random() * defaultIcons.length)]
   }
 
-  // Initialize with empty tasks - will be populated from API
-  const [tasks, setTasks] = useState<TaskColumns>({
-    todo: [],
-    inProgress: [],
-    review: [],
-    done: []
+  // Update the razorpay payment hook - FIXED VERSION
+  const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
+    userId: Number(user?.id),
+    onPaymentSuccess: () => {
+      // Refresh payment status from localStorage
+      setTimeout(() => {
+        const canOpen = checkPaymentStatus()
+        if (canOpen) {
+          // Payment successful, now open the category dialog
+          setNewCategoryName('')
+          setSelectedColor('#2196F3')
+          setCategoryValidationErrors({})
+          setCreateCategoryDialog(true)
+        }
+        setShowPaymentExpiredDialog(false)
+        setShowTaskPaymentDialog(false)
+      }, 1000) // Small delay to ensure localStorage is updated
+    },
+    onPaymentFailure: () => {
+      setShowPaymentExpiredDialog(true)
+      setShowTaskPaymentDialog(true)
+    }
   })
 
-  // Initialize with empty array - will be populated from API
-  const [columns, setColumns] = useState<Column[]>([])
+  // Update the useEffect for createCategoryDialog - FIXED
+  useEffect(() => {
+    if (createCategoryDialog) {
+      const canOpen = checkPaymentStatus()
+      if (!canOpen) {
+        setCreateCategoryDialog(false)
+      }
+    }
+  }, [createCategoryDialog])
 
-  // Helper function to convert priority name to priority level
-  const getPriorityLevel = (priorityName: string): 'high' | 'medium' | 'low' => {
-    if (!priorityName) return 'medium'
-    
-    const lowerPriority = priorityName.toLowerCase()
-    if (lowerPriority.includes('high')) return 'high'
-    if (lowerPriority.includes('low')) return 'low'
-    if (lowerPriority.includes('medium')) return 'medium'
-    
-    // Fallback: check for any other patterns
-    if (lowerPriority.includes('urgent') || lowerPriority.includes('critical')) return 'high'
-    if (lowerPriority.includes('minor') || lowerPriority.includes('trivial')) return 'low'
-    
-    return 'medium'
-  }
+  // NEW: useEffect to check payment status when opening new task dialog
+  useEffect(() => {
+    if (openDialog) {
+      const canCreateTask = checkTaskPaymentStatus()
+      if (!canCreateTask) {
+        setOpenDialog(false)
+      }
+    }
+  }, [openDialog])
 
   // Fetch priorities from API - ADDED FUNCTION
   const fetchPriorities = async () => {
@@ -868,7 +1037,6 @@ const fetchTeamMembers = async () => {
       
       if (response.data && Array.isArray(response.data)) {
         setPriorities(response.data)
-        console.log('Priorities loaded from API:', response.data)
       }
     } catch (error: any) {
       console.error('Error fetching priorities:', error)
@@ -917,6 +1085,7 @@ const fetchTeamMembers = async () => {
             description: item.taskDescription,
             priority: getPriorityLevel(item.priorityName),
             assignee: item.assignedTo,
+            assigneeId: item.assignedTo, // ADD THIS LINE - assuming assignedTo contains ID
             taskID: item.taskID,
             priorityID: item.priorityID,
             priorityName: item.priorityName,
@@ -948,7 +1117,6 @@ const fetchTeamMembers = async () => {
           return mergedTasks
         })
         
-        console.log('Tasks loaded from API:', apiTasks)
       }
     } catch (error: any) {
       console.error('Error fetching tasks:', error)
@@ -1167,66 +1335,179 @@ useEffect(() => {
   const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
   const totalFilteredTasks = columnsWithFilteredTasks.reduce((sum, col) => sum + col.count, 0)
 
-  // const handleDrop = (taskId: string, columnId: string) => {
-  //   let taskToMove: Task | null = null
-  //   let sourceColumn: string = ''
-    
-  //   Object.entries(tasks).forEach(([colId, columnTasks]) => {
-  //     const task = columnTasks.find(t => t.id === taskId)
-  //     if (task) {
-  //       taskToMove = task
-  //       sourceColumn = colId
-  //     }
-  //   })
-
-  //   if (taskToMove && sourceColumn !== columnId) {
-  //     const updatedTasks = { ...tasks }
-  //     updatedTasks[sourceColumn] = updatedTasks[sourceColumn].filter(t => t.id !== taskId)
-  //     if (!updatedTasks[columnId]) {
-  //       updatedTasks[columnId] = []
-  //     }
-  //     updatedTasks[columnId] = [...updatedTasks[columnId], taskToMove]
-  //     setTasks(updatedTasks)
-  //   }
-  // }
-const handleDrop = async (taskId: string, columnId: string) => {
-  let taskToMove: Task | null = null
-  let sourceColumn: string = ''
-  
-  Object.entries(tasks).forEach(([colId, columnTasks]) => {
-    const task = columnTasks.find(t => t.id === taskId)
-    if (task) {
-      taskToMove = task
-      sourceColumn = colId
-    }
-  })
-
-  if (taskToMove && sourceColumn !== columnId) {
-    try {
-      // Find the destination category ID
-      const destinationColumn = columns.find(col => col.id === columnId)
-      const destinationCategoryID = destinationColumn?.boardCategoryID
-      
-      if (!destinationCategoryID) {
-        throw new Error('Destination category not found')
+  // Filter categories and tasks based on selected user
+  useEffect(() => {
+    const filterDataByUser = async () => {
+      if (!selectedUser) {
+        // If no user selected, show all data
+        setFilteredByUserColumns(columns);
+        setFilteredByUserTasks(tasks);
+        return;
       }
 
-      // Call the API to move the task
-      const apiUrl = `${Baseurl}/MoveTaskToanotherCategory?BoardTaskID=${taskToMove.taskID}&LoginuserID=${user?.id}&DestinationCategoryID=${destinationCategoryID}`
-      
-      const response = await axios.post(apiUrl)
-      
-      if (response.data) {
-        // API call successful, update local state
-        const updatedTasks = { ...tasks }
-        updatedTasks[sourceColumn] = updatedTasks[sourceColumn].filter(t => t.id !== taskId)
-        if (!updatedTasks[columnId]) {
-          updatedTasks[columnId] = []
-        }
-        updatedTasks[columnId] = [...updatedTasks[columnId], taskToMove]
-        setTasks(updatedTasks)
+      try {
+        // Fetch categories for selected user
+        const categoriesResponse = await axios.get(`${Baseurl}/GetBoardList?LoginuserID=${selectedUser}`);
         
-        toast.success('Task moved successfully', {
+        if (categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
+          const userColumns: Column[] = categoriesResponse.data.map((item: any) => {
+            const columnId = item.categoryname.toLowerCase().replace(/\s+/g, '');
+            return {
+              id: columnId,
+              title: item.categoryname,
+              color: item.colorCode || '#2196F3',
+              icon: getCategoryIcon(item.categoryname),
+              iconColor: item.colorCode || '#2196F3',
+              lightBg: alpha(item.colorCode || '#2196F3', 0.08),
+              count: 0,
+              boardCategoryID: item.boardCategoryID,
+              categoryID: item.boardCategoryID
+            };
+          });
+          setFilteredByUserColumns(userColumns);
+        }
+
+        // Fetch tasks for selected user
+        const tasksResponse = await axios.get(`${Baseurl}/GetBoardTaskList?LoginuserID=${selectedUser}`);
+        
+        if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
+          const userTasks: TaskColumns = {};
+          
+          filteredByUserColumns.forEach(col => {
+            userTasks[col.id] = [];
+          });
+          
+          tasksResponse.data.forEach((category: ApiCategory) => {
+            const columnId = category.categoryname.toLowerCase().replace(/\s+/g, '');
+            const categoryTasks: Task[] = category.details.map((item: ApiTaskItem) => ({
+              id: item.taskID.toString(),
+              title: item.taskTitle,
+              description: item.taskDescription,
+              priority: getPriorityLevel(item.priorityName),
+              assignee: item.assignedTo,
+              assigneeId: item.assignedTo,
+              taskID: item.taskID,
+              priorityID: item.priorityID,
+              priorityName: item.priorityName,
+              priorityColorCode: item.priorityColorCode,
+              projectTaskID: item.projectTaskID,
+              createDate: item.createDate,
+              attachmentLink: item.attachmentLink,
+              categoryID: item.categoryID,
+              categoryName: item.categoryName
+            }));
+            
+            if (!userTasks[columnId]) {
+              userTasks[columnId] = [];
+            }
+            userTasks[columnId] = categoryTasks;
+          });
+          
+          setFilteredByUserTasks(userTasks);
+        }
+      } catch (error) {
+        console.error('Error filtering data by user:', error);
+        toast.error('Failed to load user data', {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+        });
+      }
+    };
+
+    filterDataByUser();
+  }, [selectedUser, columns, tasks]);
+
+  // Initialize filtered states with default data
+  useEffect(() => {
+    if (columns.length > 0 && Object.keys(tasks).length > 0) {
+      setFilteredByUserColumns(columns);
+      setFilteredByUserTasks(tasks);
+    }
+  }, [columns, tasks]);
+
+  const handleDrop = async (taskId: string, columnId: string) => {
+    let taskToMove: Task | null = null
+    let sourceColumn: string = ''
+    
+    Object.entries(tasks).forEach(([colId, columnTasks]) => {
+      const task = columnTasks.find(t => t.id === taskId)
+      if (task) {
+        taskToMove = task
+        sourceColumn = colId
+      }
+    })
+
+    if (taskToMove && sourceColumn !== columnId) {
+      try {
+        // Find the destination category ID
+        const destinationColumn = columns.find(col => col.id === columnId)
+        const destinationCategoryID = destinationColumn?.boardCategoryID
+        
+        if (!destinationCategoryID) {
+          throw new Error('Destination category not found')
+        }
+
+        // Call the API to move the task
+        const apiUrl = `${Baseurl}/MoveTaskToanotherCategory?BoardTaskID=${taskToMove.taskID}&LoginuserID=${user?.id}&DestinationCategoryID=${destinationCategoryID}`
+        
+        const response = await axios.post(apiUrl)
+        
+        if (response.data) {
+          // API call successful, update local state
+          const updatedTasks = { ...tasks }
+          updatedTasks[sourceColumn] = updatedTasks[sourceColumn].filter(t => t.id !== taskId)
+          if (!updatedTasks[columnId]) {
+            updatedTasks[columnId] = []
+          }
+          updatedTasks[columnId] = [...updatedTasks[columnId], taskToMove]
+          setTasks(updatedTasks)
+          
+          toast.success('Task moved successfully', {
+            position: 'top-center',
+            duration: 4000,
+            style: {
+              background: 'white',
+              color: 'black',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              maxWidth: '400px',
+              fontSize: '14px',
+              fontWeight: 500,
+            },
+          })
+          
+          // Refresh data from API to ensure consistency
+          await fetchCategories()
+        } else {
+          throw new Error('Failed to move task')
+        }
+      } catch (error: any) {
+        console.error('Error moving task:', error)
+        
+        let errorMessage = 'Failed to move task'
+        
+        if (error.response) {
+          errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
+        } else if (error.request) {
+          errorMessage = 'Network error: No response from server'
+        } else {
+          errorMessage = error.message || 'Unknown error occurred'
+        }
+        
+        toast.error(errorMessage, {
           position: 'top-center',
           duration: 4000,
           style: {
@@ -1241,43 +1522,10 @@ const handleDrop = async (taskId: string, columnId: string) => {
             fontWeight: 500,
           },
         })
-        
-        // Refresh data from API to ensure consistency
-        await fetchCategories()
-      } else {
-        throw new Error('Failed to move task')
       }
-    } catch (error: any) {
-      console.error('Error moving task:', error)
-      
-      let errorMessage = 'Failed to move task'
-      
-      if (error.response) {
-        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
-      } else if (error.request) {
-        errorMessage = 'Network error: No response from server'
-      } else {
-        errorMessage = error.message || 'Unknown error occurred'
-      }
-      
-      toast.error(errorMessage, {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      })
     }
   }
-}
+
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setFilterAnchorEl(event.currentTarget)
   }
@@ -1287,97 +1535,47 @@ const handleDrop = async (taskId: string, columnId: string) => {
   }
 
   const handleSubmit = async (taskData: any) => {
-    console.log('Task submitted:', taskData)
     // Your API call or logic here
   }
 
-  // Filter handlers - UPDATED: handlePriorityFilter now accepts string
-  const handlePriorityFilter = (priority: string) => {
-    const newSelectedPriorities = new Set(selectedPriorities)
-    if (newSelectedPriorities.has(priority)) {
-      newSelectedPriorities.delete(priority)
-    } else {
-      newSelectedPriorities.add(priority)
+  // NEW: Handle new task creation with payment check
+  const handleNewTaskClick = () => {
+   
+    
+    const canCreateTask = checkTaskPaymentStatus()
+    if (!canCreateTask) {
+      // Payment dialog will be shown by checkTaskPaymentStatus
+      return
     }
-    setSelectedPriorities(newSelectedPriorities)
+    
+    // Only open new task dialog if payment is valid
+    setOpenDialog(true)
   }
 
-  const handleAssigneeFilter = (assignee: string) => {
-    const newSelectedAssignees = new Set(selectedAssignees)
-    if (newSelectedAssignees.has(assignee)) {
-      newSelectedAssignees.delete(assignee)
-    } else {
-      newSelectedAssignees.add(assignee)
-    }
-    setSelectedAssignees(newSelectedAssignees)
-  }
-
-  const handleCategoryFilter = (categoryId: string) => {
-    const newSelectedCategories = new Set(selectedCategories)
-    if (newSelectedCategories.has(categoryId)) {
-      newSelectedCategories.delete(categoryId)
-    } else {
-      newSelectedCategories.add(categoryId)
-    }
-    setSelectedCategories(newSelectedCategories)
-  }
-
-  const clearAllFilters = () => {
-    setSelectedPriorities(new Set())
-    setSelectedAssignees(new Set())
-    setSelectedCategories(new Set())
-    setSearchQuery('')
-    handleFilterClose()
-  }
-
-  // Create Category handlers
+  // Fix the handleOpenCreateCategory function - FIXED VERSION
   const handleOpenCreateCategory = () => {
-     const paymentStatus = localStorage.getItem('paymentStatus')
+  
+    
+    // First check payment status
+    const canOpen = checkPaymentStatus()
+    
+    if (!canOpen) {
+      // Payment dialog will be shown by checkPaymentStatus
+      return
+    }
+    
+    // Only open create category dialog if payment is valid
     setNewCategoryName('')
     setSelectedColor('#2196F3')
     setCategoryValidationErrors({})
-
     setCreateCategoryDialog(true)
-
   }
-  
 
-//   const checkPaymentStatus = () => {
-//   const paymentStatus = localStorage.getItem('paymentStatus')
-//   try {
-//     if (paymentStatus) {
-//       const parsed = JSON.parse(paymentStatus)
-//       // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-//       if (parsed.isExpired === true) {
-//         setCreateCategoryDialog(true)
-//         return false
-//       }
-      
-//       if (parsed?.boardsectionCount == 1 && projects.length >= 1) {
-//         setCreateCategoryDialog(true)
-//         return false
-//       }
-      
-//       // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-//       if (parsed.isExpired === false) {
-//         setCreateCategoryDialog(false)
-//         return true
-//       }
-//       // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
-//       setCreateCategoryDialog(true)
-//       return false
-//     }
-//     // No stored status → treat as expired by default (user must renew)
-//     setCreateCategoryDialog(true)
-//     return false
-//   } catch (error) {
-//     console.error('Error parsing payment status:', error)
-//     // On parse error, treat as expired to be safe
-//     setCreateCategoryDialog(true)
-//     return false
-//   }
-// }
-
+  // Fix the payment dialog close handler
+  const handleClosePaymentDialog = () => {
+    setShowPaymentExpiredDialog(false)
+    setShowTaskPaymentDialog(false)
+  }
 
   const handleCreateCategory = async () => {
     // Clear previous validation errors
@@ -1688,331 +1886,234 @@ const handleDrop = async (taskId: string, columnId: string) => {
     }
   }
 
-// Edit Task handlers - UPDATED with exact URL format you requested
-const handleEditTask = (task: Task, columnId: string) => {
-  setEditingTask(task)
-  setEditingTaskColumn(columnId)
-  setEditTaskDialog(true)
-}
-
-// const handleSaveTask = async () => {
-//   if (editingTask && editingTaskColumn && user?.id) {
-//     try {
-//       // Validate required fields
-//       if (!editingTask.title || !editingTask.assignee) {
-//         toast.error('Please fill in all required fields', {
-//           position: 'top-center',
-//           duration: 4000,
-//           style: {
-//             background: 'white',
-//             color: 'black',
-//             padding: '12px 20px',
-//             borderRadius: '12px',
-//             boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-//             border: '1px solid rgba(0, 0, 0, 0.08)',
-//             maxWidth: '400px',
-//             fontSize: '14px',
-//             fontWeight: 500,
-//           },
-//         });
-//         return;
-//       }
-
-//       // Prepare form data for file upload
-//       const formData = new FormData();
+  // Edit Task handlers
+  const handleEditTask = (task: Task, columnId: string) => {
+    // Create a copy of the task
+    const taskWithAssigneeId = { ...task };
+    
+    // Find the team member by matching the name
+    if (taskWithAssigneeId.assignee) {
+      const foundMember = teamMembers.find(member => 
+        member.label.toLowerCase() === taskWithAssigneeId.assignee.toLowerCase()
+      );
       
-//       // Add only the file to form data (if selected)
-//       if (selectedFile) {
-//         formData.append('file', selectedFile);
-//       }
-      
-     
-      
-//       // Encode values for URL (replace spaces and special characters)
-//       const encodedTitle = encodeURIComponent(editingTask.title);
-//       const encodedDescription = encodeURIComponent(editingTask.description || '');
-//       const encodedAssignee = encodeURIComponent(editingTask.assignee);
-      
-//       // Build URL with parameters in path like your example: /UpdateBoardTask/fsdfsf/dfsfs/22/76/0/30/76/57
-//       const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${editingTask.priorityID || ''}/${76}/0/${editingTask.categoryID || ''}/${user?.id}/${editingTask?.taskID}`;
-      
-//       const response = await axios.post(apiUrl, formData, {
-//         headers: {
-//           'Content-Type': 'multipart/form-data',
-//         },
-//       });
-      
-//       // Check if API call was successful
-//       if (response.data) {
-//         // Update local state with the updated task
-//         const updatedTasks = { ...tasks };
-//         const columnTasks = updatedTasks[editingTaskColumn] || [];
-        
-//         const updatedColumnTasks = columnTasks.map(t =>
-//           t.id === editingTask.id ? {
-//             ...editingTask,
-//             title: editingTask.title,
-//             description: editingTask.description,
-//             assignee: editingTask.assignee,
-//             priorityID: editingTask.priorityID,
-//             categoryID: editingTask.categoryID,
-//           } : t
-//         );
-        
-//         updatedTasks[editingTaskColumn] = updatedColumnTasks;
-//         setTasks(updatedTasks);
-        
-//         setEditTaskDialog(false);
-//         setEditingTask(null);
-//         setEditingTaskColumn(null);
-//         setSelectedFile(null);
-        
-//         toast.success('Task updated successfully', {
-//           position: 'top-center',
-//           duration: 4000,
-//           style: {
-//             background: 'white',
-//             color: 'black',
-//             padding: '12px 20px',
-//             borderRadius: '12px',
-//             boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-//             border: '1px solid rgba(0, 0, 0, 0.08)',
-//             maxWidth: '400px',
-//             fontSize: '14px',
-//             fontWeight: 500,
-//           },
-//         });
-        
-//         // Refresh data from API to ensure consistency
-//         await fetchCategories();
-//       } else {
-//         throw new Error('Failed to update task');
-//       }
-//     } catch (error: any) {
-//       console.error('Error updating task:', error);
-      
-//       let errorMessage = 'Failed to update task';
-      
-//       if (error.response) {
-//         errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
-//       } else if (error.request) {
-//         errorMessage = 'Network error: No response from server';
-//       } else {
-//         errorMessage = error.message || 'Unknown error occurred';
-//       }
-      
-//       toast.error(errorMessage, {
-//         position: 'top-center',
-//         duration: 4000,
-//         style: {
-//           background: 'white',
-//           color: 'black',
-//           padding: '12px 20px',
-//           borderRadius: '12px',
-//           boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-//           border: '1px solid rgba(0, 0, 0, 0.08)',
-//           maxWidth: '400px',
-//           fontSize: '14px',
-//           fontWeight: 500,
-//         },
-//       });
-//     }
-//   }
-// }
-  // Delete Task Handler
-  
-  
-  
-  
-  // Edit Task handlers - UPDATED with exact URL format you requested
-const handleSaveTask = async () => {
-  if (editingTask && editingTaskColumn && user?.id) {
-    try {
-      // Validate required fields
-      if (!editingTask.title || !editingTask.assignee) {
-        toast.error('Please fill in all required fields', {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        });
-        return;
-      }
-
-      // Validate file size if a file is selected (MAX 5MB)
-      if (selectedFile) {
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-        
-        if (selectedFile.size > maxSize) {
-          toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
-            position: 'top-center',
-            duration: 4000,
-            style: {
-              background: 'white',
-              color: 'black',
-              padding: '12px 20px',
-              borderRadius: '12px',
-              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              maxWidth: '400px',
-              fontSize: '14px',
-              fontWeight: 500,
-            },
-          });
-          return;
-        }
-        
-        // Validate file type (optional but recommended)
-        const allowedTypes = [
-          'application/pdf',
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'application/vnd.ms-excel',
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'application/vnd.ms-powerpoint',
-          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-          'image/jpeg',
-          'image/png',
-          'image/gif',
-          'text/plain',
-          'application/zip',
-          'application/x-rar-compressed',
-        ];
-        
-        if (!allowedTypes.includes(selectedFile.type) && !selectedFile.type.startsWith('image/')) {
-          toast.error('File type not supported. Please upload PDF, Word, Excel, PowerPoint, Image, or ZIP files.', {
-            position: 'top-center',
-            duration: 4000,
-            style: {
-              background: 'white',
-              color: 'black',
-              padding: '12px 20px',
-              borderRadius: '12px',
-              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              maxWidth: '400px',
-              fontSize: '14px',
-              fontWeight: 500,
-            },
-          });
-          return;
+      if (foundMember) {
+        taskWithAssigneeId.assigneeId = foundMember.value;
+      } else {
+        // If not found, try to find by assigneeId if it exists
+        if (!taskWithAssigneeId.assigneeId) {
+          // Set assigneeId as the assignee name if no match found (fallback)
+          taskWithAssigneeId.assigneeId = taskWithAssigneeId.assignee;
         }
       }
-
-      // Prepare form data for file upload
-      const formData = new FormData();
-      
-      // Add only the file to form data (if selected)
-      if (selectedFile) {
-        formData.append('file', selectedFile);
-      }
-      
-      // Encode values for URL (replace spaces and special characters)
-      const encodedTitle = encodeURIComponent(editingTask.title);
-      const encodedDescription = encodeURIComponent(editingTask.description || '');
-      const encodedAssignee = encodeURIComponent(editingTask.assignee);
-      
-      // Build URL with parameters in path like your example: /UpdateBoardTask/fsdfsf/dfsfs/22/76/0/30/76/57
-      const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${editingTask.priorityID || ''}/${76}/0/${editingTask.categoryID || ''}/${user?.id}/${editingTask?.taskID}`;
-      
-      const response = await axios.post(apiUrl, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      // Check if API call was successful
-      if (response.data) {
-        // Update local state with the updated task
-        const updatedTasks = { ...tasks };
-        const columnTasks = updatedTasks[editingTaskColumn] || [];
-        
-        const updatedColumnTasks = columnTasks.map(t =>
-          t.id === editingTask.id ? {
-            ...editingTask,
-            title: editingTask.title,
-            description: editingTask.description,
-            assignee: editingTask.assignee,
-            priorityID: editingTask.priorityID,
-            categoryID: editingTask.categoryID,
-          } : t
-        );
-        
-        updatedTasks[editingTaskColumn] = updatedColumnTasks;
-        setTasks(updatedTasks);
-        
-        setEditTaskDialog(false);
-        setEditingTask(null);
-        setEditingTaskColumn(null);
-        setSelectedFile(null);
-        
-        toast.success('Task updated successfully', {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        });
-        
-        // Refresh data from API to ensure consistency
-        await fetchCategories();
-      } else {
-        throw new Error('Failed to update task');
-      }
-    } catch (error: any) {
-      console.error('Error updating task:', error);
-      
-      let errorMessage = 'Failed to update task';
-      
-      if (error.response) {
-        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
-      } else if (error.request) {
-        errorMessage = 'Network error: No response from server';
-      } else {
-        errorMessage = error.message || 'Unknown error occurred';
-      }
-      
-      toast.error(errorMessage, {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      });
     }
+    
+    console.log("Editing task with assignee:", {
+      name: taskWithAssigneeId.assignee,
+      id: taskWithAssigneeId.assigneeId,
+      teamMembers: teamMembers.length
+    });
+    
+    setEditingTask(taskWithAssigneeId);
+    setEditingTaskColumn(columnId);
+    setEditTaskDialog(true);
   }
-}
-  
-  
-  
-  
-  
-  
+
+  // Edit Task handlers - UPDATED with exact URL format you requested
+  const handleSaveTask = async () => {
+    if (editingTask && editingTaskColumn && user?.id) {
+      try {
+        // Validate required fields
+        if (!editingTask.title || !editingTask.assigneeId) { // Changed from assignee to assigneeId
+          toast.error('Please fill in all required fields', {
+            position: 'top-center',
+            duration: 4000,
+            style: {
+              background: 'white',
+              color: 'black',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              maxWidth: '400px',
+              fontSize: '14px',
+              fontWeight: 500,
+            },
+          });
+          return;
+        }
+
+        // Validate file size if a file is selected (MAX 5MB)
+        if (selectedFile) {
+          const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+          
+          if (selectedFile.size > maxSize) {
+            toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
+              position: 'top-center',
+              duration: 4000,
+              style: {
+                background: 'white',
+                color: 'black',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                maxWidth: '400px',
+                fontSize: '14px',
+                fontWeight: 500,
+              },
+            });
+            return;
+          }
+          
+          // Validate file type
+          const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'text/plain',
+            'application/zip',
+            'application/x-rar-compressed',
+          ];
+          
+          if (!allowedTypes.includes(selectedFile.type) && !selectedFile.type.startsWith('image/')) {
+            toast.error('File type not supported. Please upload PDF, Word, Excel, PowerPoint, Image, or ZIP files.', {
+              position: 'top-center',
+              duration: 4000,
+              style: {
+                background: 'white',
+                color: 'black',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                maxWidth: '400px',
+                fontSize: '14px',
+                fontWeight: 500,
+              },
+            });
+            return;
+          }
+        }
+
+        // Prepare form data for file upload
+        const formData = new FormData();
+        
+        // Add only the file to form data (if selected)
+        if (selectedFile) {
+          formData.append('file', selectedFile);
+        }
+        
+        // Use assigneeId instead of assignee for the API call
+        const assigneeIdToSend = editingTask.assigneeId || editingTask.assignee;
+        
+        // Encode values for URL
+        const encodedTitle = encodeURIComponent(editingTask.title);
+        const encodedDescription = encodeURIComponent(editingTask.description || '');
+        
+        // FIX: Add projectTaskID parameter to the URL (between assignee and categoryID)
+        // Format: /UpdateBoardTask/title/description/priorityID/assigneeId/projectTaskID/categoryID/userId/taskID
+        const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${editingTask.priorityID || ''}/${assigneeIdToSend}/${editingTask.projectTaskID || '0'}/${editingTask.categoryID || ''}/${user?.id}/${editingTask?.taskID}`;
+        
+        console.log('Sending assignee ID:', assigneeIdToSend);
+        console.log('Sending projectTaskID:', editingTask.projectTaskID || '0');
+        console.log('API URL:', apiUrl);
+        
+        const response = await axios.post(apiUrl, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        // Check if API call was successful
+        if (response.data) {
+          // Update local state with the updated task
+          const updatedTasks = { ...tasks };
+          const columnTasks = updatedTasks[editingTaskColumn] || [];
+          
+          const updatedColumnTasks = columnTasks.map(t =>
+            t.id === editingTask.id ? {
+              ...editingTask,
+              title: editingTask.title,
+              description: editingTask.description,
+              assignee: editingTask.assignee,
+              assigneeId: editingTask.assigneeId,
+              priorityID: editingTask.priorityID,
+              categoryID: editingTask.categoryID,
+              projectTaskID: editingTask.projectTaskID, // Save projectTaskID
+            } : t
+          );
+          
+          updatedTasks[editingTaskColumn] = updatedColumnTasks;
+          setTasks(updatedTasks);
+          
+          setEditTaskDialog(false);
+          setEditingTask(null);
+          setEditingTaskColumn(null);
+          setSelectedFile(null);
+          
+          toast.success('Task updated successfully', {
+            position: 'top-center',
+            duration: 4000,
+            style: {
+              background: 'white',
+              color: 'black',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              maxWidth: '400px',
+              fontSize: '14px',
+              fontWeight: 500,
+            },
+          });
+          
+          // Refresh data from API to ensure consistency
+          await fetchCategories();
+        } else {
+          throw new Error('Failed to update task');
+        }
+      } catch (error: any) {
+        console.error('Error updating task:', error);
+        
+        let errorMessage = 'Failed to update task';
+        
+        if (error.response) {
+          errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+          console.log('Error response:', error.response.data);
+        } else if (error.request) {
+          errorMessage = 'Network error: No response from server';
+        } else {
+          errorMessage = error.message || 'Unknown error occurred';
+        }
+        
+        toast.error(errorMessage, {
+          position: 'top-center',
+          duration: 4000,
+          style: {
+            background: 'white',
+            color: 'black',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            maxWidth: '400px',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+        });
+      }
+    }
+  };
+
+  // Delete Task Handler
   const handleDeleteTask = async (taskId: string, columnId: string) => {
     console.log(taskId)
     try {
@@ -2085,6 +2186,44 @@ const handleSaveTask = async () => {
     setSelectedTask(task)
     setTaskDetailsDialog(true)
   }
+
+  // Filter handlers - ADD THESE FUNCTIONS
+  const handlePriorityFilter = (priorityName: string) => {
+    const newSelectedPriorities = new Set(selectedPriorities);
+    if (newSelectedPriorities.has(priorityName)) {
+      newSelectedPriorities.delete(priorityName);
+    } else {
+      newSelectedPriorities.add(priorityName);
+    }
+    setSelectedPriorities(newSelectedPriorities);
+  };
+
+  const handleAssigneeFilter = (assignee: string) => {
+    const newSelectedAssignees = new Set(selectedAssignees);
+    if (newSelectedAssignees.has(assignee)) {
+      newSelectedAssignees.delete(assignee);
+    } else {
+      newSelectedAssignees.add(assignee);
+    }
+    setSelectedAssignees(newSelectedAssignees);
+  };
+
+  const handleCategoryFilter = (categoryId: string) => {
+    const newSelectedCategories = new Set(selectedCategories);
+    if (newSelectedCategories.has(categoryId)) {
+      newSelectedCategories.delete(categoryId);
+    } else {
+      newSelectedCategories.add(categoryId);
+    }
+    setSelectedCategories(newSelectedCategories);
+  };
+
+  const clearAllFilters = () => {
+    setSelectedPriorities(new Set());
+    setSelectedAssignees(new Set());
+    setSelectedCategories(new Set());
+    handleFilterClose();
+  };
 
   return (
     <Box 
@@ -2218,7 +2357,30 @@ const handleSaveTask = async () => {
             width: { xs: '100%', sm: 'auto' },
             mt: { xs: 1, sm: 0 }
           }}>
-           
+               
+            <Button
+              variant="outlined"
+              startIcon={<Icon icon="mdi:plus" width={20} />}
+             // onClick={handleOpenCreateCategory}
+              sx={{
+                borderColor: theme.palette.divider,
+                color: theme.palette.text.primary,
+                px: { xs: 2.5, sm: 3 },
+                py: { xs: 1, sm: 1.2 },
+                borderRadius: '10px',
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                fontWeight: 600,
+                textTransform: 'none',
+                whiteSpace: 'nowrap',
+                width: { xs: 'auto', sm: 'auto' },
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                }
+              }}
+            >
+              New Board
+            </Button>
             <Button
               variant="outlined"
               startIcon={<Icon icon="mdi:plus" width={20} />}
@@ -2245,7 +2407,7 @@ const handleSaveTask = async () => {
             <Button
               variant="contained"
               startIcon={<Icon icon="mdi:plus-circle" width={20} />}
-              onClick={() => setOpenDialog(true)}
+              onClick={handleNewTaskClick} // UPDATED: Changed to handleNewTaskClick
               sx={{
                 backgroundColor: theme.palette.primary.main,
                 px: { xs: 2.5, sm: 3 },
@@ -2386,6 +2548,155 @@ const handleSaveTask = async () => {
               )}
             </Button>
           </Box>
+
+          {/* User Dropdown - ADD THIS AFTER SEARCH BOX */}
+          {/* User Dropdown - FIXED VERSION */}
+          <Box sx={{ 
+            position: 'relative',
+            minWidth: { xs: '100%', sm: '200px' },
+            maxWidth: { xs: '100%', sm: '250px' }
+          }}>
+            <FormControl 
+              fullWidth 
+              size="small"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: '10px',
+                  '& fieldset': {
+                    borderColor: theme.palette.divider,
+                    borderWidth: 2
+                  },
+                  '&:hover fieldset': {
+                    borderColor: theme.palette.primary.main,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.palette.primary.main,
+                    borderWidth: 2
+                  }
+                }
+              }}
+            >
+              <InputLabel sx={{ 
+                fontSize: '0.9375rem',
+                color: theme.palette.text.secondary,
+                backgroundColor: theme.palette.background.paper,
+                px: 0.5
+              }}>
+                Select User
+              </InputLabel>
+              <Select
+                value={selectedUser}
+                onChange={async (e) => {
+                  const selectedValue = e.target.value;
+                  setSelectedUser(selectedValue);
+                  
+                  if (selectedValue) {
+                    const selectedMember = teamMembers.find(member => member.value === selectedValue);
+                    toast.success(`Showing data for: ${selectedMember?.label}`, {
+                      position: 'top-center',
+                      duration: 3000,
+                      style: {
+                        background: 'white',
+                        color: 'black',
+                        padding: '12px 20px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                        border: '1px solid rgba(0, 0, 0, 0.08)',
+                        maxWidth: '400px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      },
+                    });
+                  } else {
+                    // Reset to show all data
+                    setFilteredByUserColumns(columns);
+                    setFilteredByUserTasks(tasks);
+                    toast.success('Showing all users data', {
+                      position: 'top-center',
+                      duration: 3000,
+                      style: {
+                        background: 'white',
+                        color: 'black',
+                        padding: '12px 20px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                        border: '1px solid rgba(0, 0, 0, 0.08)',
+                        maxWidth: '400px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      },
+                    });
+                  }
+                }}
+                displayEmpty
+                startAdornment={
+                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                    <Icon icon="mdi:account-group" style={{ fontSize: '20px', color: theme.palette.text.secondary }} />
+                  </Box>
+                }
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return <span style={{ color: theme.palette.text.secondary }}>All Users</span>;
+                  }
+                  const selectedMember = teamMembers.find(member => member.value === selected);
+                  return selectedMember?.label || 'All Users';
+                }}
+              >
+                <MenuItem value="">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
+                    <Icon icon="mdi:account-supervisor" style={{ fontSize: '18px', color: theme.palette.text.secondary }} />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>All Users</Typography>
+                  </Box>
+                </MenuItem>
+                <Divider sx={{ my: 1 }} />
+                {teamMembersLoading ? (
+                  <MenuItem disabled>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
+                      <CircularProgress size={18} />
+                      <Typography variant="body2" color="textSecondary">Loading users...</Typography>
+                    </Box>
+                  </MenuItem>
+                ) : teamMembers.length > 0 ? (
+                  teamMembers.map((member) => (
+                    <MenuItem 
+                      key={member.value} 
+                      value={member.value}
+                      sx={{
+                        py: 1,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Avatar
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            bgcolor: theme.palette.primary.main,
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}
+                        >
+                          {member.label.charAt(0)}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {member.label}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>
+                    <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                      No users found
+                    </Typography>
+                  </MenuItem>
+                )}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       </Paper>
 
@@ -2396,8 +2707,7 @@ const handleSaveTask = async () => {
         onSubmit={handleSubmit}
         teamMembers={teamMembers}
         onTaskCreated={fetchCategories} 
-          onPriorityCreated={fetchPriorities} // ADD THIS LINE
-// ADDED THIS LINE
+        onPriorityCreated={fetchPriorities} // ADD THIS LINE
       />  
 
       {/* Enhanced Filter Menu - UPDATED with fixed priority filtering */}
@@ -2888,7 +3198,7 @@ const handleSaveTask = async () => {
           {/* Display Category ID if available */}
           {editingCategory?.boardCategoryID && (
             <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 2 }}>
-              Category ID: {editingCategory.boardCategoryID}
+              {/* Category ID: {editingCategory.boardCategoryID} */}
             </Typography>
           )}
         </DialogContent>
@@ -2919,7 +3229,7 @@ const handleSaveTask = async () => {
             Are you sure you want to delete the category "{categoryToDelete?.title}"?
             {categoryToDelete?.boardCategoryID && (
               <Typography variant="caption" display="block" color="textSecondary">
-                Category ID: {categoryToDelete.boardCategoryID}
+                {/* Category ID: {categoryToDelete.boardCategoryID} */}
               </Typography>
             )}
           </Typography>
@@ -3010,22 +3320,68 @@ const handleSaveTask = async () => {
               </FormControl>
             </Grid>
             
-            {/* Assignee */}
+            {/* Project Task - EXACT FIX: Using the same structure as other fields */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>Assignee</InputLabel>
+                <InputLabel>Project Task</InputLabel>
                 <Select
-                  value={editingTask?.assignee || ''}
-                  label="Assignee"
-                  onChange={(e) => setEditingTask(editingTask ? {...editingTask, assignee: e.target.value} : null)}
+                  value={editingTask?.projectTaskID?.toString() || ''}
+                  label="Project Task"
+                  onChange={(e) => {
+                    if (editingTask) {
+                      setEditingTask({
+                        ...editingTask,
+                        projectTaskID: e.target.value ? Number(e.target.value) : undefined
+                      });
+                    }
+                  }}
                 >
-                  {teamMembers.map(member => (
-                    <MenuItem key={member} value={member}>{member}</MenuItem>
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {projectTasks.map((task) => (
+                    <MenuItem key={task.taskID} value={task.taskID.toString()}>
+                      {task.taskname}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
             
+            {/* Assignee */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Assignee</InputLabel>
+                <Select
+                  value={editingTask?.assigneeId || (editingTask?.assignee || '')}
+                  label="Assignee"
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    const selectedMember = teamMembers.find(member => 
+                      member.value === selectedValue || member.label === selectedValue
+                    );
+                    
+                    if (editingTask) {
+                      setEditingTask({
+                        ...editingTask, 
+                        assignee: selectedMember?.label || selectedValue,
+                        assigneeId: selectedMember?.value || selectedValue
+                      });
+                    }
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Select Assignee</em>
+                  </MenuItem>
+                  {teamMembers.map((member) => (
+                    <MenuItem key={member.value} value={member.value}>
+                      {member.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
             {/* Category */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
@@ -3095,9 +3451,6 @@ const handleSaveTask = async () => {
                 )}
               </Box>
             </Grid>
-            
-            {/* Current Status */}
-         
           </Grid>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -3110,7 +3463,7 @@ const handleSaveTask = async () => {
             onClick={handleSaveTask}
             disabled={!editingTask?.title || !editingTask?.assignee}
           >
-            Save Changes
+            Update
           </Button>
         </DialogActions>
       </Dialog>
@@ -3156,166 +3509,197 @@ const handleSaveTask = async () => {
               }
             }}
           >
-            {columnsWithFilteredTasks.length === 0 && !loading ? (
+            {/* Use filtered columns based on selected user */}
+            {(selectedUser ? filteredByUserColumns : columnsWithFilteredTasks).length === 0 && !loading ? (
               <Box sx={{ textAlign: 'center', width: '100%', py: 8 }}>
                 <Typography variant="h6" color="textSecondary">
-                  No categories found. Create your first category!
+                  {selectedUser ? 'No data found for selected user' : 'No categories found. Create your first category!'}
                 </Typography>
               </Box>
             ) : (
-              columnsWithFilteredTasks.map((column) => (
-                <Box
-                  key={column.id}
-                  sx={{
-                    minWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
-                    maxWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flexShrink: 0,
-                    [theme.breakpoints.down('lg')]: {
-                      minWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' },
-                      maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' }
-                    },
-                    [theme.breakpoints.down('sm')]: {
-                      minWidth: '100%',
-                      maxWidth: '100%'
-                    }
-                  }}
-                >
-                  {/* Compact Column Header */}
+              (selectedUser ? filteredByUserColumns : columnsWithFilteredTasks).map((column) => {
+                // Get tasks based on user selection
+                const columnTasks = selectedUser 
+                  ? (filteredByUserTasks[column.id] || [])
+                  : (getFilteredTasks(tasks[column.id] || [], column.id));
+                
+                // Get count for the column
+                const columnCount = selectedUser 
+                  ? columnTasks.length
+                  : column.count;
+                
+                return (
                   <Box
+                    key={column.id}
                     sx={{
+                      minWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
+                      maxWidth: { xs: '100%', sm: '280px', md: '300px', lg: '320px' },
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 2,
-                      p: 2,
-                      borderRadius: '10px',
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      boxShadow: `0 2px 4px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.1 : 0.05)}`
+                      flexDirection: 'column',
+                      flexShrink: 0,
+                      [theme.breakpoints.down('lg')]: {
+                        minWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' },
+                        maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(50% - 16px)' }
+                      },
+                      [theme.breakpoints.down('sm')]: {
+                        minWidth: '100%',
+                        maxWidth: '100%'
+                      }
                     }}
                   >
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 1.5, 
-                      flex: 1, 
-                      minWidth: 0,
-                      mr: 1
-                    }}>
-                      {/* Compact Icon */}
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '8px',
-                          backgroundColor: column.iconColor,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}
-                      >
-                        <Icon 
-                          icon={column.icon} 
-                          style={{ 
-                            fontSize: '18px', 
-                            color: 'white' 
-                          }} 
-                        />
-                      </Box>
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography 
-                          variant="subtitle2"
+                    {/* Compact Column Header */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 2,
+                        p: 2,
+                        borderRadius: '10px',
+                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`,
+                        boxShadow: `0 2px 4px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.1 : 0.05)}`
+                      }}
+                    >
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1.5, 
+                        flex: 1, 
+                        minWidth: 0,
+                        mr: 1
+                      }}>
+                        {/* Compact Icon */}
+                        <Box
                           sx={{
-                            fontWeight: 600,
-                            color: theme.palette.text.primary,
-                            fontSize: '0.9375rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+                            width: 36,
+                            height: 36,
+                            borderRadius: '8px',
+                            backgroundColor: column.iconColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
                           }}
                         >
-                          {column.title}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Icon 
+                            icon={column.icon} 
+                            style={{ 
+                              fontSize: '18px', 
+                              color: 'white' 
+                            }} 
+                          />
+                        </Box>
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
                           <Typography 
-                            variant="caption"
+                            variant="subtitle2"
                             sx={{
-                              color: theme.palette.text.secondary,
-                              fontWeight: 500,
-                              fontSize: '0.75rem'
+                              fontWeight: 600,
+                              color: theme.palette.text.primary,
+                              fontSize: '0.9375rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
                             }}
                           >
-                            {searchQuery || selectedPriorities.size > 0 || selectedAssignees.size > 0 || selectedCategories.size > 0 ? (
-                              <>
-                                {column.count} of {tasks[column.id]?.length || 0} tasks
-                              </>
-                            ) : (
-                              <>
-                                {column.count} tasks
-                              </>
-                            )}
+                            {column.title}
                           </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography 
+                              variant="caption"
+                              sx={{
+                                color: theme.palette.text.secondary,
+                                fontWeight: 500,
+                                fontSize: '0.75rem'
+                              }}
+                            >
+                              {selectedUser ? (
+                                <>{columnTasks.length} tasks</>
+                              ) : (
+                                searchQuery || selectedPriorities.size > 0 || selectedAssignees.size > 0 || selectedCategories.size > 0 ? (
+                                  <>{column.count} of {tasks[column.id]?.length || 0} tasks</>
+                                ) : (
+                                  <>{column.count} tasks</>
+                                )
+                              )}
+                            </Typography>
+                          </Box>
                         </Box>
                       </Box>
+                      <Box sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        flexShrink: 0
+                      }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditCategory(column)}
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            '&:hover': {
+                              backgroundColor: alpha(column.iconColor, 0.1),
+                              color: column.iconColor
+                            },
+                            width: 32,
+                            height: 32
+                          }}
+                        >
+                          <Icon icon="mdi:pencil" width={16} />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteCategory(column)}
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.error.main, 0.1),
+                              color: theme.palette.error.main
+                            },
+                            width: 32,
+                            height: 32
+                          }}
+                        >
+                          <Icon icon="mdi:delete" width={16} />
+                        </IconButton>
+                      </Box>
                     </Box>
-                    <Box sx={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      flexShrink: 0
-                    }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEditCategory(column)}
-                        sx={{
-                          color: theme.palette.text.secondary,
-                          '&:hover': {
-                            backgroundColor: alpha(column.iconColor, 0.1),
-                            color: column.iconColor
-                          },
-                          width: 32,
-                          height: 32
-                        }}
-                      >
-                        <Icon icon="mdi:pencil" width={16} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteCategory(column)}
-                        sx={{
-                          color: theme.palette.text.secondary,
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.error.main, 0.1),
-                            color: theme.palette.error.main
-                          },
-                          width: 32,
-                          height: 32
-                        }}
-                      >
-                        <Icon icon="mdi:delete" width={16} />
-                      </IconButton>
-                    </Box>
-                  </Box>
 
-                  {/* Task Column with filtered tasks */}
-                  <TaskColumn
-                    title={column.title}
-                    tasks={column.filteredTasks}
-                    columnId={column.id}
-                    onDrop={handleDrop}
-                    color={column.color}
-                    isMobile={isMobile}
-                    onEditTask={handleEditTask}
-                    onDeleteTask={handleDeleteTask}
-                    onViewTask={handleViewTask}
-                  />
-                </Box>
-              ))
+                    {/* Task Column with filtered tasks */}
+                    <TaskColumn
+                      title={column.title}
+                      tasks={columnTasks}
+                      columnId={column.id}
+                      onDrop={handleDrop}
+                      color={column.color}
+                      isMobile={isMobile}
+                      onEditTask={handleEditTask}
+                      onDeleteTask={handleDeleteTask}
+                      onViewTask={handleViewTask}
+                    />
+                  </Box>
+                );
+              })
             )}
           </Box>
+          
+          {/* Subscription Expired Dialog for Categories */}
+          <SubscriptionExpiredDialog
+            open={showPaymentExpiredDialog}
+            onClose={handleClosePaymentDialog}
+            onRenew={generateRazorPayOrder}
+            isLoading={isLoading}
+            razorpayLoaded={razorpayLoaded}
+          />
+          
+          {/* Subscription Expired Dialog for Tasks - NEW */}
+          <SubscriptionExpiredDialog
+            open={showTaskPaymentDialog}
+            onClose={handleClosePaymentDialog}
+            onRenew={generateRazorPayOrder}
+            isLoading={isLoading}
+            razorpayLoaded={razorpayLoaded}
+          />
         </Box>
       )}
     </Box>

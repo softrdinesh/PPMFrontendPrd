@@ -100,7 +100,7 @@ const NewBoard = (projectlength:any) => {
   };
   return (
     <>
-      <CustomButton
+      {/* <CustomButton
         variant='contained'
         startIcon={<Icon icon={'simple-line-icons:plus'} style={{ marginInline: 2 }} />}
         endIcon={<Icon icon={'akar-icons:chevron-down'} style={{ marginInline: 5 }} />}
@@ -108,7 +108,7 @@ const NewBoard = (projectlength:any) => {
         onClick={handleCreateWorkspaceClick}
       >
         New Board
-      </CustomButton>
+      </CustomButton> */}
             {/* <NewTaskDialog open={open} onCloseModal={handleClose} /> */}
 
  <NewTaskDialog

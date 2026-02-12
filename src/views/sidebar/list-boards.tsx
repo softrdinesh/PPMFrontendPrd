@@ -174,21 +174,21 @@ const WorkspaceItem = ({ workspace, onBoardClick }: { workspace: WorkspaceListIt
           >
             {workspace?.WorkspaceName}
           </Typography>
-          <IconButton size='small' onClick={handleOpenMenu}>
+          {/* <IconButton size='small' onClick={handleOpenMenu}>
             <Icon
               icon={'solar:menu-dots-bold'}
               className='shrink-0'
               fontSize={'0.2rem'}
               color={!isNavLinkActive() ? 'white' : 'black'}
             />
-          </IconButton>
+          </IconButton> */}
           <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleOpenClose} TransitionComponent={Zoom}>
          
               <MenuItem onClick={()=>setIsModalOpen(true)}>
-              {/* <Box display={'flex'} alignItems={'center'} gap={2}>
+              <Box display={'flex'} alignItems={'center'} gap={2}>
                 <Icon icon={'mdi:plus-circle-outline'} />
                 <Typography>Create WorkSpace</Typography>
-              </Box> */}
+              </Box>
             </MenuItem>
           </Menu>
           <DeleteWorkspaceDialog open={open} setOpen={setOpen} onConfirm={debouncedDelete} />

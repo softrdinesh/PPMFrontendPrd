@@ -600,7 +600,7 @@ const projectTaskID = formData.projectTask || '0';
       const encodedDescription = encodeURIComponent(formData.description || '');
 
       // Construct the API URL according to the curl example
-      const apiUrl = `${Baseurl}/CreateBoardTask/${encodedTitle}/${encodedDescription}/${priorityID}/${76}/${projectTaskID}/${categoryID}/${user?.id}`;
+      const apiUrl = `${Baseurl}/CreateBoardTask/${encodedTitle}/${encodedDescription}/${priorityID}/${userid}/${projectTaskID}/${categoryID}/${user?.id}`;
 
       // Create FormData for file upload
       const formDataToSend = new FormData();
@@ -1245,6 +1245,7 @@ const projectTaskID = formData.projectTask || '0';
                 <Select
                   value={formData.assignee}
                   onChange={(e) => {
+                    console.log(e.target.value)
                     setFormData({ ...formData, assignee: e.target.value });
                     if (errors.assignee) {
                       setErrors({ ...errors, assignee: undefined });
@@ -1257,11 +1258,16 @@ const projectTaskID = formData.projectTask || '0';
                   <MenuItem value="" disabled>
                     Select member
                   </MenuItem>
-                  {teamMembers.map((member) => (
+                  {/* {teamMembers.map((member) => (
                     <MenuItem key={member} value={member}>
                       {member}
                     </MenuItem>
-                  ))}
+                  ))} */}
+                  {teamMembers.map((member) => (
+    <MenuItem key={member.value} value={member.value}>
+      {member.label}
+    </MenuItem>
+  ))}
                 </Select>
                 {Boolean(errors?.assignee) && (
                   <Typography

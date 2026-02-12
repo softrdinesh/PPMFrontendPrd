@@ -79,7 +79,7 @@ const SprintList = ({
     queryFn: () => fetchSprintList({SprintGroupID:  sg?.SprintGroupID}),
     enabled: !! sg?.SprintGroupID
   })
-console.log(sg.WorkspaceID)
+
   useEffect(() => {
     if (showSelected) {
       setShowCard(true)
@@ -109,7 +109,6 @@ console.log(sg.WorkspaceID)
         }
       );
       
-      console.log('Sprint dynamic columns fetched successfully:', response.data);
       setSprintDynamicColumns(response.data?.data || response.data || []);
       return response.data;
 
@@ -335,7 +334,6 @@ console.log(sg.WorkspaceID)
               sprintID:filteredSprintData?.[rowIndex]?.SprintID?.toString()
             }
 
-            console.log(bodyvalue,'vv')
             const response = await UpdateSrpintItem(bodyvalue)
             if (response) {
               sprintListApi?.refetch()
@@ -496,7 +494,6 @@ console.log(sg.WorkspaceID)
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
         onSubmit={(data) => {
-          console.log(data)
           getSprintDynamicColumns()
         }}
         spintid={sg.WorkspaceID}

@@ -151,8 +151,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
         handleFormClose()
       }
     } else {
-      console.log('body :', body)
-
+   
       const response = await addBugPriority({ ...body, WorkspaceID: workspaceID })
 
       if (response?.status) {

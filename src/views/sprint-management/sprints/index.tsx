@@ -125,8 +125,7 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
     setSelectedGroups(prev => [...prev, groupToAdd])
 
     // Example: log both ID and Name
-    console.log("Selected Group ID:", group.SprintGroupID)
-    console.log("Selected Group Name:", group.GroupName)
+
     setgroupid(group.SprintGroupID)
     setSearchTerm('')
     setShowDropdown(false)
@@ -146,8 +145,7 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
 
   const handleSecondSprintSelect = (sprint: any) => {
     // Handle sprint selection instead of group selection
-    console.log("Selected Sprint ID:", sprint.SprintID)
-    console.log("Selected Sprint Name:", sprint.Name)
+  
     setSelectedSprint(sprint) // Set the selected sprint
     setSecondSearchTerm(sprint.Name) // Set input text to selected sprint name
     setShowSecondDropdown(false)
@@ -175,7 +173,7 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    console.log("Search Input:", value)
+ 
     setSearchTerm(value)
 
     // ✅ keep same dropdown logic
@@ -197,7 +195,7 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
 
   const handleSecondSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    console.log("Second Search Input:", value)
+
     setSecondSearchTerm(value)
     
     // FIXED: Don't clear selected sprint if user is just typing to search

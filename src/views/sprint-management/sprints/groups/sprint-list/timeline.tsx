@@ -46,7 +46,7 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
     setStartDate(start)
     setEndDate(end)
 
-    console.log(start,end)
+
     if (start && end) {
       await updateSprint({
         id: original?.SprintID?.toString(),

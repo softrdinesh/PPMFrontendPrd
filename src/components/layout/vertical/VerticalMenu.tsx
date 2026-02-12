@@ -126,7 +126,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               }}
               
             >
-              Boardsss
+              Boards
+              
             </Typography>
           </Divider>
         </Box>

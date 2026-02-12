@@ -34,7 +34,6 @@ const LoginSuccessRedirect = () => {
             localStorage.setItem(authConfig.loginUserData, JSON.stringify(responseValue?.data))
   
             setLoading(false)
-            console.log('responseValue?.data?.userData :', responseValue?.data?.userData)
 
             await axios.post('/api/set-cookies', responseValue?.data)
             setUser(responseValue?.data?.userData)

@@ -40,7 +40,6 @@ const paymentcheck = async (userId: number) => {
   const Baseurl = process.env.NEXT_PUBLIC_API_URL1
   try {
     const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${userId}`)
-    console.log(res.data)
     
     if (res.data && res.data.length > 0) {
       const paymentData = {

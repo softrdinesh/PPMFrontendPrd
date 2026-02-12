@@ -245,7 +245,7 @@ const UpdateMessage = ({ message, refetch }: UpdateMessageProps) => {
       taskID: message?.TaskID
     }
 
-    console.log('FINAL BODY', finalBody)
+
     await giveReplyToUpdate(finalBody)
     refetch()
     reset()
@@ -422,12 +422,10 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
             return
           }
 
-          console.log('ProjectUpdates: Task update received:', data)
           
           // IMPORTANT: Notify parent about new message
           // Pass the parsed data so parent can dedupe and increment appropriately
           if (onRefreshMessageCount) {
-            console.log('ProjectUpdates: Notifying parent about new message with payload')
             onRefreshMessageCount(data)
           }
           

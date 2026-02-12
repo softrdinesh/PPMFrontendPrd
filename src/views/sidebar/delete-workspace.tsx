@@ -32,13 +32,13 @@ function DeleteWorkspaceDialog({ open, setOpen, onConfirm }: DeleteWorkspaceDial
   const handleRenewSubscription = () => {
     // Add your navigation logic here
     // Example: router.push('/subscription') or window.location.href = '/subscription'
-    console.log('Navigate to subscription page')
+
     setShowPaymentExpiredDialog(false)
     handleClose()
   }
    const checkPaymentStatus = () => {
     const paymentStatus = localStorage.getItem('paymentStatus')
-    console.log(paymentStatus, 'payment status')
+ 
 
     try {
       if (paymentStatus) {

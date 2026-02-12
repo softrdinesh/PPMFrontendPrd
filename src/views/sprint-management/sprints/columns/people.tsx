@@ -67,14 +67,12 @@ const TaskPeople = ({
 
   const handleSelectUser = async (selected: User) => {
     // Design only - no API call
-    console.log('User selected:', selected)
     handleClose()
   }
 
   const handleSelectOwner = async (selected: User) => {
     // Design only - no API call
     setSelectedOwner(selected)
-    console.log('Owner selected:', selected)
     handleClose()
   }
 

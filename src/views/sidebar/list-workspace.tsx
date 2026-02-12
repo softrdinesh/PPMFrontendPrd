@@ -101,7 +101,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
 
   const handleDelete = async () => {
     try {
-      console.log('profile :', profile)
+ 
 
       const response =
         profile === 'projects'

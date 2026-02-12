@@ -79,51 +79,6 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
     }
   })
 
-  // Helper: Call UpdatePaymentconfirmation API
-  const updatePaymentConfirmation = async (userId: number, paymentId?: string | null, status: string = '') => {
-    try {
-      const baseUrl = 'https://uat.ppmbackend.projectpulse360.com/UpdatePaymentconfirmation'
-      const params = new URLSearchParams()
-      params.append('UserID', String(userId))
-      // If paymentId is present, append it, otherwise append empty string to match example format
-      params.append('PaymentID', paymentId ?? '')
-
-      const url = `${baseUrl}?${params.toString()}`
-
-      const resp = await fetch(url, {
-        method: 'POST'
-      })
-
-      const text = await resp.text()
-
-      // Persist a local client-side status for UI decisions.
-      // Only treat subscription as active (isExpired: false) when status === 'Success'.
-      // For all other statuses (Cancelled, Failed, Timeout, or empty), treat as expired (isExpired: true).
-      const isExpired = status !== 'Success'
-      const paymentData = {
-        isExpired,
-        // paymentId: paymentId ?? '',
-        // status
-      }
-      localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
-
-      return { ok: resp.ok, status: resp.status, body: text }
-    } catch (err) {
-      console.error('Error calling UpdatePaymentconfirmation:', err)
-      // On error, be conservative: treat as expired so user is prompted to renew.
-      const paymentData = {
-        isExpired: true,
-        // paymentId: paymentId ?? '',
-        // status
-      }
-      try {
-        localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
-      } catch (e) {
-        console.error('Error saving paymentStatus to localStorage on failure:', e)
-      }
-      return { ok: false, error: err }
-    }
-  }
 
  
   // Check payment status

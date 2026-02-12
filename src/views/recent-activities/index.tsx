@@ -15,7 +15,7 @@ import ActivityMessage from './activity-message'
 const RecentActivities = () => {
   const { data } = useQuery({ queryKey: ['recent-activity-page'], queryFn: fetchAllRecentActivities })
 
-  console.log('data :', data)
+
 
   return (
     <Grid container spacing={6}>

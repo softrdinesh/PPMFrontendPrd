@@ -91,7 +91,7 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
   }
 
   const workspaceLength = workspace?.length || 0
-  console.log(workspaceLength, 'dfsf334')
+
 
   // Change active state when the url changes
   useEffect(() => {
@@ -113,26 +113,66 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
     onActiveChange?.(active)
   }, [active])
 
-  const handleCreateWorkspaceClick = () => {
-    try {
-      const localStorageData = localStorage.getItem('paymentStatus')
+  // const handleCreateWorkspaceClick = () => {
+  //    try {
+  //     const localStorageData = localStorage.getItem('paymentStatus')
       
-      if (localStorageData) {
-        const parsedData = JSON.parse(localStorageData)
-        
-        if (parsedData?.workspaceCount === 1 && workspaceLength >= 1) {
-          setShowPaymentExpiredDialog(true)
-        } else {
-          setShowPaymentExpiredDialog(true)
-        }
-      } else {
-        setShowPaymentExpiredDialog(true)
+  //    if (localStorageData) {
+  //       const parsedData = JSON.parse(localStorageData)
+  //       console.log(parsedData)
+  //   if (parsedData?.workspaceCount == 1 && workspaceLength >= 1) {
+  //         setShowPaymentExpiredDialog(true)
+  //      } else {
+  //       setShowPaymentExpiredDialog(false)
+  //   }
+  //     } else {
+  //       setShowPaymentExpiredDialog(true)
+  //    }
+  //    } catch (error) {
+  //     console.error('Error parsing localStorage:', error)
+  //     setIsModalOpen(true)
+  //    }
+  // }
+const handleCreateWorkspaceClick = () => {
+  try {
+    const localStorageData = localStorage.getItem('paymentStatus');
+    
+    // Default: show payment dialog (restrict access)
+    let shouldShowPaymentDialog = true;
+    
+    if (localStorageData) {
+      const parsedData = JSON.parse(localStorageData);
+      console.log('Payment data:', parsedData);
+      
+      const workspaceCount = parsedData?.workspaceCount;
+      const isExpired = parsedData?.isExpired;
+      
+      // User is allowed if EITHER:
+      // 1. They have more than 1 workspace allowed, OR
+      // 2. Their subscription is not expired
+      if (workspaceCount > 1 || isExpired === false) {
+        shouldShowPaymentDialog = false;
       }
-    } catch (error) {
-      console.error('Error parsing localStorage:', error)
-      setIsModalOpen(true)
     }
+    
+    // Show/hide payment dialog based on the logic above
+    setShowPaymentExpiredDialog(shouldShowPaymentDialog);
+    
+    // If allowed, proceed with workspace creation
+    if (!shouldShowPaymentDialog) {
+      // TODO: Add your workspace creation logic here
+
+      setIsModalOpen(true);
+    }
+    
+  } catch (error) {
+    console.error('Error parsing localStorage:', error);
+    setIsModalOpen(true);
+    setShowPaymentExpiredDialog(true); // Show payment dialog on error
   }
+};
+
+
  const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
   }

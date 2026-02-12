@@ -69,7 +69,6 @@ const deleteSprintGroup = async () => {
     );
     refetch()
 // refetchGroups()
-    console.log('Sprint group deleted successfully:', response.data);
     // You can return the response if needed
     // return response.data;
     toast.success(`Sprint group deleted successfully`)

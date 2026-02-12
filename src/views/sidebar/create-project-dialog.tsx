@@ -43,7 +43,7 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
     ProjectName: '',
     IsOpen: 1
   }
-console.log(projects,'selected')
+
   // const [isLoading, setIsLoading] = useState(false)
   // const [razorpayLoaded, setRazorpayLoaded] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState("")
@@ -72,7 +72,7 @@ console.log(projects,'selected')
   const onSubmit = async (values: FormValues) => {
     values.WorkspaceID = selected?.WorkspaceID
 
-    console.log('values :', values)
+
     const res = await addProject(values)
 
     if (res?.status) {

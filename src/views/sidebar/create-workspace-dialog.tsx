@@ -249,7 +249,7 @@ const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: Create
   const handleRenewSubscription = () => {
     // Add your navigation logic here
     // Example: router.push('/subscription') or window.location.href = '/subscription'
-    console.log('Navigate to subscription page')
+
     setShowPaymentExpiredDialog(false)
     onCloseModal()
   }

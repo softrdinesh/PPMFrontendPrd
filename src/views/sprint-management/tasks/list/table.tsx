@@ -48,7 +48,6 @@ const TaskTableSprint = ({
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [adding, setAdding] = useState(false)
   const { profile,user } = useAuth()
-  console.log(profile,user.id)
   // Get column visibility from sprint context
   const { columnVisibility: sprintColumnVisibility } = useContext(SprintTaskManagement)
 

@@ -28,7 +28,6 @@ interface DynamicTableHeaderProps {
 const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTableHeaderProps) => {
   // ** Memo
   const initialValue = useMemo(() => column?.ColumnName, [column?.ColumnName])
-console.log(column.columndetails,'column')
   // ** State
   const [anchorEl, setAnchorEl] = useState(null)
   const [editOpen, setEditOpen] = useState(false)
