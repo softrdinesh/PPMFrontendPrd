@@ -2358,7 +2358,7 @@ useEffect(() => {
             mt: { xs: 1, sm: 0 }
           }}>
                
-            <Button
+            {/* <Button
               variant="outlined"
               startIcon={<Icon icon="mdi:plus" width={20} />}
              // onClick={handleOpenCreateCategory}
@@ -2380,7 +2380,7 @@ useEffect(() => {
               }}
             >
               New Board
-            </Button>
+            </Button> */}
             <Button
               variant="outlined"
               startIcon={<Icon icon="mdi:plus" width={20} />}
@@ -2593,7 +2593,7 @@ useEffect(() => {
                   
                   if (selectedValue) {
                     const selectedMember = teamMembers.find(member => member.value === selectedValue);
-                    toast.success(`Showing data for: ${selectedMember?.label}`, {
+                    toast.success(`Showing: ${selectedMember?.label}`, {
                       position: 'top-center',
                       duration: 3000,
                       style: {
@@ -2637,7 +2637,7 @@ useEffect(() => {
                 }
                 renderValue={(selected) => {
                   if (!selected) {
-                    return <span style={{ color: theme.palette.text.secondary }}>All Users</span>;
+                    return <span style={{ color: theme.palette.text.secondary }}>Select User</span>;
                   }
                   const selectedMember = teamMembers.find(member => member.value === selected);
                   return selectedMember?.label || 'All Users';
@@ -2646,7 +2646,7 @@ useEffect(() => {
                 <MenuItem value="">
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
                     <Icon icon="mdi:account-supervisor" style={{ fontSize: '18px', color: theme.palette.text.secondary }} />
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>All Users</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Select User</Typography>
                   </Box>
                 </MenuItem>
                 <Divider sx={{ my: 1 }} />
