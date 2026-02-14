@@ -2612,21 +2612,21 @@ useEffect(() => {
                     // Reset to show all data
                     setFilteredByUserColumns(columns);
                     setFilteredByUserTasks(tasks);
-                    toast.success('Showing all users data', {
-                      position: 'top-center',
-                      duration: 3000,
-                      style: {
-                        background: 'white',
-                        color: 'black',
-                        padding: '12px 20px',
-                        borderRadius: '12px',
-                        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-                        border: '1px solid rgba(0, 0, 0, 0.08)',
-                        maxWidth: '400px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                      },
-                    });
+                    // toast.success('Showing all users data', {
+                    //   position: 'top-center',
+                    //   duration: 3000,
+                    //   style: {
+                    //     background: 'white',
+                    //     color: 'black',
+                    //     padding: '12px 20px',
+                    //     borderRadius: '12px',
+                    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+                    //     maxWidth: '400px',
+                    //     fontSize: '14px',
+                    //     fontWeight: 500,
+                    //   },
+                    // });
                   }
                 }}
                 displayEmpty
@@ -2637,7 +2637,7 @@ useEffect(() => {
                 }
                 renderValue={(selected) => {
                   if (!selected) {
-                    return <span style={{ color: theme.palette.text.secondary }}>Select User</span>;
+                    return <span style={{ color: theme.palette.text.secondary }}>Select </span>;
                   }
                   const selectedMember = teamMembers.find(member => member.value === selected);
                   return selectedMember?.label || 'All Users';
