@@ -7,14 +7,14 @@ const ChangeProfileButton = () => {
 
   return (
     <>
-      <Button
+      {/* <Button
         variant='outlined'
         size='small'
         startIcon={<i className='ri-refresh-line' />}
         onClick={() => changeProfiles()}
       >
         Change Profiles
-      </Button>
+      </Button> */}
     </>
   )
 }
