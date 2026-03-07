@@ -80,7 +80,7 @@ useEffect(() => {
       <DeleteDialog
             open={deleteOpen}
             setOpen={val => setDeleteOpen(!!val)}
-            title={`Delete this taskgroup ?`}
+            title={`Delete this taskgroupsss ?`}
             onConfirm={handleDelete}
             refetch={refetch}
             description={'You wont be able to revert this action'}

@@ -43,6 +43,7 @@ const SprintFilterButton = () => {
   const seeAllColumns = () => {
     const allVisible: typeof columnVisibility = {
       Name:true,
+      Owner:true,
     Goals: true,
    SprintTimeline: true,
     SprintStatus: true,
@@ -91,7 +92,10 @@ const SprintFilterButton = () => {
           </Typography>
         </Box>
         <FilterMenuItem menuID='Name' name={'Sprint'} />
+                <FilterMenuItem menuID='Owner' name='Owner' />
+
         <FilterMenuItem menuID='Goals' name='Goals' />
+
       <FilterMenuItem menuID='ActiveSprint' name='Active Sprint' />
 
         <FilterMenuItem menuID='SprintTimeline' name='Sprint Timeline' />

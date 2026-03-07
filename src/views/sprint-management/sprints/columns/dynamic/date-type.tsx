@@ -1,16 +1,17 @@
-import { useState } from 'react'
-
+import { useState, useEffect } from 'react'
 import { Icon } from '@iconify/react'
 import { Box, Chip, Dialog, DialogContent, Grid2 as Grid, IconButton, Typography } from '@mui/material'
 import { debounce } from 'lodash'
 import moment from 'moment'
-
+import axios from 'axios'
+import { toast } from 'react-hot-toast'
 import AppReactDatepicker from '@/libs/styles/AppReactDatepicker'
 import type { AdditionalColumn } from '@/services/modules/sprint-item/types'
 import { updateSubTask } from '@/services/modules/sub-task'
 import { updateTasks } from '@/services/modules/task'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
 import CustomButton from '@components/button'
+import { useAuth } from '@/hooks/useAuth'
 
 interface DynamicDateProps {
   rowData: SprintItem 
@@ -19,16 +20,139 @@ interface DynamicDateProps {
   dynamicValue?: any
   columnData?: AdditionalColumn
   canEdit?: boolean
+  loginUserId?: number
+  sprintId?: number
+  sprintGroupId?: number
+  allColValues?: any[] // Add this to pass the colvalueList from parent
 }
 
-const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask, canEdit }: DynamicDateProps) => {
+const DynamicDate = ({ 
+  columnData, 
+  rowData, 
+  dynamicValue, 
+  refetch, 
+  isSubTask, 
+  canEdit, 
+  loginUserId, 
+  sprintId, 
+  sprintGroupId,
+  allColValues = [] // Accept colvalueList from parent
+}: DynamicDateProps) => {
   const [openDialog, setOpenDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const { user } = useAuth()
+
+  // Helper function to get column ID regardless of casing
+  const getColumnId = (column: any): string | number | undefined => {
+    if (!column) return undefined;
+    
+    return column?.additionalColumnID || 
+           column?.AdditionalColumnID || 
+           column?.id || 
+           column?.ID ||
+           column?.columnId ||
+           column?.ColumnId ||
+           undefined;
+  }
+
+  // Helper function to get sprint ID from rowData (handles both camelCase and PascalCase)
+  const getSprintId = (data: any): string | number | undefined => {
+    if (!data) return undefined;
+    
+    return data?.sprintID || 
+           data?.SprintID || 
+           data?.sprintId || 
+           data?.SprintId || 
+           data?.id || 
+           data?.ID ||
+           undefined;
+  }
+
+  // Get column ID
+  const columnId = getColumnId(columnData);
+  
+  // Get current sprint ID from rowData
+  const currentSprintId = getSprintId(rowData);
+
+  useEffect(() => {
+    // Reset selected date first
+    setSelectedDate(null)
+    
+    // Find and set the initial date value when component mounts or rowData changes
+    if (rowData && columnData) {
+      console.log(rowData.SprintID, 'row sprint ID')
+      console.log(columnData.additionalColumnID, 'looking for column ID')
+      
+      // First try to find in allColValues (passed from parent with colvalueList)
+      if (allColValues && Array.isArray(allColValues) && allColValues.length > 0) {
+        // First filter by sprint ID to only get values for this specific sprint
+        const valuesForThisSprint = allColValues.filter((item: any) => {
+          const itemSprintId = item?.sprintID || item?.SprintID;
+          return itemSprintId == currentSprintId;
+        });
+        
+        console.log('Values for this sprint:', valuesForThisSprint);
+        
+        // Then find the one with matching column ID
+        const colValue = valuesForThisSprint.find(
+          (item: any) => {
+            const itemColumnId = getColumnId(item);
+            console.log(itemColumnId, 'comparing with', columnId);
+            return itemColumnId == columnId;
+          }
+        );
+        
+        console.log(colValue, 'found column value from allColValues');
+        
+        if (colValue?.dynamicColumnValues) {
+          setSelectedDate(colValue.dynamicColumnValues);
+          return;
+        }
+      }
+      
+      // Try to find in rowData.colvalueList if it exists (for backward compatibility)
+      if ('colvalueList' in rowData && Array.isArray((rowData as any).colvalueList)) {
+        console.log((rowData as any).colvalueList, 'colvalueList from rowData');
+        
+        // Filter by sprint ID if the items have sprintID
+        const valuesFromRowData = (rowData as any).colvalueList.filter((item: any) => {
+          const itemSprintId = item?.sprintID || item?.SprintID;
+          // If the item has a sprintID, make sure it matches, otherwise include it
+          return !itemSprintId || itemSprintId == currentSprintId;
+        });
+        
+        const colValue = valuesFromRowData.find(
+          (item: any) => {
+            const itemColumnId = getColumnId(item);
+            console.log(itemColumnId, 'comparing with', columnData.additionalColumnID);
+            return itemColumnId == columnData.additionalColumnID;
+          }
+        );
+        
+        console.log(colValue, 'found column value from rowData.colvalueList');
+        
+        if (colValue?.dynamicColumnValues) {
+          setSelectedDate(colValue.dynamicColumnValues);
+          return;
+        }
+      }
+      
+      // Check dynamicValue prop as fallback
+      if (dynamicValue?.DynamicColumnValues) {
+        setSelectedDate(dynamicValue.DynamicColumnValues);
+      } else if (dynamicValue?.dynamicColumnValues) {
+        setSelectedDate(dynamicValue.dynamicColumnValues);
+      }
+    }
+  }, [rowData, columnData, dynamicValue, allColValues, currentSprintId, columnId]);
+
+  console.log(rowData, 'rowData')
+  console.log(selectedDate, 'current selected date for this picker')
+  console.log('Current sprint ID:', currentSprintId)
 
   const handleOpenDialog = () => {
     if (canEdit) {
-      setSelectedDate(dynamicValue?.DynamicColumnValues ?? null)
       setOpenDialog(true)
     }
   }
@@ -41,37 +165,33 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask, ca
     try {
       setIsSubmitting(true)
 
-      const body: any = {
-        DynamicID: dynamicValue?.DynamicID ?? null,
-        AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: moment(selectedDate).format('LLL'),
-        Title: `Column '${columnData?.ColumnName}' was updated`,
-        PreviousState: dynamicValue?.DynamicColumnValues,
-        NewState: moment(selectedDate).format('LLL')
-      }
+      const formattedDateValue = moment(selectedDate).format('LLL');
+      console.log(formattedDateValue)
+      
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL1}/InsertDynamicValues`;
+      console.log(process.env.NEXT_PUBLIC_API_URL1)
+      
+      const url = new URL(baseUrl);
+      url.searchParams.append('DynamicColumnID', columnData?.additionalColumnID);
+      url.searchParams.append('LoginuserID', user?.id);
+      url.searchParams.append('SprintID', rowData?.SprintID || rowData?.sprintID || '');
+      url.searchParams.append('SprintGroupID', rowData?.SprintGroupID || rowData?.sprintGroupID || '');
+      url.searchParams.append('DynamicValue', selectedDate || '');
 
-      if (isSubTask) {
-        //const subRowData = rowData as AdditionalSubTaskListItem
-
-        body.TaskID = subRowData?.TaskMasterID
-        const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          handleClose()
+      const response = await axios.post(url.toString(), null, {
+        headers: {
+          'Content-Type': 'application/json',
         }
-      } else {
-        const taskRowData = rowData as TaskListItemType
+      });
 
-        const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
-
-        if (response) {
-          refetch()
-          setOpenDialog(false)
-        }
+      if (response.data) {
+        refetch();
+        handleClose();
+        toast.success('Value updated successfully');
       }
     } catch (error) {
       console.error('error :', error)
+      toast.error('Failed to update value');
     } finally {
       setIsSubmitting(false)
     }

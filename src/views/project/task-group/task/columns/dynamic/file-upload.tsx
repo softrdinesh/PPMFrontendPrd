@@ -298,6 +298,7 @@ const { profile,user } = useAuth()
 //       }
 //     }
 //   }
+
 const onSubmit = async (data: FormValidateType) => {
     console.log(data,'dat')
     if (!data?.file) {

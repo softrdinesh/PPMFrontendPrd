@@ -74,7 +74,7 @@ const TaskPeople = ({
       
       // ** Map the API response to match your User type structure
       const mappedUsers = response.data.map((apiUser: any) => ({
-        UserProjectID: apiUser.userID, // Using userID as UserProjectID
+        UserProjectID: apiUser.userID,
         User: {
           UserID: apiUser.userID,
           Name: apiUser.name,
@@ -126,30 +126,35 @@ const TaskPeople = ({
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1
 
     try {
-      if (isSubTask) {
-        // For SubTask - use SubTaskID
-        const subRowData = rowData as AdditionalSubTaskListItem
-        const response = await axios.post(
-          `${BASE_URL}/RemoveSubTaskOwner?TaskID=${rowData?.TaskID?.toString()}&SubTaskID=${subRowData?.SubTaskID}`
+      if (columnData?.additionalColumnID) {
+        // Handle dynamic column clear
+        await axios.post(
+          `${BASE_URL}/AssignDyamicUserTask`,
+          null,
+          {
+            params: {
+              TaskID: rowData?.TaskID?.toString(),
+              LoginuserID: user?.id,
+              UserID: selectedOwner?.UserID,
+              IsRemove: true,
+              AdditionalColumnID: columnData?.additionalColumnID
+            }
+          }
         )
-        
-        if (response) {
-          toast.success('Owner removed successfully')
-          refetch()
-          handleClose()
-          setSelectedOwner(null)
-        }
+        toast.success('Owner removed successfully')
+        setSelectedOwner(null)
+        refetch()
       } else {
-        // For Task - use TaskID
-        const response = await axios.post(
-          `${BASE_URL}/RemoveTaskOwner?TaskID=${rowData?.TaskID?.toString()}`
-        )
-        
+        // Handle regular task clear
+        const payload = {
+          TaskID: rowData?.TaskID,
+          Owner: null
+        }
+        const response = await updateTasks(payload)
         if (response) {
           toast.success('Owner removed successfully')
-          refetch()
-          handleClose()
           setSelectedOwner(null)
+          refetch()
         }
       }
     } catch (error) {
@@ -162,7 +167,6 @@ const TaskPeople = ({
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1
       
-      // Check if this is a dynamic column selection
       if (columnData?.additionalColumnID) {
         // Handle dynamic column user assignment
         const response = await axios.post(
@@ -187,21 +191,16 @@ const TaskPeople = ({
         }
       } else {
         // Handle regular task owner assignment
-        const taskRowData = rowData as TaskListItemType
-        const body = {
-          Taskowner: selected?.UserID,
-          Title: taskRowData?.Owner ? 'Task Owner Updated' : 'Task Owner Added!',
-          PreviousState: taskRowData?.Owner?.Name || 'None',
-          NewState: selected?.Name
+        const payload = {
+          TaskID: rowData?.TaskID,
+          Owner: selected
         }
-
-        const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
-
+        const response = await updateTasks(payload)
         if (response) {
-          toast.success('Owner updated successfully')
+          setSelectedOwner(selected)
+          toast.success('Owner assigned successfully')
           refetch()
           handleClose()
-          setSelectedOwner(selected)
         }
       }
     } catch (error) {
@@ -217,75 +216,91 @@ const TaskPeople = ({
   }, [rowData])
 
   // people remove
-  const handleremove = async (item: any) => {
-    console.log(item?.User?.UserID)
+  const handleremove = async (item: any, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation()
+    }
+    
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1
 
     try {
-      const response = await axios
-        .post(
-          `${BASE_URL}/AssignDyamicUserTask?TaskID=${rowData?.TaskID?.toString()}&LoginuserID=${
-            user?.id
-          }&UserID=${item?.User?.UserID}&IsRemove=true&AdditionalColumnID=${columnData?.AdditionalColumnID}`
-        )
-        .then(res => {
-          console.log(res.data)
-          toast.success('User removed successfully')
-          refetch()
-          handleClose()
-        })
+      const response = await axios.post(
+        `${BASE_URL}/AssignDyamicUserTask`,
+        null,
+        {
+          params: {
+            TaskID: rowData?.TaskID?.toString(),
+            LoginuserID: user?.id,
+            UserID: item?.User?.UserID,
+            IsRemove: true,
+            AdditionalColumnID: columnData?.AdditionalColumnID
+          }
+        }
+      )
+      
+      if (response.data) {
+        console.log(response.data)
+        toast.success('User removed successfully')
+        refetch()
+        if (userListAnchor) {
+          handleUserListClose()
+        }
+      }
     } catch (error) {
       console.error('Error removing user:', error)
       toast.error('Failed to remove user')
     }
   }
 
-  // ** Combine context users with API users or use API users directly
+  // ** Combine context users with API users
   const users = apiUsers.length > 0 ? apiUsers : contextUsers || []
+
+  // Get the users to display - for dynamic columns use dynamicValue, for regular tasks use AssignedUsers
+  const displayUsers = columnData?.additionalColumnID ? dynamicValue : (rowData as any)?.AssignedUsers || []
 
   return (
     <Box display={'flex'} height={'100%'} width={'max-content'} alignItems={'center'}>
-      {!!columnData?.additionalColumnID ? (
+      {columnData?.additionalColumnID ? (
         <>
           <Box onClick={handleUserListOpen} sx={{ cursor: 'pointer' }}>
             <AvatarGroup max={2}>
-              {dynamicValue?.map((item: any) => (
-                <div key={item?.additionalColumnID} style={{ position: 'relative', display: 'inline-block' }}>
-                  <IconButton size='small' onClick={() => {}} sx={{ p: 0 }}>
-                    <Tooltip title={item?.User?.Email?.toLowerCase()}>
-                      <Avatar alt={item?.User?.Name} src={item?.User?.ProfilePicture} sx={{ width: 32, height: 32 }} />
-                    </Tooltip>
-                  </IconButton>
+              {displayUsers?.map((item: any) => (
+                <div key={item?.User?.UserID || item?.UserID} style={{ position: 'relative', display: 'inline-block' }}>
+                  <Tooltip title={item?.User?.Email?.toLowerCase() || item?.Email?.toLowerCase()}>
+                    <Avatar 
+                      alt={item?.User?.Name || item?.Name} 
+                      src={item?.User?.ProfilePicture || item?.ProfilePicture} 
+                      sx={{ width: 32, height: 32 }} 
+                    />
+                  </Tooltip>
 
                   {/* Small close button */}
-                  <button
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleremove(item)
-                      console.log('Remove item:', item)
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      backgroundColor: '#d32f2f',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '18px',
-                      height: '18px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                      padding: 0,
-                      zIndex: 1
-                    }}
-                  >
-                    ✕
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={(e) => handleremove(item, e)}
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -6,
+                        backgroundColor: '#d32f2f',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '18px',
+                        height: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        padding: 0,
+                        zIndex: 1
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               ))}
             </AvatarGroup>
@@ -317,16 +332,16 @@ const TaskPeople = ({
                   alignItems: 'center'
                 }}
               >
-                <Typography variant='white' fontWeight={500}>
-                  Assigned Users ({dynamicValue?.length})
+                <Typography variant='body1' fontWeight={500} color="white">
+                  Assigned Users ({displayUsers?.length || 0})
                 </Typography>
                 <IconButton size='small' onClick={handleUserListClose} sx={{ color: 'white' }}>
                   <Icon icon='mdi:close' />
                 </IconButton>
               </Box>
               <List sx={{ pt: 0 }}>
-                {dynamicValue?.map((item: any, index: number) => (
-                  <React.Fragment key={item?.additionalColumnID}>
+                {displayUsers?.map((item: any, index: number) => (
+                  <React.Fragment key={item?.User?.UserID || item?.UserID}>
                     <ListItem
                       sx={{
                         py: 2,
@@ -338,51 +353,54 @@ const TaskPeople = ({
                     >
                       <ListItemAvatar>
                         <Box sx={{ position: 'relative' }}>
-                          <Avatar alt={item?.User?.Name} src={item?.User?.ProfilePicture} sx={{ width: 40, height: 40 }} />
+                          <Avatar 
+                            alt={item?.User?.Name || item?.Name} 
+                            src={item?.User?.ProfilePicture || item?.ProfilePicture} 
+                            sx={{ width: 40, height: 40 }} 
+                          />
                           {/* Small close button on avatar */}
-                          <button
-                            onClick={e => {
-                              e.stopPropagation()
-                              handleremove(item)
-                            }}
-                            style={{
-                              position: 'absolute',
-                              top: -4,
-                              right: -4,
-                              backgroundColor: '#d32f2f',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '50%',
-                              width: '18px',
-                              height: '18px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                              fontSize: '10px',
-                              fontWeight: 'bold',
-                              padding: 0,
-                              zIndex: 1
-                            }}
-                          >
-                            ✕
-                          </button>
+                          {canEdit && (
+                            <button
+                              onClick={(e) => handleremove(item, e)}
+                              style={{
+                                position: 'absolute',
+                                top: -4,
+                                right: -4,
+                                backgroundColor: '#d32f2f',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '18px',
+                                height: '18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                padding: 0,
+                                zIndex: 1
+                              }}
+                            >
+                              ✕
+                            </button>
+                          )}
                         </Box>
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Typography variant='body1' fontWeight={500}>
-                            {item?.User?.Name}
+                            {item?.User?.Name || item?.Name}
                           </Typography>
                         }
                         secondary={
                           <Typography variant='body2' color='text.secondary' sx={{ fontSize: '0.875rem' }}>
-                            {item?.User?.Email?.toLowerCase()}
+                            {item?.User?.Email?.toLowerCase() || item?.Email?.toLowerCase()}
                           </Typography>
                         }
                       />
                     </ListItem>
-                    {index < dynamicValue.length - 1 && <Divider variant='inset' component='li' />}
+                    {index < displayUsers.length - 1 && <Divider variant='inset' component='li' />}
                   </React.Fragment>
                 ))}
               </List>
@@ -397,11 +415,9 @@ const TaskPeople = ({
         </>
       ) : selectedOwner ? (
         <Box position={'relative'}>
-          <AvatarGroup max={2}>
-            <Tooltip key={selectedOwner?.UserID} title={selectedOwner?.Email?.toLowerCase()}>
-              <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
-            </Tooltip>
-          </AvatarGroup>
+          <Tooltip key={selectedOwner?.UserID} title={selectedOwner?.Email?.toLowerCase()}>
+            <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
+          </Tooltip>
           {role?.RoleName === 'Admin' && (
             <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
               <Icon icon={'icon-park-twotone:close-one'} color='red' />
@@ -415,7 +431,13 @@ const TaskPeople = ({
       ) : (
         <Icon icon={'ph:question-duotone'} fontSize={24} />
       )}
-      <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleClose} TransitionComponent={Zoom}>
+      
+      <Menu 
+        open={!!anchorEl} 
+        anchorEl={anchorEl} 
+        onClose={handleClose} 
+        TransitionComponent={Zoom}
+      >
         <Box width={280}>
           <Grid container spacing={4}>
             <Grid size={12}>
@@ -442,8 +464,11 @@ const TaskPeople = ({
                   ?.filter(userFilter)
                   ?.filter(user => {
                     // For dynamic columns, filter out already assigned users
-                    if (columnData?.additionalColumnID && dynamicValue) {
-                      return !dynamicValue?.some((val: any) => val?.User?.UserID === user?.User?.UserID)
+                    if (columnData?.additionalColumnID && displayUsers) {
+                      return !displayUsers?.some((val: any) => 
+                        val?.User?.UserID === user?.User?.UserID || 
+                        val?.UserID === user?.User?.UserID
+                      )
                     }
                     return true
                   })

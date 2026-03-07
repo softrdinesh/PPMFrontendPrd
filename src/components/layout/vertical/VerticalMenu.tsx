@@ -113,7 +113,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
 
         <ListWorkspaces />
         <Box sx={{ px: 2.25, py: 2 }}>
+             {profile == 'projects' &&
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+                
             <Typography 
               variant='caption' 
               sx={{ 
@@ -129,9 +131,12 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               Boards
               
             </Typography>
+
           </Divider>
+          }
         </Box>
-        <ListBoards onBoardClick={handleBoardClick} />
+        {profile == 'projects' &&
+        <ListBoards onBoardClick={handleBoardClick} />}
         {profile === 'projects' ? <ListProjects /> : selected && <SprintNavItemsList />}
       </Menu>
     </ScrollWrapper>

@@ -8,6 +8,7 @@ import CustomButton from '@components/button'
 
 import { useProject } from 'src/context/project-context'
 import { useBugQueue } from 'src/context/bug-queue-context'
+
 const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
   // const { columnVisibility, setColumnVisibility } = useProject()
   const { columnVisibility, setColumnVisibility, toggleColumnVisibility } = useBugQueue()
@@ -43,16 +44,35 @@ const ProjectFilterButton = () => {
   const handleOpen = (e: any) => setAnchorEl(e?.currentTarget)
 
   const handleClose = () => setAnchorEl(null)
+  
   const seeAllColumns = () => {
     const allVisible: typeof columnVisibility = {
-      BugID:true,
-  Reporter: true,
-  BugDescription: true,
-  TimeResolution: true,
-  Priority: true
+      BugID: true,
+      Reporter: true,
+      BugDescription: true,
+      TimeResolution: true,
+      Priority: true
     }
-    setColumnVisibility(allVisible)
+    
+    // Check if all columns are already selected
+    const currentAllSelected = Object.keys(columnVisibility)?.every(key => columnVisibility[key])
+    
+    if (currentAllSelected) {
+      // If all are selected, unselect all
+      const allHidden: typeof columnVisibility = {
+        BugID: false,
+        Reporter: false,
+        BugDescription: false,
+        TimeResolution: false,
+        Priority: false
+      }
+      setColumnVisibility(allHidden)
+    } else {
+      // If not all are selected, select all
+      setColumnVisibility(allVisible)
+    }
   }
+  
   const allSelected = useMemo(() => {
     return Object.keys(columnVisibility)?.every(key => columnVisibility[key])
   }, [columnVisibility])
@@ -83,7 +103,7 @@ const ProjectFilterButton = () => {
         <Box px={4} py={2} sx={{ minWidth: 200 }}>
           <FormControlLabel
             label={`All - ${selectedCount} selected`}
-            control={<Checkbox checked={allSelected} onClick={seeAllColumns} />}
+            control={<Checkbox checked={allSelected} onChange={seeAllColumns} />}
           />
         </Box>
         <Divider />

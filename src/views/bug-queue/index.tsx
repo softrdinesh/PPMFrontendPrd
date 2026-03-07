@@ -55,7 +55,7 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
             {/* Buttons */}
             <div className='flex items-center gap-5 flex-wrap justify-center'>
               {true && <NewBugQueue />}
-              <ProjectInvitePeople IsOpen={false} users={[]} />
+              {/* <ProjectInvitePeople IsOpen={false} users={[]} /> */}
               <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
               {/* <div className='flex items-center gap-3'>
                 <CustomButton variant='contained' sx={{ px: 2, minWidth: 'auto' }}>

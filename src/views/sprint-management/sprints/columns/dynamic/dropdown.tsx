@@ -15,6 +15,8 @@ import {
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
+import axios from 'axios'
+import { toast } from 'react-hot-toast'
 
 import type { AdditionalColumn } from '@/services/modules/project/types'
 import { updateSubTask } from '@/services/modules/sub-task'
@@ -24,6 +26,7 @@ import { addDropdownItem, fetchDropDownList } from '@/services/modules/task-grou
 import type { DynamicDropdownList } from '@/services/modules/task-group/types'
 import type { AdditionalValue, SprintItem } from '@/services/modules/sprint-item/types'
 import CustomButton from '@components/button'
+import { useAuth } from '@/hooks/useAuth'
 
 interface DynamicDropdownProps {
   rowData: SprintItem 
@@ -36,23 +39,97 @@ interface DynamicDropdownProps {
 
 type FormValidateType = { dropdown: any }
 
-const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch,  canEdit }: DynamicDropdownProps) => {
+// Define interface for the sprint dropdown response
+interface SprintDropdownResponse {
+  dynamicDropdownID: number;
+  valuetxt: string;
+}
+
+const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }: DynamicDropdownProps) => {
   const [anchorEl, setAnchorEl] = useState(null)
-
   const [createMenu, setCreateMenu] = useState(false)
+  const { user } = useAuth();
+console.log(columnData,rowData,'columnData')
+  // API function for fetching sprint dropdown values - inside component
+  const fetchSprintDropdownValues = async (sprintGroupId: string, sprintId: string): Promise<SprintDropdownResponse[]> => {
+    const response = await axios.get(
+      `https://uat.ppmbackend.projectpulse360.com/SprintGetDynamicDropdownvaluelist?SprintGroupID=${sprintGroupId}&SprintID=${sprintId}`
+    );
+    return response.data;
+  };
 
+  // API function for creating new dynamic values
+  const callInsertDynamicValuesAPI = async (newValue: string) => {
+    const DynamicColumnID = columnData?.additionalColumnID;
+    const LoginuserID = user?.id;
+    const SprintID = rowData?.SprintID;
+    const SprintGroupID = rowData?.SprintGroupID;
+    const DynamicValue = newValue;
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+
+    const apiUrl = `${BASE_URL}/SprintCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
+
+    try {
+      const response = await axios.post(apiUrl);
+      toast.success('Value created successfully');
+      return response.data;
+    } catch (error) {
+      console.error('API call failed:', error);
+      toast.error('Failed to create value');
+      throw error;
+    }
+  };
+
+  // This query remains unchanged
   const { data: dropdownItems, refetch: refetchDDL } = useQuery({
     queryKey: ['dropdown-items', rowData?.TaskGroupID],
     queryFn: () => fetchDropDownList({ taskGroupID: rowData?.TaskGroupID?.toString() })
   })
 
+  // Query for fetching sprint dropdown values
+  const { data: sprintDropdownValues, refetch: refetchSprintValues } = useQuery({
+    queryKey: ['sprint-dropdown-values', rowData?.SprintGroupID, rowData?.SprintID],
+    queryFn: () => fetchSprintDropdownValues(
+      rowData?.SprintGroupID?.toString() || '',
+      rowData?.SprintID?.toString() || ''
+    ),
+    enabled: !!(rowData?.SprintGroupID && rowData?.SprintID)
+  });
+
+  // Transform sprint dropdown values to match the expected format
+  const transformedSprintValues = useMemo(() => {
+    if (!sprintDropdownValues) return [];
+    
+    return sprintDropdownValues.map(item => ({
+      Dynamic_ddl_ID: item.dynamicDropdownID,
+      Valuetxt: item.valuetxt
+    }));
+  }, [sprintDropdownValues]);
+
+  // Combine both sources or use whichever is appropriate
   const listItems = useMemo(() => {
+    // If we have sprint dropdown values, use them (filtering out already selected ones)
+    if (transformedSprintValues.length > 0) {
+      return transformedSprintValues.filter(i =>
+        dynamicValue?.every(val => {
+          // Check both possible structures for the selected value ID
+          const selectedId = val?.dynamicddlID || val?.Dropdown?.Dynamic_ddl_ID;
+          return selectedId !== i?.Dynamic_ddl_ID;
+        })
+      );
+    }
+    
+    // Otherwise fall back to the original dropdown items
     const finalArr = dropdownItems?.filter(i =>
-      dynamicValue?.every(val => val?.Dropdown?.Dynamic_ddl_ID !== i?.Dynamic_ddl_ID)
+      dynamicValue?.every(val => {
+        // Check both possible structures for the selected value ID
+        const selectedId = val?.dynamicddlID || val?.Dropdown?.Dynamic_ddl_ID;
+        return selectedId !== i?.Dynamic_ddl_ID;
+      })
     )
 
     return finalArr ?? []
-  }, [dynamicValue, dropdownItems])
+  }, [dynamicValue, dropdownItems, transformedSprintValues])
 
   const handleOpen = (e: any) => {
     canEdit && setAnchorEl(e.currentTarget)
@@ -60,66 +137,117 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch,  canEdit 
 
   const handleClose = () => {
     setAnchorEl(null)
+    setCreateMenu(false)
   }
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    formState: { isSubmitting }
-  } = useForm<FormValidateType>({ defaultValues: { dropdown: [] } })
+  // const handleDropdownSelect = async (item: DynamicDropdownList | null) => {
+  //   try {
+  //     if (!item) return;
+      
+  //     const body: any = {
+  //       DynamicID: null,
+  //       AdditionalColumnID: columnData?.additionalColumnID,
+  //       value: item?.Dynamic_ddl_ID,
+  //       Title: `Column '${columnData?.ColumnName}' was updated`,
+  //       PreviousState: `${dynamicValue?.length} items selected`,
+  //       NewState: `${dynamicValue?.length ? dynamicValue?.length + 1 : 1} items selected`
+  //     }
 
-  const onSubmit = async (data: FormValidateType) => {
-    try {
-      if (createMenu) {
-        const dropdownAddBody = {
-          Valuetxt: data?.dropdown,
-          WorkspaceID: columnData?.WorkspaceID,
-          ProjectID: columnData?.ProjectID,
-          TaskGroupID: rowData?.TaskGroupID,
-          TaskID: rowData?.TaskID
-        }
-
-        const responseData = await addDropdownItem(dropdownAddBody)
-
-        if (responseData?.status) {
-          refetchDDL()
-          reset()
-          setCreateMenu(false)
-        }
-      }
-    } catch (error) {
-      console.error('error :', error)
-    }
-  }
-
+  //     // Call the appropriate update API based on whether it's a subtask or main task
+  //     const response = await updateTasks({ id: rowData?.TaskID?.toString(), body });
+      
+  //     if (response) {
+  //       toast.success('Value selected successfully');
+  //       await refetch();
+  //       await refetchSprintValues();
+  //       handleClose();
+  //     }
+  //   } catch (error) {
+  //     console.error('error selecting dropdown value :', error)
+  //     toast.error('Failed to select value');
+  //   }
+  // }
   const handleDropdownSelect = async (item: DynamicDropdownList | null) => {
-    try {
-      const body: any = {
-        DynamicID: null,
-        AdditionalColumnID: columnData?.AdditionalColumnID,
-        value: item?.Dynamic_ddl_ID,
-        Title: `Column '${columnData?.ColumnName}' was updated`,
-        PreviousState: `${dynamicValue?.length} items selected`,
-        NewState: `${dynamicValue?.length ? dynamicValue?.length + 1 : 1} items selected`
-      }
-
-    } catch (error) {
-      console.error('error select ddl :', error)
+  try {
+    if (!item) return;
+    
+    // Construct the API URL with the required parameters
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+    const DynamicColumnID = columnData?.additionalColumnID;
+    const LoginuserID = user?.id;
+    const SprintID = rowData?.SprintID;
+    const SprintGroupID = rowData?.SprintGroupID;
+    const DynamicValue = item?.Dynamic_ddl_ID;
+    
+    const apiUrl = `${BASE_URL}/InsertDynamicValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&SprintID=${SprintID}&SprintGroupID=${SprintGroupID}&DynamicValue=${DynamicValue}`;
+    
+    // Make the API call using POST method (since GET returned 405)
+    const response = await axios.post(apiUrl);
+    
+    if (response) {
+      toast.success('Value selected successfully');
+      await refetch();
+      await refetchSprintValues();
+      handleClose();
     }
+  } catch (error) {
+    console.error('error selecting dropdown value :', error)
+    toast.error('Failed to select value');
   }
+}
 
   const handleDeleteLabel = async (id: string) => {
-    await deleteDynamicValue(id)
-    refetch()
+    try {
+      await deleteDynamicValue(id);
+      toast.success('Value deleted successfully');
+      refetch();
+      refetchSprintValues();
+    } catch (error) {
+      console.error('error deleting value :', error);
+      toast.error('Failed to delete value');
+    }
   }
+
+  // React Hook Form setup
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset
+  } = useForm<FormValidateType>({
+    defaultValues: {
+      dropdown: ''
+    }
+  });
+
+  // Submit handler for creating new dropdown value
+  const onSubmit = async (data: FormValidateType) => {
+    try {
+      if (!data.dropdown) return;
+      
+      // Call the create API
+      const response = await callInsertDynamicValuesAPI(data.dropdown);
+      
+      if (response) {
+        // Refetch the sprint dropdown values to include the newly created one
+        await refetchSprintValues();
+        
+        // Reset form and close create menu (go back to selection view)
+        reset();
+        setCreateMenu(false);
+        // Don't close the main menu - this allows manual selection
+      }
+    } catch (error) {
+      console.error('error creating dropdown value :', error);
+    }
+  };
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
         {dynamicValue?.length ? (
           <Box display={'flex'} alignItems={'center'} gap={2}>
-            <Chip variant='tonal' size='small' label={dynamicValue?.[0]?.Dropdown?.Valuetxt} />
+            <Chip variant='tonal' size='small' label={dynamicValue?.[0]?.dynamicDropdownValueList?.[0]?.valueText || dynamicValue?.[0]?.Dropdown?.Valuetxt} />
             {dynamicValue?.length >= 2 && `+${dynamicValue?.length - 1}`}
           </Box>
         ) : canEdit ? (
@@ -154,6 +282,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch,  canEdit 
                           value={value}
                           onChange={onChange}
                           error={!!errors?.dropdown}
+                          helperText={errors?.dropdown ? 'This field is required' : ''}
                           size='small'
                           placeholder='Dropdown name'
                         />
@@ -189,7 +318,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch,  canEdit 
                       options={listItems ?? []}
                       id='autocomplete-free-solo-with-text'
                       renderOption={(props, option) => (
-                        <li {...props} key={option.Valuetxt}>
+                        <li {...props} key={option.Dynamic_ddl_ID}>
                           {option.Valuetxt}
                         </li>
                       )}
@@ -198,6 +327,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch,  canEdit 
                       getOptionLabel={option => {
                         return option.Valuetxt || ''
                       }}
+                      isOptionEqualToValue={(option, value) => option.Dynamic_ddl_ID === value?.Dynamic_ddl_ID}
                       onChange={(event, newValue) => {
                         handleDropdownSelect(newValue)
                       }}
@@ -209,31 +339,38 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch,  canEdit 
                 <Box minHeight={'50px'}>
                   {dynamicValue?.length ? (
                     <Box display={'flex'} alignItems={'center'} flexWrap={'wrap'} rowGap={3} columnGap={3}>
-                      {dynamicValue?.map(i => (
-                        <Box
-                          key={i?.Dropdown?.Dynamic_ddl_ID}
-                          borderRadius={10}
-                          py={1}
-                          px={3}
-                          bgcolor={'#DCE3F6'}
-                          border={1.2}
-                          borderColor={'#004AAA'}
-                          display={'flex'}
-                          alignItems={'center'}
-                          gap={2.5}
-                        >
-                          <Typography lineHeight={1} fontSize={14}>
-                            {i?.Dropdown?.Valuetxt}
-                          </Typography>
-                          <IconButton
-                            size='small'
-                            sx={{ p: 0 }}
-                            onClick={() => handleDeleteLabel(i?.DynamicID?.toString())}
+                      {dynamicValue?.map((item, index) => {
+                        // Get the value text from either structure
+                        const valueText = item?.dynamicDropdownValueList?.[0]?.valueText || item?.Dropdown?.Valuetxt;
+                        const itemId = item?.dynamicddlID || item?.Dropdown?.Dynamic_ddl_ID;
+                        
+                        return (
+                          <Box
+                            key={itemId || index}
+                            borderRadius={10}
+                            py={1}
+                            px={3}
+                            bgcolor={'#DCE3F6'}
+                            border={1.2}
+                            borderColor={'#004AAA'}
+                            display={'flex'}
+                            alignItems={'center'}
+                            gap={2.5}
                           >
-                            <Icon icon={'ep:close-bold'} color='red' />
-                          </IconButton>
-                        </Box>
-                      ))}
+                            <Typography lineHeight={1} fontSize={14}>
+                              {valueText}
+                            </Typography>
+                            
+                            <IconButton
+                              size='small'
+                              sx={{ p: 0 }}
+                              onClick={() => handleDeleteLabel(itemId?.toString() || index.toString())}
+                            >
+                              <Icon icon={'ep:close-bold'} color='red' />
+                            </IconButton>
+                          </Box>
+                        );
+                      })}
                     </Box>
                   ) : (
                     <Box

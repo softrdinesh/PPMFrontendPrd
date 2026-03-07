@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth'
 interface CreateColumnMenuProps {
   anchorEl: any
   spintid: number
+  groupid:number
   setAnchorEl: (v: any) => void
   onSubmit?: (data: { columnName: string; columnTypeID: number }) => void
 }
@@ -26,22 +27,16 @@ const getIcon = (key: TColumnType['Key']) => {
       return 'tdesign:user'
     case 'TXT':
       return 'streamline:pencil'
-
     case 'DDL':
       return 'hugeicons:book-02'
-
     case 'DPK':
       return 'solar:calendar-date-linear'
-
     case 'LBL':
       return 'material-symbols:table-chart-view-outline'
-
     case 'NUM':
       return 'mingcute:dots-fill'
-
     case 'FLE':
       return 'lucide:files'
-
     default:
       return 'mingcute:dots-fill'
   }
@@ -54,6 +49,7 @@ type FormValidateType = {
 const CreateColumnMenu = ({
   anchorEl,
   spintid,
+  groupid,
   setAnchorEl,
   onSubmit: onSubmitCallback
 }: CreateColumnMenuProps) => {
@@ -61,10 +57,11 @@ const CreateColumnMenu = ({
     queryKey: ['column-type'],
     queryFn: () => fetchColumnType()
   })
-  
+
   // ** States
   const [selectedColumnType, setSelectedColumnType] = useState<TColumnType | null>(null)
-const{user}= useAuth()
+  const { user } = useAuth()
+
   const {
     handleSubmit,
     control,
@@ -100,7 +97,8 @@ const{user}= useAuth()
         Columnname: data.columnName,
         ColumntypeID: selectedColumnType.ColumnTypeID,
         SprintWorkspaceID: spintid,
-        LoginuserID: user?.id // Replace with actual user ID from your auth context
+        LoginuserID: user?.id,
+        sprintGroupID: Number(groupid)
       }
 
       // Call the API to create dynamic column
@@ -194,7 +192,7 @@ const{user}= useAuth()
                     circular
                     variant='outlined'
                     color='secondary'
-                    startIcon={<i className={'ri-arrow-left-s-line'} />}
+                    startIcon={<i className='ri-arrow-left-s-line' />}
                     size='small'
                     onClick={handleTypeClose}
                     type="button"

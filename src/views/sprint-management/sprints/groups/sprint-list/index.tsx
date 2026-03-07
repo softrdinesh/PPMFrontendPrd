@@ -1,4 +1,4 @@
-import { useMemo, useState,useCallback, useContext, useEffect } from 'react'
+import { useMemo, useState, useCallback, useContext, useEffect } from 'react'
 
 import {
   Box,
@@ -24,13 +24,14 @@ import {
   getPaginationRowModel,
   useReactTable
 } from '@tanstack/react-table'
+import TaskPeople from '../../../sprints/groups/sprint-list/owner'
 
 import { debounce } from 'lodash'
 import { useAuth } from '@/hooks/useAuth'
 
 import CustomButton from '@/components/button'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
-import { createSprint, fetchSprintList, updateSprint,createSprintItems,UpdateSrpintItem } from '@/services/modules/sprint-item'
+import { createSprint, fetchSprintList, updateSprint, createSprintItems, UpdateSrpintItem } from '@/services/modules/sprint-item'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
 import SprintTimelineManagement from './timeline'
 import { ColumnTextField } from '@/views/project/task-group/task/columns/default-column'
@@ -40,6 +41,10 @@ import DeleteTasksComponent from '../../components/Delete-sprint'
 import CreateColumnMenu from '@/views/sprint-management/tasks/create-column'
 import { useProject } from '@/context/project-context'
 import DynamicTableHeader from '../../columns/dynamic/header'
+// Import the dynamic cell component - you'll need to create this file
+import SprintDynamicCell from '../../columns/dynamic/cell'
+
+// Create a new function to fetch sprint info list
 
 
 const SprintList = ({ 
@@ -51,7 +56,7 @@ const SprintList = ({
   selectedSprint?: any;
   sprintSearchTerm?: string;
 }) => {
-// ** States
+  // ** States
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [adding, setAdding] = useState(false)
   const [showCard, setShowCard] = useState(false)
@@ -59,25 +64,83 @@ const SprintList = ({
   const [addColumnAnchor, setAddColumnAnchor] = useState<any>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [sprintDynamicColumns, setSprintDynamicColumns] = useState<any[]>([])
+  const [sprintInfoData, setSprintInfoData] = useState<any>(null)
   
   const { role, users } = useProject()
 
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-  const { profile,user } = useAuth()
+  const { profile, user } = useAuth()
   const canEdit = useMemo(() => role?.RoleName === 'Admin' || role?.RoleName === 'Member', [role?.RoleName])
 
   // Get column visibility from sprint context
   const { columnVisibility: sprintColumnVisibility } = useContext(SprintManagement)
+const fetchSprintInfoList = async (sprintGroupId: number) => {
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+  
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/GetSprintInfoList`,
+      {
+        params: {
+          SprintGroupID: sprintGroupId
+        }
+      }
+    );
+    
+    // The API returns data in the format: [{ colList: [...], detailList: [...], colvalueList: [...] }]
+    return response.data || [];
+  } catch (error) {
+    console.error('Error fetching sprint info list:', error);
+    throw error;
+  }
+};
 
+// Helper function to filter dynamic values
+const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: number) => {
+  if (!colvalueList || !Array.isArray(colvalueList)) return null;
+  
+  return colvalueList.find(
+    (item: any) => 
+      item?.sprintID?.toString() === sprintId?.toString() && 
+      item?.additionalColumnID?.toString() === columnId?.toString()
+  ) || null;
+};
+  // Fetch sprint info list - this now provides both data and dynamic columns
   const sprintListApi = useQuery({
-    queryKey: ['sprint-list', sg?.SprintGroupID],
-    queryFn: () => fetchSprintList({ SprintGroupID: sg?.SprintGroupID })
+    queryKey: ['sprint-info-list', sg?.SprintGroupID],
+    queryFn: async () => {
+      const response = await fetchSprintInfoList(sg?.SprintGroupID);
+      // Store the full response which contains colList and detailList
+      if (response && response.length > 0) {
+        setSprintInfoData(response[0]);
+        // Set dynamic columns from colList from the API response
+        if (response[0]?.colList && response[0].colList.length > 0) {
+          setSprintDynamicColumns(response[0].colList);
+        } else {
+          setSprintDynamicColumns([]);
+        }
+      }
+      return response;
+    },
+    enabled: !!sg?.SprintGroupID
   })
 
   const { data: sprintListData = [], refetch: refetchSprints } = useQuery({
-    queryKey: ['sprint-list',  sg?.SprintGroupID],
-    queryFn: () => fetchSprintList({SprintGroupID:  sg?.SprintGroupID}),
-    enabled: !! sg?.SprintGroupID
+    queryKey: ['sprint-info-list', sg?.SprintGroupID],
+    queryFn: async () => {
+      const response = await fetchSprintInfoList(sg?.SprintGroupID);
+      if (response && response.length > 0) {
+        setSprintInfoData(response[0]);
+        // Set dynamic columns from colList from the API response
+        if (response[0]?.colList && response[0].colList.length > 0) {
+          setSprintDynamicColumns(response[0].colList);
+        } else {
+          setSprintDynamicColumns([]);
+        }
+      }
+      return response;
+    },
+    enabled: !!sg?.SprintGroupID
   })
 
   useEffect(() => {
@@ -88,75 +151,66 @@ const SprintList = ({
       return () => clearTimeout(timeout)
     }
   }, [showSelected])
- 
-  useEffect(() => {
-    if (sg?.WorkspaceID && user?.id) {
-      getSprintDynamicColumns()
+
+  // Remove the separate getSprintDynamicColumns useEffect and function
+  // We're now getting dynamic columns from the GetSprintInfoList response
+
+  // Helper function to get dynamic values from colvalueList
+  const getDynamicValueForSprint = (sprintId: number, columnId: string) => {
+    if (!sprintInfoData?.colvalueList || !Array.isArray(sprintInfoData.colvalueList)) {
+      return null;
     }
-  }, [sg?.WorkspaceID, user?.id])
-
-  const getSprintDynamicColumns = async () => {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
-
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/GetSprintDynamiccolumnLlist`,
-        {
-          params: {
-            WorkspaceID: sg?.WorkspaceID,
-            LoginuserID: user?.id
-          }
-        }
-      );
-      
-      setSprintDynamicColumns(response.data?.data || response.data || []);
-      return response.data;
-
-    } catch (error) {
-      console.error('Error fetching sprint dynamic columns:', error);
-      setSprintDynamicColumns([]);
-      throw error;
-    }
+    
+    // Find the dynamic value for this sprint and column
+    const dynamicValue = sprintInfoData.colvalueList.find(
+      (item: any) => 
+        item?.sprintID?.toString() === sprintId?.toString() && 
+        item?.additionalColumnID?.toString() === columnId?.toString()
+    );
+    
+    return dynamicValue || null;
   };
 
-  // Helper function to filter dynamic values
-  const filterDynamicValue = (columnId: string, additionalValues: any[]) => {
-    return additionalValues?.find(val => val?.AdditionalColumnID?.toString() === columnId?.toString())
-  }
+  // Get the detailList from the response
+  const getSprintDetailList = useMemo(() => {
+    if (sprintInfoData?.detailList && Array.isArray(sprintInfoData.detailList)) {
+      return sprintInfoData.detailList;
+    }
+    return [];
+  }, [sprintInfoData]);
 
-  // Dynamic columns with custom headers only
-  const dynamicColumns = useMemo((): ColumnDef<SprintItem>[] => {
-    if (!sprintDynamicColumns || sprintDynamicColumns.length === 0) return []
-
-    return sprintDynamicColumns.map((column, index) => {
-      const columnId = column?.AdditionalColumnID || column?.ColumnID || `dynamic-${index}`
-      return {
-        id: columnId?.toString(),
-        accessorFn: row =>
-          filterDynamicValue(columnId, row?.additionalValues ?? [])?.DynamicColumnValues,
-        minSize: 250,
-        size: 250,
-        sortable: false,
-        header: () => {
-          return <DynamicTableHeader column={column} refetch={getSprintDynamicColumns} />
-        },
-        cell: ({ getValue }) => {
-          const value = getValue()
-          return <Typography variant='body2'>{value || '-'}</Typography>
-        }
-      }
-    })
-  }, [sprintDynamicColumns])
+  // Transform detailList items to match SprintItem interface
+  const transformedSprintData = useMemo(() => {
+    const detailList = getSprintDetailList;
+    
+    return detailList.map((item: any) => ({
+      SprintID: item.sprintID,
+      Name: item.name,
+      Goals: item.goals,
+      SprintTimelineStart: item.sprinttimelinestart,
+      SprintTimelineEnd: item.sprinttimelineend,
+      SprintStatus: item.sprintstatus,
+      SprintTimeElapsedinSeconds: item.sprintTimeElapsedinSeconds,
+      CompleteDate: item.completedate,
+      IsSprintComplete: item.isSprintComplete,
+      IsSprintActive: item.isSprintActive,
+      WorkSpaceID: sg?.WorkspaceID,
+      SprintGroupID: sg?.SprintGroupID,
+      // Keep the original data for reference
+      originalItem: item,
+      colvalueList: sprintInfoData?.colvalueList || [] // Add colvalueList to each sprint item
+    }));
+  }, [getSprintDetailList, sg, sprintInfoData]);
 
   // Filter sprint data based on selected sprint and search term
   const filteredSprintData = useMemo(() => {
-    const originalData = sprintListApi?.data?.data ?? []
+    const originalData = transformedSprintData ?? []
     
     if (!selectedSprint && !sprintSearchTerm?.trim()) {
       return originalData
     }
     
-    return originalData.filter((sprint: SprintItem) => {
+    return originalData.filter((sprint: any) => {
       if (selectedSprint) {
         return sprint.SprintID === selectedSprint.SprintID
       }
@@ -172,10 +226,10 @@ const SprintList = ({
       
       return true
     })
-  }, [sprintListApi?.data?.data, selectedSprint, sprintSearchTerm])
+  }, [transformedSprintData, selectedSprint, sprintSearchTerm])
 
   // Define static columns
-  const staticColumns: ColumnDef<SprintItem>[] = useMemo(
+  const staticColumns: ColumnDef<any>[] = useMemo(
     () => [
       {
         id: 'select',
@@ -219,6 +273,29 @@ const SprintList = ({
           return <ColumnTextField canEdit={true} getValue={getValue} index={index} id={id} table={table} />
         }
       },
+      {
+  accessorKey: 'Owner',
+  header: () => (
+    <Typography variant='body2' fontWeight={800}>
+      Owner
+    </Typography>
+  ),
+  cell: ({ row }) => {
+    // Debug: log the row structure
+  
+    
+    const original = row?.original || {};
+    const sprintId = original?.SprintID || original?.sprintID; // Try both cases
+    
+    return (
+      <TaskPeople
+        refetch={sprintListApi?.refetch}
+        rowData={original}
+        isSubTask={false}
+      />
+    );
+  }
+},
       {
         accessorKey: 'Goals',
         header: () => (
@@ -268,9 +345,53 @@ const SprintList = ({
     ],
     [sprintListApi?.refetch]
   )
+  
+
+  // Dynamic columns from colList with custom headers and dynamic cells
+  const dynamicColumns = useMemo((): ColumnDef<any>[] => {
+    if (!sprintDynamicColumns || sprintDynamicColumns.length === 0) return []
+
+    return sprintDynamicColumns.map((column, index) => {
+      const columnId = column?.additionalColumnID || column?.AdditionalColumnID || column?.ColumnID || `dynamic-${index}`
+      const columnName = column?.colname || column?.ColumnName || `Column ${index + 1}`;
+      
+      return {
+        id: columnId?.toString(),
+        accessorFn: (row) => {
+          // Get the dynamic value for this sprint from colvalueList
+          return getDynamicValueForSprint(row?.SprintID || row?.sprintID, columnId);
+        },
+        minSize: 250,
+        size: 250,
+        sortable: false,
+        header: () => {
+          // Use DynamicTableHeader but pass the column data from colList
+          return <DynamicTableHeader column={column} refetch={() => sprintListApi.refetch()} />
+        },
+        cell: ({ getValue, row: { original, index }, column: { id }, table }) => {
+          // Get the full dynamic value object
+          const dynamicValue = getDynamicValueForSprint(original?.SprintID, columnId);
+          
+
+          return (
+            <SprintDynamicCell
+              getValue={getValue}
+              columnItem={column}
+              index={index}
+              row={original}
+              id={id}
+              table={table}
+              value={dynamicValue} // Pass the full dynamic value object
+              refetch={sprintListApi.refetch}
+            />
+          );
+        }
+      }
+    })
+  }, [sprintDynamicColumns, sprintInfoData, sprintListApi.refetch])
 
   // Combine static and dynamic columns
-  const allColumns: ColumnDef<SprintItem>[] = useMemo(() => {
+  const allColumns: ColumnDef<any>[] = useMemo(() => {
     return [...staticColumns, ...dynamicColumns]
   }, [staticColumns, dynamicColumns])
 
@@ -279,6 +400,7 @@ const SprintList = ({
     const columnVisibilityMap: Record<string, string> = {
       'Name': 'Name',
       'Goals': 'Goals',
+      "Owner":"Owner",
       'SprintTimeline': 'SprintTimeline',
       'ActiveSprint': 'ActiveSprint',
       'Completed': 'SprintStatus'
@@ -298,7 +420,7 @@ const SprintList = ({
   }, [allColumns, sprintColumnVisibility])
 
   const table = useReactTable({
-    data: filteredSprintData as SprintItem[],
+    data: filteredSprintData as any[],
     columns: visibleColumns,
     initialState: { columnPinning: { left: ['select', 'Taskname'], right: ['add-column'] } },
     state: {
@@ -326,12 +448,12 @@ const SprintList = ({
             const userId = data1.userData.UserID;
 
             const bodyvalue = {
-              Sprintname:value,
-              Goals:formattedData[0].Goals ?? "-",
-              LoginuserID:userId,
-              SprintgroupID:formattedData[0].SprintGroupID,
-              WorkspaceID:formattedData[0].WorkSpaceID,
-              sprintID:filteredSprintData?.[rowIndex]?.SprintID?.toString()
+              Sprintname: value,
+              Goals: formattedData[0]?.Goals ?? "-",
+              LoginuserID: userId,
+              SprintgroupID: formattedData[0]?.SprintGroupID,
+              WorkspaceID: formattedData[0]?.WorkSpaceID,
+              sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
             }
 
             const response = await UpdateSrpintItem(bodyvalue)
@@ -372,6 +494,30 @@ const SprintList = ({
             console.error('error :', error)
           }
         }
+
+        // Handle dynamic column updates
+        if (value?.AdditionalColumnID && filteredSprintData?.[rowIndex]?.SprintID) {
+          try {
+            const value1 = localStorage.getItem('userData')
+            const data = JSON.parse(value1);
+            const userId = data.userData.UserID;
+
+            const bodyvalue = {
+              ...value,
+              LoginuserID: userId,
+              SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
+              WorkspaceID: filteredSprintData?.[rowIndex]?.WorkSpaceID,
+              sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
+            }
+
+            const response = await UpdateSrpintItem(bodyvalue)
+            if (response) {
+              sprintListApi?.refetch()
+            }
+          } catch (error) {
+            console.error('error :', error)
+          }
+        }
       }
     }
   })
@@ -379,11 +525,11 @@ const SprintList = ({
   const handleAddSprint = async () => {
     setAdding(true)
 
-    const body={
+    const body = {
       Sprintname: "New Sprint",
       LoginuserID: user?.id,
-      SprintgroupID:sg?.SprintGroupID,
-      WorkspaceID:sg?.WorkspaceID
+      SprintgroupID: sg?.SprintGroupID,
+      WorkspaceID: sg?.WorkspaceID
     }
     await createSprintItems(body)
     sprintListApi.refetch()
@@ -404,6 +550,7 @@ const SprintList = ({
 
   return (
     <div className='px-3'>
+      <div style={{ overflowX: 'auto', width: '100%' }}>
       <Table
         sx={{
           minWidth: 'max-content'
@@ -458,6 +605,7 @@ const SprintList = ({
           )}
         </TableBody>
       </Table>
+      </div>
       <div className='flex justify-between items-center gap-2 m-2'>
         <CustomButton
           variant='text'
@@ -485,7 +633,7 @@ const SprintList = ({
         <DeleteTasksComponent
           showCard={showCard}
           selectedRows={selectedRows}
-          sprintlist={sprintListApi.data?.data}
+          sprintlist={transformedSprintData}
           refetch={refetchSprints}
           setSelectedRows={setSelectedRows}
         />}
@@ -494,9 +642,11 @@ const SprintList = ({
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
         onSubmit={(data) => {
-          getSprintDynamicColumns()
+          // After adding a new column, refetch to get updated colList
+          sprintListApi.refetch();
         }}
         spintid={sg.WorkspaceID}
+        groupid={sg.SprintGroupID}
       />
 
     </div>

@@ -29,7 +29,7 @@ export const addSprintGroups = async (body: any) => {
 export const updateSprintGroups = async ({ id, body }: { id: string; body: any }) => {
   return callApi({ uriEndPoint: sprintGroup.update, pathParams: { id }, body })
     .then(res => {
-      toast.success(res?.message ?? 'Workspace updated Successfully')
+      toast.success('Sprint Group updated Successfully')
 
       return res
     })

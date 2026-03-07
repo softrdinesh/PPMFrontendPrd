@@ -17,7 +17,29 @@ export interface SprintItem {
   SprintTimeElapsedInSeconds: number,
    additionalValues: AdditionalValue[]
 }
+export interface AdditionalValue {
+  DynamicID: number
+  DynamicColumnValues?: string
+  Columntype: number
+  CreateDate: string
+  CreateBy: number
+  DeletedDate: any
+  DeletedBy: any
+  IsDelete: number
+  SprintGroupID: number
+  SprintID: number
+  WorkSpaceID: number
 
+  AdditionalColumnID: number
+  DynamicUserID?: number
+  DynamicDropdownID?: number
+  StatusID?: number
+  DisplayText?: string
+  columnType: ColumnType
+  User?: User
+  Dropdown?: Dropdown
+  Status?: Status2
+}
 export interface TColumnType {
   ColumnTypeID: number
   Key: 'USR' | 'TXT' | 'DDL' | 'DPK' | 'LBL' | 'NUM' | 'FLE'

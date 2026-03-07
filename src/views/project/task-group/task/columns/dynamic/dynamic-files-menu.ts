@@ -22,6 +22,7 @@ export const menuItems: TFileUploadMenuItems[] = [
     type: 'link',
     inputTitle: 'form',
     inputPlaceholder: 'eg. forms.google.com/....',
+    
     icon: 'mdi:link-edit',
     prefix: '',
     hasBottomBorder: true

@@ -33,7 +33,9 @@ interface SprintManagementType {
 
 const defaultColumnVisibility: ColumnVisibility = {
   Name:true,
+  Owner:true,
   Goals: true,
+
   SprintTimeline: true,
   SprintStatus: true,
   ActiveSprint:true

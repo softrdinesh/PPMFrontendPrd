@@ -103,7 +103,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
         }
       },
       {
-        id: 'BugName',
+        id: 'BugDescription',
         accessorKey: 'BugName',
         header: 'Bug Details',
         cell: ({ row }) => {
@@ -111,7 +111,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID }: BugListProps) =
         }
       },
       {
-        id: 'time',
+        id: 'TimeResolution',
         accessorKey: 'time',
         header: 'Time until resolution',
         cell: ({ row: { original } }) => {
