@@ -40,7 +40,7 @@ export const ColumnTextField = ({ table, getValue, index, id, canEdit = true }: 
       fullWidth
       className='min-w-44'
       value={value  ?? "-"}
-      slotProps={{ htmlInput: { maxLength: 50 } }}
+      slotProps={{ htmlInput: { maxLength: 254 } }}
       onChange={e => setValue(e.target.value)}
       onBlur={onBlur}
     />

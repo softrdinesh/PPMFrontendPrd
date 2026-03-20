@@ -14,7 +14,8 @@ import axios from 'axios'
 interface CreateColumnMenuProps {
   anchorEl: any
   spintid: number
-  groupid:number
+  groupid: number, // This should be the dynamic group ID
+  taskGroupData?: any[]; // Add this prop
   setAnchorEl: (v: any) => void
   onSubmit?: (data: { columnName: string; columnTypeID: number }) => void
 }
@@ -48,14 +49,16 @@ const CreateColumnMenu = ({
   anchorEl,
   spintid,
   groupid,
+  taskGroupData,
   setAnchorEl,
   onSubmit: onSubmitCallback
 }: CreateColumnMenuProps) => {
+  // Now this will show the dynamic group ID
+
   const { data: additionalColumnsType } = useQuery({
     queryKey: ['column-type'],
     queryFn: () => fetchColumnType()
   })
-  console.log(groupid,'dd')
 
   // ** States
   const [selectedColumnType, setSelectedColumnType] = useState<TColumnType | null>(null)
@@ -90,17 +93,20 @@ const CreateColumnMenu = ({
     if (!selectedColumnType) return
     
     try {
-      // Prepare the data for API call
-      const columnData = {
-        Columnname: data.columnName,
-        ColumntypeID: selectedColumnType.ColumnTypeID,
-        SprintWorkspaceID: spintid,
-        LoginuserID: user?.id,
-        sprintGroupID: Number(groupid)
-      }
-
-      // Call the API to create dynamic column
-      const response = await CreateDynamicColumn(columnData)
+      // Make the API call using axios with query parameters
+      // Using the dynamic groupid from props instead of hardcoded 10
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskCreateDynamicColumn`,
+        null, // No body data, using params instead
+        {
+          params: {
+            Columnname: data.columnName,
+            ColumntypeID: selectedColumnType.ColumnTypeID,
+            groupID: groupid, // Use the dynamic group ID from props
+            LoginuserID: user?.id
+          }
+        }
+      );
       
       // If API call is successful, call the callback
       if (onSubmitCallback) {

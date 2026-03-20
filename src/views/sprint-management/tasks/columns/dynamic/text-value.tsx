@@ -23,7 +23,7 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
   const [value, setValue] = useState<string>(initialValue ?? '-')
   const { profile, user } = useAuth()
 
-  
+  console.log(rowData,'rowdata')
   const isNumber = useMemo(() => {
     return columnData?.ColumnType?.Keyname === 'NUM'
   }, [columnData?.ColumnType?.Keyname])
@@ -32,12 +32,12 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
   const callInsertDynamicValuesAPI = async (newValue: string) => {
     const DynamicColumnID = columnData?.additionalColumnID;
     const LoginuserID = user?.id;
-    const SprintID = rowData?.SprintID;
-    const SprintGroupID = rowData?.SprintGroupID;
+    const Taskid = rowData?.taskID;
+   
     const DynamicValue = newValue;
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
-    const apiUrl = `${BASE_URL}/InsertDynamicValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&SprintID=${SprintID}&SprintGroupID=${SprintGroupID}&DynamicValue=${encodeURIComponent(DynamicValue)}`;
+    const apiUrl = `${BASE_URL}/InsertDynamicSprintTaskValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&TaskID=${Taskid}&DynamicValue=${encodeURIComponent(DynamicValue)}`;
 
     try {
       const response = await axios.post(apiUrl);

@@ -13,7 +13,7 @@ const FilterMenuItem = ({ menuID, name }: { menuID: string; name: string }) => {
 
   const handleChange = () => {
     setColumnVisibility({ ...columnVisibility, [menuID]: !columnVisibility[menuID] })
- console.log(columnVisibility,)
+ console.log(columnVisibility,'columnName')
  
   }
 

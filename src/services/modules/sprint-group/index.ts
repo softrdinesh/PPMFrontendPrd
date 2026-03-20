@@ -71,7 +71,7 @@ export const CreateSprintGroup = async (body: any) => {
    
      })
     .then(res => {
-      toast.success(res?.message ?? 'Workspace Added Successfully')
+      toast.success(res?.message ?? 'Sprint Group Added Successfully')
 
       return res?.data
     })

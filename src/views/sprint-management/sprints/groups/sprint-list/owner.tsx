@@ -72,13 +72,14 @@ const TaskPeople = ({
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1
       const response = await axios.get(`${BASE_URL}/GetUserList?LoginuserID=${user.id}`)
       
-      // ** Map the API response to match your User type structure
-      const mappedUsers = response.data.map((apiUser: any) => ({
-        UserProjectID: apiUser.userID,
+      // ** Map the API response to match your User type structure with unique keys
+      const mappedUsers = response.data.map((apiUser: any, index: number) => ({
+        UserProjectID: apiUser.userID || `temp-${index}-${Date.now()}`,
+        uniqueKey: `api-user-${apiUser.userID || `temp-${index}`}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         User: {
           UserID: apiUser.userID,
           Name: apiUser.name,
-          Email: apiUser.email.toLowerCase(),
+          Email: apiUser.email?.toLowerCase() || '',
           ProfilePicture: apiUser.profilepicture || ''
         }
       }))
@@ -231,7 +232,7 @@ const TaskPeople = ({
           params: {
             TaskID: rowData?.TaskID?.toString(),
             LoginuserID: user?.id,
-            UserID: item?.User?.UserID,
+            UserID: item?.User?.UserID || item?.UserID,
             IsRemove: true,
             AdditionalColumnID: columnData?.AdditionalColumnID
           }
@@ -252,33 +253,50 @@ const TaskPeople = ({
     }
   }
 
-  // ** Combine context users with API users
-  const users = apiUsers.length > 0 ? apiUsers : contextUsers || []
-
   // Get the users to display - for dynamic columns use dynamicValue, for regular tasks use AssignedUsers
   const displayUsers = columnData?.additionalColumnID ? dynamicValue : (rowData as any)?.AssignedUsers || []
 
+  // Helper function to generate unique keys for display users
+  const getDisplayUserKey = (user: any, index: number, prefix: string = 'display') => {
+    const userData = user?.User || user;
+    const userId = userData?.UserID || userData?.id;
+    // Create a truly unique key combining multiple identifiers
+    return `${prefix}-${userId || `no-id-${index}`}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
   return (
     <Box display={'flex'} height={'100%'} width={'max-content'} alignItems={'center'}>
-      {columnData?.additionalColumnID ? (
-        <>
-          <Box onClick={handleUserListOpen} sx={{ cursor: 'pointer' }}>
-            <AvatarGroup max={2}>
-              {displayUsers?.map((item: any) => (
-                <div key={item?.User?.UserID || item?.UserID} style={{ position: 'relative', display: 'inline-block' }}>
-                  <Tooltip title={item?.User?.Email?.toLowerCase() || item?.Email?.toLowerCase()}>
+      {/* Display assigned users */}
+      <Box onClick={handleUserListOpen} sx={{ cursor: 'pointer' }}>
+        {displayUsers && displayUsers.length > 0 ? (
+          <AvatarGroup max={2}>
+            {displayUsers?.map((user: any, index: number) => {
+              // Handle both data structures (with User nested or direct)
+              const userData = user?.User || user;
+              const userId = userData?.UserID || userData?.id;
+              const userName = userData?.Name || userData?.name || 'Unknown';
+              const userEmail = userData?.Email || userData?.email || '';
+              const userProfilePic = userData?.ProfilePicture || userData?.profilePicture || '';
+              
+              return (
+                <div 
+                  key={getDisplayUserKey(user, index, 'avatar')}
+                  style={{ position: 'relative', display: 'inline-block' }}
+                >
+                  <Tooltip title={userEmail || userName}>
                     <Avatar 
-                      alt={item?.User?.Name || item?.Name} 
-                      src={item?.User?.ProfilePicture || item?.ProfilePicture} 
+                      alt={userName} 
+                      src={userProfilePic} 
                       sx={{ width: 32, height: 32 }} 
                     />
                   </Tooltip>
 
                   {/* Small close button */}
                   {canEdit && (
-                    <button
-                      onClick={(e) => handleremove(item, e)}
-                      style={{
+                    <Box
+                      component="span"
+                      onClick={(e) => handleremove(user, e)}
+                      sx={{
                         position: 'absolute',
                         top: -6,
                         right: -6,
@@ -294,144 +312,180 @@ const TaskPeople = ({
                         cursor: 'pointer',
                         fontSize: '10px',
                         fontWeight: 'bold',
-                        padding: 0,
-                        zIndex: 1
+                        zIndex: 1,
+                        '&:hover': {
+                          backgroundColor: '#b71c1c'
+                        }
                       }}
                     >
                       ✕
-                    </button>
+                    </Box>
                   )}
                 </div>
-              ))}
-            </AvatarGroup>
-          </Box>
-
-          {/* Popover to show full user list */}
-          <Popover
-            open={Boolean(userListAnchor)}
-            anchorEl={userListAnchor}
-            onClose={handleUserListClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left'
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left'
-            }}
-            TransitionComponent={Zoom}
-          >
-            <Box sx={{ width: 320, maxHeight: 400, overflow: 'auto' }}>
-              <Box
-                sx={{
-                  p: 2,
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <Typography variant='body1' fontWeight={500} color="white">
-                  Assigned Users ({displayUsers?.length || 0})
-                </Typography>
-                <IconButton size='small' onClick={handleUserListClose} sx={{ color: 'white' }}>
-                  <Icon icon='mdi:close' />
-                </IconButton>
-              </Box>
-              <List sx={{ pt: 0 }}>
-                {displayUsers?.map((item: any, index: number) => (
-                  <React.Fragment key={item?.User?.UserID || item?.UserID}>
-                    <ListItem
-                      sx={{
-                        py: 2,
-                        position: 'relative',
-                        '&:hover': {
-                          backgroundColor: 'action.hover'
-                        }
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <Box sx={{ position: 'relative' }}>
-                          <Avatar 
-                            alt={item?.User?.Name || item?.Name} 
-                            src={item?.User?.ProfilePicture || item?.ProfilePicture} 
-                            sx={{ width: 40, height: 40 }} 
-                          />
-                          {/* Small close button on avatar */}
-                          {canEdit && (
-                            <button
-                              onClick={(e) => handleremove(item, e)}
-                              style={{
-                                position: 'absolute',
-                                top: -4,
-                                right: -4,
-                                backgroundColor: '#d32f2f',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '18px',
-                                height: '18px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                fontSize: '10px',
-                                fontWeight: 'bold',
-                                padding: 0,
-                                zIndex: 1
-                              }}
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </Box>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography variant='body1' fontWeight={500}>
-                            {item?.User?.Name || item?.Name}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant='body2' color='text.secondary' sx={{ fontSize: '0.875rem' }}>
-                            {item?.User?.Email?.toLowerCase() || item?.Email?.toLowerCase()}
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
-                    {index < displayUsers.length - 1 && <Divider variant='inset' component='li' />}
-                  </React.Fragment>
-                ))}
-              </List>
-            </Box>
-          </Popover>
-
-          {canEdit && (
+              );
+            })}
+          </AvatarGroup>
+        ) : (
+          <Box sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />
             </IconButton>
-          )}
-        </>
-      ) : selectedOwner ? (
-        <Box position={'relative'}>
-          <Tooltip key={selectedOwner?.UserID} title={selectedOwner?.Email?.toLowerCase()}>
-            <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
-          </Tooltip>
-          {role?.RoleName === 'Admin' && (
-            <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
-              <Icon icon={'icon-park-twotone:close-one'} color='red' />
+          </Box>
+        )}
+      </Box>
+
+      {/* Popover to show full user list */}
+      <Popover
+        open={Boolean(userListAnchor)}
+        anchorEl={userListAnchor}
+        onClose={handleUserListClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left'
+        }}
+        TransitionComponent={Zoom}
+      >
+        <Box sx={{ width: 320, maxHeight: 400, overflow: 'auto' }}>
+          <Box
+            sx={{
+              p: 2,
+              backgroundColor: 'primary.main',
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              position: 'sticky',
+              top: 0,
+              zIndex: 1
+            }}
+          >
+            <Typography variant='body1' fontWeight={500} color="white">
+              Assigned Users ({displayUsers?.length || 0})
+            </Typography>
+            <IconButton 
+              size='small' 
+              onClick={handleUserListClose} 
+              sx={{ 
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
+              <Icon icon='mdi:close' />
             </IconButton>
-          )}
+          </Box>
+          
+          <List sx={{ pt: 0 }}>
+            {displayUsers?.map((user: any, index: number) => {
+              // Handle both data structures (with User nested or direct)
+              const userData = user?.User || user;
+              const userId = userData?.UserID || userData?.id;
+              const userName = userData?.Name || userData?.name || 'Unknown User';
+              const userEmail = userData?.Email || userData?.email || 'No email';
+              const userProfilePic = userData?.ProfilePicture || userData?.profilePicture || '';
+              
+              return (
+                <React.Fragment key={getDisplayUserKey(user, index, 'list')}>
+                  <ListItem
+                    sx={{
+                      py: 2,
+                      position: 'relative',
+                      '&:hover': {
+                        backgroundColor: 'action.hover'
+                      }
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Box sx={{ position: 'relative' }}>
+                        <Avatar 
+                          alt={userName} 
+                          src={userProfilePic} 
+                          sx={{ width: 40, height: 40 }} 
+                        />
+                        {/* Small close button on avatar */}
+                        {canEdit && (
+                          <Box
+                            component="span"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleremove(user, e);
+                            }}
+                            sx={{
+                              position: 'absolute',
+                              top: -4,
+                              right: -4,
+                              backgroundColor: '#d32f2f',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '18px',
+                              height: '18px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              zIndex: 1,
+                              '&:hover': {
+                                backgroundColor: '#b71c1c'
+                              }
+                            }}
+                          >
+                            ✕
+                          </Box>
+                        )}
+                      </Box>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography variant='body1' fontWeight={500}>
+                          {userName}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography variant='body2' color='text.secondary' sx={{ fontSize: '0.875rem' }}>
+                          {userEmail}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                  {index < displayUsers.length - 1 && <Divider variant='inset' component='li' />}
+                </React.Fragment>
+              );
+            })}
+            
+            {(!displayUsers || displayUsers.length === 0) && (
+              <ListItem sx={{ py: 4, justifyContent: 'center' }}>
+                <Typography variant='body2' color='text.secondary'>
+                  No users assigned
+                </Typography>
+              </ListItem>
+            )}
+          </List>
         </Box>
-      ) : role?.RoleName === 'Admin' ? (
-        <IconButton onClick={handleOpen}>
-          <Icon icon={'bi:plus-circle-dotted'} />
+      </Popover>
+
+      {/* Add user button - Only show when canEdit is true and displayUsers has items? Actually let's check the logic */}
+      {canEdit && displayUsers && displayUsers.length > 0 && (
+        <IconButton 
+          onClick={handleOpen}
+          sx={{
+            '&:hover': {
+              backgroundColor: 'action.hover'
+            }
+          }}
+        >
+          <Icon icon={'bi:plus-circle-dotted'} fontSize={24} />
         </IconButton>
-      ) : (
-        <Icon icon={'ph:question-duotone'} fontSize={24} />
       )}
       
+      {/* User selection menu */}
       <Menu 
         open={!!anchorEl} 
         anchorEl={anchorEl} 
@@ -459,39 +513,54 @@ const TaskPeople = ({
                 <Box px={3} py={2}>
                   <Typography>Loading users...</Typography>
                 </Box>
-              ) : users?.length !== 0 ? (
-                users
+              ) : apiUsers?.length !== 0 ? (
+                apiUsers
                   ?.filter(userFilter)
                   ?.filter(user => {
-                    // For dynamic columns, filter out already assigned users
-                    if (columnData?.additionalColumnID && displayUsers) {
-                      return !displayUsers?.some((val: any) => 
-                        val?.User?.UserID === user?.User?.UserID || 
-                        val?.UserID === user?.User?.UserID
-                      )
+                    // Filter out already assigned users
+                    if (displayUsers && displayUsers.length > 0) {
+                      return !displayUsers?.some((val: any) => {
+                        const valUserId = val?.User?.UserID || val?.UserID;
+                        const apiUserId = user?.User?.UserID;
+                        return valUserId === apiUserId;
+                      })
                     }
                     return true
                   })
-                  ?.map(user => (
-                    <MenuItem
-                      onClick={() => {
-                        if (canEdit) {
-                          debouncedClick(user?.User)
-                        }
-                      }}
-                      key={user?.UserProjectID || user?.User?.UserID}
-                    >
-                      <Box display={'flex'} alignItems={'center'} gap={3} py={1} overflow={'hidden'}>
-                        <Avatar alt={user?.User?.Name} src={user?.User?.ProfilePicture} sx={{ width: 32, height: 32 }} />
-                        <Typography overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
-                          {user?.User?.Name}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))
+                  ?.map((user, index) => {
+                    // Generate a truly unique key using multiple fallbacks
+                    const uniqueKey = `menu-${user.uniqueKey || user.User?.UserID || user.UserProjectID || `temp-${index}`}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    return (
+                      <MenuItem
+                        onClick={() => {
+                          if (canEdit) {
+                            debouncedClick(user?.User)
+                          }
+                        }}
+                        key={uniqueKey}
+                      >
+                        <Box display={'flex'} alignItems={'center'} gap={3} py={1} overflow={'hidden'}>
+                          <Avatar 
+                            alt={user?.User?.Name} 
+                            src={user?.User?.ProfilePicture} 
+                            sx={{ width: 32, height: 32 }} 
+                          />
+                          <Box sx={{ overflow: 'hidden' }}>
+                            <Typography overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+                              {user?.User?.Name}
+                            </Typography>
+                            <Typography variant='caption' color='text.secondary' overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+                              {user?.User?.Email}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </MenuItem>
+                    )
+                  })
               ) : (
                 <Box px={3} py={2}>
-                  <Typography>No Users Added to Group</Typography>
+                  <Typography>No Users Found</Typography>
                 </Box>
               )}
             </Grid>

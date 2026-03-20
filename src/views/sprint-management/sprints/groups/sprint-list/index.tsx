@@ -65,6 +65,8 @@ const SprintList = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [sprintDynamicColumns, setSprintDynamicColumns] = useState<any[]>([])
   const [sprintInfoData, setSprintInfoData] = useState<any>(null)
+  // ✅ FIX: local data state to hold optimistic updates so sibling fields are always fresh
+  const [localData, setLocalData] = useState<any[]>([])
   
   const { role, users } = useProject()
 
@@ -74,6 +76,11 @@ const SprintList = ({
 
   // Get column visibility from sprint context
   const { columnVisibility: sprintColumnVisibility } = useContext(SprintManagement)
+  
+  // Add debug logging
+  useEffect(() => {
+  }, [sprintColumnVisibility]);
+
 const fetchSprintInfoList = async (sprintGroupId: number) => {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
   
@@ -182,7 +189,6 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
   // Transform detailList items to match SprintItem interface
   const transformedSprintData = useMemo(() => {
     const detailList = getSprintDetailList;
-    
     return detailList.map((item: any) => ({
       SprintID: item.sprintID,
       Name: item.name,
@@ -197,15 +203,21 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
       WorkSpaceID: sg?.WorkspaceID,
       SprintGroupID: sg?.SprintGroupID,
       // Keep the original data for reference
-      originalItem: item,
+      originalItem: detailList,
       colvalueList: sprintInfoData?.colvalueList || [] // Add colvalueList to each sprint item
     }));
   }, [getSprintDetailList, sg, sprintInfoData]);
 
+  // ✅ FIX: Sync localData whenever transformedSprintData changes (i.e. after refetch)
+  // This keeps localData fresh from server while still allowing optimistic updates in between
+  useEffect(() => {
+    setLocalData(transformedSprintData)
+  }, [transformedSprintData])
+
   // Filter sprint data based on selected sprint and search term
   const filteredSprintData = useMemo(() => {
-    const originalData = transformedSprintData ?? []
-    
+    // ✅ FIX: use localData instead of transformedSprintData so optimistic edits are reflected immediately
+    const originalData = localData ?? []
     if (!selectedSprint && !sprintSearchTerm?.trim()) {
       return originalData
     }
@@ -226,7 +238,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
       
       return true
     })
-  }, [transformedSprintData, selectedSprint, sprintSearchTerm])
+  }, [localData, selectedSprint, sprintSearchTerm])
 
   // Define static columns
   const staticColumns: ColumnDef<any>[] = useMemo(
@@ -261,6 +273,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         )
       },
       {
+        id: 'Name',
         accessorKey: 'Name',
         size: 200,
         maxSize: 1000,
@@ -274,29 +287,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         }
       },
       {
-  accessorKey: 'Owner',
-  header: () => (
-    <Typography variant='body2' fontWeight={800}>
-      Owner
-    </Typography>
-  ),
-  cell: ({ row }) => {
-    // Debug: log the row structure
-  
-    
-    const original = row?.original || {};
-    const sprintId = original?.SprintID || original?.sprintID; // Try both cases
-    
-    return (
-      <TaskPeople
-        refetch={sprintListApi?.refetch}
-        rowData={original}
-        isSubTask={false}
-      />
-    );
-  }
-},
-      {
+        id: 'Goals',
         accessorKey: 'Goals',
         header: () => (
           <Typography variant='body2' fontWeight={800}>
@@ -308,40 +299,18 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         }
       },
       {
-        accessorKey: 'ActiveSprint',
-        header: () => (
-          <Typography variant='body2' fontWeight={800}>
-            Active Sprint
-          </Typography>
-        ),
-        cell: ({ row: { original } }) => {
-          if (original?.SprintStatus === 'Active') return <i className='ri-check-line' />
-          return <></>
-        }
-      },
-      {
+        id: 'SprintTimeline',
         accessorKey: 'SprintTimeline',
         header: () => (
           <Typography variant='body2' fontWeight={800}>
             Sprint Timeline
           </Typography>
         ),
+        
         cell: ({ row: { original } }) => (
           <SprintTimelineManagement original={original} refetch={sprintListApi?.refetch} />
         )
       },
-      {
-        accessorKey: 'Completed',
-        header: () => (
-          <Typography variant='body2' fontWeight={800}>
-            Completed 
-          </Typography>
-        ),
-        cell: ({ row: { original } }) => {
-          if (original?.SprintStatus === 'Completed') return <i className='ri-check-line' />
-          return <></>
-        }
-      }
     ],
     [sprintListApi?.refetch]
   )
@@ -352,11 +321,16 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
     if (!sprintDynamicColumns || sprintDynamicColumns.length === 0) return []
 
     return sprintDynamicColumns.map((column, index) => {
-      const columnId = column?.additionalColumnID || column?.AdditionalColumnID || column?.ColumnID || `dynamic-${index}`
-      const columnName = column?.colname || column?.ColumnName || `Column ${index + 1}`;
+      // Get the column ID - this should match what's in the context
+      const columnId = column?.additionalColumnID?.toString() || 
+                      column?.additionalColumnID?.toString() || 
+                      column?.ColumnID?.toString() || 
+                      `dynamic-${index}`;
+      
       
       return {
-        id: columnId?.toString(),
+        id: columnId,
+        accessorKey: columnId, // Use columnId as accessorKey for dynamic columns
         accessorFn: (row) => {
           // Get the dynamic value for this sprint from colvalueList
           return getDynamicValueForSprint(row?.SprintID || row?.sprintID, columnId);
@@ -371,7 +345,6 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         cell: ({ getValue, row: { original, index }, column: { id }, table }) => {
           // Get the full dynamic value object
           const dynamicValue = getDynamicValueForSprint(original?.SprintID, columnId);
-          
 
           return (
             <SprintDynamicCell
@@ -397,27 +370,32 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
 
   // Filter columns based on visibility from sprint context
   const visibleColumns = useMemo(() => {
-    const columnVisibilityMap: Record<string, string> = {
-      'Name': 'Name',
-      'Goals': 'Goals',
-      "Owner":"Owner",
-      'SprintTimeline': 'SprintTimeline',
-      'ActiveSprint': 'ActiveSprint',
-      'Completed': 'SprintStatus'
-    }
 
+    
     return allColumns.filter(column => {
-      const accessorKey = column.accessorKey as string
+      const columnId = column.id as string;
+      const accessorKey = column.accessorKey as string;
       
-      if (accessorKey === 'select') return true
       
-      const contextKey = columnVisibilityMap[accessorKey]
+      // Always show select column
+      if (columnId === 'select') {
+        return true;
+      }
       
-      if (!contextKey) return true
+      // Check if this column exists in visibility
+      const isVisible = sprintColumnVisibility[columnId];
       
-      return sprintColumnVisibility[contextKey] !== false
-    })
-  }, [allColumns, sprintColumnVisibility])
+      
+      // If the column doesn't exist in visibility, default to showing it
+      if (isVisible === undefined) {
+        return true;
+      }
+      
+      // Return the visibility value (should be true/false)
+      return isVisible;
+    });
+  }, [allColumns, sprintColumnVisibility]);
+
 
   const table = useReactTable({
     data: filteredSprintData as any[],
@@ -434,25 +412,30 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     meta: {
-      updateData: async (rowIndex: number, columnId: any, value: { AdditionalColumnID: string }) => {
+      updateData: async (rowIndex: number, columnId: any, value: any) => {
+        // Handle Name column update
         if (columnId === 'Name' && filteredSprintData?.[rowIndex]?.SprintID) {
+          // ✅ FIX: optimistically update localData immediately so when Goals is updated
+          // next, it can read the correct latest Name value instead of the stale server value
+          setLocalData((prev: any[]) =>
+            prev.map((row: any) =>
+              row.SprintID === filteredSprintData?.[rowIndex]?.SprintID
+                ? { ...row, Name: value }
+                : row
+            )
+          )
+
           try {
-            const formattedData = filteredSprintData.map(item => ({
-              ...item,
-              formattedSprintTimelineStart: moment(item.SprintTimelineStart).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-              formattedSprintTimelineEnd: moment(item.SprintTimelineEnd).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
-            }));
-            
             const value1 = localStorage.getItem('userData')
             const data1 = JSON.parse(value1);
             const userId = data1.userData.UserID;
 
             const bodyvalue = {
               Sprintname: value,
-              Goals: formattedData[0]?.Goals ?? "-",
+              Goals: filteredSprintData?.[rowIndex]?.Goals || "-",
               LoginuserID: userId,
-              SprintgroupID: formattedData[0]?.SprintGroupID,
-              WorkspaceID: formattedData[0]?.WorkSpaceID,
+              SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
+              WorkspaceID: filteredSprintData?.[rowIndex]?.WorkSpaceID,
               sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
             }
 
@@ -465,20 +448,31 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
           }
         }
 
+        // Handle Goals column update
         if (columnId === 'Goals' && filteredSprintData?.[rowIndex]?.SprintID) {
+          // ✅ FIX: optimistically update localData immediately
+          setLocalData((prev: any[]) =>
+            prev.map((row: any) =>
+              row.SprintID === filteredSprintData?.[rowIndex]?.SprintID
+                ? { ...row, Goals: value }
+                : row
+            )
+          )
+
           try {
             const value1 = localStorage.getItem('userData')
             const data = JSON.parse(value1);
             const userId = data.userData.UserID;
 
-            const formattedData = filteredSprintData.map(item => ({
-              ...item,
-              formattedSprintTimelineStart: moment(item.SprintTimelineStart).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-              formattedSprintTimelineEnd: moment(item.SprintTimelineEnd).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
-            }));
+            // ✅ FIX: read the latest Name from localData which was already updated optimistically
+            // previously this used filteredSprintData?.[rowIndex]?.Name which was stale
+            // and always returned "New Sprint" because refetch had not completed yet
+            const currentName = localData.find(
+              (row: any) => row.SprintID === filteredSprintData?.[rowIndex]?.SprintID
+            )?.Name || filteredSprintData?.[rowIndex]?.Name || "New Sprint"
 
             const bodyvalue = {
-              Sprintname: filteredSprintData?.[rowIndex]?.Name || "New Sprint",
+              Sprintname: currentName,
               Goals: value || "New Goal",
               LoginuserID: userId,
               SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
@@ -496,7 +490,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         }
 
         // Handle dynamic column updates
-        if (value?.AdditionalColumnID && filteredSprintData?.[rowIndex]?.SprintID) {
+        if (value?.additionalColumnID && filteredSprintData?.[rowIndex]?.SprintID) {
           try {
             const value1 = localStorage.getItem('userData')
             const data = JSON.parse(value1);
@@ -644,6 +638,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         onSubmit={(data) => {
           // After adding a new column, refetch to get updated colList
           sprintListApi.refetch();
+          
         }}
         spintid={sg.WorkspaceID}
         groupid={sg.SprintGroupID}

@@ -1,16 +1,15 @@
 // ** React Imports
 import type { ReactNode } from 'react'
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { fetchSprintGroups } from '@/services/modules/sprint-group'
 
 import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 
-import { fetchSprintGroups } from '@/services/modules/sprint-group'
 import type { SprintGroupItem } from '@/services/modules/sprint-group/type'
 
-
-
 type ColumnVisibility = {
-  Name:boolean
+  Name: boolean
   Goals: boolean
   SprintTimeline: boolean
   SprintStatus: boolean
@@ -18,32 +17,23 @@ type ColumnVisibility = {
   [key: string]: boolean
 }
 
-
-
-
-
 interface SprintManagementType {
   data: SprintGroupItem[]
   refetch: () => void
-   columnVisibility: ColumnVisibility
+  columnVisibility: ColumnVisibility
   setColumnVisibility: (visibility: ColumnVisibility) => void
   toggleColumnVisibility: (columnKey: keyof ColumnVisibility) => void
   visibleColumns: string[]
+  workspaceID: string
 }
 
 const defaultColumnVisibility: ColumnVisibility = {
-  Name:true,
-  Owner:true,
+  Name: true,
   Goals: true,
-
   SprintTimeline: true,
   SprintStatus: true,
-  ActiveSprint:true
-
+  // ActiveSprint: false
 }
-
-
-
 
 // ** Defaults
 const defaultProvider: SprintManagementType = {
@@ -52,7 +42,8 @@ const defaultProvider: SprintManagementType = {
   columnVisibility: defaultColumnVisibility,
   setColumnVisibility: () => {},
   toggleColumnVisibility: () => {},
-  visibleColumns: Object.keys(defaultColumnVisibility).filter(key => defaultColumnVisibility[key])
+  visibleColumns: Object.keys(defaultColumnVisibility).filter(key => defaultColumnVisibility[key]),
+  workspaceID: ''
 }
 
 const SprintManagement = createContext<SprintManagementType>(defaultProvider)
@@ -60,31 +51,82 @@ const SprintManagement = createContext<SprintManagementType>(defaultProvider)
 interface SprintManagementProviderProps {
   children: ReactNode
   workspaceID: string
+  loginuserID?: string
 }
 
-const SprintManagementProvider = ({ children, workspaceID }: SprintManagementProviderProps) => {
+// ** Fetch sprint groups function
+
+// ** Fetch dynamic columns function
+const fetchSprintDynamicColumns = async (loginuserID: string, workspaceID: string) => {
+  const response = await axios.get('https://uat.ppmbackend.projectpulse360.com/GetSprintDynamiccolumnLlist', {
+    params: {
+      LoginuserID: loginuserID,
+      WorkspaceID: workspaceID
+    }
+  })
+  return response.data
+}
+
+const SprintManagementProvider = ({ children, workspaceID, loginuserID = '76' }: SprintManagementProviderProps) => {
   const { data = [], refetch } = useQuery({
     queryKey: ['sprint-groups', workspaceID],
     queryFn: () => fetchSprintGroups(workspaceID),
     enabled: !!workspaceID
   })
 
-    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(defaultColumnVisibility)
-    const toggleColumnVisibility = useCallback((columnKey: keyof ColumnVisibility) => {
-      setColumnVisibility(prev => ({
-        ...prev,
-        [columnKey]: !prev[columnKey]
-      }))
-    }, [])
-    const visibleColumns = Object.keys(columnVisibility).filter(key => columnVisibility[key])
+  // ** GET DYNAMIC COLUMNS
+  const { data: dynamicColumnsData } = useQuery({
+    queryKey: ['sprint-dynamic-columns', workspaceID, loginuserID],
+    queryFn: () => fetchSprintDynamicColumns(loginuserID, workspaceID),
+    enabled: !!workspaceID && !!loginuserID
+  })
+
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(defaultColumnVisibility)
+
+  // Generate visibility when dynamic columns data changes
+  useEffect(() => {
+    if (dynamicColumnsData && Array.isArray(dynamicColumnsData) && dynamicColumnsData.length > 0) {
+      // Start with default columns
+      const newVisibility: ColumnVisibility = {
+        Name: true,
+        Goals: true,
+        SprintTimeline: true,
+        SprintStatus: true,
+        // ActiveSprint: true
+      }
+      // Add dynamic columns from API response
+      dynamicColumnsData.forEach((group: any) => {
+        if (group.columndetails && Array.isArray(group.columndetails)) {
+          group.columndetails.forEach((column: any) => {
+            if (column.additionalColumnID) {
+              newVisibility[column.additionalColumnID] = true
+            }
+          })
+        }
+      })
+
+      setColumnVisibility(newVisibility)
+    }
+  }, [dynamicColumnsData])
+
+  const toggleColumnVisibility = useCallback((columnKey: keyof ColumnVisibility) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [columnKey]: !prev[columnKey]
+    }))
+  }, [])
+  
+  const visibleColumns = Object.keys(columnVisibility).filter(key => columnVisibility[key])
 
   const values: SprintManagementType = {
     data,
-refetch,
+    refetch,
     columnVisibility,
     setColumnVisibility,
     toggleColumnVisibility,
-    visibleColumns  }
+    visibleColumns,
+    workspaceID
+  }
 
   return <SprintManagement.Provider value={values}>{children}</SprintManagement.Provider>
 }

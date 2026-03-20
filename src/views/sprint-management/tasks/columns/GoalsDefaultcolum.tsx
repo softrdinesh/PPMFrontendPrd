@@ -13,7 +13,7 @@ interface ColumnTextFieldProps {
 export const GoalsTextfiled = ({ table, getValue, index, id, canEdit = true }: ColumnTextFieldProps) => {
   const initialValue = getValue()
   const [value, setValue] = useState(initialValue || '')
-  const maxLength = 50
+  const maxLength = 2000
 
   const onBlur = () => {
     table.options.meta?.updateData(index, id, value)

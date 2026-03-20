@@ -24,7 +24,7 @@ const DeleteTasksComponent = ({
   setSelectedRows
 }: DeleteTasksComponentProps) => {
   const [deleteOpen, setDeleteOpen] = useState(false)
-
+console.log(selectedRows,sprintlist,'selectedRows')
   // ** Memos
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 
@@ -80,7 +80,7 @@ useEffect(() => {
       <DeleteDialog
             open={deleteOpen}
             setOpen={val => setDeleteOpen(!!val)}
-            title={`Delete this taskgroupsss ?`}
+            title={`Delete this Sprint ?`}
             onConfirm={handleDelete}
             refetch={refetch}
             description={'You wont be able to revert this action'}

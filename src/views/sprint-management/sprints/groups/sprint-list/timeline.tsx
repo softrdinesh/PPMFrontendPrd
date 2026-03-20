@@ -36,8 +36,9 @@ const DatePickerDynamic = ({
 
 const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem; refetch: () => void }) => {
   const [startDate, setStartDate] = useState<Date | null>(null)
+
   const [endDate, setEndDate] = useState<Date | null>(null)
-  const { profile,user } = useAuth()
+  const { profile, user } = useAuth()
   const handleDateChange = async (dates: [Date | null, Date | null]) => {
     if (!dates) return
 
@@ -45,7 +46,6 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
 
     setStartDate(start)
     setEndDate(end)
-
 
     if (start && end) {
       await updateSprint({
@@ -71,37 +71,33 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
             //   // body: { Name: value }
             // )
 
+      await refetch()
 
-
-      refetch()
+      if (original?.SprintTimelineStart) {
+        const start = moment(original.SprintTimelineStart, 'DD-MM-YYYY HH:mm A')
+        if (start.isValid()) setStartDate(start.toDate())
+      }
+      if (original?.SprintTimelineEnd) {
+        const end = moment(original.SprintTimelineEnd, 'DD-MM-YYYY HH:mm A')
+        if (end.isValid()) setEndDate(end.toDate())
+      }
     }
   }
 
   useEffect(() => {
-    if (original?.SprintTimelineStart) setStartDate(moment(original?.SprintTimelineStart).toDate())
-    if (original?.SprintTimelineEnd) setEndDate(moment(original?.SprintTimelineEnd).toDate())
-  }, [original?.SprintTimelineStart, original?.SprintTimelineEnd])
-
-  if (!original?.SprintTimelineStart || !original?.SprintTimelineEnd)
-    return (
-      <DatePickerDynamic
-        startDate={startDate}
-        endDate={endDate}
-        onChange={handleDateChange}
-        render={
-          <Button
-            size='small'
-            className='rounded-full p-1 leading-3 px-2'
-            variant={startDate && endDate ? 'contained' : 'outlined'}
-          >
-            {startDate && endDate
-              ? `${moment(startDate).format('MMM DD')} - ${moment(endDate).format('MMM DD')}`
-              : 'Add timeline'}
-          </Button>
-        }
-      />
-    )
-
+    if (original?.SprintTimelineStart) {
+      const start = moment(original.SprintTimelineStart, 'DD-MM-YYYY HH:mm A')
+      if (start.isValid()) setStartDate(start.toDate())
+    } else {
+      setStartDate(null)
+    }
+    if (original?.SprintTimelineEnd) {
+      const end = moment(original.SprintTimelineEnd, 'DD-MM-YYYY HH:mm A')
+      if (end.isValid()) setEndDate(end.toDate())
+    } else {
+      setEndDate(null)
+    }
+  }, [original?.SprintTimelineStart, original?.SprintTimelineEnd, original])
   return (
     <DatePickerDynamic
       startDate={startDate}
@@ -113,7 +109,9 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
           className='rounded-full p-1 leading-3 px-2'
           variant={startDate && endDate ? 'contained' : 'outlined'}
         >
-          {`${moment(original?.SprintTimelineStart).format('MMM DD')} - ${moment(original?.SprintTimelineEnd).format('MMM DD')}`}
+          {startDate && endDate
+            ? `${moment(startDate).format('MMM DD')} - ${moment(endDate).format('MMM DD')}`
+            : 'Add timeline'}
         </Button>
       }
     />
