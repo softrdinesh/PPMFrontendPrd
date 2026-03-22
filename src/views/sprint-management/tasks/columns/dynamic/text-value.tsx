@@ -27,17 +27,17 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
   const isNumber = useMemo(() => {
     return columnData?.ColumnType?.Keyname === 'NUM'
   }, [columnData?.ColumnType?.Keyname])
-
+console.log(rowData,'rods')
   // Function to call the API via axios
   const callInsertDynamicValuesAPI = async (newValue: string) => {
     const DynamicColumnID = columnData?.additionalColumnID;
     const LoginuserID = user?.id;
     const Taskid = rowData?.taskID;
-   
+  //  const groupid = rowData.gr
     const DynamicValue = newValue;
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
-    const apiUrl = `${BASE_URL}/InsertDynamicSprintTaskValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&TaskID=${Taskid}&DynamicValue=${encodeURIComponent(DynamicValue)}`;
+    const apiUrl = `${BASE_URL}/InsertDynamicSprintTaskValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&TaskID=${Taskid}&GroupID=${rowData?.taskGroupID}&DynamicValue=${encodeURIComponent(DynamicValue)}`;
 
     try {
       const response = await axios.post(apiUrl);

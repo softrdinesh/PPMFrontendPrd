@@ -143,6 +143,7 @@ const TaskTableSprint = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [sprintTaskInfoData, setSprintTaskInfoData] = useState<any>(null)
   const [sprintDynamicColumns, setSprintDynamicColumns] = useState<any[]>([])
+  const [colvalueList, setColvalueList] = useState<any[]>([]) // Add state for colvalueList
   
   const { profile, user } = useAuth()
   
@@ -217,6 +218,12 @@ const TaskTableSprint = ({
           // Process and store the response data for current group
           if (currentResponse && currentResponse.length > 0 && currentResponse[0]?.colList) {
             setSprintTaskInfoData(currentResponse[0]);
+            // Store colvalueList separately
+            if (currentResponse[0].colvalueList && Array.isArray(currentResponse[0].colvalueList)) {
+              setColvalueList(currentResponse[0].colvalueList);
+            } else {
+              setColvalueList([]);
+            }
             if (currentResponse[0].colList && currentResponse[0].colList.length > 0) {
               setSprintDynamicColumns(currentResponse[0].colList);
             } else {
@@ -224,6 +231,12 @@ const TaskTableSprint = ({
             }
           } else if (currentResponse && currentResponse.colList) {
             setSprintTaskInfoData(currentResponse);
+            // Store colvalueList separately
+            if (currentResponse.colvalueList && Array.isArray(currentResponse.colvalueList)) {
+              setColvalueList(currentResponse.colvalueList);
+            } else {
+              setColvalueList([]);
+            }
             if (currentResponse.colList && currentResponse.colList.length > 0) {
               setSprintDynamicColumns(currentResponse.colList);
             } else {
@@ -235,6 +248,12 @@ const TaskTableSprint = ({
           for (const response of results) {
             if (response && response.length > 0 && response[0]?.colList) {
               setSprintTaskInfoData(response[0]);
+              // Store colvalueList separately
+              if (response[0].colvalueList && Array.isArray(response[0].colvalueList)) {
+                setColvalueList(response[0].colvalueList);
+              } else {
+                setColvalueList([]);
+              }
               if (response[0].colList && response[0].colList.length > 0) {
                 setSprintDynamicColumns(response[0].colList);
               } else {
@@ -243,6 +262,12 @@ const TaskTableSprint = ({
               break;
             } else if (response && response.colList) {
               setSprintTaskInfoData(response);
+              // Store colvalueList separately
+              if (response.colvalueList && Array.isArray(response.colvalueList)) {
+                setColvalueList(response.colvalueList);
+              } else {
+                setColvalueList([]);
+              }
               if (response.colList && response.colList.length > 0) {
                 setSprintDynamicColumns(response.colList);
               } else {
@@ -262,12 +287,12 @@ const TaskTableSprint = ({
 
   // Helper function to get dynamic values from colvalueList
   const getDynamicValueForTask = (taskId: number | string, columnId: string) => {
-    if (!sprintTaskInfoData?.colvalueList || !Array.isArray(sprintTaskInfoData.colvalueList)) {
+    if (!colvalueList || !Array.isArray(colvalueList)) {
       return null;
     }
     
     // Find the dynamic value for this task and column
-    const dynamicValue = sprintTaskInfoData.colvalueList.find(
+    const dynamicValue = colvalueList.find(
       (item: any) => 
         item?.taskID?.toString() === taskId?.toString() && 
         item?.additionalColumnID?.toString() === columnId?.toString()
@@ -305,9 +330,9 @@ const TaskTableSprint = ({
       sprintID: task.sprintID || sp?.SprintID || 0,
       taskGroupID: currentTaskGroupId, // Add taskGroupID to each task
       DynamicColumnList: task.dynamicColumnList || null,
-      colvalueList: sprintTaskInfoData?.colvalueList || [] // Add colvalueList to each task item
+      colvalueList: colvalueList // Use the separate colvalueList state
     }));
-  }, [getTaskDetailList, sp?.SprintID, sprintTaskInfoData, currentTaskGroupId]);
+  }, [getTaskDetailList, sp?.SprintID, colvalueList, currentTaskGroupId]);
 
   // Filter data based on selected task
   const filteredData = useMemo(() => {
@@ -465,13 +490,26 @@ const TaskTableSprint = ({
               id={id}
               table={table}
               value={dynamicValue} // Pass the full dynamic value object
-              refetch={sprintTaskInfoApi.refetch}
+              refetch={() => {
+                // Refetch both the main data and update colvalueList
+                sprintTaskInfoApi.refetch().then(() => {
+                  // After refetch, ensure colvalueList is updated
+                  if (sprintTaskInfoApi.data) {
+                    const data = sprintTaskInfoApi.data;
+                    if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                      setColvalueList(data[0].colvalueList);
+                    } else if (data?.colvalueList) {
+                      setColvalueList(data.colvalueList);
+                    }
+                  }
+                });
+              }}
             />
           );
         }
       }
     });
-  }, [sprintDynamicColumns, sprintTaskInfoData, sprintTaskInfoApi.refetch]);
+  }, [sprintDynamicColumns, colvalueList, sprintTaskInfoApi.refetch, sprintTaskInfoApi.data]);
 
   // Combine static and dynamic columns
   const allColumns: ColumnDef<any>[] = useMemo(() => {
@@ -541,7 +579,16 @@ const TaskTableSprint = ({
             console.log('Dynamic column update:', { rowIndex, columnId, value });
             
             // After update, refetch to get latest data
-            sprintTaskInfoApi?.refetch();
+            await sprintTaskInfoApi?.refetch();
+            // Update colvalueList after refetch
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
           } catch (error) {
             console.error('error updating dynamic column:', error);
           }
@@ -575,7 +622,7 @@ const TaskTableSprint = ({
           'Content-Type': 'application/json',
         }
       })
-toast.success("Task Added Successfully")
+      toast.success("Task Added Successfully")
       if (!response.ok) {
         throw new Error(`API call failed with status: ${response.status}`)
       }
@@ -583,7 +630,16 @@ toast.success("Task Added Successfully")
       const result = await response.json()
       
       // Refetch the task info list to show the new task
-      sprintTaskInfoApi.refetch()
+      await sprintTaskInfoApi.refetch()
+      // Update colvalueList after refetch
+      if (sprintTaskInfoApi.data) {
+        const data = sprintTaskInfoApi.data;
+        if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+          setColvalueList(data[0].colvalueList);
+        } else if (data?.colvalueList) {
+          setColvalueList(data.colvalueList);
+        }
+      }
       
     } catch (error) {
       console.error('Error creating task:', error)
@@ -597,7 +653,17 @@ toast.success("Task Added Successfully")
   // Force refetch when component mounts or enabled changes
   useEffect(() => {
     if (enabled && taskGroupIds.length > 0 && currentTaskGroupId) {
-      sprintTaskInfoApi.refetch();
+      sprintTaskInfoApi.refetch().then(() => {
+        // Update colvalueList after refetch
+        if (sprintTaskInfoApi.data) {
+          const data = sprintTaskInfoApi.data;
+          if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+            setColvalueList(data[0].colvalueList);
+          } else if (data?.colvalueList) {
+            setColvalueList(data.colvalueList);
+          }
+        }
+      });
     }
   }, [enabled, taskGroupIds.join(','), currentTaskGroupId]);
 
@@ -691,7 +757,17 @@ toast.success("Task Added Successfully")
         setAnchorEl={setAnchorEl}
         onSubmit={(data) => {
           // After adding a new column, refetch to get updated colList
-          sprintTaskInfoApi.refetch();
+          sprintTaskInfoApi.refetch().then(() => {
+            // Update colvalueList after refetch
+            if (sprintTaskInfoApi.data) {
+              const responseData = sprintTaskInfoApi.data;
+              if (Array.isArray(responseData) && responseData.length > 0 && responseData[0]?.colvalueList) {
+                setColvalueList(responseData[0].colvalueList);
+              } else if (responseData?.colvalueList) {
+                setColvalueList(responseData.colvalueList);
+              }
+            }
+          });
         }}
         spintid={sp?.WorkspaceID}
         groupid={currentTaskGroupId} // Use currentTaskGroupId instead of taskGroupIds[0]

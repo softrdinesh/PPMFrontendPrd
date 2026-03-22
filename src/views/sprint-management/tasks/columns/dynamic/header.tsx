@@ -90,9 +90,9 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com'
 
       const response = await axios.post(
-        `${Baseurl}/SprintTaskChangeDynamicColumnName?Columname=${encodeURIComponent(Columnname)}&AdditionalColumnID=${AdditionalColumnID}&LoginuserID=${user?.id}`
+        `${Baseurl}/SprintTaskChangeDynamicColumnName?Columnname=${(Columnname)}&AdditionalColumnID=${AdditionalColumnID}&LoginuserID=${user?.id}`
       );
-      
+         refetch();
       setEditOpen(false);
       refetch();
       toast.success('Column Name Updated Successfully', {

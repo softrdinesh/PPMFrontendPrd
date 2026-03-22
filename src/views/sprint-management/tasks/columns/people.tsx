@@ -161,14 +161,14 @@ const TaskPeople = ({
       
       if (columnData?.additionalColumnID) {
         const response = await axios.post(
-          `${BASE_URL}/InsertDynamicValues`,
+          `${BASE_URL}/InsertDynamicSprintTaskValues`,
           null,
           {
             params: {
               DynamicColumnID: columnData?.additionalColumnID,
               LoginuserID: user?.id,
-              SprintID: (rowData as any)?.SprintID || '',
-              SprintGroupID: (rowData as any)?.SprintGroupID || '',
+              TaskID: (rowData as any)?.taskID || '',
+              GroupID: (rowData as any)?.taskGroupID || '',
               DynamicValue: selected?.UserID
             }
           }

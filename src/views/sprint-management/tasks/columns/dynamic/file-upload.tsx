@@ -125,11 +125,42 @@ const DynamicFiles = ({
            undefined;
   }
 
+  // Helper function to get taskGroupID from rowData (handles both camelCase and PascalCase)
+  const getTaskGroupId = (data: any): string | number | undefined => {
+    if (!data) return undefined;
+    
+    return data?.taskGroupID ||
+           data?.TaskGroupID ||
+           data?.taskgroupID ||
+           data?.taskgroupid ||
+           data?.TaskGroupId ||
+           data?.taskGroupId ||
+           undefined;
+  }
+
+  // Helper function to get taskID from rowData (handles both camelCase and PascalCase)
+  const getTaskId = (data: any): string | number | undefined => {
+    if (!data) return undefined;
+
+    return data?.taskID ||
+           data?.TaskID ||
+           data?.taskId ||
+           data?.TaskId ||
+           data?.taskid ||
+           undefined;
+  }
+
   // Get column ID from columnData
   const columnId = getColumnId(columnData);
   
   // Get current sprint ID from rowData
   const currentSprintId = getSprintId(rowData);
+
+  // Get current taskGroupID from rowData — used to scope file values per row
+  const currentTaskGroupId = getTaskGroupId(rowData);
+
+  // Get current taskID from rowData — used as secondary scope identifier
+  const currentTaskId = getTaskId(rowData);
 
   // ** Constants
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB in bytes
@@ -146,20 +177,39 @@ const DynamicFiles = ({
     const colId = getColumnId(columnData);
     
     if (!colId) return undefined;
+
+    // Helper to match a row's taskGroupID and taskID against the current row
+    const matchesCurrentRow = (item: any): boolean => {
+      const itemTaskGroupId = getTaskGroupId(item);
+      const itemTaskId = getTaskId(item);
+
+      // Match by taskGroupID — primary row identifier
+      if (currentTaskGroupId !== undefined && itemTaskGroupId !== undefined) {
+        if (String(itemTaskGroupId) !== String(currentTaskGroupId)) return false;
+      }
+
+      // Additionally match by taskID if available on the item
+      if (currentTaskId !== undefined && itemTaskId !== undefined) {
+        if (String(itemTaskId) !== String(currentTaskId)) return false;
+      }
+
+      return true;
+    }
     
     // First try to find in allColValues (passed from parent with colvalueList)
-    // IMPORTANT: Filter by both column ID and sprint ID to ensure we get the right value for this row
+    // Filter by taskGroupID + taskID (row-level scope) AND column ID
     if (allColValues && Array.isArray(allColValues) && allColValues.length > 0) {
-      // First filter by sprint ID to only get values for this specific sprint
-      const valuesForThisSprint = allColValues.filter((item: any) => {
+      // Filter by both sprint ID and row-level identifiers (taskGroupID / taskID)
+      const valuesForThisRow = allColValues.filter((item: any) => {
         const itemSprintId = item?.sprintID || item?.SprintID;
-        return itemSprintId == currentSprintId;
+        const sprintMatches = !itemSprintId || String(itemSprintId) === String(currentSprintId);
+        return sprintMatches && matchesCurrentRow(item);
       });
       
       // Then find the one with matching column ID
-      const foundValue = valuesForThisSprint.find((item: any) => {
+      const foundValue = valuesForThisRow.find((item: any) => {
         const itemColumnId = getColumnId(item);
-        return itemColumnId == colId;
+        return String(itemColumnId) === String(colId);
       });
       
       if (foundValue) {
@@ -169,17 +219,17 @@ const DynamicFiles = ({
     
     // Try to find in rowData.colvalueList if it exists (for backward compatibility)
     if (rowData && 'colvalueList' in rowData && Array.isArray((rowData as any).colvalueList)) {
-      // Also filter by sprint ID if the items have sprintID
+      // Filter by row-level identifiers in addition to sprint ID
       const valuesFromRowData = (rowData as any).colvalueList.filter((item: any) => {
         const itemSprintId = item?.sprintID || item?.SprintID;
-        // If the item has a sprintID, make sure it matches, otherwise include it
-        return !itemSprintId || itemSprintId == currentSprintId;
+        const sprintMatches = !itemSprintId || String(itemSprintId) === String(currentSprintId);
+        return sprintMatches && matchesCurrentRow(item);
       });
       
       const colValue = valuesFromRowData.find(
         (item: any) => {
           const itemColumnId = getColumnId(item);
-          return itemColumnId == colId;
+          return String(itemColumnId) === String(colId);
         }
       )
       
@@ -190,16 +240,17 @@ const DynamicFiles = ({
     
     // Try to access from additionalValues if it exists
     if (rowData && (rowData as any).additionalValues && Array.isArray((rowData as any).additionalValues)) {
-      // Filter by sprint ID if available
+      // Filter by row-level identifiers
       const valuesFromAdditional = (rowData as any).additionalValues.filter((item: any) => {
         const itemSprintId = item?.sprintID || item?.SprintID;
-        return !itemSprintId || itemSprintId == currentSprintId;
+        const sprintMatches = !itemSprintId || String(itemSprintId) === String(currentSprintId);
+        return sprintMatches && matchesCurrentRow(item);
       });
       
       const additionalValue = valuesFromAdditional.find(
         (item: any) => {
           const itemColumnId = getColumnId(item);
-          return itemColumnId == colId;
+          return String(itemColumnId) === String(colId);
         }
       );
       
@@ -210,16 +261,17 @@ const DynamicFiles = ({
     
     // Try to access from dynamicColumns if it exists
     if (rowData && (rowData as any).dynamicColumns && Array.isArray((rowData as any).dynamicColumns)) {
-      // Filter by sprint ID if available
+      // Filter by row-level identifiers
       const valuesFromDynamic = (rowData as any).dynamicColumns.filter((item: any) => {
         const itemSprintId = item?.sprintID || item?.SprintID;
-        return !itemSprintId || itemSprintId == currentSprintId;
+        const sprintMatches = !itemSprintId || String(itemSprintId) === String(currentSprintId);
+        return sprintMatches && matchesCurrentRow(item);
       });
       
       const dynamicColumn = valuesFromDynamic.find(
         (item: any) => {
           const itemColumnId = getColumnId(item);
-          return itemColumnId == colId;
+          return String(itemColumnId) === String(colId);
         }
       );
       
@@ -414,7 +466,7 @@ const onSubmit = async (data: FormValidateType) => {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
       
       // Use only UploadSprintDynamicDocument API
-      const uploadEndpoint = `${BASE_URL}/UploadSprintDynamicDocument/${columnId}/${user?.id}/${rowData?.sprintID || rowData?.SprintID || ''}/${rowData?.sprintGroupID || rowData?.SprintGroupID || ''}/${encodeURIComponent(data.value)}/${encodeURIComponent(data?.displayText)}`
+      const uploadEndpoint = `${BASE_URL}/SprintTaskFileUpload/${columnId}/${user?.id}/${rowData?.taskID || rowData?.taskID || ''}/${rowData?.taskGroupID || rowData?.taskGroupID || ''}/${encodeURIComponent(data.value)}/${encodeURIComponent(data?.displayText)}`
       
       const response = await axios.post(
         uploadEndpoint,
@@ -472,7 +524,7 @@ const onSubmit = async (data: FormValidateType) => {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
       
       // Use only UploadSprintDynamicDocument API
-      const uploadEndpoint = `${BASE_URL}/UploadSprintDynamicDocument/${columnId}/${user?.id}/${rowData?.sprintID || rowData?.SprintID || ''}/${rowData?.sprintGroupID || rowData?.SprintGroupID || ''}/-/${encodeURIComponent(data?.displayText)}`
+      const uploadEndpoint = `${BASE_URL}/SprintTaskFileUpload/${columnId}/${user?.id}/${rowData?.taskID || rowData?.taskID || ''}/${rowData?.taskGroupID || rowData?.taskGroupID || ''}/-/${encodeURIComponent(data?.displayText)}`
       
       const response = await axios.post(
         uploadEndpoint,
@@ -552,7 +604,7 @@ const onSubmit = async (data: FormValidateType) => {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
       
       // Use dynamic values instead of hardcoded ones
-      const uploadEndpoint = `${BASE_URL}/SprintRemoveDynamicColumnValues?DynamicColumnID=${columnId}&LoginuserID=${user?.id}&SprintID=${rowData?.sprintID || rowData?.SprintID || ''}`
+      const uploadEndpoint = `${BASE_URL}/SprintTaskRemoveFileUpload?AdditionalColumnID=${columnId}&LoginuserID=${user?.id}&TaskID=${rowData?.taskID || rowData?.taskID || ''}&GroupID=${rowData?.taskGroupID}`
       
       await axios.post(uploadEndpoint)
       toast.success("File Removed Successfully")

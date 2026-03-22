@@ -69,11 +69,60 @@ const DynamicDate = ({
            undefined;
   }
 
+  // Helper function to get taskGroupID from rowData (handles both camelCase and PascalCase)
+  const getTaskGroupId = (data: any): string | number | undefined => {
+    if (!data) return undefined;
+
+    return data?.taskGroupID ||
+           data?.TaskGroupID ||
+           data?.taskgroupID ||
+           data?.taskgroupid ||
+           data?.TaskGroupId ||
+           data?.taskGroupId ||
+           undefined;
+  }
+
+  // Helper function to get taskID from rowData (handles both camelCase and PascalCase)
+  const getTaskId = (data: any): string | number | undefined => {
+    if (!data) return undefined;
+
+    return data?.taskID ||
+           data?.TaskID ||
+           data?.taskId ||
+           data?.TaskId ||
+           data?.taskid ||
+           undefined;
+  }
+
   // Get column ID
   const columnId = getColumnId(columnData);
   
   // Get current sprint ID from rowData
   const currentSprintId = getSprintId(rowData);
+
+  // Get current taskGroupID from rowData — used to scope date values per row
+  const currentTaskGroupId = getTaskGroupId(rowData);
+
+  // Get current taskID from rowData — used as secondary scope identifier
+  const currentTaskId = getTaskId(rowData);
+
+  // Helper to match an item against the current row by taskGroupID and taskID
+  const matchesCurrentRow = (item: any): boolean => {
+    const itemTaskGroupId = getTaskGroupId(item);
+    const itemTaskId = getTaskId(item);
+
+    // Match by taskGroupID — primary row identifier
+    if (currentTaskGroupId !== undefined && itemTaskGroupId !== undefined) {
+      if (String(itemTaskGroupId) !== String(currentTaskGroupId)) return false;
+    }
+
+    // Additionally match by taskID if available on the item
+    if (currentTaskId !== undefined && itemTaskId !== undefined) {
+      if (String(itemTaskId) !== String(currentTaskId)) return false;
+    }
+
+    return true;
+  }
 
   useEffect(() => {
     // Reset selected date first
@@ -85,21 +134,20 @@ const DynamicDate = ({
       
       // First try to find in allColValues (passed from parent with colvalueList)
       if (allColValues && Array.isArray(allColValues) && allColValues.length > 0) {
-        // First filter by sprint ID to only get values for this specific sprint
-        const valuesForThisSprint = allColValues.filter((item: any) => {
+        // Filter by sprint ID and row-level identifiers (taskGroupID / taskID)
+        const valuesForThisRow = allColValues.filter((item: any) => {
           const itemSprintId = item?.sprintID || item?.SprintID;
-          return itemSprintId == currentSprintId;
+          const sprintMatches = !itemSprintId || String(itemSprintId) === String(currentSprintId);
+          return sprintMatches && matchesCurrentRow(item);
         });
         
-        
         // Then find the one with matching column ID
-        const colValue = valuesForThisSprint.find(
+        const colValue = valuesForThisRow.find(
           (item: any) => {
             const itemColumnId = getColumnId(item);
-            return itemColumnId == columnId;
+            return String(itemColumnId) === String(columnId);
           }
         );
-        
         
         if (colValue?.dynamicColumnValues) {
           setSelectedDate(colValue.dynamicColumnValues);
@@ -110,11 +158,11 @@ const DynamicDate = ({
       // Try to find in rowData.colvalueList if it exists (for backward compatibility)
       if ('colvalueList' in rowData && Array.isArray((rowData as any).colvalueList)) {
         
-        // Filter by sprint ID if the items have sprintID
+        // Filter by sprint ID and row-level identifiers
         const valuesFromRowData = (rowData as any).colvalueList.filter((item: any) => {
           const itemSprintId = item?.sprintID || item?.SprintID;
-          // If the item has a sprintID, make sure it matches, otherwise include it
-          return !itemSprintId || itemSprintId == currentSprintId;
+          const sprintMatches = !itemSprintId || String(itemSprintId) === String(currentSprintId);
+          return sprintMatches && matchesCurrentRow(item);
         });
         
         const colValue = valuesFromRowData.find(
@@ -158,13 +206,13 @@ const DynamicDate = ({
 
       const formattedDateValue = moment(selectedDate).format('LLL');
       
-      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL1}/InsertDynamicValues`;
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL1}/InsertDynamicSprintTaskValues`;
       
       const url = new URL(baseUrl);
       url.searchParams.append('DynamicColumnID', columnData?.additionalColumnID);
       url.searchParams.append('LoginuserID', user?.id);
-      url.searchParams.append('SprintID', rowData?.SprintID || rowData?.sprintID || '');
-      url.searchParams.append('SprintGroupID', rowData?.SprintGroupID || rowData?.sprintGroupID || '');
+      url.searchParams.append('TaskID', rowData?.taskID || rowData?.taskID || '');
+      url.searchParams.append('GroupID', rowData?.taskGroupID || rowData?.taskGroupID || '');
       url.searchParams.append('DynamicValue', selectedDate || '');
 
       const response = await axios.post(url.toString(), null, {

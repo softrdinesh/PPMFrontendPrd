@@ -49,7 +49,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const [anchorEl, setAnchorEl] = useState(null)
   const [createMenu, setCreateMenu] = useState(false)
   const { user } = useAuth();
-
+console.log(rowData,'rowdatadropdown')
   // Find the specific column data from dynamicValue array
   const currentColumnData = useMemo(() => {
     if (!dynamicValue || !columnData) return null;
@@ -63,9 +63,9 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   }, [currentColumnData]);
 
   // API function for fetching sprint dropdown values - inside component
-  const fetchSprintDropdownValues = async (sprintGroupId: string, sprintId: string): Promise<SprintDropdownResponse[]> => {
+  const fetchSprintDropdownValues = async (taskGroupID: string, taskID: string): Promise<SprintDropdownResponse[]> => {
     const response = await axios.get(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskLoadDynamicDropdownvalueList?SprintGroupID=${sprintGroupId}&SprintID=${sprintId}`
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetDynamicDropdownvaluelist?GroupID=${taskGroupID}&TaskID=${taskID}`
     );
     return response.data;
   };
@@ -74,12 +74,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const callInsertDynamicValuesAPI = async (newValue: string) => {
     const DynamicColumnID = columnData?.additionalColumnID;
     const LoginuserID = user?.id;
-    const SprintID = rowData?.SprintID;
-    const SprintGroupID = rowData?.SprintGroupID;
+
     const DynamicValue = newValue;
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
-    const apiUrl = `${BASE_URL}/SprintCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
+    const apiUrl = `${BASE_URL}/SprintTaskCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${rowData?.taskGroupID}&TaskID=${rowData?.taskID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
 
     try {
       const response = await axios.post(apiUrl);
@@ -100,12 +99,12 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
 
   // Query for fetching sprint dropdown values
   const { data: sprintDropdownValues, refetch: refetchSprintValues } = useQuery({
-    queryKey: ['sprint-dropdown-values', rowData?.SprintGroupID, rowData?.SprintID],
+    queryKey: ['sprint-dropdown-values', rowData?.taskGroupID, rowData?.taskID],
     queryFn: () => fetchSprintDropdownValues(
-      rowData?.SprintGroupID?.toString() || '',
-      rowData?.SprintID?.toString() || ''
+      rowData?.taskGroupID?.toString() || '',
+      rowData?.taskID?.toString() || ''
     ),
-    enabled: !!(rowData?.SprintGroupID && rowData?.SprintID)
+    enabled: !!(rowData?.taskGroupID && rowData?.taskID)
   });
 
   // Transform sprint dropdown values to match the expected format
@@ -113,7 +112,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     if (!sprintDropdownValues) return [];
     // console.log(sprintDropdownValues,'sprintDropdownValues')
     return sprintDropdownValues.map(item => ({
-      Dynamic_ddl_ID: item.dynamicDropdownValueID,
+      Dynamic_ddl_ID: item.dynamicDropdownID,
       Valuetxt: item.valuetxt
     }));
   }, [sprintDropdownValues]);
@@ -159,11 +158,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
       const DynamicColumnID = columnData?.additionalColumnID;
       const LoginuserID = user?.id;
-      const SprintID = rowData?.SprintID;
-      const SprintGroupID = rowData?.SprintGroupID;
+      const SprintID = rowData?.taskID;
+      const SprintGroupID = rowData?.taskGroupID;
       const DynamicValue = item?.Dynamic_ddl_ID;
       
-      const apiUrl = `${BASE_URL}/SprintAssignDynamicDropdownValue?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&DynamicDropDownID=${DynamicValue}`;
+      const apiUrl = `${BASE_URL}/SprintTaskAssignDynamicDropdownValue?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${SprintGroupID}&TaskID=${SprintID}&DynamicDropDownID=${DynamicValue}`;
       
       // Make the API call using POST method
       const response = await axios.post(apiUrl);
@@ -202,12 +201,12 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
     const DynamicColumnID = columnData?.additionalColumnID;
     const LoginuserID = user?.id;
-    const SprintID = rowData?.SprintID;
-    const SprintGroupID = rowData?.SprintGroupID;
+    const taskid = rowData?.taskID;
+    const groupid = rowData?.taskGroupID;
     console.log(id,'dd')
     
     // Construct the URL with all required parameters
-    const apiUrl = `${BASE_URL}/SprintRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&DynamicDropdownValueID=${id}`;
+    const apiUrl = `${BASE_URL}/SprintTaskRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${groupid}&TaskID=${taskid}&DynamicDropdownValueID=${id}`;
     
     // Use DELETE method instead of GET (adjust based on API requirement)
     const response = await axios.post(apiUrl, {

@@ -80,6 +80,21 @@ interface UpdateStatusResponse {
   data?: any;
 }
 
+// Add Create Task Status interface
+interface CreateTaskStatusPayload {
+  Statusname: string;
+  TaskID: number;
+  LoginuserID: number;
+  GroupID: number;
+  Colorcode: string;
+}
+
+interface CreateTaskStatusResponse {
+  status: boolean;
+  message?: string;
+  data?: any;
+}
+
 // Update interface for status lookup response to match your actual API response
 interface StatusLookupItem {
   statusID: number;
@@ -87,20 +102,13 @@ interface StatusLookupItem {
   colorcode: string;
 }
 
-// Add function to fetch status lookup list
-const fetchStatusLookupList = async (): Promise<StatusLookupItem[]> => {
+// Add function to fetch status lookup list with taskID and groupID
+const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserID: number): Promise<StatusLookupItem[]> => {
   try {
-    const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintGetStatusLookupList`,
-      {}, // Empty body for POST request
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    // Return the array directly since your API returns an array
+    const response = await axios.get(
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
+    )
+    console.log(response.data)
     return response.data;
   } catch (error) {
     console.error('Error fetching status lookup list:', error);
@@ -114,20 +122,18 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
     const DynamicColumnID = payload.DynamicColumnID;
     const LoginuserID = payload.LoginuserID;
-    const SprintID = payload.SprintID;
+    const taskid = payload.SprintID;
     const SprintGroupID = payload.SprintGroupID;
     const DynamicValue = payload.DynamicValue?.toString() || '';
     
-    const apiUrl = `${BASE_URL}/InsertDynamicValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&SprintID=${SprintID}&SprintGroupID=${SprintGroupID}&DynamicValue=${encodeURIComponent(DynamicValue)}`;
+    const apiUrl = `${BASE_URL}/InsertDynamicSprintTaskValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&TaskID=${taskid}&GroupID=${SprintGroupID}&DynamicValue=${encodeURIComponent(DynamicValue)}`;
 
     const response = await axios.post(apiUrl);
-    // Show success toasterhandleFormClose()
     toast.success('Value updated successfully');
       
     return { status: true, data: response.data };
   } catch (error) {
     console.error('API call failed:', error);
-    // Show error toaster
     toast.error('Failed to update value');
     throw error;
   }
@@ -136,23 +142,46 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
 // FIXED: Simplified the createStatus function to avoid double encoding
 const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusResponse> => {
   try {
-    // FIXED: Don't double-encode the color code
-    // Just pass the color code as is - it should already be in proper format (#RRGGBB)
     const response = await axios.post(
       `https://uat.ppmbackend.projectpulse360.com/SprintCreateStatusLookup`,
       null,
       {
         params: {
           Statusname: payload.Statusname,
-          Colorcode: payload.Colorcode // FIXED: Send directly without encodeURI
+          Colorcode: payload.Colorcode
         }
       }
     );   
     toast.success("Status Created Successfully")
-    // FIXED: Return the response data directly
     return response.data;
   } catch (error) {
     console.error('Error creating status:', error);
+    throw error;
+  }
+}
+
+// Add create task status function
+const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<CreateTaskStatusResponse> => {
+  try {
+    const response = await axios.post(
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusCreate`,
+      null,
+      {
+        params: {
+          Statusname: payload.Statusname,
+          TaskID: payload.TaskID,
+          LoginuserID: payload.LoginuserID,
+          GroupID: payload.GroupID,
+          Colorcode: payload.Colorcode
+        }
+      }
+    );
+    
+    toast.success("Task Status Created Successfully");
+    return response.data;
+  } catch (error) {
+    console.error('Error creating task status:', error);
+    toast.error('Failed to create task status');
     throw error;
   }
 }
@@ -180,12 +209,16 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
   }
 }
 
-// Add delete status function
-const deleteStatus = async (payload: DeleteStatusPayload): Promise<DeleteStatusResponse> => {
+// FIXED: Updated delete status function with TaskID and GroupID
+const deleteStatus = async (payload: DeleteStatusPayload, row: any): Promise<DeleteStatusResponse> => {
   try {
+    // Get TaskID and GroupID from the row data
+    const taskID = row?.taskID || row?.TaskID;
+    const groupID = row?.taskGroupID || row?.TaskGroupID;
+    
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintRemoveStatusLookup?StatusID=${payload.StatusID}`,
-      {}, // Empty body for POST request
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusRemove?TaskID=${taskID}&StatusID=${payload.StatusID}&GroupID=${groupID}`,
+      {},
       {
         headers: {
           'Content-Type': 'application/json'
@@ -204,10 +237,10 @@ const deleteStatus = async (payload: DeleteStatusPayload): Promise<DeleteStatusR
 
 interface StatusMenuItemProps {
   item: ProjectStatusList
-  row: SprintItem | AdditionalSubTaskListItem
+  row: SprintItem | AdditionalSubTaskListItem | TaskListItemType
   handleClose: () => void
   handleEdit?: (item?: ProjectStatusList) => void
-  handleDelete?: (item?: ProjectStatusList) => void
+  handleDelete?: (item?: ProjectStatusList, row?: any) => void
   refetch: () => void
   columnData?: AdditionalColumn
   dynamicValue?: any
@@ -225,7 +258,7 @@ const StatusMenuItem = ({
   dynamicValue,
   isSubTask
 }: StatusMenuItemProps) => {
-    const { profile, user } = useAuth()
+  const { profile, user } = useAuth()
 
   const generateTextColor = (colorCode: string): string => {
     if (!colorCode) return ''
@@ -240,63 +273,81 @@ const StatusMenuItem = ({
     return getContrastingTextColor(colorCode)
   }
 
-  const handleStatusChange = async () => {
 
+
+  const handleStatusChange = async () => {
     // Check if we're dealing with a dynamic column
     if (!!dynamicValue || !!columnData) {
       try {
-        // You need to get these values from your context/props
-        // These are example values - replace with actual values from your app
         const dynamicColumnID = columnData?.additionalColumnID;
-        const loginuserID = user?.id; // Get from your auth context
-        const sprintID = row.SprintID; // Get from your props/context
-        const sprintGroupID = row.SprintGroupID; // Get from your props/context
-        
-        // Handle null/undefined for DynamicValue
-        // If StatusID is 0 (None option) or null/undefined, send empty string or null
+        const loginuserID = user?.id;
+
+        // ✅ FIXED: Use taskID and taskGroupID (same as non-dynamic branch)
+        const taskID = row?.taskID || row?.TaskID;
+        const groupID = row?.taskGroupID || row?.TaskGroupID;
+
         let dynamicValueToSend;
-        
+
         if (item?.StatusID === 0 || item?.StatusID === null || item?.StatusID === undefined) {
-          dynamicValueToSend = ''; // Send empty string for None option
+          dynamicValueToSend = '';
         } else {
           dynamicValueToSend = item?.StatusID?.toString();
         }
 
-        // Make sure we have all required values
-        if (dynamicColumnID && loginuserID && sprintID && sprintGroupID) {
-       
-          
+        if (dynamicColumnID && loginuserID && taskID && groupID) {
           const response = await insertDynamicValue({
             DynamicColumnID: dynamicColumnID,
             LoginuserID: loginuserID,
-            SprintID: sprintID,
-            SprintGroupID: sprintGroupID,
+            SprintID: taskID,        // ✅ FIXED: was row.SprintID
+            SprintGroupID: groupID,  // ✅ FIXED: was row.SprintGroupID
             DynamicValue: dynamicValueToSend
           });
-          
-          
-          // Call refetch after successful API call
+          handleClose()
+  
+
           if (response?.status) {
             refetch();
+            
           }
         } else {
           console.error('Missing required values for dynamic value insertion:', {
             dynamicColumnID,
             loginuserID,
-            sprintID,
-            sprintGroupID
+            taskID,
+            groupID
           });
         }
       } catch (error) {
         console.error('Failed to insert dynamic value:', error);
-        // Don't throw error to not break the flow
       }
     } else {
-      // If not a dynamic column, just refetch
-      refetch();
+      // For non-dynamic columns, create task status using taskID and taskGroupID from row
+      try {
+        // Get taskID and taskGroupID from row data
+        const taskID = row?.taskID || row?.TaskID || row?.ID;
+        const groupID = row?.taskGroupID || row?.TaskGroupID || row?.GroupID;
+        const loginuserID = user?.id;
+
+        // Only create task status if we have all required data and it's not the "None" option
+        if (taskID && groupID && loginuserID && item?.StatusID !== 0 && item?.StatusID !== null && item?.StatusID !== undefined) {
+          await createTaskStatus({
+            Statusname: item?.Statusname,
+            TaskID: taskID,
+            LoginuserID: loginuserID,
+            GroupID: groupID,
+            Colorcode: item?.Colorcode
+          });
+        } else if (item?.StatusID === 0) {
+          // Handle "None" option - this would clear the status
+          console.log('None option selected - status cleared');
+        }
+
+        refetch();
+      } catch (error) {
+        console.error('Failed to create task status:', error);
+      }
     }
   }
-
   return (
     <Grid size={12}>
       <Box display={'flex'} alignItems={'stretch'} gap={2}>
@@ -312,26 +363,18 @@ const StatusMenuItem = ({
           p={0}
           alignItems={'center'}
           onClick={async (event) => {
-            // Prevent the menu from closing immediately
             event.preventDefault();
             event.stopPropagation();
             
-            // Only update if the status is different
-            // Handle null/undefined comparison
             const currentStatusId = row?.StatusID || 
                                    dynamicValue?.Status?.StatusID || 
                                    dynamicValue?.statusID
             
-            // Check if the status is different before updating
             if (currentStatusId != item?.StatusID) {
-              // Call the status change function first
               await handleStatusChange();
-              // FIX 2: Call refetch after status change to immediately reload the status value
               refetch();
-            } else {
             }
 
-            // Always close the menu
             handleClose();
           }}
         >
@@ -357,7 +400,6 @@ const StatusMenuItem = ({
           </Tooltip>
         </Box>
         <Box display={'flex'} gap={0.5}>
-          {/* FIXED: Show edit icon for all items except the "None" option */}
           {item?.StatusID !== 0 && (
             <IconButton 
               size='small' 
@@ -373,7 +415,6 @@ const StatusMenuItem = ({
               <Icon icon={'mdi:pencil-outline'} fontSize={11} />
             </IconButton>
           )}
-          {/* Keep delete icon as is - only for non-default items that are not "None" */}
           {!item?.IsDefault && item?.StatusID && item?.StatusID !== 0 && (
             <IconButton 
               size='small' 
@@ -382,7 +423,7 @@ const StatusMenuItem = ({
                 e.preventDefault();
                 e.stopPropagation();
                 if (handleDelete) {
-                  await handleDelete(item);
+                  await handleDelete(item, row);
                 }
               }}
               color="error"
@@ -451,19 +492,30 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
   const [statusToDelete, setStatusToDelete] = useState<ProjectStatusList | null>(null)
   const { statusList = [] } = useWorkspace()
+  const { user } = useAuth()
 
-  // Update the useQuery to use the new API
+  // Update the useQuery to use the new API with taskID and groupID from row
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
-    queryKey: ['status-lookup-list'],
-    queryFn: fetchStatusLookupList,
+    queryKey: ['status-lookup-list', row?.taskID, row?.taskGroupID, user?.id],
+    queryFn: () => {
+      const taskID = row?.taskID || row?.TaskID;
+      const groupID = row?.taskGroupID || row?.TaskGroupID;
+      const loginuserID = user?.id;
+      
+      if (taskID && groupID && loginuserID) {
+        return fetchStatusLookupList(taskID, groupID, loginuserID);
+      }
+      return Promise.resolve([]);
+    },
+    enabled: !!row?.taskID || !!row?.TaskID,
     select: (data) => {
       // Transform the API response to match ProjectStatusList format
       return data.map((item: StatusLookupItem) => ({
         StatusID: item.statusID,
         Statusname: item.statusname,
         Colorcode: item.colorcode,
-        IsDefault: false, // Set default value since API doesn't provide this
-        TaskgroupID: null // Set default value since API doesn't provide this
+        IsDefault: false,
+        TaskgroupID: null
       }));
     }
   })
@@ -477,11 +529,9 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
 
   const statusName = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
-      // Handle both possible data structures
       if (dynamicValue?.Status?.Statusname) {
         return dynamicValue.Status.Statusname
       }
-      // Find status name from dynamicStatusValueList based on statusID
       if (dynamicValue?.statusID && dynamicValue?.dynamicStatusValueList) {
         const foundStatus = dynamicValue.dynamicStatusValueList.find(
           (s: any) => s.statusID === dynamicValue.statusID
@@ -494,17 +544,13 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     return row?.Status?.Statusname
   }, [columnData, dynamicValue, row?.Status?.Statusname])
 
-  // FIXED: Get color code from statusList based on statusID for dynamic values
   const colorCode = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
-      // Handle both possible data structures
       if (dynamicValue?.Status?.Colorcode) {
         return dynamicValue.Status.Colorcode
       }
       
-      // For the new data structure, get color code from statusList based on statusID
       if (dynamicValue?.statusID) {
-        // First check in statusList from workspace context
         if (statusList.length > 0) {
           const foundStatus = statusList.find(
             (s: any) => s.StatusID === dynamicValue.statusID
@@ -514,7 +560,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
           }
         }
         
-        // If not found in statusList, check in dynamicStatus (from API)
         if (dynamicStatus && dynamicStatus.length > 0) {
           const foundDynamicStatus = dynamicStatus.find(
             (s: any) => s.StatusID === dynamicValue.statusID
@@ -525,11 +570,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
         }
       }
       
-      // For dynamicStatusValueList approach
       if (dynamicValue?.statusID && dynamicValue?.dynamicStatusValueList && statusList.length > 0) {
-        // Get the statusID from dynamicValue
         const statusId = dynamicValue.statusID;
-        // Find the corresponding status in statusList to get its color
         const foundStatus = statusList.find(
           (s: any) => s.StatusID === statusId
         );
@@ -551,7 +593,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     setIsEdit(null)
   }
 
-  // FIX 1: Close both form and parent menu after status creation, don't re-open parent menu
   const handleFormClose = () => {
     setAnchorEl(null)
     setFormAnchor(null)
@@ -574,25 +615,23 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     setAnchorEl(null)
   }
 
-  // Open delete confirmation dialog
   const handleDeleteClick = (item: ProjectStatusList) => {
     if (!item?.StatusID || item.StatusID === 0) return;
     setStatusToDelete(item);
     setDeleteDialogOpen(true);
   };
 
-  // Handle delete confirmation
   const handleDeleteConfirm = async () => {
     if (!statusToDelete?.StatusID) return;
     
     try {
-      const response = await deleteStatus({ StatusID: statusToDelete.StatusID });
-      if (response?.status) {
-        toast.success('Status Deleted Successfully');
+      const response = await deleteStatus({ StatusID: statusToDelete.StatusID }, row);
+     // if (response?.status) {
+       // toast.success('Status Deleted Successfully');
         refetchStatusList();
         refetch();
         handleFormClose();
-      }
+   //   }
     } catch (error) {
       console.error('Failed to delete status:', error);
     } finally {
@@ -601,20 +640,13 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     }
   };
 
-  // Handle delete cancel
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setStatusToDelete(null);
   };
 
   const onSubmit = async (data: FormValidateType) => {
-    const body = {
-      ...data,
-      TaskgroupID: row?.TaskGroupID
-    }
-
     if (isEdit) {
-      // Use the new updateStatus function instead of updateProjectStatus
       const response = await updateStatus({
         StatusID: parseInt(isEdit),
         Statusname: data.Statusname,
@@ -625,35 +657,38 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
         refetchStatusList()
         refetch()
         reset({ Statusname: '', Colorcode: '' })
-        // FIXED: Close the form after successful update
         handleFormClose()
       }
     } else {
-      // Use the new createStatus function instead of addProjectStatus
-      const response = await createStatus({
+      // FIXED: Use createTaskStatus with taskID and groupID from row data
+      const taskID = row?.taskID || row?.TaskID
+      const groupID = row?.taskGroupID || row?.TaskGroupID
+      const loginuserID = user?.id
+
+      const response = await createTaskStatus({
         Statusname: data.Statusname,
+        TaskID: taskID,
+        LoginuserID: loginuserID,
+        GroupID: groupID,
         Colorcode: data.Colorcode
       });
-      refetchStatusList()
-        reset({ Statusname: '', Colorcode: '' })
-        // FIXED: Close the form after successful creation
-        handleFormClose()
-      if (response?.status) {
+      
+     
         refetchStatusList()
+        refetch()
         reset({ Statusname: '', Colorcode: '' })
-        // FIXED: Close the form after successful creation
         handleFormClose()
-      }
+        setFormAnchor(null)
+        setAnchorEl(null)
+      
     }
   }
 
-  // Add a "None" option to clear status
   const allStatusOptions = useMemo(() => {
-    // Create a "None" option with StatusID = 0 or null
     const noneOption: ProjectStatusList = {
-      StatusID: 0, // Use 0 to represent null/empty
+      StatusID: 0,
       Statusname: 'None',
-      Colorcode: '#E0E0E0', // Light gray color
+      Colorcode: '#E0E0E0',
       IsDefault: false,
       TaskgroupID: null
     }
