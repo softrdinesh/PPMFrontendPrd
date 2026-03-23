@@ -55,7 +55,6 @@ const CreateColumnMenu = ({
     queryKey: ['column-type'],
     queryFn: () => fetchColumnType()
   })
-  console.log(groupid,'dd')
 
   // ** States
   const [selectedColumnType, setSelectedColumnType] = useState<TColumnType | null>(null)
