@@ -428,12 +428,11 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
           try {
             const value1 = localStorage.getItem('userData')
             const data1 = JSON.parse(value1);
-            const userId = data1.userData.UserID;
 
             const bodyvalue = {
               Sprintname: value,
               Goals: filteredSprintData?.[rowIndex]?.Goals || "-",
-              LoginuserID: userId,
+              LoginuserID: user?.id,
               SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
               WorkspaceID: filteredSprintData?.[rowIndex]?.WorkSpaceID,
               sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
@@ -462,7 +461,6 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
           try {
             const value1 = localStorage.getItem('userData')
             const data = JSON.parse(value1);
-            const userId = data.userData.UserID;
 
             // ✅ FIX: read the latest Name from localData which was already updated optimistically
             // previously this used filteredSprintData?.[rowIndex]?.Name which was stale
@@ -474,7 +472,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
             const bodyvalue = {
               Sprintname: currentName,
               Goals: value || "New Goal",
-              LoginuserID: userId,
+              LoginuserID: user?.id,
               SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
               WorkspaceID: filteredSprintData?.[rowIndex]?.WorkSpaceID,
               sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
@@ -494,11 +492,10 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
           try {
             const value1 = localStorage.getItem('userData')
             const data = JSON.parse(value1);
-            const userId = data.userData.UserID;
 
             const bodyvalue = {
               ...value,
-              LoginuserID: userId,
+              LoginuserID: user?.id,
               SprintgroupID: filteredSprintData?.[rowIndex]?.SprintGroupID,
               WorkspaceID: filteredSprintData?.[rowIndex]?.WorkSpaceID,
               sprintID: filteredSprintData?.[rowIndex]?.SprintID?.toString()
