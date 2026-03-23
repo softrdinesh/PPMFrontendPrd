@@ -604,7 +604,7 @@ const onSubmit = async (data: FormValidateType) => {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
       
       // Use dynamic values instead of hardcoded ones
-      const uploadEndpoint = `${BASE_URL}/SprintTaskRemoveFileUpload?AdditionalColumnID=${columnId}&LoginuserID=${user?.id}&TaskID=${rowData?.taskID || rowData?.taskID || ''}&GroupID=${rowData?.taskGroupID}`
+      const uploadEndpoint = `${BASE_URL}/SprintTaskRemoveFileUpload/${columnId}/${user?.id}/${rowData?.taskID || rowData?.taskID || ''}/${rowData?.taskGroupID}`
       
       await axios.post(uploadEndpoint)
       toast.success("File Removed Successfully")

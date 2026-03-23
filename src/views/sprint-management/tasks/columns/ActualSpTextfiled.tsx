@@ -10,11 +10,10 @@ interface ColumnTextFieldProps {
   canEdit: boolean
 }
 
-export const GoalsTextfiled = ({ table, getValue, index, id, canEdit = true }: ColumnTextFieldProps) => {
+export const ActualSpTextfiled = ({ table, getValue, index, id, canEdit = true }: ColumnTextFieldProps) => {
   const initialValue = getValue()
   const [value, setValue] = useState(initialValue || '')
   const maxLength = 2000
-
   const onBlur = () => {
     table.options.meta?.updateData(index, id, value)
   }
@@ -35,10 +34,11 @@ export const GoalsTextfiled = ({ table, getValue, index, id, canEdit = true }: C
   return canEdit ? (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <TextField
+    
         variant='standard'
         multiline
-        minRows={3}
-        maxRows={6}
+        minRows={2}
+        maxRows={3}
         fullWidth
         className='min-w-44'
         value={value ?? '-'}
@@ -81,6 +81,6 @@ type DefaultColumnType = {
 
 export const defaultColumn: any = (canEdit: boolean) => ({
   cell: ({ getValue, row: { index }, column: { id }, table }: DefaultColumnType) => {
-    return <GoalsTextfiled getValue={getValue} index={index} id={id} table={table} canEdit={canEdit} />
+    return <ActualSpTextfiled getValue={getValue} index={index} id={id} table={table} canEdit={canEdit} />
   }
 })

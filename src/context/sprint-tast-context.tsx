@@ -29,6 +29,8 @@ interface SprintTaskManagementType {
 const defaultColumnVisibility: ColumnVisibility = {
   Taskname: true,
   ActualSP: true,
+  Description:true,
+  Owner:true,
   IsUnplanned: true,
   EstimatedSP: true
 }

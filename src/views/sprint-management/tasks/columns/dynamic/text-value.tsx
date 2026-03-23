@@ -23,11 +23,11 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
   const [value, setValue] = useState<string>(initialValue ?? '-')
   const { profile, user } = useAuth()
 
-  console.log(rowData,'rowdata')
+ 
   const isNumber = useMemo(() => {
     return columnData?.ColumnType?.Keyname === 'NUM'
   }, [columnData?.ColumnType?.Keyname])
-console.log(rowData,'rods')
+
   // Function to call the API via axios
   const callInsertDynamicValuesAPI = async (newValue: string) => {
     const DynamicColumnID = columnData?.additionalColumnID;
@@ -41,7 +41,6 @@ console.log(rowData,'rods')
 
     try {
       const response = await axios.post(apiUrl);
-      console.log('API call successful:', response.data);
       // Show success toaster
       toast.success('Value updated successfully');
     } catch (error) {

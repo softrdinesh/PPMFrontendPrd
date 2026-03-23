@@ -19,16 +19,26 @@ import {
 } from 'src/utils/functions'
 
 import { pattern } from '@/constants/patterns'
-import { addProjectStatus, fetchProjectStatusList, updateProjectStatus } from '@/services/modules/project-status'
 import type { ProjectStatusList } from '@/services/modules/project-status/types'
 import type { AdditionalColumn } from '@/services/modules/project/types'
-import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/types'
-import type { TaskListItemType } from '@/services/modules/task/types'
 import CustomButton from '@components/button'
 import { useWorkspace } from 'src/context/workspace-context'
-import type { SprintItem } from '@/services/modules/sprint-item/types'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
+
+// Import the updateSprintTaskAPI function from the parent
+interface UpdateSprintTaskAPI {
+  (taskId: string | number, taskData: {
+    Taskname?: string;
+    Description?: string;
+    OwnerID?: number;
+    EstimatedSP?: number;
+    ActualSP?: number;
+    isunplan?: boolean;
+    StatusID?: number;
+    PriorityID?: number;
+  }): Promise<any>;
+}
 
 // Add these types and service function directly in the file
 interface InsertDynamicValuePayload {
@@ -50,39 +60,6 @@ interface CreateStatusPayload {
   Colorcode: string;
 }
 
-interface CreateStatusResponse {
-  status: boolean;
-  message?: string;
-  data?: any;
-}
-
-// Add Delete Status interfaces
-interface DeleteStatusPayload {
-  StatusID: number;
-}
-
-interface DeleteStatusResponse {
-  status: boolean;
-  message?: string;
-  data?: any;
-}
-
-// Add Update Status interface
-interface UpdateStatusPayload {
-  StatusID: number;
-   TaskID: number;
-  LoginuserID: number;
-  GroupID: number;
-  Statusname: string;
-  Colorcode: string;
-}
-
-interface UpdateStatusResponse {
-  status: boolean;
-  message?: string;
-  data?: any;
-}
-
 // Add Create Task Status interface
 interface CreateTaskStatusPayload {
   Statusname: string;
@@ -92,13 +69,7 @@ interface CreateTaskStatusPayload {
   Colorcode: string;
 }
 
-interface CreateTaskStatusResponse {
-  status: boolean;
-  message?: string;
-  data?: any;
-}
-
-// Update interface for status lookup response to match your actual API response
+// Update interface for status lookup response
 interface StatusLookupItem {
   statusID: number;
   statusname: string;
@@ -111,7 +82,6 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
     const response = await axios.get(
       `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
-    console.log(response.data)
     return response.data;
   } catch (error) {
     console.error('Error fetching status lookup list:', error);
@@ -119,10 +89,10 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
   }
 }
 
-// Replace the insertDynamicValue function with the new implementation
+// Insert dynamic value for dynamic columns
 const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<InsertDynamicValueResponse> => {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
     const DynamicColumnID = payload.DynamicColumnID;
     const LoginuserID = payload.LoginuserID;
     const taskid = payload.SprintID;
@@ -142,29 +112,8 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
   }
 }
 
-// FIXED: Simplified the createStatus function to avoid double encoding
-const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusResponse> => {
-  try {
-    const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintCreateStatusLookup`,
-      null,
-      {
-        params: {
-          Statusname: payload.Statusname,
-          Colorcode: payload.Colorcode
-        }
-      }
-    );   
-    toast.success("Status Created Successfully")
-    return response.data;
-  } catch (error) {
-    console.error('Error creating status:', error);
-    throw error;
-  }
-}
-
-// Add create task status function
-const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<CreateTaskStatusResponse> => {
+// Create task status (for when adding new status options)
+const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<any> => {
   try {
     const response = await axios.post(
       `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusCreate`,
@@ -189,17 +138,17 @@ const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<Creat
   }
 }
 
-// Add update status function
-const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusResponse> => {
+// Update status
+const updateStatus = async (payload: any): Promise<any> => {
   try {
     const response = await axios.post(
       `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusUpdate`,
       null,
       {
         params: {
-          TaskID:payload.TaskID,
+          TaskID: payload.TaskID,
           StatusID: payload.StatusID,
-          GroupID:payload.GroupID,
+          GroupID: payload.GroupID,
           Statusname: payload.Statusname,
           Colorcode: payload.Colorcode
         }
@@ -214,10 +163,9 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
   }
 }
 
-// FIXED: Updated delete status function with TaskID and GroupID
-const deleteStatus = async (payload: DeleteStatusPayload, row: any): Promise<DeleteStatusResponse> => {
+// Delete status
+const deleteStatus = async (payload: { StatusID: number }, row: any): Promise<any> => {
   try {
-    // Get TaskID and GroupID from the row data
     const taskID = row?.taskID || row?.TaskID;
     const groupID = row?.taskGroupID || row?.TaskGroupID;
     
@@ -242,7 +190,7 @@ const deleteStatus = async (payload: DeleteStatusPayload, row: any): Promise<Del
 
 interface StatusMenuItemProps {
   item: ProjectStatusList
-  row: SprintItem | AdditionalSubTaskListItem | TaskListItemType
+  row: any
   handleClose: () => void
   handleEdit?: (item?: ProjectStatusList) => void
   handleDelete?: (item?: ProjectStatusList, row?: any) => void
@@ -250,6 +198,9 @@ interface StatusMenuItemProps {
   columnData?: AdditionalColumn
   dynamicValue?: any
   isSubTask: boolean
+  sprintTaskInfoApi?: any
+  setColvalueList?: any
+  updateSprintTask?: UpdateSprintTaskAPI
 }
 
 const StatusMenuItem = ({
@@ -261,24 +212,22 @@ const StatusMenuItem = ({
   refetch,
   columnData,
   dynamicValue,
-  isSubTask
+  isSubTask,
+  sprintTaskInfoApi,
+  setColvalueList,
+  updateSprintTask
 }: StatusMenuItemProps) => {
   const { profile, user } = useAuth()
 
   const generateTextColor = (colorCode: string): string => {
     if (!colorCode) return ''
-
     const hexColor = getHexColor(colorCode)
     const luminance = getLuminance(hexColor)
-
     if (luminance < 0.5) {
       return `${hexColor}`
     }
-
     return getContrastingTextColor(colorCode)
   }
-
-
 
   const handleStatusChange = async () => {
     // Check if we're dealing with a dynamic column
@@ -286,13 +235,10 @@ const StatusMenuItem = ({
       try {
         const dynamicColumnID = columnData?.additionalColumnID;
         const loginuserID = user?.id;
-
-        // ✅ FIXED: Use taskID and taskGroupID (same as non-dynamic branch)
         const taskID = row?.taskID || row?.TaskID;
         const groupID = row?.taskGroupID || row?.TaskGroupID;
 
         let dynamicValueToSend;
-
         if (item?.StatusID === 0 || item?.StatusID === null || item?.StatusID === undefined) {
           dynamicValueToSend = '';
         } else {
@@ -303,56 +249,75 @@ const StatusMenuItem = ({
           const response = await insertDynamicValue({
             DynamicColumnID: dynamicColumnID,
             LoginuserID: loginuserID,
-            SprintID: taskID,        // ✅ FIXED: was row.SprintID
-            SprintGroupID: groupID,  // ✅ FIXED: was row.SprintGroupID
+            SprintID: taskID,
+            SprintGroupID: groupID,
             DynamicValue: dynamicValueToSend
           });
           handleClose()
-  
 
           if (response?.status) {
             refetch();
-            
+            if (sprintTaskInfoApi) {
+              sprintTaskInfoApi.refetch().then(() => {
+                if (sprintTaskInfoApi.data) {
+                  const data = sprintTaskInfoApi.data;
+                  if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                    setColvalueList(data[0].colvalueList);
+                  } else if (data?.colvalueList) {
+                    setColvalueList(data.colvalueList);
+                  }
+                }
+              });
+            }
           }
-        } else {
-          console.error('Missing required values for dynamic value insertion:', {
-            dynamicColumnID,
-            loginuserID,
-            taskID,
-            groupID
-          });
         }
       } catch (error) {
         console.error('Failed to insert dynamic value:', error);
       }
     } else {
-      // For non-dynamic columns, create task status using taskID and taskGroupID from row
+      // For non-dynamic columns, update the task status using SprintTaskUpdate API
       try {
-        // Get taskID and taskGroupID from row data
-        const taskID = row?.taskID || row?.TaskID || row?.ID;
-        const groupID = row?.taskGroupID || row?.TaskGroupID || row?.GroupID;
-        const loginuserID = user?.id;
-
-        // Only create task status if we have all required data and it's not the "None" option
-        if (taskID && groupID && loginuserID && item?.StatusID !== 0 && item?.StatusID !== null && item?.StatusID !== undefined) {
-          await createTaskStatus({
-            Statusname: item?.Statusname,
-            TaskID: taskID,
-            LoginuserID: loginuserID,
-            GroupID: groupID,
-            Colorcode: item?.Colorcode
-          });
-        } else if (item?.StatusID === 0) {
-          // Handle "None" option - this would clear the status
-          console.log('None option selected - status cleared');
+        const taskId = row?.SprintTaskID?.toString() || row?.taskID?.toString();
+        
+        if (taskId && updateSprintTask) {
+          // Prepare task data with the new StatusID
+          const taskData = {
+            Taskname: row?.Taskname || '',
+            Description: row?.Description || '',
+            OwnerID: row?.OwnerID || 0,
+            EstimatedSP: row?.EstimatedSP || 0,
+            ActualSP: row?.ActualSP || 0,
+            isunplan: row?.IsUnplanned || false,
+            StatusID: item?.StatusID === 0 ? 0 : item?.StatusID,
+            PriorityID: row?.PriorityID || 3
+          };
+          
+          // Call the SprintTaskUpdate API
+          await updateSprintTask(taskId, taskData);
+          
+          toast.success(`Status updated to ${item?.Statusname || 'None'} successfully`);
+          
+          // Refetch to get latest data
+          if (sprintTaskInfoApi) {
+            await sprintTaskInfoApi.refetch();
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
+          }
+          refetch();
         }
-
-        refetch();
       } catch (error) {
-        console.error('Failed to create task status:', error);
+        console.error('Failed to update task status:', error);
+        toast.error("Failed to update status");
       }
     }
   }
+  
   return (
     <Grid size={12}>
       <Box display={'flex'} alignItems={'stretch'} gap={2}>
@@ -377,26 +342,17 @@ const StatusMenuItem = ({
             
             if (currentStatusId != item?.StatusID) {
               await handleStatusChange();
-              refetch();
             }
 
             handleClose();
           }}
         >
           <Avatar variant='rounded' sx={{ bgcolor: item?.Colorcode, width: 30, height: 30, p: 0 }}>
-            {item?.TaskgroupID ? (
-              <Icon
-                icon={'material-symbols:table-chart-view-outline'}
-                color={getContrastingTextColor(item?.Colorcode)}
-                fontSize={16}
-              />
-            ) : (
-              <Icon
-                icon={generateStatusIcons(item?.Statusname)}
-                color={getStatusIconColor(item?.Colorcode)}
-                fontSize={getStatusIconSize(item?.Statusname)}
-              />
-            )}
+            <Icon
+              icon={generateStatusIcons(item?.Statusname)}
+              color={getStatusIconColor(item?.Colorcode)}
+              fontSize={getStatusIconSize(item?.Statusname)}
+            />
           </Avatar>
           <Tooltip title={item?.Statusname || 'None'}>
             <Typography flex={1} textOverflow={'ellipsis'} overflow={'hidden'} whiteSpace={'nowrap'}>
@@ -443,54 +399,48 @@ const StatusMenuItem = ({
 }
 
 interface TaskStatusProps {
-  row: TaskListItemType | AdditionalSubTaskListItem
+  row: any
   refetch: () => void
   canEdit: boolean
   columnData?: AdditionalColumn
   dynamicValue?: any
   isSubTask?: boolean
+  sprintTaskInfoApi?: any
+  setColvalueList?: any
+  updateSprintTask?: UpdateSprintTaskAPI
 }
 
 type FormValidateType = { Statusname: string; Colorcode: string }
 
-// Add Delete Confirmation Dialog Props
-interface DeleteConfirmationDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  statusName: string;
-}
-
 // Delete Confirmation Dialog Component
-const DeleteConfirmationDialog = ({ open, onClose, onConfirm, statusName }: DeleteConfirmationDialogProps) => {
+const DeleteConfirmationDialog = ({ open, onClose, onConfirm, statusName }: any) => {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      aria-labelledby="delete-dialog-title"
-      aria-describedby="delete-dialog-description"
-    >
-      <DialogTitle id="delete-dialog-title">
-        Delete Status
-      </DialogTitle>
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Delete Status</DialogTitle>
       <DialogContent>
-        <DialogContentText id="delete-dialog-description">
+        <DialogContentText>
           Are you sure you want to delete the status "{statusName}"? This action cannot be undone.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
-        </Button>
-        <Button onClick={onConfirm} color="error" variant="contained" autoFocus>
-          Delete
-        </Button>
+        <Button onClick={onClose} color="primary">Cancel</Button>
+        <Button onClick={onConfirm} color="error" variant="contained">Delete</Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask = false }: TaskStatusProps) => {
+const TaskStatus = ({ 
+  row, 
+  refetch, 
+  canEdit, 
+  dynamicValue, 
+  columnData, 
+  isSubTask = false, 
+  sprintTaskInfoApi, 
+  setColvalueList,
+  updateSprintTask 
+}: TaskStatusProps) => {
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const [formAnchor, setFormAnchor] = useState<any>(null)
   const [isEdit, setIsEdit] = useState<string | null>(null)
@@ -499,7 +449,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
 
-  // Update the useQuery to use the new API with taskID and groupID from row
+  // Fetch status lookup list for dynamic status options
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
     queryKey: ['status-lookup-list', row?.taskID, row?.taskGroupID, user?.id],
     queryFn: () => {
@@ -514,7 +464,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     },
     enabled: !!row?.taskID || !!row?.TaskID,
     select: (data) => {
-      // Transform the API response to match ProjectStatusList format
       return data.map((item: StatusLookupItem) => ({
         StatusID: item.statusID,
         Statusname: item.statusname,
@@ -537,15 +486,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       if (dynamicValue?.Status?.Statusname) {
         return dynamicValue.Status.Statusname
       }
-      if (dynamicValue?.statusID && dynamicValue?.dynamicStatusValueList) {
-        const foundStatus = dynamicValue.dynamicStatusValueList.find(
-          (s: any) => s.statusID === dynamicValue.statusID
-        )
-        return foundStatus?.statustext
-      }
       return null
     }
-
     return row?.Status?.Statusname
   }, [columnData, dynamicValue, row?.Status?.Statusname])
 
@@ -554,40 +496,10 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       if (dynamicValue?.Status?.Colorcode) {
         return dynamicValue.Status.Colorcode
       }
-      
-      if (dynamicValue?.statusID) {
-        if (statusList.length > 0) {
-          const foundStatus = statusList.find(
-            (s: any) => s.StatusID === dynamicValue.statusID
-          );
-          if (foundStatus?.Colorcode) {
-            return foundStatus.Colorcode;
-          }
-        }
-        
-        if (dynamicStatus && dynamicStatus.length > 0) {
-          const foundDynamicStatus = dynamicStatus.find(
-            (s: any) => s.StatusID === dynamicValue.statusID
-          );
-          if (foundDynamicStatus?.Colorcode) {
-            return foundDynamicStatus.Colorcode;
-          }
-        }
-      }
-      
-      if (dynamicValue?.statusID && dynamicValue?.dynamicStatusValueList && statusList.length > 0) {
-        const statusId = dynamicValue.statusID;
-        const foundStatus = statusList.find(
-          (s: any) => s.StatusID === statusId
-        );
-        return foundStatus?.Colorcode;
-      }
-      
       return null;
     }
-
     return row?.Status?.Colorcode
-  }, [columnData, dynamicValue, row?.Status?.Colorcode, statusList, dynamicStatus])
+  }, [columnData, dynamicValue, row?.Status?.Colorcode])
 
   const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
     canEdit && setAnchorEl(e.currentTarget)
@@ -606,10 +518,10 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   }
 
   const checkChangeInHexValue = (value: string) => {
-    if (value === '' || (value?.startsWith('#') && (pattern.hexAllowed?.test(value?.slice(1)) || value?.length <= 1))) {
+    const pattern = /^#[0-9A-Fa-f]{0,6}$/;
+    if (value === '' || pattern.test(value)) {
       return true
     }
-
     return false
   }
 
@@ -630,13 +542,22 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     if (!statusToDelete?.StatusID) return;
     
     try {
-      const response = await deleteStatus({ StatusID: statusToDelete.StatusID }, row);
-     // if (response?.status) {
-       // toast.success('Status Deleted Successfully');
-        refetchStatusList();
-        refetch();
-        handleFormClose();
-   //   }
+      await deleteStatus({ StatusID: statusToDelete.StatusID }, row);
+      refetchStatusList();
+      refetch();
+      if (sprintTaskInfoApi) {
+        sprintTaskInfoApi.refetch().then(() => {
+          if (sprintTaskInfoApi.data) {
+            const data = sprintTaskInfoApi.data;
+            if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+              setColvalueList(data[0].colvalueList);
+            } else if (data?.colvalueList) {
+              setColvalueList(data.colvalueList);
+            }
+          }
+        });
+      }
+      handleFormClose();
     } catch (error) {
       console.error('Failed to delete status:', error);
     } finally {
@@ -651,47 +572,67 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   };
 
   const onSubmit = async (data: FormValidateType) => {
-  if (isEdit) {
-    // Get TaskID and GroupID from row data
-    const taskID = row?.taskID || row?.TaskID;
-    const groupID = row?.taskGroupID || row?.TaskGroupID;
-    
-    const response = await updateStatus({
-      StatusID: parseInt(isEdit),
-      TaskID: taskID,      // Add this
-      GroupID: groupID,    // Add this
-      Statusname: data.Statusname,
-      Colorcode: data.Colorcode
-    });
+    if (isEdit) {
+      const taskID = row?.taskID || row?.TaskID;
+      const groupID = row?.taskGroupID || row?.TaskGroupID;
+      
+      await updateStatus({
+        StatusID: parseInt(isEdit),
+        TaskID: taskID,
+        GroupID: groupID,
+        Statusname: data.Statusname,
+        Colorcode: data.Colorcode
+      });
 
-    // if (response?.status) {
-      refetchStatusList()
-      refetch()
-      reset({ Statusname: '', Colorcode: '' })
-      handleFormClose()
-    // }
-  } else {
-    // FIXED: Use createTaskStatus with taskID and groupID from row data
-    const taskID = row?.taskID || row?.TaskID
-    const groupID = row?.taskGroupID || row?.TaskGroupID
-    const loginuserID = user?.id
+      refetchStatusList();
+      refetch();
+      if (sprintTaskInfoApi) {
+        sprintTaskInfoApi.refetch().then(() => {
+          if (sprintTaskInfoApi.data) {
+            const data = sprintTaskInfoApi.data;
+            if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+              setColvalueList(data[0].colvalueList);
+            } else if (data?.colvalueList) {
+              setColvalueList(data.colvalueList);
+            }
+          }
+        });
+      }
+      reset({ Statusname: '', Colorcode: '' });
+      handleFormClose();
+    } else {
+      const taskID = row?.taskID || row?.TaskID;
+      const groupID = row?.taskGroupID || row?.TaskGroupID;
+      const loginuserID = user?.id;
 
-    const response = await createTaskStatus({
-      Statusname: data.Statusname,
-      TaskID: taskID,
-      LoginuserID: loginuserID,
-      GroupID: groupID,
-      Colorcode: data.Colorcode
-    });
-    
-    refetchStatusList()
-    refetch()
-    reset({ Statusname: '', Colorcode: '' })
-    handleFormClose()
-    setFormAnchor(null)
-    setAnchorEl(null)
+      await createTaskStatus({
+        Statusname: data.Statusname,
+        TaskID: taskID,
+        LoginuserID: loginuserID,
+        GroupID: groupID,
+        Colorcode: data.Colorcode
+      });
+      
+      refetchStatusList();
+      refetch();
+      if (sprintTaskInfoApi) {
+        sprintTaskInfoApi.refetch().then(() => {
+          if (sprintTaskInfoApi.data) {
+            const data = sprintTaskInfoApi.data;
+            if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+              setColvalueList(data[0].colvalueList);
+            } else if (data?.colvalueList) {
+              setColvalueList(data.colvalueList);
+            }
+          }
+        });
+      }
+      reset({ Statusname: '', Colorcode: '' });
+      handleFormClose();
+      setFormAnchor(null);
+      setAnchorEl(null);
+    }
   }
-}
 
   const allStatusOptions = useMemo(() => {
     const noneOption: ProjectStatusList = {
@@ -768,13 +709,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                   paddingBottom: 1,
                   '&::-webkit-scrollbar': {
                     width: '5px'
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    backgroundColor: '#888',
-                    borderRadius: '2px'
-                  },
-                  '&::-webkit-scrollbar-thumb:hover': {
-                    backgroundColor: '#555'
                   }
                 }}
               >
@@ -790,6 +724,9 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                     isSubTask={isSubTask}
                     handleEdit={handleEdit}
                     handleDelete={handleDeleteClick}
+                    sprintTaskInfoApi={sprintTaskInfoApi}
+                    setColvalueList={setColvalueList}
+                    updateSprintTask={updateSprintTask}
                   />
                 ))}
               </Grid>
@@ -808,7 +745,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                     <Avatar variant='rounded' sx={{ width: 30, height: 30, p: 0 }}>
                       <i className='ri-add-box-line' />
                     </Avatar>
-
                     <Typography textOverflow={'ellipsis'} overflow={'hidden'} whiteSpace={'nowrap'}>
                       {'New Label'}
                     </Typography>
@@ -826,6 +762,9 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                     dynamicValue={dynamicValue}
                     columnData={columnData}
                     isSubTask={isSubTask}
+                    sprintTaskInfoApi={sprintTaskInfoApi}
+                    setColvalueList={setColvalueList}
+                    updateSprintTask={updateSprintTask}
                   />
                 ))}
               </Grid>
@@ -839,9 +778,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
         anchorEl={formAnchor}
         onClose={handleFormClose}
         TransitionComponent={Zoom}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
-        sx={{ '& .MuiList-root': { p: 0 } }}
       >
         <Box maxWidth={'300px'} width={'100%'} p={4}>
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
@@ -849,9 +785,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
               <Grid size={12}>
                 <Controller
                   name='Statusname'
-                  rules={{
-                    required: 'Please enter a name for the label'
-                  }}
+                  rules={{ required: 'Please enter a name for the label' }}
                   control={control}
                   render={({ field, formState: { errors } }) => (
                     <TextField
@@ -862,11 +796,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                       placeholder='eg. Status name'
                       InputProps={{
                         startAdornment: (
-                          <Icon
-                            icon={'material-symbols:table-chart-view-outline'}
-                            fontSize={28}
-                            style={{ marginRight: 12 }}
-                          />
+                          <Icon icon={'material-symbols:table-chart-view-outline'} fontSize={28} style={{ marginRight: 12 }} />
                         )
                       }}
                       inputProps={{ maxLength: 50 }}
@@ -880,7 +810,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                   name='Colorcode'
                   rules={{
                     required: 'Please enter a color for field',
-                    pattern: { value: pattern.hexValidate, message: 'Please enter a valid hex code' }
+                    pattern: { value: /^#[0-9A-Fa-f]{6}$/, message: 'Please enter a valid hex code' }
                   }}
                   control={control}
                   render={({ field, formState: { errors } }) => (
@@ -890,7 +820,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                       fullWidth
                       onChange={e => {
                         const colorValue = e?.target?.value
-
                         if (checkChangeInHexValue(colorValue)) {
                           field?.onChange(colorValue)
                         }
@@ -909,13 +838,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
                   <CustomButton size='small' variant='outlined' circular onClick={handleFormClose}>
                     Close
                   </CustomButton>
-                  <CustomButton
-                    size='small'
-                    variant='contained'
-                    circular
-                    type='submit'
-                    disabled={isSubmitting || !isDirty}
-                  >
+                  <CustomButton size='small' variant='contained' circular type='submit' disabled={isSubmitting || !isDirty}>
                     Save
                   </CustomButton>
                 </Box>
@@ -925,7 +848,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
         </Box>
       </Menu>
 
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onClose={handleDeleteCancel}

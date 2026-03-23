@@ -43,6 +43,8 @@ const SprintFilterButton = () => {
     const allVisible: typeof columnVisibility = {
       Taskname: true,
       ActualSP: true,
+      Description:true,
+      Owner:true,
       IsUnplanned: true,
       EstimatedSP: true
     }
@@ -89,6 +91,9 @@ const SprintFilterButton = () => {
           </Typography>
         </Box>
         <FilterMenuItem menuID='Taskname' name={'Task'} />
+    <FilterMenuItem menuID='Description' name={'TaskDescription'} />
+    <FilterMenuItem menuID='Owner' name={'Owner'} />
+
         <FilterMenuItem menuID='ActualSP' name='Actual SP' />
         <FilterMenuItem menuID='IsUnplanned' name='Unplanned' />
         <FilterMenuItem menuID='EstimatedSP' name='Estimated SP' />

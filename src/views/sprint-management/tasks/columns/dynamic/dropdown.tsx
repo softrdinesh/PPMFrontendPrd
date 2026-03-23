@@ -49,7 +49,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const [anchorEl, setAnchorEl] = useState(null)
   const [createMenu, setCreateMenu] = useState(false)
   const { user } = useAuth();
-console.log(rowData,'rowdatadropdown')
+
   // Find the specific column data from dynamicValue array
   const currentColumnData = useMemo(() => {
     if (!dynamicValue || !columnData) return null;
@@ -150,7 +150,6 @@ console.log(rowData,'rowdatadropdown')
 
   const handleDropdownSelect = async (item: DynamicDropdownList | null) => {
 
-    console.log(item,'itesm')
     try {
       if (!item) return;
       
@@ -203,7 +202,6 @@ console.log(rowData,'rowdatadropdown')
     const LoginuserID = user?.id;
     const taskid = rowData?.taskID;
     const groupid = rowData?.taskGroupID;
-    console.log(id,'dd')
     
     // Construct the URL with all required parameters
     const apiUrl = `${BASE_URL}/SprintTaskRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${groupid}&TaskID=${taskid}&DynamicDropdownValueID=${id}`;
@@ -347,7 +345,6 @@ console.log(rowData,'rowdatadropdown')
                       }}
                       isOptionEqualToValue={(option, value) => option.dynamicDropdownValueID === value?.dynamicDropdownValueID}
                       onChange={(event, newValue) => {
-                        console.log(newValue,)
                         handleDropdownSelect(newValue)
                       }}
                     />

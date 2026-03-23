@@ -28,7 +28,6 @@ interface DynamicTableHeaderProps {
 }
 
 const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTableHeaderProps) => {
-  console.log('DynamicTableHeader rendered with column:', column) // Debug log
   
   const initialValue = useMemo(() => column?.colname || column?.ColumnName || column?.colName, [column?.colname, column?.ColumnName, column?.colName])
   const { user } = useAuth()
@@ -51,7 +50,6 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
     setAnchorEl(e?.currentTarget)
     setSelectedColumn(columnData)
     setActiveColumn(columnData)
-    console.log('Menu opened for column:', columnData) // Debug log
   }
 
   const handleMenuClose = () => {
@@ -132,7 +130,6 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
     try {
       const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
       const dynamicColumnId = activeColumn?.additionalColumnID?.toString() || column?.additionalColumnID?.toString();
-      console.log(dynamicColumnId,'dynamicColumnId')
       
       if (!dynamicColumnId) {
         toast.error('Column ID not found');
@@ -185,7 +182,6 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
 
   // If no column data, show loading or return null
   if (!column) {
-    console.log('No column data provided to DynamicTableHeader')
     return <Typography variant="body2" fontWeight={600}>Loading...</Typography>
   }
 

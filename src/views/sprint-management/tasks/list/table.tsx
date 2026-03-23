@@ -9,7 +9,16 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  Avatar,
+  AvatarGroup,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+  Zoom,
+  Grid2 as Grid,
+  Tooltip
 } from '@mui/material'
 
 import { useQuery } from '@tanstack/react-query'
@@ -27,6 +36,7 @@ import {
 
 import { debounce } from 'lodash'
 import axios from 'axios'
+import { Icon } from '@iconify/react'
 
 import CustomButton from '@/components/button'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
@@ -40,6 +50,12 @@ import CreateColumnMenu from '../../tasks/components/create-column'
 import DynamicTableHeader from '../columns/dynamic/header'
 import SprintDynamicCell from '../columns/dynamic/cell'
 import toast, { Toaster } from 'react-hot-toast'
+import DeleteTasksComponent from '../components/Delete-sprinttask'
+import { DescriptionTextfiled } from '../columns/DescriptionDefaultcolum'
+import { ActualSpTextfiled } from '../columns/ActualSpTextfiled'
+import { EstimateSpTextfiled } from '../columns/EstimateSpTextfiled'
+import { IsUnplannedSelector } from '../columns/IsUnplannedSelector'
+import TaskStatus from '../columns/Taskstatus'
 
 // Define proper types for the taskgroup array
 interface TaskGroup {
@@ -47,7 +63,7 @@ interface TaskGroup {
   name: string;
   sprintID?: string | number;
   taskGroupID?: string | number;
-  [key: string]: any; // For other properties
+  [key: string]: any;
 }
 
 interface SprintTaskGroupInfo {
@@ -117,6 +133,64 @@ const fetchSprintTaskInfoList = async (taskGroupID: string | number) => {
   return response.data;
 };
 
+// Add the updateSprintTaskAPI function with all parameters
+const updateSprintTaskAPI = async (taskId: string | number, taskData: {
+  Taskname?: string;
+  Description?: string;
+  OwnerID?: number;
+  EstimatedSP?: number;
+  ActualSP?: number;
+  isunplan?: boolean;
+  StatusID?: number;
+  PriorityID?: number;
+}) => {
+  const params = new URLSearchParams();
+  
+  // Add TaskID (required)
+  params.append('TaskID', String(taskId));
+  
+  // Add all provided fields
+  if (taskData.Taskname !== undefined && taskData.Taskname !== null) {
+    params.append('Taskname', taskData.Taskname);
+  }
+  if (taskData.Description !== undefined && taskData.Description !== null) {
+    params.append('Description', taskData.Description);
+  }
+  if (taskData.OwnerID !== undefined && taskData.OwnerID !== null) {
+    params.append('OwnerID', String(taskData.OwnerID));
+  }
+  if (taskData.EstimatedSP !== undefined && taskData.EstimatedSP !== null) {
+    params.append('EstimatedSP', String(taskData.EstimatedSP));
+  }
+  if (taskData.ActualSP !== undefined && taskData.ActualSP !== null) {
+    params.append('ActualSP', String(taskData.ActualSP));
+  }
+  if (taskData.isunplan !== undefined && taskData.isunplan !== null) {
+    params.append('isunplan', String(taskData.isunplan));
+  }
+  if (taskData.StatusID !== undefined && taskData.StatusID !== null) {
+    params.append('StatusID', String(taskData.StatusID));
+  }
+  if (taskData.PriorityID !== undefined && taskData.PriorityID !== null) {
+    params.append('PriorityID', String(taskData.PriorityID));
+  }
+  
+  const apiUrl = `https://uat.ppmbackend.projectpulse360.com/SprintTaskUpdate?${params.toString()}`;
+  
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API call failed with status: ${response.status}`);
+  }
+  
+  return response.json();
+};
+
 interface TaskTableSprintProps {
   enabled: boolean;
   sp: SprintItem;
@@ -128,6 +202,218 @@ interface TaskTableSprintProps {
     SprintTaskID: string 
   } | null;
   taskgroup: TaskGroup[];
+}
+
+// Owner Selector Component - Allows changing owner even when already selected
+const OwnerSelector = ({ 
+  value, 
+  onUpdate, 
+  canEdit = true 
+}: { 
+  value: { UserID?: number; Name?: string; Email?: string; ProfilePicture?: string } | null;
+  onUpdate: (owner: { UserID: number; Name: string; Email: string; ProfilePicture?: string } | null) => Promise<void>;
+  canEdit?: boolean;
+}) => {
+  const [anchorEl, setAnchorEl] = useState<any>(null)
+  const [searchText, setSearchText] = useState('')
+  const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const { user } = useAuth()
+
+  const fetchUsers = async () => {
+    if (!user?.id) return
+    
+    setLoading(true)
+    try {
+      const BASE_URL = 'https://uat.ppmbackend.projectpulse360.com'
+      const response = await axios.get(`${BASE_URL}/GetUserList?LoginuserID=${user.id}`)
+      
+      const mappedUsers = response.data.map((apiUser: any) => ({
+        UserProjectID: apiUser.userID,
+        User: {
+          UserID: apiUser.userID,
+          Name: apiUser.name,
+          Email: apiUser.email?.toLowerCase() || '',
+          ProfilePicture: apiUser.profilepicture || ''
+        }
+      }))
+      
+      setUsers(mappedUsers)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      toast.error('Failed to load users')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [user?.id])
+
+  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+    setSearchText('')
+  }
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    await onUpdate(null)
+    handleClose()
+  }
+
+  const handleSelectUser = async (selected: any) => {
+    await onUpdate({
+      UserID: selected.User.UserID,
+      Name: selected.User.Name,
+      Email: selected.User.Email,
+      ProfilePicture: selected.User.ProfilePicture
+    })
+    handleClose()
+  }
+
+  const userFilter = (userItem: any) => {
+    return userItem?.User?.Name?.toLowerCase()?.includes(searchText?.toLowerCase()) ||
+           userItem?.User?.Email?.toLowerCase()?.includes(searchText?.toLowerCase())
+  }
+
+  // Filter out currently selected user from the list to avoid selecting the same user
+  const filteredUsers = useMemo(() => {
+    return users.filter(userItem => {
+      // Filter by search text
+      const matchesSearch = userFilter(userItem)
+      // Exclude currently selected user
+      const isNotCurrentUser = value ? userItem?.User?.UserID !== value?.UserID : true
+      return matchesSearch && isNotCurrentUser
+    })
+  }, [users, searchText, value])
+
+  if (!canEdit) {
+    return (
+      <Box display={'flex'} alignItems={'center'}>
+        {value ? (
+          <Tooltip title={value.Email || value.Name}>
+            <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
+          </Tooltip>
+        ) : (
+          <Icon icon={'ph:question-duotone'} fontSize={24} />
+        )}
+      </Box>
+    )
+  }
+
+  return (
+    <Box display={'flex'} alignItems={'center'}>
+      {value ? (
+        <Box position={'relative'}>
+          <IconButton 
+            onClick={handleOpen}
+            sx={{ p: 0 }}
+          >
+            <Tooltip title={value.Email || value.Name}>
+              <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
+            </Tooltip>
+          </IconButton>
+          <IconButton 
+            size='small' 
+            onClick={handleRemove} 
+            sx={{ 
+              position: 'absolute', 
+              top: -11, 
+              right: -12,
+              backgroundColor: 'white',
+              '&:hover': {
+                backgroundColor: '#f5f5f5'
+              },
+              boxShadow: 1,
+              width: 20,
+              height: 20,
+              p: 0
+            }}
+          >
+            <Icon icon={'icon-park-twotone:close-one'} width={16} height={16} color='red' />
+          </IconButton>
+        </Box>
+      ) : (
+        <IconButton onClick={handleOpen}>
+          <Icon icon={'bi:plus-circle-dotted'} />
+        </IconButton>
+      )}
+      
+      <Menu 
+        open={!!anchorEl} 
+        anchorEl={anchorEl} 
+        onClose={handleClose} 
+        TransitionComponent={Zoom}
+        PaperProps={{
+          sx: {
+            maxHeight: 400
+          }
+        }}
+      >
+        <Box width={280}>
+          <Grid container spacing={2}>
+            <Grid size={12}>
+              <Box px={2} pt={1}>
+                <TextField
+                  fullWidth
+                  color='secondary'
+                  value={searchText}
+                  size='small'
+                  autoComplete='off'
+                  placeholder='Search User...'
+                  onChange={e => setSearchText(e?.target?.value)}
+                  InputProps={{ 
+                    startAdornment: <Icon icon={'ion:search'} style={{ marginRight: 6 }} />,
+                    sx: { fontSize: '0.875rem' }
+                  }}
+                />
+              </Box>
+            </Grid>
+            <Grid size={12}>
+              <Box sx={{ maxHeight: 320, overflowY: 'auto' }}>
+                {loading ? (
+                  <Box px={3} py={2} display={'flex'} justifyContent={'center'}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : filteredUsers?.length !== 0 ? (
+                  filteredUsers.map((userItem, index) => (
+                    <MenuItem
+                      onClick={() => handleSelectUser(userItem)}
+                      key={`owner-menu-item-${userItem?.User?.UserID || userItem?.UserProjectID || index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`}
+                      sx={{ py: 1 }}
+                    >
+                      <Box display={'flex'} alignItems={'center'} gap={2} overflow={'hidden'}>
+                        <Avatar alt={userItem?.User?.Name} src={userItem?.User?.ProfilePicture} sx={{ width: 32, height: 32 }} />
+                        <Box overflow={'hidden'}>
+                          <Typography variant='body2' fontWeight={500} overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+                            {userItem?.User?.Name}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary' overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+                            {userItem?.User?.Email}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <Box px={3} py={2}>
+                    <Typography variant='body2' color='text.secondary' textAlign={'center'}>
+                      {searchText ? 'No users found' : 'No users available'}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Menu>
+    </Box>
+  )
 }
 
 const TaskTableSprint = ({ 
@@ -143,7 +429,8 @@ const TaskTableSprint = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [sprintTaskInfoData, setSprintTaskInfoData] = useState<any>(null)
   const [sprintDynamicColumns, setSprintDynamicColumns] = useState<any[]>([])
-  const [colvalueList, setColvalueList] = useState<any[]>([]) // Add state for colvalueList
+  const [colvalueList, setColvalueList] = useState<any[]>([])
+  const [showCard, setShowCard] = useState(false)
   
   const { profile, user } = useAuth()
   
@@ -166,33 +453,26 @@ const TaskTableSprint = ({
   // Get taskgroup IDs from the taskgroup prop - DYNAMIC, NO HARDCODED VALUES
   const taskGroupIds = useMemo(() => {
     if (taskgroup && taskgroup.length > 0) {
-      // Extract IDs from the taskgroup array
       const ids = taskgroup
         .map(item => {
-          // Try to get taskGroupID first, then fallback to id
           const idValue = item.taskGroupID || item.id;
-          // Convert to number if possible
           return idValue ? Number(idValue) : null;
         })
-        .filter(id => id !== null && !isNaN(Number(id))); // Remove null/undefined/NaN values
+        .filter(id => id !== null && !isNaN(Number(id)));
       
-      // Return the extracted IDs
       return ids;
     }
     
-    // If no taskgroup data, return empty array
     return [];
   }, [taskgroup]);
 
   // Get the current taskGroupId based on the selected sprint
   const currentTaskGroupId = useMemo(() => {
-    // Find the taskgroup that belongs to the current sprint
     const currentGroup = taskgroup.find(group => group.sprintID === sp?.SprintID);
     if (currentGroup) {
       const idValue = currentGroup.taskGroupID || currentGroup.id;
       return idValue ? Number(idValue) : null;
     }
-    // Fallback to first ID if no match found
     return taskGroupIds.length > 0 ? taskGroupIds[0] : null;
   }, [taskgroup, sp?.SprintID, taskGroupIds]);
 
@@ -204,21 +484,16 @@ const TaskTableSprint = ({
         return [];
       }
       
-      // Fetch data for all taskGroupIds in parallel
       const promises = taskGroupIds.map(id => fetchSprintTaskInfoList(id));
       const results = await Promise.all(promises);
       
-      // Find the response for the current taskGroupId
       if (results && results.length > 0) {
-        // Find the index of current taskGroupId
         const currentIndex = taskGroupIds.findIndex(id => Number(id) === Number(currentTaskGroupId));
         
         if (currentIndex !== -1 && results[currentIndex]) {
           const currentResponse = results[currentIndex];
-          // Process and store the response data for current group
           if (currentResponse && currentResponse.length > 0 && currentResponse[0]?.colList) {
             setSprintTaskInfoData(currentResponse[0]);
-            // Store colvalueList separately
             if (currentResponse[0].colvalueList && Array.isArray(currentResponse[0].colvalueList)) {
               setColvalueList(currentResponse[0].colvalueList);
             } else {
@@ -231,7 +506,6 @@ const TaskTableSprint = ({
             }
           } else if (currentResponse && currentResponse.colList) {
             setSprintTaskInfoData(currentResponse);
-            // Store colvalueList separately
             if (currentResponse.colvalueList && Array.isArray(currentResponse.colvalueList)) {
               setColvalueList(currentResponse.colvalueList);
             } else {
@@ -244,11 +518,9 @@ const TaskTableSprint = ({
             }
           }
         } else {
-          // Fallback to first response if current not found
           for (const response of results) {
             if (response && response.length > 0 && response[0]?.colList) {
               setSprintTaskInfoData(response[0]);
-              // Store colvalueList separately
               if (response[0].colvalueList && Array.isArray(response[0].colvalueList)) {
                 setColvalueList(response[0].colvalueList);
               } else {
@@ -262,7 +534,6 @@ const TaskTableSprint = ({
               break;
             } else if (response && response.colList) {
               setSprintTaskInfoData(response);
-              // Store colvalueList separately
               if (response.colvalueList && Array.isArray(response.colvalueList)) {
                 setColvalueList(response.colvalueList);
               } else {
@@ -281,7 +552,7 @@ const TaskTableSprint = ({
       
       return results;
     },
-    enabled: enabled && taskGroupIds.length > 0 && currentTaskGroupId !== null, // Only enable if we have IDs and current group
+    enabled: enabled && taskGroupIds.length > 0 && currentTaskGroupId !== null,
     retry: 2
   });
 
@@ -291,7 +562,6 @@ const TaskTableSprint = ({
       return null;
     }
     
-    // Find the dynamic value for this task and column
     const dynamicValue = colvalueList.find(
       (item: any) => 
         item?.taskID?.toString() === taskId?.toString() && 
@@ -320,6 +590,12 @@ const TaskTableSprint = ({
       Description: task.description || '',
       Ownername: task.ownername || '',
       OwnerID: task.ownerID || 0,
+      Owner: task.ownerID ? {
+        UserID: task.ownerID,
+        Name: task.ownername || '',
+        Email: '',
+        ProfilePicture: ''
+      } : null,
       StatusID: task.statusID || 0,
       Statusname: task.statusname || '',
       StatusColorCode: task.statusColorCode || '',
@@ -328,9 +604,9 @@ const TaskTableSprint = ({
       IsUnplanned: Boolean(task.isUnplanned),
       SprintID: task.sprintID || sp?.SprintID || 0,
       sprintID: task.sprintID || sp?.SprintID || 0,
-      taskGroupID: currentTaskGroupId, // Add taskGroupID to each task
+      taskGroupID: currentTaskGroupId,
       DynamicColumnList: task.dynamicColumnList || null,
-      colvalueList: colvalueList // Use the separate colvalueList state
+      colvalueList: colvalueList
     }));
   }, [getTaskDetailList, sp?.SprintID, colvalueList, currentTaskGroupId]);
 
@@ -344,6 +620,19 @@ const TaskTableSprint = ({
     
     return rawData
   }, [transformedData, selectedTask])
+
+  // Add showSelected state for delete button visibility
+  const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
+
+  // Handle showCard state when rows are selected
+  useEffect(() => {
+    if (showSelected) {
+      setShowCard(true)
+    } else {
+      const timeout = setTimeout(() => setShowCard(false), 200)
+      return () => clearTimeout(timeout)
+    }
+  }, [showSelected])
 
   // Static columns definition
   const staticColumns: ColumnDef<any>[] = useMemo(
@@ -393,33 +682,90 @@ const TaskTableSprint = ({
         }
       },
       {
-        id: 'groupname',
-        accessorKey: 'groupname',
-        header: function GroupNameHeader() {
+        id: 'Description',
+        accessorKey: 'Description',
+        size: 200,
+        maxSize: 1000,
+        header: function TasknameHeader() {
           return (
             <Typography variant='body2' fontWeight={800}>
-              Group Name
+              TaskDescription
             </Typography>
           )
         },
-        cell: () => {
-          return <>{currentSprintGroupInfo?.groupname || '-'}</>
+        cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          const value = getValue() as string;
+          return <DescriptionTextfiled canEdit={true} getValue={() => value} index={index} id={id} table={table} />
         }
       },
       {
-        id: 'ActualSP',
-        accessorKey: 'ActualSP',
-        header: function ActualSPHeader() {
+        id: 'Owner',
+        accessorKey: 'Owner',
+        header: function OwnerHeader() {
           return (
             <Typography variant='body2' fontWeight={800}>
-              Actual SP
+              Owner
             </Typography>
           )
         },
-        cell: ({ row: { original } }) => {
-          return <>{original?.ActualSP || '-'}</>
+        cell: ({ row: { original, index }, table }) => {
+          const owner = original?.Owner || null;
+          
+          const handleUpdateOwner = async (newOwner: { UserID: number; Name: string; Email: string; ProfilePicture?: string } | null) => {
+            try {
+              const currentTask = original;
+              const taskId = currentTask?.SprintTaskID?.toString();
+              
+              if (!taskId) return;
+              
+              // Prepare complete task data with all parameters
+              const taskData = {
+                Taskname: currentTask?.Taskname || '',
+                Description: currentTask?.Description || '',
+                OwnerID: newOwner?.UserID || 0,
+                EstimatedSP: currentTask?.EstimatedSP || 0,
+                ActualSP: currentTask?.ActualSP || 0,
+                isunplan: currentTask?.IsUnplanned || false,
+                StatusID: currentTask?.StatusID || 0,
+                PriorityID: currentTask?.PriorityID || 3
+              };
+              
+              // Call the update API with all parameters
+              await updateSprintTaskAPI(taskId, taskData);
+              
+              toast.success(newOwner ? "Owner assigned successfully" : "Owner removed successfully");
+              
+              // Refetch to get latest data
+              await sprintTaskInfoApi?.refetch();
+              
+              // Update colvalueList after refetch
+              if (sprintTaskInfoApi.data) {
+                const data = sprintTaskInfoApi.data;
+                if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                  setColvalueList(data[0].colvalueList);
+                } else if (data?.colvalueList) {
+                  setColvalueList(data.colvalueList);
+                }
+              }
+              
+              // Update the table data
+              table.options.meta?.updateData?.(index, 'Owner', newOwner ? JSON.stringify(newOwner) : '');
+            } catch (error) {
+              console.error('Error updating owner:', error);
+              toast.error("Failed to update owner");
+            }
+          };
+          
+          return (
+            <OwnerSelector
+              value={owner}
+              onUpdate={handleUpdateOwner}
+              canEdit={true}
+            />
+          );
         }
       },
+    
       {
         id: 'IsUnplanned',
         accessorKey: 'IsUnplanned',
@@ -430,9 +776,71 @@ const TaskTableSprint = ({
             </Typography>
           )
         },
-        cell: ({ row: { original } }) => {
-          if (original?.IsUnplanned) return <i className='ri-check-line' />
-          return <></>
+        cell: ({ row: { original, index }, table }) => {
+          const value = original?.IsUnplanned || false;
+          
+          const handleUpdate = async (newValue: boolean) => {
+            try {
+              const currentTask = original;
+              const taskId = currentTask?.SprintTaskID?.toString();
+              
+              if (!taskId) return;
+              
+              const taskData = {
+                Taskname: currentTask?.Taskname || '',
+                Description: currentTask?.Description || '',
+                OwnerID: currentTask?.OwnerID || 0,
+                EstimatedSP: currentTask?.EstimatedSP || 0,
+                ActualSP: currentTask?.ActualSP || 0,
+                isunplan: newValue,
+                StatusID: currentTask?.StatusID || 0,
+                PriorityID: currentTask?.PriorityID || 3
+              };
+              
+              await updateSprintTaskAPI(taskId, taskData);
+              
+              toast.success(`Task marked as ${newValue ? 'Unplanned' : 'Planned'} successfully`);
+              
+              await sprintTaskInfoApi?.refetch();
+              
+              if (sprintTaskInfoApi.data) {
+                const data = sprintTaskInfoApi.data;
+                if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                  setColvalueList(data[0].colvalueList);
+                } else if (data?.colvalueList) {
+                  setColvalueList(data.colvalueList);
+                }
+              }
+              
+              table.options.meta?.updateData?.(index, 'IsUnplanned', String(newValue));
+            } catch (error) {
+              console.error('Error updating IsUnplanned:', error);
+              toast.error("Failed to update task status");
+            }
+          };
+          
+          return (
+            <IsUnplannedSelector
+              value={value}
+              canEdit={true}
+              onUpdate={handleUpdate}
+            />
+          );
+        }
+      },
+        {
+        id: 'ActualSP',
+        accessorKey: 'ActualSP',
+        header: function ActualSPHeader() {
+          return (
+            <Typography variant='body2' fontWeight={800}>
+              Actual SP
+            </Typography>
+          )
+        },
+         cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          const value = getValue() as string;
+          return <ActualSpTextfiled canEdit={true} getValue={() => value} index={index} id={id} table={table} />
         }
       },
       {
@@ -445,12 +853,46 @@ const TaskTableSprint = ({
             </Typography>
           )
         },
-        cell: ({ row: { original } }) => {
-          return <>{original?.EstimatedSP || '-'}</>
+        cell: ({ getValue, row: { index }, column: { id }, table }) => {
+          const value = getValue() as string;
+          return <EstimateSpTextfiled canEdit={true} getValue={() => value} index={index} id={id} table={table} />
         }
-      }
+      },
+{
+  id: 'Status',
+  accessorKey: 'Status',
+  header: function StatusHeader() {
+    return (
+      <Typography variant='body2' fontWeight={800}>
+        Status
+      </Typography>
+    )
+  },
+  cell: ({ row: { original, index }, table }) => {
+    return (
+      <TaskStatus
+        row={original}
+        refetch={() => {
+          sprintTaskInfoApi.refetch();
+          if (sprintTaskInfoApi.data) {
+            const data = sprintTaskInfoApi.data;
+            if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+              setColvalueList(data[0].colvalueList);
+            } else if (data?.colvalueList) {
+              setColvalueList(data.colvalueList);
+            }
+          }
+        }}
+        canEdit={true}
+        sprintTaskInfoApi={sprintTaskInfoApi}
+        setColvalueList={setColvalueList}
+        updateSprintTask={updateSprintTaskAPI}
+      />
+    );
+  }
+}
     ],
-    [currentSprintGroupInfo]
+    [currentSprintGroupInfo, sprintTaskInfoApi]
   );
 
   // Dynamic columns from colList with custom headers and dynamic cells
@@ -458,27 +900,23 @@ const TaskTableSprint = ({
     if (!sprintDynamicColumns || sprintDynamicColumns.length === 0) return [];
 
     return sprintDynamicColumns.map((column, index) => {
-      // Get the column ID - this should match what's in the context
       const columnId = column?.additionalColumnID?.toString() || 
                       column?.ColumnID?.toString() || 
                       `dynamic-${index}`;
       
       return {
         id: columnId,
-        accessorKey: columnId, // Use columnId as accessorKey for dynamic columns
+        accessorKey: columnId,
         accessorFn: (row) => {
-          // Get the dynamic value for this task from colvalueList
           return getDynamicValueForTask(row?.SprintTaskID || row?.taskID, columnId);
         },
         minSize: 250,
         size: 250,
         sortable: false,
         header: () => {
-          // Use DynamicTableHeader but pass the column data from colList
           return <DynamicTableHeader column={column} refetch={() => sprintTaskInfoApi.refetch()} />
         },
         cell: ({ getValue, row: { original, index }, column: { id }, table }) => {
-          // Get the full dynamic value object
           const dynamicValue = getDynamicValueForTask(original?.SprintTaskID || original?.taskID, columnId);
 
           return (
@@ -489,11 +927,9 @@ const TaskTableSprint = ({
               row={original}
               id={id}
               table={table}
-              value={dynamicValue} // Pass the full dynamic value object
+              value={dynamicValue}
               refetch={() => {
-                // Refetch both the main data and update colvalueList
                 sprintTaskInfoApi.refetch().then(() => {
-                  // After refetch, ensure colvalueList is updated
                   if (sprintTaskInfoApi.data) {
                     const data = sprintTaskInfoApi.data;
                     if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
@@ -521,20 +957,16 @@ const TaskTableSprint = ({
     return allColumns.filter(column => {
       const columnId = column.id as string;
       
-      // Always show select column
       if (columnId === 'select') {
         return true;
       }
       
-      // Check if this column exists in visibility
       const isVisible = sprintColumnVisibility[columnId];
       
-      // If the column doesn't exist in visibility, default to showing it
       if (isVisible === undefined) {
         return true;
       }
       
-      // Return the visibility value (should be true/false)
       return isVisible;
     });
   }, [allColumns, sprintColumnVisibility]);
@@ -555,32 +987,194 @@ const TaskTableSprint = ({
     getExpandedRowModel: getExpandedRowModel(),
     meta: {
       updateData: async (rowIndex: number, columnId: string, value: string | { AdditionalColumnID: string }) => {
-        // Handle Taskname column update
         if (columnId === 'Taskname' && filteredData[rowIndex]?.SprintTaskID) {
           try {
-            const response = await updateSprintTask({
-              id: filteredData[rowIndex]?.SprintTaskID?.toString(),
-              body: { Taskname: value }
-            })
-
-            if (response) {
-              sprintTaskInfoApi?.refetch()
+            const currentTask = filteredData[rowIndex];
+            const taskId = currentTask?.SprintTaskID?.toString();
+            
+            const taskData = {
+              Taskname: value as string,
+              Description: currentTask?.Description || '',
+              OwnerID: currentTask?.OwnerID || 0,
+              EstimatedSP: currentTask?.EstimatedSP || 0,
+              ActualSP: currentTask?.ActualSP || 0,
+              isunplan: currentTask?.IsUnplanned || false,
+              StatusID: currentTask?.StatusID || 0,
+              PriorityID: currentTask?.PriorityID || 3
+            };
+            
+            await updateSprintTaskAPI(taskId, taskData);
+            
+            toast.success("Task name updated successfully");
+            
+            await sprintTaskInfoApi?.refetch();
+            
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
             }
           } catch (error) {
-            console.error('error :', error)
+            console.error('Error updating task name:', error);
+            toast.error("Failed to update task name");
           }
         }
         
-        // Handle dynamic column updates
-        if (typeof value === 'object' && value !== null && 'AdditionalColumnID' in value && filteredData[rowIndex]?.SprintTaskID) {
+        else if (columnId === 'Description' && filteredData[rowIndex]?.SprintTaskID) {
           try {
-            // This is for dynamic column updates - you'll need to implement the API call
-            // based on your backend structure
-            console.log('Dynamic column update:', { rowIndex, columnId, value });
+            const currentTask = filteredData[rowIndex];
+            const taskId = currentTask?.SprintTaskID?.toString();
             
-            // After update, refetch to get latest data
+            const taskData = {
+              Taskname: currentTask?.Taskname || '',
+              Description: value as string,
+              OwnerID: currentTask?.OwnerID || 0,
+              EstimatedSP: currentTask?.EstimatedSP || 0,
+              ActualSP: currentTask?.ActualSP || 0,
+              isunplan: currentTask?.IsUnplanned || false,
+              StatusID: currentTask?.StatusID || 0,
+              PriorityID: currentTask?.PriorityID || 3
+            };
+            
+            await updateSprintTaskAPI(taskId, taskData);
+            
+            toast.success("Task description updated successfully");
+            
             await sprintTaskInfoApi?.refetch();
-            // Update colvalueList after refetch
+            
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
+          } catch (error) {
+            console.error('Error updating task description:', error);
+            toast.error("Failed to update task description");
+          }
+        }
+        
+        else if (columnId === 'ActualSP' && filteredData[rowIndex]?.SprintTaskID) {
+          try {
+            const currentTask = filteredData[rowIndex];
+            const taskId = currentTask?.SprintTaskID?.toString();
+            
+            const actualSPValue = value ? Number(value) : 0;
+            
+            const taskData = {
+              Taskname: currentTask?.Taskname || '',
+              Description: currentTask?.Description || '',
+              OwnerID: currentTask?.OwnerID || 0,
+              EstimatedSP: currentTask?.EstimatedSP || 0,
+              ActualSP: actualSPValue,
+              isunplan: currentTask?.IsUnplanned || false,
+              StatusID: currentTask?.StatusID || 0,
+              PriorityID: currentTask?.PriorityID || 3
+            };
+            
+            await updateSprintTaskAPI(taskId, taskData);
+            
+            toast.success("Actual SP updated successfully");
+            
+            await sprintTaskInfoApi?.refetch();
+            
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
+          } catch (error) {
+            console.error('Error updating actual SP:', error);
+            toast.error("Failed to update actual SP");
+          }
+        }
+        
+        else if (columnId === 'EstimatedSP' && filteredData[rowIndex]?.SprintTaskID) {
+          try {
+            const currentTask = filteredData[rowIndex];
+            const taskId = currentTask?.SprintTaskID?.toString();
+            
+            const estimatedSPValue = value ? Number(value) : 0;
+            
+            const taskData = {
+              Taskname: currentTask?.Taskname || '',
+              Description: currentTask?.Description || '',
+              OwnerID: currentTask?.OwnerID || 0,
+              EstimatedSP: estimatedSPValue,
+              ActualSP: currentTask?.ActualSP || 0,
+              isunplan: currentTask?.IsUnplanned || false,
+              StatusID: currentTask?.StatusID || 0,
+              PriorityID: currentTask?.PriorityID || 3
+            };
+            
+            await updateSprintTaskAPI(taskId, taskData);
+            
+            toast.success("Estimated SP updated successfully");
+            
+            await sprintTaskInfoApi?.refetch();
+            
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
+          } catch (error) {
+            console.error('Error updating estimated SP:', error);
+            toast.error("Failed to update estimated SP");
+          }
+        }
+        
+        else if (columnId === 'IsUnplanned' && filteredData[rowIndex]?.SprintTaskID) {
+          try {
+            const currentTask = filteredData[rowIndex];
+            const taskId = currentTask?.SprintTaskID?.toString();
+            const isUnplannedValue = value === 'true' || value === true;
+            
+            const taskData = {
+              Taskname: currentTask?.Taskname || '',
+              Description: currentTask?.Description || '',
+              OwnerID: currentTask?.OwnerID || 0,
+              EstimatedSP: currentTask?.EstimatedSP || 0,
+              ActualSP: currentTask?.ActualSP || 0,
+              isunplan: isUnplannedValue,
+              StatusID: currentTask?.StatusID || 0,
+              PriorityID: currentTask?.PriorityID || 3
+            };
+            
+            await updateSprintTaskAPI(taskId, taskData);
+            
+            toast.success(`Task marked as ${isUnplannedValue ? 'Unplanned' : 'Planned'} successfully`);
+            
+            await sprintTaskInfoApi?.refetch();
+            
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
+          } catch (error) {
+            console.error('Error updating IsUnplanned:', error);
+            toast.error("Failed to update task status");
+          }
+        }
+        
+        else if (typeof value === 'object' && value !== null && 'AdditionalColumnID' in value && filteredData[rowIndex]?.SprintTaskID) {
+          try {
+            await sprintTaskInfoApi?.refetch();
             if (sprintTaskInfoApi.data) {
               const data = sprintTaskInfoApi.data;
               if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
@@ -601,7 +1195,6 @@ const TaskTableSprint = ({
     setAdding(true)
 
     try {
-      // Use the currentTaskGroupId for creating task
       if (!currentTaskGroupId) {
         console.error('No current task group ID available to create task');
         setAdding(false);
@@ -611,7 +1204,7 @@ const TaskTableSprint = ({
       const baseUrl = 'https://uat.ppmbackend.projectpulse360.com/SprintTaskcreate'
       const params = new URLSearchParams({
         taskname: 'New Task',
-        TaskGroupID: String(currentTaskGroupId), // Use the current task group ID
+        TaskGroupID: String(currentTaskGroupId),
         LoginuserID: String(user?.id)
       })
       const apiUrl = `${baseUrl}?${params.toString()}`
@@ -629,9 +1222,7 @@ const TaskTableSprint = ({
 
       const result = await response.json()
       
-      // Refetch the task info list to show the new task
       await sprintTaskInfoApi.refetch()
-      // Update colvalueList after refetch
       if (sprintTaskInfoApi.data) {
         const data = sprintTaskInfoApi.data;
         if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
@@ -650,11 +1241,9 @@ const TaskTableSprint = ({
 
   const debouncedHandleAddSprint = debounce(handleAddSprint, 500)
 
-  // Force refetch when component mounts or enabled changes
   useEffect(() => {
     if (enabled && taskGroupIds.length > 0 && currentTaskGroupId) {
       sprintTaskInfoApi.refetch().then(() => {
-        // Update colvalueList after refetch
         if (sprintTaskInfoApi.data) {
           const data = sprintTaskInfoApi.data;
           if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
@@ -667,7 +1256,6 @@ const TaskTableSprint = ({
     }
   }, [enabled, taskGroupIds.join(','), currentTaskGroupId]);
 
-  // Add loading state
   if (sprintTaskInfoApi?.isLoading || sprintTaskGroupInfoApi?.isLoading) {
     return (
       <div className='w-full flex justify-center'>
@@ -676,7 +1264,6 @@ const TaskTableSprint = ({
     )
   }
 
-  // Add error state
   if (sprintTaskInfoApi?.isError) {
     return <div>Error: {sprintTaskInfoApi.error?.message || 'Failed to load data'}</div>
   }
@@ -752,13 +1339,29 @@ const TaskTableSprint = ({
           Add New Column
         </CustomButton>
       </div>
+      {showCard &&
+        <DeleteTasksComponent
+          showCard={showCard}
+          selectedRows={selectedRows}
+          sprintlist={transformedData}
+          refetch={() => {
+            sprintTaskInfoApi.refetch();
+            if (sprintTaskInfoApi.data) {
+              const data = sprintTaskInfoApi.data;
+              if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
+                setColvalueList(data[0].colvalueList);
+              } else if (data?.colvalueList) {
+                setColvalueList(data.colvalueList);
+              }
+            }
+          }}
+          setSelectedRows={setSelectedRows}
+        />}
       <CreateColumnMenu
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
         onSubmit={(data) => {
-          // After adding a new column, refetch to get updated colList
           sprintTaskInfoApi.refetch().then(() => {
-            // Update colvalueList after refetch
             if (sprintTaskInfoApi.data) {
               const responseData = sprintTaskInfoApi.data;
               if (Array.isArray(responseData) && responseData.length > 0 && responseData[0]?.colvalueList) {
@@ -770,7 +1373,7 @@ const TaskTableSprint = ({
           });
         }}
         spintid={sp?.WorkspaceID}
-        groupid={currentTaskGroupId} // Use currentTaskGroupId instead of taskGroupIds[0]
+        groupid={currentTaskGroupId}
       />
     </div>
   )
