@@ -93,6 +93,10 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
          refetch();
       setEditOpen(false);
       refetch();
+
+      // ✅ ADDED: Notify SprintTaskFilterButton to refetch and reflect updated column name
+      window.dispatchEvent(new Event('columnCreated'));
+
       toast.success('Column Name Updated Successfully', {
         position: 'top-center',
         duration: 4000,
@@ -143,6 +147,10 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       setDeleteOpen(false);
       setActiveColumn(null);
       refetch();
+
+      // ✅ ADDED: Notify SprintTaskFilterButton to refetch and reflect deleted column removal
+      window.dispatchEvent(new Event('columnCreated'));
+
       toast.success('Column Deleted Successfully', {
         position: 'top-center',
         duration: 4000,

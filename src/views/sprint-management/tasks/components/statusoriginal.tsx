@@ -10,15 +10,20 @@ import { useAuth } from '@/hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 
 import {
+  generateStatusIcons,
   getContrastingTextColor,
   getHexColor,
-  getLuminance
+  getLuminance,
+  getStatusIconColor,
+  getStatusIconSize
 } from 'src/utils/functions'
 
 import { pattern } from '@/constants/patterns'
-import type { TaskListItemType } from '@/services/modules/task/types'
+import { addProjectStatus, fetchProjectStatusList, updateProjectStatus } from '@/services/modules/project-status'
+import type { ProjectStatusList } from '@/services/modules/project-status/types'
 import type { AdditionalColumn } from '@/services/modules/project/types'
 import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/types'
+import type { TaskListItemType } from '@/services/modules/task/types'
 import CustomButton from '@components/button'
 import { useWorkspace } from 'src/context/workspace-context'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
@@ -40,49 +45,60 @@ interface InsertDynamicValueResponse {
   data?: any;
 }
 
-interface CreatePriorityPayload {
-  Priorityname: string;
+interface CreateStatusPayload {
+  Statusname: string;
   Colorcode: string;
 }
 
-interface CreatePriorityResponse {
+interface CreateStatusResponse {
   status: boolean;
   message?: string;
   data?: any;
 }
 
-// Update UpdatePriorityPayload interface to include IsDelete
-interface UpdatePriorityPayload {
-  PriorityID: number;
-  GroupID: number;
-  Priorityname: string;
+// Add Delete Status interfaces
+interface DeleteStatusPayload {
+  StatusID: number;
+}
+
+interface DeleteStatusResponse {
+  status: boolean;
+  message?: string;
+  data?: any;
+}
+
+// Add Update Status interface
+interface UpdateStatusPayload {
+  StatusID: number;
+  TaskID: number;
   LoginuserID: number;
-  IsDelete: boolean;
+  GroupID: number;
+  Statusname: string;
   Colorcode: string;
 }
 
-interface UpdatePriorityResponse {
+interface UpdateStatusResponse {
   status: boolean;
   message?: string;
   data?: any;
 }
 
-// Add Create Task Priority interface
-interface CreateTaskPriorityPayload {
-  Priorityname: string;
+// Add Create Task Status interface
+interface CreateTaskStatusPayload {
+  Statusname: string;
   TaskID: number;
   LoginuserID: number;
   GroupID: number;
   Colorcode: string;
 }
 
-interface CreateTaskPriorityResponse {
+interface CreateTaskStatusResponse {
   status: boolean;
   message?: string;
   data?: any;
 }
 
-// Add SprintTaskUpdate interface
+// Add SprintTaskUpdate interface for status updates
 interface SprintTaskUpdatePayload {
   TaskID: number;
   Taskname?: string;
@@ -101,41 +117,60 @@ interface SprintTaskUpdateResponse {
   data?: any;
 }
 
-// Update interface for priority lookup response
-interface PriorityLookupItem {
-  priorityID: number;
-  priorityname: string;
+// Update interface for status lookup response to match your actual API response
+interface StatusLookupItem {
+  statusID: number;
+  statusname: string;
   colorcode: string;
 }
 
-// Helper function to extract task ID from row
-const getTaskIdFromRow = (row: any): number => {
-  return row?.taskID || row?.TaskID || row?.ID || 0;
-}
-
-// Helper function to extract group ID from row
-const getGroupIdFromRow = (row: any): number => {
-  return row?.taskGroupID || row?.TaskGroupID || row?.GroupID || 0;
-}
-
-// Add function to fetch priority lookup list with taskID and groupID
-const fetchPriorityLookupList = async (taskID: number, groupID: number, loginuserID: number): Promise<PriorityLookupItem[]> => {
+// Add function to fetch status lookup list with taskID and groupID
+const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserID: number): Promise<StatusLookupItem[]> => {
   try {
     const response = await axios.get(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetPriorityList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
-    console.log(response.data)
+    console.log(response.data,'dfere')
     return response.data;
   } catch (error) {
-    console.error('Error fetching priority lookup list:', error);
+    console.error('Error fetching status lookup list:', error);
     throw error;
   }
 }
 
-// Insert dynamic value function
-const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<InsertDynamicValueResponse> => {
+// SprintTaskUpdate function for updating status
+const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<SprintTaskUpdateResponse> => {
   try {
     const BASE_URL = 'https://uat.ppmbackend.projectpulse360.com';
+    const params = new URLSearchParams();
+    
+    if (payload.TaskID) params.append('TaskID', payload.TaskID.toString());
+    if (payload.Taskname) params.append('Taskname', payload.Taskname);
+    if (payload.Description) params.append('Description', payload.Description);
+    if (payload.OwnerID) params.append('OwnerID', payload.OwnerID.toString());
+    if (payload.EstimatedSP) params.append('EstimatedSP', payload.EstimatedSP.toString());
+    if (payload.ActualSP) params.append('ActualSP', payload.ActualSP.toString());
+    if (payload.isunplan !== undefined) params.append('isunplan', payload.isunplan.toString());
+    if (payload.StatusID) params.append('StatusID', payload.StatusID.toString());
+    if (payload.PriorityID) params.append('PriorityID', payload.PriorityID.toString());
+    
+    const apiUrl = `${BASE_URL}/SprintTaskUpdate?${params.toString()}`;
+    
+    const response = await axios.post(apiUrl);
+    toast.success('Status updated successfully');
+      
+    return { status: true, data: response.data };
+  } catch (error) {
+    console.error('API call failed:', error);
+    toast.error('Failed to update status');
+    throw error;
+  }
+}
+
+// Replace the insertDynamicValue function with the new implementation
+const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<InsertDynamicValueResponse> => {
+  try {
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
     const DynamicColumnID = payload.DynamicColumnID;
     const LoginuserID = payload.LoginuserID;
     const taskid = payload.SprintID;
@@ -155,139 +190,117 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
   }
 }
 
-// SprintTaskUpdate function
-const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<SprintTaskUpdateResponse> => {
-  try {
-    const BASE_URL = 'https://uat.ppmbackend.projectpulse360.com';
-    const params = new URLSearchParams();
-    
-    if (payload.TaskID) params.append('TaskID', payload.TaskID.toString());
-    if (payload.Taskname) params.append('Taskname', payload.Taskname);
-    if (payload.Description) params.append('Description', payload.Description);
-    if (payload.OwnerID) params.append('OwnerID', payload.OwnerID.toString());
-    if (payload.EstimatedSP) params.append('EstimatedSP', payload.EstimatedSP.toString());
-    if (payload.ActualSP) params.append('ActualSP', payload.ActualSP.toString());
-    if (payload.isunplan !== undefined) params.append('isunplan', payload.isunplan.toString());
-    if (payload.StatusID) params.append('StatusID', payload.StatusID.toString());
-    if (payload.PriorityID) params.append('PriorityID', payload.PriorityID.toString());
-    
-    const apiUrl = `${BASE_URL}/SprintTaskUpdate?${params.toString()}`;
-    
-    const response = await axios.post(apiUrl);
-    toast.success('Priority updated successfully');
-      
-    return { status: true, data: response.data };
-  } catch (error) {
-    console.error('API call failed:', error);
-    toast.error('Failed to update priority');
-    throw error;
-  }
-}
-
-// Create priority function
-const createPriority = async (payload: CreatePriorityPayload): Promise<CreatePriorityResponse> => {
+// FIXED: Simplified the createStatus function to avoid double encoding
+const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskCreatePriority`,
+      `https://uat.ppmbackend.projectpulse360.com/SprintCreateStatusLookup`,
       null,
       {
         params: {
-          Priorityname: payload.Priorityname,
+          Statusname: payload.Statusname,
           Colorcode: payload.Colorcode
         }
       }
     );   
-    toast.success("Priority Created Successfully")
+    toast.success("Status Created Successfully")
     return response.data;
   } catch (error) {
-    console.error('Error creating priority:', error);
+    console.error('Error creating status:', error);
     throw error;
   }
 }
 
-// Create task priority function
-const createTaskPriority = async (payload: CreateTaskPriorityPayload): Promise<CreateTaskPriorityResponse> => {
+// Add create task status function
+const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<CreateTaskStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskCreatePriority`,
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusCreate`,
       null,
       {
         params: {
-          GroupID: payload.GroupID,
-          Priorityname: payload.Priorityname,
+          Statusname: payload.Statusname,
+          TaskID: payload.TaskID,
           LoginuserID: payload.LoginuserID,
+          GroupID: payload.GroupID,
           Colorcode: payload.Colorcode
         }
       }
     );
     
-    toast.success("Task Priority Created Successfully");
+    toast.success("Task Status Created Successfully");
     return response.data;
   } catch (error) {
-    console.error('Error creating task priority:', error);
-    toast.error('Failed to create task priority');
+    console.error('Error creating task status:', error);
+    toast.error('Failed to create task status');
     throw error;
   }
 }
 
-// Update priority function - using the correct API endpoint
-const updatePriority = async (payload: UpdatePriorityPayload): Promise<UpdatePriorityResponse> => {
+// Add update status function
+const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskUpdatePriority`,
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusUpdate`,
       null,
       {
         params: {
-          PriorityID: payload.PriorityID,
+          TaskID: payload.TaskID,
+          StatusID: payload.StatusID,
           GroupID: payload.GroupID,
-          Priorityname: payload.Priorityname,
-          LoginuserID: payload.LoginuserID,
-          IsDelete: payload.IsDelete,
+          Statusname: payload.Statusname,
           Colorcode: payload.Colorcode
         }
       }
     );   
-    
-    if (payload.IsDelete) {
-      toast.success("Priority Deleted Successfully");
-    } else {
-      toast.success("Priority Updated Successfully");
-    }
-    
+    toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
-    console.error('Error updating priority:', error);
-    if (payload.IsDelete) {
-      toast.error('Failed to delete priority');
-    } else {
-      toast.error('Failed to update priority');
-    }
+    console.error('Error updating status:', error);
+    toast.error('Failed to update status');
     throw error;
   }
 }
 
-interface PriorityMenuItemProps {
-  item: ProjectPriorityList
+// FIXED: Updated delete status function with TaskID and GroupID
+const deleteStatus = async (payload: DeleteStatusPayload, row: any): Promise<DeleteStatusResponse> => {
+  try {
+    // Get TaskID and GroupID from the row data
+    const taskID = row?.taskID || row?.TaskID;
+    const groupID = row?.taskGroupID || row?.TaskGroupID;
+    
+    const response = await axios.post(
+      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusRemove?TaskID=${taskID}&StatusID=${payload.StatusID}&GroupID=${groupID}`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    toast.success('Status deleted successfully');
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting status:', error);
+    toast.error('Failed to delete status');
+    throw error;
+  }
+}
+
+interface StatusMenuItemProps {
+  item: ProjectStatusList
   row: SprintItem | AdditionalSubTaskListItem | TaskListItemType
   handleClose: () => void
-  handleEdit?: (item?: ProjectPriorityList) => void
-  handleDelete?: (item?: ProjectPriorityList, row?: any) => void
+  handleEdit?: (item?: ProjectStatusList) => void
+  handleDelete?: (item?: ProjectStatusList, row?: any) => void
   refetch: () => void
   columnData?: AdditionalColumn
   dynamicValue?: any
   isSubTask: boolean
 }
 
-// Add ProjectPriorityList interface
-interface ProjectPriorityList {
-  PriorityID: number;
-  PriorityName: string;
-  Colorcode: string;
-  IsDefault?: boolean;
-  TaskgroupID?: number | null;
-}
-
-const PriorityMenuItem = ({
+const StatusMenuItem = ({
   item,
   row,
   handleClose,
@@ -297,7 +310,7 @@ const PriorityMenuItem = ({
   columnData,
   dynamicValue,
   isSubTask
-}: PriorityMenuItemProps) => {
+}: StatusMenuItemProps) => {
   const { profile, user } = useAuth()
 
   const generateTextColor = (colorCode: string): string => {
@@ -313,36 +326,40 @@ const PriorityMenuItem = ({
     return getContrastingTextColor(colorCode)
   }
 
-  const handlePriorityChange = async () => {
+  const handleStatusChange = async () => {
     // Check if we're dealing with a dynamic column
     if (!!dynamicValue || !!columnData) {
       try {
         const dynamicColumnID = columnData?.additionalColumnID;
         const loginuserID = user?.id;
 
-        const taskID = getTaskIdFromRow(row);
-        const groupID = getGroupIdFromRow(row);
+        // ✅ FIXED: Use taskID and taskGroupID (same as non-dynamic branch)
+        const taskID = row?.taskID || row?.TaskID;
+        const groupID = row?.taskGroupID || row?.TaskGroupID;
 
         let dynamicValueToSend;
 
-        if (item?.PriorityID === 0 || item?.PriorityID === null || item?.PriorityID === undefined) {
+        if (item?.StatusID === 0 || item?.StatusID === null || item?.StatusID === undefined) {
           dynamicValueToSend = '';
         } else {
-          dynamicValueToSend = item?.PriorityID?.toString();
+          dynamicValueToSend = item?.StatusID?.toString();
         }
 
         if (dynamicColumnID && loginuserID && taskID && groupID) {
           const response = await insertDynamicValue({
             DynamicColumnID: dynamicColumnID,
             LoginuserID: loginuserID,
-            SprintID: taskID,
-            SprintGroupID: groupID,
+            SprintID: taskID,        // ✅ FIXED: was row.SprintID
+            SprintGroupID: groupID,  // ✅ FIXED: was row.SprintGroupID
             DynamicValue: dynamicValueToSend
           });
           handleClose()
+  
 
-          // if (response?.status) {
-        //  }
+          if (response?.status) {
+            refetch();
+            
+          }
         } else {
           console.error('Missing required values for dynamic value insertion:', {
             dynamicColumnID,
@@ -355,9 +372,10 @@ const PriorityMenuItem = ({
         console.error('Failed to insert dynamic value:', error);
       }
     } else {
-      // For non-dynamic columns, update task priority using SprintTaskUpdate API
+      // For non-dynamic columns, update task status using SprintTaskUpdate API
       try {
-        const taskID = getTaskIdFromRow(row);
+        // Get taskID from row data
+        const taskID = row?.taskID || row?.TaskID || row?.ID;
         const loginuserID = user?.id;
 
         // Get current task data from row to preserve existing values
@@ -367,14 +385,14 @@ const PriorityMenuItem = ({
         const currentEstimatedSP = row?.EstimatedSP || row?.estimatedSP || row?.EstimateSP || 0;
         const currentActualSP = row?.ActualSP || row?.actualSP || row?.ActualSpent || 0;
         const currentIsUnplan = row?.isunplan || row?.IsUnplan || false;
-        const currentStatusID = row?.StatusID || row?.statusID || row?.StatusId || 1;
+        const currentPriorityID = row?.PriorityID || row?.priorityID || null;
 
-        // Determine priority ID to send
-        let priorityIDToSend;
-        if (item?.PriorityID === 0 || item?.PriorityID === null || item?.PriorityID === undefined) {
-          priorityIDToSend = null; // Clear priority
+        // Determine status ID to send
+        let statusIDToSend;
+        if (item?.StatusID === 0 || item?.StatusID === null || item?.StatusID === undefined) {
+          statusIDToSend = null; // Clear status
         } else {
-          priorityIDToSend = item?.PriorityID;
+          statusIDToSend = item?.StatusID;
         }
 
         // Only call SprintTaskUpdate if we have taskID
@@ -387,15 +405,15 @@ const PriorityMenuItem = ({
             EstimatedSP: currentEstimatedSP,
             ActualSP: currentActualSP,
             isunplan: currentIsUnplan,
-            StatusID: currentStatusID,
-            PriorityID: priorityIDToSend
+            StatusID: statusIDToSend,
+            PriorityID: currentPriorityID
           });
           
           if (response?.status) {
-            // Refetch the priority list to update the UI
-            // if (refetch) {
-            //   await refetch();
-            // }
+            // Refetch the status list to update the UI
+            if (refetch) {
+              await refetch();
+            }
           }
         } else {
           console.error('Missing required values for SprintTaskUpdate:', {
@@ -404,18 +422,16 @@ const PriorityMenuItem = ({
         }
 
       } catch (error) {
-        console.error('Failed to update task priority:', error);
+        console.error('Failed to update task status:', error);
       }
     }
   }
-  console.log(row,'roww')
-  
   return (
     <Grid size={12}>
       <Box display={'flex'} alignItems={'stretch'} gap={2}>
         <Box
           component={MenuItem}
-          key={item?.PriorityID}
+          key={item?.StatusID}
           borderRadius={1}
           color={generateTextColor(item?.Colorcode)}
           display={'flex'}
@@ -428,36 +444,41 @@ const PriorityMenuItem = ({
             event.preventDefault();
             event.stopPropagation();
             
-            const currentPriorityId = row?.PriorityID || 
-                                     dynamicValue?.Priority?.PriorityID || 
-                                     dynamicValue?.priorityID
+            const currentStatusId = row?.StatusID || 
+                                   dynamicValue?.Status?.StatusID || 
+                                   dynamicValue?.statusID
             
-            if (currentPriorityId != item?.PriorityID) {
-              await handlePriorityChange();
+            if (currentStatusId != item?.StatusID) {
+              await handleStatusChange();
+              refetch();
             }
 
             handleClose();
           }}
         >
-          {/* FIXED: Color box with proper styling - no icon, just color */}
-          <Box
-            sx={{
-              width: 30,
-              height: 30,
-              borderRadius: '8px',
-              backgroundColor: item?.Colorcode || '#E0E0E0',
-              flexShrink: 0,
-              border: '1px solid rgba(0, 0, 0, 0.1)'
-            }}
-          />
-          <Tooltip title={item?.PriorityName || 'None'}>
+          <Avatar variant='rounded' sx={{ bgcolor: item?.Colorcode, width: 30, height: 30, p: 0 }}>
+            {item?.TaskgroupID ? (
+              <Icon
+                icon={'material-symbols:table-chart-view-outline'}
+                color={getContrastingTextColor(item?.Colorcode)}
+                fontSize={16}
+              />
+            ) : (
+              <Icon
+                icon={generateStatusIcons(item?.Statusname)}
+                color={getStatusIconColor(item?.Colorcode)}
+                fontSize={getStatusIconSize(item?.Statusname)}
+              />
+            )}
+          </Avatar>
+          <Tooltip title={item?.Statusname || 'None'}>
             <Typography flex={1} textOverflow={'ellipsis'} overflow={'hidden'} whiteSpace={'nowrap'}>
-              {item?.PriorityName || 'None'}
+              {item?.Statusname || 'None'}
             </Typography>
           </Tooltip>
         </Box>
         <Box display={'flex'} gap={0.5}>
-          {item?.PriorityID !== 0 && (
+          {item?.StatusID !== 0 && (
             <IconButton 
               size='small' 
               className='p-1' 
@@ -472,7 +493,7 @@ const PriorityMenuItem = ({
               <Icon icon={'mdi:pencil-outline'} fontSize={11} />
             </IconButton>
           )}
-          {!item?.IsDefault && item?.PriorityID && item?.PriorityID !== 0 && (
+          {!item?.IsDefault && item?.StatusID && item?.StatusID !== 0 && (
             <IconButton 
               size='small' 
               className='p-1' 
@@ -494,30 +515,27 @@ const PriorityMenuItem = ({
   )
 }
 
-interface TaskPriorityProps {
+interface TaskStatusProps {
   row: TaskListItemType | AdditionalSubTaskListItem
   refetch: () => void
   canEdit: boolean
   columnData?: AdditionalColumn
   dynamicValue?: any
   isSubTask?: boolean
-  sprintTaskInfoApi?: any
-  setColvalueList?: any
-  updateSprintTask?: any
 }
 
-type FormValidateType = { PriorityName: string; Colorcode: string }
+type FormValidateType = { Statusname: string; Colorcode: string }
 
-// Delete Confirmation Dialog Props
+// Add Delete Confirmation Dialog Props
 interface DeleteConfirmationDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  priorityName: string;
+  statusName: string;
 }
 
 // Delete Confirmation Dialog Component
-const DeleteConfirmationDialog = ({ open, onClose, onConfirm, priorityName }: DeleteConfirmationDialogProps) => {
+const DeleteConfirmationDialog = ({ open, onClose, onConfirm, statusName }: DeleteConfirmationDialogProps) => {
   return (
     <Dialog
       open={open}
@@ -526,11 +544,11 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, priorityName }: De
       aria-describedby="delete-dialog-description"
     >
       <DialogTitle id="delete-dialog-title">
-        Delete Priority
+        Delete Status
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="delete-dialog-description">
-          Are you sure you want to delete the priority "{priorityName}"? This action cannot be undone.
+          Are you sure you want to delete the status "{statusName}"? This action cannot be undone.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -545,34 +563,34 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, priorityName }: De
   );
 };
 
-const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask = false, sprintTaskInfoApi, setColvalueList, updateSprintTask }: TaskPriorityProps) => {
+const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask = false }: TaskStatusProps) => {
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const [formAnchor, setFormAnchor] = useState<any>(null)
   const [isEdit, setIsEdit] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
-  const [priorityToDelete, setPriorityToDelete] = useState<ProjectPriorityList | null>(null)
-  const { priorityList = [] } = useWorkspace()
+  const [statusToDelete, setStatusToDelete] = useState<ProjectStatusList | null>(null)
+  const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
 
-  // Fetch priority lookup list with taskID and groupID from row
-  const { data: dynamicPriority, refetch: refetchPriorityList } = useQuery({
-    queryKey: ['priority-lookup-list', getTaskIdFromRow(row), getGroupIdFromRow(row), user?.id],
+  // Update the useQuery to use the new API with taskID and groupID from row
+  const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
+    queryKey: ['status-lookup-list', row?.taskID, row?.taskGroupID, user?.id],
     queryFn: () => {
-      const taskID = getTaskIdFromRow(row);
-      const groupID = getGroupIdFromRow(row);
+      const taskID = row?.taskID || row?.TaskID;
+      const groupID = row?.taskGroupID || row?.TaskGroupID;
       const loginuserID = user?.id;
       
       if (taskID && groupID && loginuserID) {
-        return fetchPriorityLookupList(taskID, groupID, loginuserID);
+        return fetchStatusLookupList(taskID, groupID, loginuserID);
       }
       return Promise.resolve([]);
     },
-    enabled: !!(getTaskIdFromRow(row)) && canEdit,
+    enabled: !!row?.taskID || !!row?.TaskID,
     select: (data) => {
-      // Transform the API response to match ProjectPriorityList format
-      return data.map((item: PriorityLookupItem) => ({
-        PriorityID: item.priorityID,
-        PriorityName: item.priorityname,
+      // Transform the API response to match ProjectStatusList format
+      return data.map((item: StatusLookupItem) => ({
+        StatusID: item.statusID,
+        Statusname: item.statusname,
         Colorcode: item.colorcode,
         IsDefault: false,
         TaskgroupID: null
@@ -585,69 +603,67 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
     control,
     reset,
     formState: { isSubmitting, isDirty }
-  } = useForm<FormValidateType>({ defaultValues: { PriorityName: '', Colorcode: '' } })
+  } = useForm<FormValidateType>({ defaultValues: { Statusname: '', Colorcode: '' } })
 
-  const priorityName = useMemo(() => {
+  const statusName = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
-      if (dynamicValue?.Priority?.PriorityName) {
-        return dynamicValue.Priority.PriorityName
+      if (dynamicValue?.Status?.Statusname) {
+        return dynamicValue.Status.Statusname
       }
-      if (dynamicValue?.priorityID && dynamicValue?.dynamicPriorityValueList) {
-        const foundPriority = dynamicValue.dynamicPriorityValueList.find(
-          (s: any) => s.priorityID === dynamicValue.priorityID
+      if (dynamicValue?.statusID && dynamicValue?.dynamicStatusValueList) {
+        const foundStatus = dynamicValue.dynamicStatusValueList.find(
+          (s: any) => s.statusID === dynamicValue.statusID
         )
-        return foundPriority?.prioritytext
+        return foundStatus?.statustext
       }
       return null
     }
 
-    return row?.Priority?.PriorityName
-  }, [columnData, dynamicValue, row?.Priority?.PriorityName])
+    return row?.Status?.Statusname
+  }, [columnData, dynamicValue, row?.Status?.Statusname])
 
   const colorCode = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
-      if (dynamicValue?.Priority?.Colorcode) {
-        return dynamicValue.Priority.Colorcode
+      if (dynamicValue?.Status?.Colorcode) {
+        return dynamicValue.Status.Colorcode
       }
       
-      if (dynamicValue?.priorityID) {
-        if (priorityList.length > 0) {
-          const foundPriority = priorityList.find(
-            (s: any) => s.PriorityID === dynamicValue.priorityID
+      if (dynamicValue?.statusID) {
+        if (statusList.length > 0) {
+          const foundStatus = statusList.find(
+            (s: any) => s.StatusID === dynamicValue.statusID
           );
-          if (foundPriority?.Colorcode) {
-            return foundPriority.Colorcode;
+          if (foundStatus?.Colorcode) {
+            return foundStatus.Colorcode;
           }
         }
         
-        if (dynamicPriority && dynamicPriority.length > 0) {
-          const foundDynamicPriority = dynamicPriority.find(
-            (s: any) => s.PriorityID === dynamicValue.priorityID
+        if (dynamicStatus && dynamicStatus.length > 0) {
+          const foundDynamicStatus = dynamicStatus.find(
+            (s: any) => s.StatusID === dynamicValue.statusID
           );
-          if (foundDynamicPriority?.Colorcode) {
-            return foundDynamicPriority.Colorcode;
+          if (foundDynamicStatus?.Colorcode) {
+            return foundDynamicStatus.Colorcode;
           }
         }
       }
       
-      if (dynamicValue?.priorityID && dynamicValue?.dynamicPriorityValueList && priorityList.length > 0) {
-        const priorityId = dynamicValue.priorityID;
-        const foundPriority = priorityList.find(
-          (s: any) => s.PriorityID === priorityId
+      if (dynamicValue?.statusID && dynamicValue?.dynamicStatusValueList && statusList.length > 0) {
+        const statusId = dynamicValue.statusID;
+        const foundStatus = statusList.find(
+          (s: any) => s.StatusID === statusId
         );
-        return foundPriority?.Colorcode;
+        return foundStatus?.Colorcode;
       }
       
       return null;
     }
 
-    return row?.Priority?.Colorcode
-  }, [columnData, dynamicValue, row?.Priority?.Colorcode, priorityList, dynamicPriority])
+    return row?.Status?.Colorcode
+  }, [columnData, dynamicValue, row?.Status?.Colorcode, statusList, dynamicStatus])
 
   const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (canEdit) {
-      setAnchorEl(e.currentTarget)
-    }
+    canEdit && setAnchorEl(e.currentTarget)
   }
 
   const handleClose = () => {
@@ -656,8 +672,9 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
   }
 
   const handleFormClose = () => {
+    setAnchorEl(null)
     setFormAnchor(null)
-    reset({ PriorityName: '', Colorcode: '' })
+    reset({ Statusname: '', Colorcode: '' })
     setIsEdit(null)
   }
 
@@ -669,146 +686,97 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
     return false
   }
 
-  const handleEdit = (item: ProjectPriorityList) => {
-    setIsEdit(item?.PriorityID?.toString())
-    reset({ PriorityName: item?.PriorityName, Colorcode: item?.Colorcode })
+  const handleEdit = (item: ProjectStatusList) => {
+    setIsEdit(item?.StatusID?.toString())
+    reset({ Statusname: item?.Statusname, Colorcode: item?.Colorcode })
     setFormAnchor(anchorEl)
     setAnchorEl(null)
   }
 
-  const handleDeleteClick = (item: ProjectPriorityList) => {
-    if (!item?.PriorityID || item.PriorityID === 0) return;
-    setPriorityToDelete(item);
+  const handleDeleteClick = (item: ProjectStatusList) => {
+    if (!item?.StatusID || item.StatusID === 0) return;
+    setStatusToDelete(item);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!priorityToDelete?.PriorityID) return;
+    if (!statusToDelete?.StatusID) return;
     
     try {
-      // Get GroupID from row data using helper function
-      const groupID = getGroupIdFromRow(row);
-      const loginuserID = user?.id;
-      
-      // Use updatePriority with IsDelete=true for deletion
-      const response = await updatePriority({
-        PriorityID: priorityToDelete.PriorityID,
-        GroupID: groupID,
-        Priorityname: priorityToDelete.PriorityName,
-        LoginuserID: loginuserID,
-        IsDelete: true, // Set to true for deletion
-        Colorcode: priorityToDelete.Colorcode
-      });
-
-      if (response) {
-        await refetchPriorityList();
-        
-        // Update colvalueList if provided
-        if (setColvalueList && sprintTaskInfoApi?.data) {
-          const data = sprintTaskInfoApi.data;
-          if (Array.isArray(data) && data.length > 0 && data[0]?.colvalueList) {
-            setColvalueList(data[0].colvalueList);
-          } else if (data?.colvalueList) {
-            setColvalueList(data.colvalueList);
-          }
-        }
-        
+      const response = await deleteStatus({ StatusID: statusToDelete.StatusID }, row);
+     // if (response?.status) {
+       // toast.success('Status Deleted Successfully');
+        refetchStatusList();
+        refetch();
         handleFormClose();
-      }
+   //   }
     } catch (error) {
-      console.error('Failed to delete priority:', error);
+      console.error('Failed to delete status:', error);
     } finally {
       setDeleteDialogOpen(false);
-      setPriorityToDelete(null);
+      setStatusToDelete(null);
     }
   };
 
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
-    setPriorityToDelete(null);
+    setStatusToDelete(null);
   };
 
   const onSubmit = async (data: FormValidateType) => {
-    try {
-      if (isEdit) {
-        // Get GroupID from row data using helper function
-        const groupID = getGroupIdFromRow(row);
-        const loginuserID = user?.id;
-        
-        const response = await updatePriority({
-          PriorityID: parseInt(isEdit),
-          GroupID: groupID,
-          Priorityname: data.PriorityName,
-          LoginuserID: loginuserID,
-          IsDelete: false, // Set to false for update
-          Colorcode: data.Colorcode
-        });
+  if (isEdit) {
+    // Get TaskID and GroupID from row data
+    const taskID = row?.taskID || row?.TaskID;
+    const groupID = row?.taskGroupID || row?.TaskGroupID;
+    
+    const response = await updateStatus({
+      StatusID: parseInt(isEdit),
+      TaskID: taskID,      // Add this
+      GroupID: groupID,    // Add this
+      Statusname: data.Statusname,
+      Colorcode: data.Colorcode
+    });
 
-        if (response) {
-          await refetchPriorityList();
-          
-          // Update colvalueList if provided
-          if (setColvalueList && sprintTaskInfoApi?.data) {
-            const apiData = sprintTaskInfoApi.data;
-            if (Array.isArray(apiData) && apiData.length > 0 && apiData[0]?.colvalueList) {
-              setColvalueList(apiData[0].colvalueList);
-            } else if (apiData?.colvalueList) {
-              setColvalueList(apiData.colvalueList);
-            }
-          }
-          
-          reset({ PriorityName: '', Colorcode: '' });
-          handleFormClose();
-        }
-      } else {
-        // Create task priority with taskID and groupID from row data using helper functions
-        const taskID = getTaskIdFromRow(row);
-        const groupID = getGroupIdFromRow(row);
-        const loginuserID = user?.id;
+    // if (response?.status) {
+      refetchStatusList()
+      refetch()
+      reset({ Statusname: '', Colorcode: '' })
+      handleFormClose()
+    // }
+  } else {
+    // FIXED: Use createTaskStatus with taskID and groupID from row data
+    const taskID = row?.taskID || row?.TaskID
+    const groupID = row?.taskGroupID || row?.TaskGroupID
+    const loginuserID = user?.id
 
-        const response = await createTaskPriority({
-          Priorityname: data.PriorityName,
-          TaskID: taskID,
-          LoginuserID: loginuserID,
-          GroupID: groupID,
-          Colorcode: data.Colorcode
-        });
-
-        if (response) {
-          await refetchPriorityList();
-          
-          // Update colvalueList if provided
-          if (setColvalueList && sprintTaskInfoApi?.data) {
-            const apiData = sprintTaskInfoApi.data;
-            if (Array.isArray(apiData) && apiData.length > 0 && apiData[0]?.colvalueList) {
-              setColvalueList(apiData[0].colvalueList);
-            } else if (apiData?.colvalueList) {
-              setColvalueList(apiData.colvalueList);
-            }
-          }
-          
-          reset({ PriorityName: '', Colorcode: '' });
-          handleFormClose();
-          setFormAnchor(null);
-          setAnchorEl(null);
-        }
-      }
-    } catch (error) {
-      console.error('Error in priority submission:', error);
-    }
+    const response = await createTaskStatus({
+      Statusname: data.Statusname,
+      TaskID: taskID,
+      LoginuserID: loginuserID,
+      GroupID: groupID,
+      Colorcode: data.Colorcode
+    });
+    
+    refetchStatusList()
+    refetch()
+    reset({ Statusname: '', Colorcode: '' })
+    handleFormClose()
+    setFormAnchor(null)
+    setAnchorEl(null)
   }
+}
 
-  const allPriorityOptions = useMemo(() => {
-    const noneOption: ProjectPriorityList = {
-      PriorityID: 0,
-      PriorityName: 'None',
+  const allStatusOptions = useMemo(() => {
+    const noneOption: ProjectStatusList = {
+      StatusID: 0,
+      Statusname: 'None',
       Colorcode: '#E0E0E0',
       IsDefault: false,
       TaskgroupID: null
     }
     
-    return [noneOption, ...(priorityList || [])]
-  }, [priorityList])
+    return [noneOption, ...(statusList || [])]
+  }, [statusList])
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
@@ -820,7 +788,7 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
         onClick={handleOpen}
         sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
       >
-        <Tooltip title={priorityName || 'None'}>
+        <Tooltip title={statusName || 'None'}>
           <Typography
             fontSize={'0.85rem'}
             textOverflow={'ellipsis'}
@@ -829,7 +797,7 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
             color={'inherit'}
             className='text-inherit'
           >
-            {priorityName ?? 'None'}
+            {statusName ?? 'None'}
           </Typography>
         </Tooltip>
       </Box>
@@ -883,11 +851,11 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
                   }
                 }}
               >
-                {/* {allPriorityOptions?.map(item => (
-                  <PriorityMenuItem
+                {allStatusOptions?.map(item => (
+                  <StatusMenuItem
                     item={item}
                     row={row}
-                    key={item?.PriorityID}
+                    key={item?.StatusID}
                     handleClose={handleClose}
                     refetch={refetch}
                     dynamicValue={dynamicValue}
@@ -896,7 +864,7 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
                     handleEdit={handleEdit}
                     handleDelete={handleDeleteClick}
                   />
-                ))} */}
+                ))}
               </Grid>
             </Grid>
             <Grid size={6}>
@@ -919,11 +887,11 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
                     </Typography>
                   </Box>
                 </Grid>
-                {dynamicPriority?.map(item => (
-                  <PriorityMenuItem
+                {dynamicStatus?.map(item => (
+                  <StatusMenuItem
                     item={item}
                     row={row}
-                    key={item?.PriorityID}
+                    key={item?.StatusID}
                     handleClose={handleClose}
                     refetch={refetch}
                     handleEdit={() => handleEdit(item)}
@@ -953,7 +921,7 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
             <Grid container spacing={3}>
               <Grid size={12}>
                 <Controller
-                  name='PriorityName'
+                  name='Statusname'
                   rules={{
                     required: 'Please enter a name for the label'
                   }}
@@ -962,9 +930,9 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
                     <TextField
                       {...field}
                       variant={'outlined'}
-                      error={!!errors?.PriorityName}
-                      helperText={!!errors?.PriorityName && errors?.PriorityName?.message}
-                      placeholder='eg. Priority name'
+                      error={!!errors?.Statusname}
+                      helperText={!!errors?.Statusname && errors?.Statusname?.message}
+                      placeholder='eg. Status name'
                       InputProps={{
                         startAdornment: (
                           <Icon
@@ -1035,10 +1003,10 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
         open={deleteDialogOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        priorityName={priorityToDelete?.PriorityName || ''}
+        statusName={statusToDelete?.Statusname || ''}
       />
     </Box>
   )
 }
 
-export default TaskPriority
+export default TaskStatus

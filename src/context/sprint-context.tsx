@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react'
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { fetchSprintGroups } from '@/services/modules/sprint-group'
+import { useAuth } from '@/hooks/useAuth'
 
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -51,14 +52,13 @@ const SprintManagement = createContext<SprintManagementType>(defaultProvider)
 interface SprintManagementProviderProps {
   children: ReactNode
   workspaceID: string
-  loginuserID?: string
 }
 
 // ** Fetch sprint groups function
 
 // ** Fetch dynamic columns function
 const fetchSprintDynamicColumns = async (loginuserID: string, workspaceID: string) => {
-  const response = await axios.get('https://uat.ppmbackend.projectpulse360.com/GetSprintDynamiccolumnLlist', {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintDynamiccolumnLlist`, {
     params: {
       LoginuserID: loginuserID,
       WorkspaceID: workspaceID
@@ -67,7 +67,10 @@ const fetchSprintDynamicColumns = async (loginuserID: string, workspaceID: strin
   return response.data
 }
 
-const SprintManagementProvider = ({ children, workspaceID, loginuserID = '76' }: SprintManagementProviderProps) => {
+const SprintManagementProvider = ({ children, workspaceID }: SprintManagementProviderProps) => {
+  const { user } = useAuth()
+  const loginuserID = user?.id || '76'
+
   const { data = [], refetch } = useQuery({
     queryKey: ['sprint-groups', workspaceID],
     queryFn: () => fetchSprintGroups(workspaceID),

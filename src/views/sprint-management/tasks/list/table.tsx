@@ -55,7 +55,8 @@ import { DescriptionTextfiled } from '../columns/DescriptionDefaultcolum'
 import { ActualSpTextfiled } from '../columns/ActualSpTextfiled'
 import { EstimateSpTextfiled } from '../columns/EstimateSpTextfiled'
 import { IsUnplannedSelector } from '../columns/IsUnplannedSelector'
-import TaskStatus from '../columns/Taskstatus'
+import TaskStatus from '../components/statusoriginal'
+import TaskPriority from '../columns/priority'
 
 // Define proper types for the taskgroup array
 interface TaskGroup {
@@ -176,6 +177,30 @@ const updateSprintTaskAPI = async (taskId: string | number, taskData: {
   }
   
   const apiUrl = `https://uat.ppmbackend.projectpulse360.com/SprintTaskUpdate?${params.toString()}`;
+  
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API call failed with status: ${response.status}`);
+  }
+  
+  return response.json();
+};
+
+// Add the owner removal API function
+const removeSprintTaskOwner = async (taskId: string | number, groupId: string | number, sprintId: string | number, loginUserId: string | number) => {
+  const params = new URLSearchParams();
+  params.append('TaskID', String(taskId));
+  params.append('GroupID', String(groupId));
+  params.append('SprintID', String(sprintId));
+  params.append('LoginuserID', String(loginUserId));
+  
+  const apiUrl = `https://uat.ppmbackend.projectpulse360.com/SprintTaskOwnerRemove?${params.toString()}`;
   
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -718,22 +743,35 @@ const TaskTableSprint = ({
               
               if (!taskId) return;
               
-              // Prepare complete task data with all parameters
-              const taskData = {
-                Taskname: currentTask?.Taskname || '',
-                Description: currentTask?.Description || '',
-                OwnerID: newOwner?.UserID || 0,
-                EstimatedSP: currentTask?.EstimatedSP || 0,
-                ActualSP: currentTask?.ActualSP || 0,
-                isunplan: currentTask?.IsUnplanned || false,
-                StatusID: currentTask?.StatusID || 0,
-                PriorityID: currentTask?.PriorityID || 3
-              };
-              
-              // Call the update API with all parameters
-              await updateSprintTaskAPI(taskId, taskData);
-              
-              toast.success(newOwner ? "Owner assigned successfully" : "Owner removed successfully");
+              // If removing owner (newOwner is null), use the owner removal API
+              if (newOwner === null) {
+                // Call the owner removal API
+                await removeSprintTaskOwner(
+                  taskId,
+                  currentTaskGroupId || 0,
+                  sp?.SprintID || 0,
+                  user?.id || 0
+                );
+                toast.success("Owner removed successfully");
+              } 
+              // If assigning a new owner, use the update API
+              else {
+                // Prepare complete task data with all parameters
+                const taskData = {
+                  Taskname: currentTask?.Taskname || '',
+                  Description: currentTask?.Description || '',
+                  OwnerID: newOwner?.UserID || 0,
+                  EstimatedSP: currentTask?.EstimatedSP || 0,
+                  ActualSP: currentTask?.ActualSP || 0,
+                  isunplan: currentTask?.IsUnplanned || false,
+                  StatusID: currentTask?.StatusID || 0,
+                  PriorityID: currentTask?.PriorityID || 3
+                };
+                
+                // Call the update API with all parameters
+                await updateSprintTaskAPI(taskId, taskData);
+                toast.success("Owner assigned successfully");
+              }
               
               // Refetch to get latest data
               await sprintTaskInfoApi?.refetch();
@@ -858,6 +896,20 @@ const TaskTableSprint = ({
           return <EstimateSpTextfiled canEdit={true} getValue={() => value} index={index} id={id} table={table} />
         }
       },
+       {
+        id: 'Priority',
+        accessorKey: 'Priority',
+        header: function EstimatedSPHeader() {
+          return (
+            <Typography variant='body2' fontWeight={800}>
+        Priority
+            </Typography>
+          )
+        },
+         cell: ({ row: { original: row } }) => {
+          return <TaskPriority row={row} refetch={row} canEdit={true} />
+        }
+      },
 {
   id: 'Status',
   accessorKey: 'Status',
@@ -892,7 +944,7 @@ const TaskTableSprint = ({
   }
 }
     ],
-    [currentSprintGroupInfo, sprintTaskInfoApi]
+    [currentSprintGroupInfo, sprintTaskInfoApi, currentTaskGroupId, sp?.SprintID, user?.id]
   );
 
   // Dynamic columns from colList with custom headers and dynamic cells

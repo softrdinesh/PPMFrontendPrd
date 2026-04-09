@@ -88,6 +88,8 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       const response = await axios.post(
         `${Baseurl}/ChangeSprintDynamicColumnname?Columname=${encodeURIComponent(Columnname)}&DynamicColumnID=${AdditionalColumnID}&LoginuserID=${user?.id}`
       );
+            window.dispatchEvent(new Event('columnCreated'));
+
       
       setEditOpen(false);
       refetch();
@@ -139,7 +141,8 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       await axios.post(
         `${Baseurl}/RemoveSprintDynamicColumnname?DynamicColumnID=${dynamicColumnId}&LoginuserID=${user?.id}`
       );
-      
+                  window.dispatchEvent(new Event('columnCreated'));
+
       setDeleteOpen(false);
       setActiveColumn(null); // ✅ Clear after successful delete
       refetch();

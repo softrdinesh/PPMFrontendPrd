@@ -14,7 +14,7 @@ import SprintTasksList from './list'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
 import { createSprintTasks, fetchSprintTaskList, updateSprintTask } from '@/services/modules/sprint-tasks'
 import { useQuery } from '@tanstack/react-query'
-
+import axios from 'axios'
 const SprintTaskManagementContent = ({ workspaceID }: { workspaceID: string }) => {
   const { selected, setSelected, workspace } = useWorkspace()
   const { data } = useSprintTaskManagement()
@@ -26,7 +26,7 @@ const SprintTaskManagementContent = ({ workspaceID }: { workspaceID: string }) =
   const [showTaskDropdown, setShowTaskDropdown] = useState<boolean>(false) // New state for task dropdown
   const inputRef = useRef<HTMLInputElement>(null)
   const taskInputRef = useRef<HTMLInputElement>(null)
-
+console.log(workspaceID,'workspaceID')
   const [groupid, setgroupid] = useState('')
 
   const { data: sprintListData = [], refetch: refetchSprints, isLoading: isLoadingSprints } = useQuery({
@@ -34,8 +34,14 @@ const SprintTaskManagementContent = ({ workspaceID }: { workspaceID: string }) =
     queryFn: () => fetchSprintTaskList({sprintID: groupid}),
     enabled: !!groupid
   })
+  console.log(sprintListData,'sprintListData')
 
   const sprintDataArray = sprintListData && sprintListData.data ? sprintListData.data : []
+
+
+
+
+
 
   // Extract task names and IDs from the sprint data
   const tasks = selectedSprint && sprintDataArray.length > 0 
@@ -451,7 +457,7 @@ const filteredTasks = tasks.filter(task => {
           {/* Buttons */}
           <div className='flex items-center gap-5 flex-wrap justify-center'>
             <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
-            <SprintFilterButton />
+            <SprintFilterButton workspaceID={workspaceID} />
             <CustomButton
               variant='outlined'
               startIcon={<Icon icon={'solar:calendar-date-outline'} style={{ marginInline: 2 }} />}

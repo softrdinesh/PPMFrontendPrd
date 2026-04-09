@@ -128,7 +128,7 @@ const TaskPeople = ({
       if (isSubTask) {
         const subRowData = rowData as AdditionalSubTaskListItem
         const response = await axios.post(
-          `${BASE_URL}/RemoveSubTaskOwner?TaskID=${rowData?.TaskID?.toString()}&SubTaskID=${subRowData?.SubTaskID}`
+          `${BASE_URL}/RemoveSubTaskOwner?TaskID=${(rowData as any)?.taskID }&SubTaskID=${subRowData?.SubTaskID}`
         )
         
         if (response) {
@@ -218,8 +218,10 @@ const TaskPeople = ({
     try {
       const response = await axios
         .post(
-          `${BASE_URL}/SprintRemoveDynamicColumnValues?DynamicColumnID=${columnData?.additionalColumnID}&LoginuserID=${
-            user?.id}&SprintID=${(rowData as any)?.SprintID }`
+          `${BASE_URL}/SprintTaskRemoveDynamicColumnUser?TaskID=${(rowData as any)?.taskID || ''}&AdditionalColumnID=${
+            columnData?.additionalColumnID}&LoginuserID=${user?.id
+            
+             }`
         )
         .then(res => {
           console.log(res.data)
