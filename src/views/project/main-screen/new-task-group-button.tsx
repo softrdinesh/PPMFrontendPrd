@@ -9,7 +9,6 @@ import { useRazorpayPayment } from '../../paymentpopup/useRazorpayPayment'
 import { useAuth } from '@/hooks/useAuth'
 
 const NewTask = (projectlength:any) => {
-  console.log(projectlength.projectlength.length)
   const [open, setOpen] = useState(false)
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const handleOpen = () => setOpen(true)

@@ -1243,9 +1243,9 @@ const projectTaskID = formData.projectTask || '0';
                   Assign To <span style={{ color: 'red' }}>*</span>
                 </Typography>
                 <Select
+                key={1}
                   value={formData.assignee}
                   onChange={(e) => {
-                    console.log(e.target.value)
                     setFormData({ ...formData, assignee: e.target.value });
                     if (errors.assignee) {
                       setErrors({ ...errors, assignee: undefined });

@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react'
 import CustomButton from '@components/button'
 import NewTaskDialog from './bug-add-dialog'
 
-const NewBugQueue = () => {
+const NewBugQueue = ({ onBugGroupCreated }: { onBugGroupCreated?: () => void }) => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => setOpen(true)
@@ -23,7 +23,9 @@ const NewBugQueue = () => {
       >
         New Bug
       </CustomButton>
-      <NewTaskDialog open={open} onCloseModal={handleClose} />
+      <NewTaskDialog open={open} onCloseModal={handleClose} 
+      onBugGroupCreated={onBugGroupCreated}
+      />
     </>
   )
 }

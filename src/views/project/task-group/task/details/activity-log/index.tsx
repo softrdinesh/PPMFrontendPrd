@@ -39,7 +39,6 @@ const ActivityTable = ({ taskData }: { taskData: TaskListItemType }) => {
     queryFn: () => fetchRecentActivityList({ taskID: taskData?.TaskID?.toString() })
   })
 
-  console.log('activityData', activityData)
 
   const columns: ColumnDef<RecentActivityListType>[] = useMemo(
     () => [

@@ -99,7 +99,7 @@ const handleSave = async () => {
     }
 
     if (isSubTask) {
-      console.log('sub',isSubTask)
+    
       const subRowData = rowData as AdditionalSubTaskListItem
       const taskRowData = rowData as TaskListItemType
       body.TaskID = subRowData?.TaskMasterID
@@ -109,7 +109,6 @@ const handleSave = async () => {
       // Fixed: Properly await the axios call
       const response = await axios.post(`${BASE_URL}/UpdateDyanmicDateSubtask?TaskID=${taskRowData?.TaskID?.toString()}&LoginuserID=${user?.id}&Subtaskid=${subRowData?.SubTaskID?.toString()}&IsRemove=0&AdditionalColumnID=${columnData?.AdditionalColumnID}&DateValue=${moment(selectedDate).format('LLL')}`)
       
-      console.log(response.data)
       
       if (response.data) { // Check if response has data
         refetch()
@@ -117,7 +116,6 @@ const handleSave = async () => {
       }
     } else {
       const taskRowData = rowData as TaskListItemType
-      console.log('new',isSubTask)
       const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
 
       if (response) {

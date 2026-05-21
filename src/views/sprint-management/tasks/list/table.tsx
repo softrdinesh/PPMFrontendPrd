@@ -114,7 +114,7 @@ interface SprintTaskInfoResponse {
 
 // Add the API function directly in the component file
 const fetchSprintTaskGroupInfo = async (workspaceID: string | number) => {
-  const response = await fetch(`https://uat.ppmbackend.projectpulse360.com/GetSprintTaskGroupInfoList?WorkspaceID=${workspaceID}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintTaskGroupInfoList?WorkspaceID=${workspaceID}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ const fetchSprintTaskGroupInfo = async (workspaceID: string | number) => {
 
 // New API function to fetch sprint task info
 const fetchSprintTaskInfoList = async (taskGroupID: string | number) => {
-  const response = await axios.get(`https://uat.ppmbackend.projectpulse360.com/GetSprintTaskInfoList?TaskGroupID=${taskGroupID}`);
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintTaskInfoList?TaskGroupID=${taskGroupID}`);
   return response.data;
 };
 
@@ -176,7 +176,7 @@ const updateSprintTaskAPI = async (taskId: string | number, taskData: {
     params.append('PriorityID', String(taskData.PriorityID));
   }
   
-  const apiUrl = `https://uat.ppmbackend.projectpulse360.com/SprintTaskUpdate?${params.toString()}`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskUpdate?${params.toString()}`;
   
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -200,7 +200,7 @@ const removeSprintTaskOwner = async (taskId: string | number, groupId: string | 
   params.append('SprintID', String(sprintId));
   params.append('LoginuserID', String(loginUserId));
   
-  const apiUrl = `https://uat.ppmbackend.projectpulse360.com/SprintTaskOwnerRemove?${params.toString()}`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskOwnerRemove?${params.toString()}`;
   
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -250,7 +250,7 @@ const OwnerSelector = ({
     
     setLoading(true)
     try {
-      const BASE_URL = 'https://uat.ppmbackend.projectpulse360.com'
+      const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL1}`
       const response = await axios.get(`${BASE_URL}/GetUserList?LoginuserID=${user.id}`)
       
       const mappedUsers = response.data.map((apiUser: any) => ({
@@ -604,7 +604,7 @@ const TaskTableSprint = ({
     return [];
   }, [sprintTaskInfoData]);
 
-  // Transform the API response to match SprintTaskItem format correctly
+  // FIXED: Transform the API response - now maps priorityID/priorityname/colorcode into nested Priority object
   const transformedData = useMemo(() => {
     const detailList = getTaskDetailList;
     
@@ -630,6 +630,16 @@ const TaskTableSprint = ({
       SprintID: task.sprintID || sp?.SprintID || 0,
       sprintID: task.sprintID || sp?.SprintID || 0,
       taskGroupID: currentTaskGroupId,
+      // FIXED: Map flat priorityID/priorityname/colorcode fields into PriorityID and nested Priority object
+      PriorityID: task.priorityID || null,
+      priorityID: task.priorityID || null,
+      priorityname: task.priorityname || '',
+      colorcode: task.colorcode || '',
+      Priority: task.priorityID ? {
+        PriorityID: task.priorityID,
+        PriorityName: task.priorityname || '',
+        Colorcode: task.colorcode || ''
+      } : null,
       DynamicColumnList: task.dynamicColumnList || null,
       colvalueList: colvalueList
     }));
@@ -1253,7 +1263,7 @@ const TaskTableSprint = ({
         return;
       }
 
-      const baseUrl = 'https://uat.ppmbackend.projectpulse360.com/SprintTaskcreate'
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskcreate`
       const params = new URLSearchParams({
         taskname: 'New Task',
         TaskGroupID: String(currentTaskGroupId),

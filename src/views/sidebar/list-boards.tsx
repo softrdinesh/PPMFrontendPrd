@@ -84,7 +84,6 @@ const WorkspaceItem = ({ workspace, onBoardClick }: { workspace: WorkspaceListIt
 
   const handleDelete = async () => {
     try {
-      console.log('profile :', profile)
 
       const response =
         profile === 'projects'

@@ -138,7 +138,7 @@ const paymentcheck = async () => {
   const value= JSON.parse(userid)
   try {
     const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userData?.UserID}`)
-    console.log(res.data)
+
     
     if (res.data && res.data.length > 0) {
       const paymentData = {
@@ -167,7 +167,7 @@ const paymentcheck = async () => {
     status: string = ''
   ) => {
     try {
-      const baseUrl = 'https://uat.ppmbackend.projectpulse360.com/UpdatePaymentconfirmation'
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL1}/UpdatePaymentconfirmation`
       const params = new URLSearchParams()
       params.append('UserID', String(userIdParam))
       params.append('PaymentID', paymentId ?? '')
@@ -206,7 +206,7 @@ const paymentcheck = async () => {
   const openRazorPaySdk = async (razorPayOrderId: string, amount: number) => {
     // Ensure Razorpay is loaded before proceeding
     if (!razorpayLoaded || !window.Razorpay) {
-      console.log('Razorpay not loaded, attempting to load...')
+    
       try {
         setIsLoading(true)
         await loadRazorpayScript()
@@ -328,7 +328,6 @@ const paymentcheck = async () => {
         updatePaymentConfirmation(userId, failedPaymentId, 'Failed')
           .then(res => {
             onPaymentFailure?.()
-            console.log('Failed payment confirmation result:', res)
           })
           .catch(err => {
             console.error('Error updating failed payment confirmation:', err)
@@ -351,7 +350,6 @@ const paymentcheck = async () => {
   const generateRazorPayOrder = async () => {
     // Check and ensure Razorpay is loaded
     if (!razorpayLoaded || !window.Razorpay) {
-      console.log('Razorpay not ready, loading...')
       try {
         setIsLoading(true)
         await loadRazorpayScript()
@@ -373,7 +371,7 @@ const paymentcheck = async () => {
             const finalamount = (parsed.amount *100)
       formData.append('amount', finalamount)
 
-      const response = await fetch(`https://uat.ppmbackend.projectpulse360.com/GenerateRazorID/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL1}/GenerateRazorID/`, {
         method: 'POST',
         headers: {},
         body: formData

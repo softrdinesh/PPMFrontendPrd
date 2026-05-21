@@ -1,23 +1,29 @@
 import { useEffect, useState } from 'react'
+
 import { Box, CircularProgress, Menu, MenuItem, TextField, Typography, Zoom } from '@mui/material'
 import Grid from '@mui/material/Grid2'
-import { Icon } from '@iconify/react'
 import { useQuery } from '@tanstack/react-query'
+
+import { Icon } from '@iconify/react'
+
 import { Controller, useForm } from 'react-hook-form'
+
 import { fetchColumnType } from '@/services/modules/task'
 import type { TColumnType } from '@/services/modules/task/types'
+import { useProject } from '@/context/project-context'
+import { createColumn } from '@/services/modules/task-group'
+import { createSubTaskColumn } from '@/services/modules/sub-task'
 import CustomButton from '@/components/button'
-import { CreateDynamicColumn } from '@/services/modules/sprint-item'
-import { useAuth } from '@/hooks/useAuth'
+import { useWorkspace } from '@/context/workspace-context'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 
 interface CreateColumnMenuProps {
   anchorEl: any
-  spintid: number
-  groupid: number, // This should be the dynamic group ID
-  taskGroupData?: any[]; // Add this prop
   setAnchorEl: (v: any) => void
-  onSubmit?: (data: { columnName: string; columnTypeID: number }) => void
+  refetch: () => void
+  isSubTask?: boolean
+  taskGroupAllData: { taskGroupID: number; taskID?: number }
 }
 
 const getIcon = (key: TColumnType['Key']) => {
@@ -26,16 +32,22 @@ const getIcon = (key: TColumnType['Key']) => {
       return 'tdesign:user'
     case 'TXT':
       return 'streamline:pencil'
+
     case 'DDL':
       return 'hugeicons:book-02'
+
     case 'DPK':
       return 'solar:calendar-date-linear'
+
     case 'LBL':
       return 'material-symbols:table-chart-view-outline'
+
     case 'NUM':
       return 'mingcute:dots-fill'
+
     case 'FLE':
       return 'lucide:files'
+
     default:
       return 'mingcute:dots-fill'
   }
@@ -47,31 +59,30 @@ type FormValidateType = {
 
 const CreateColumnMenu = ({
   anchorEl,
-  spintid,
-  groupid,
-  taskGroupData,
   setAnchorEl,
-  onSubmit: onSubmitCallback
+  isSubTask = false,
+  taskGroupAllData,
+  refetch
 }: CreateColumnMenuProps) => {
-  // Now this will show the dynamic group ID
-
+  // ** GET COLUMN TYPES
   const { data: additionalColumnsType } = useQuery({
     queryKey: ['column-type'],
     queryFn: () => fetchColumnType()
   })
 
+  // ** Hooks
+  const { project } = useProject()
+  const { selected } = useWorkspace()
+
   // ** States
   const [selectedColumnType, setSelectedColumnType] = useState<TColumnType | null>(null)
-  const { user } = useAuth()
+
   const {
     handleSubmit,
     control,
     reset,
-    formState: { isSubmitting, errors }
-  } = useForm<FormValidateType>({ 
-    defaultValues: { columnName: '' },
-    mode: 'onChange'
-  })
+    formState: { isSubmitting }
+  } = useForm<FormValidateType>({ defaultValues: { columnName: '' } })
 
   const handleTypeClicked = (t: TColumnType) => {
     setSelectedColumnType(t)
@@ -80,90 +91,91 @@ const CreateColumnMenu = ({
 
   const handleClose = () => {
     setAnchorEl(null)
-    setSelectedColumnType(null)
-    reset()
   }
 
-  const handleTypeClose = () => {
-    setSelectedColumnType(null)
-    reset()
-  }
+  const handleTypeClose = () => setSelectedColumnType(null)
 
-  const onSubmit = async (data: FormValidateType) => {
-    if (!selectedColumnType) return
-    
+  const fetchUpdatedColumns = async () => {
     try {
-      // Make the API call using axios with query parameters
-      // Using the dynamic groupid from props instead of hardcoded 10
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskCreateDynamicColumn`,
-        null, // No body data, using params instead
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL1}/GetBugDynamicColumnList`,
         {
           params: {
-            Columnname: data.columnName,
-            ColumntypeID: selectedColumnType.ColumnTypeID,
-            groupID: groupid, // Use the dynamic group ID from props
-            LoginuserID: user?.id
+            WorkspaceID: selected?.WorkspaceID,
+            GroupID: taskGroupAllData.taskGroupID
           }
         }
-      );
-      
-      // If API call is successful, call the callback
-      if (onSubmitCallback) {
-        await onSubmitCallback({
-          columnName: data.columnName,
-          columnTypeID: selectedColumnType.ColumnTypeID
-        })
-      }
-
-      // Dispatch custom event to notify filter menu
-      window.dispatchEvent(new CustomEvent('columnCreated', { 
-        detail: { columnName: data.columnName } 
-      }));
-
-      // Close menu and reset form on successful submission
-      handleClose()
-      
+      )
+      return response.data
     } catch (error) {
-      console.error('Failed to create dynamic column:', error)
-      // You can add error handling here (show toast, etc.)
+      console.error('Error fetching updated columns:', error)
+      throw error
     }
   }
 
-  const fetchSprintDynamicColumns = async () => {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintDynamiccolumnLlist`, {
-      params: {
-        LoginuserID: user?.id,
-        WorkspaceID: spintid
-      }
-    })
+  const onSubmit = async (data: FormValidateType) => {
+    const body = {
+      ...data,
+      ...taskGroupAllData,
+      columnTypeID: selectedColumnType?.ColumnTypeID,
+      projectID: project?.ID,
+      workspaceID: selected?.WorkspaceID
+    }
 
-    return response.data
+    if (isSubTask) {
+      return createSubTaskColumn(body).then(() => {
+        refetch()
+        handleClose()
+        reset()
+      })
+    }
+
+    // Add logic here to add the new column using axios
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL1}/CreateBugDynamicColumn`,
+        null,
+        {
+          params: {
+            WorkspaceID: selected?.WorkspaceID,
+            ColumntypeID: selectedColumnType?.ColumnTypeID,
+            Columnname: data.columnName,
+            GroupID: taskGroupAllData.taskGroupID,
+            LoginuserID: project?.ID
+          }
+        }
+      )
+      
+      toast.success("Column Created Successfully!")
+
+      // ✅ FIX: Dispatch event so BugList immediately re-fetches dynamic columns
+      window.dispatchEvent(new Event('columnCreated'))
+      
+      // Fetch updated column list after successful creation
+      await fetchUpdatedColumns()
+      
+      refetch()
+      handleClose()
+      setSelectedColumnType(null)
+      reset()
+    } catch (error) {
+      console.error('Error creating dynamic column:', error)
+      toast.error("Failed to create column")
+    }
   }
-
-  // Handle form submission with validation
-  const handleFormSubmit = handleSubmit(onSubmit)
 
   useEffect(() => {
     if (!!anchorEl) {
       reset()
-      setSelectedColumnType(null)
     }
-    fetchSprintDynamicColumns()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchorEl])
 
   return (
-    <Menu 
-      open={!!anchorEl} 
-      anchorEl={anchorEl} 
-      onClose={handleClose} 
-      TransitionComponent={Zoom}
-      keepMounted
-    >
+    <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleClose} TransitionComponent={Zoom}>
       <div className='min-w-64 w-full max-w-72 p-3'>
         {selectedColumnType ? (
-          <form onSubmit={handleFormSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={6}>
               <Grid size={12}>
                 <Box display={'flex'} gap={3} width={'200px'}>
@@ -177,13 +189,7 @@ const CreateColumnMenu = ({
                 <Controller
                   name='columnName'
                   control={control}
-                  rules={{ 
-                    required: 'Please name your column',
-                    minLength: {
-                      value: 1,
-                      message: 'Column name cannot be empty'
-                    }
-                  }}
+                  rules={{ required: 'Please name your column' }}
                   render={({ field, fieldState: { error } }) => (
                     <TextField
                       fullWidth
@@ -193,16 +199,11 @@ const CreateColumnMenu = ({
                       onChange={e => {
                         e.preventDefault()
                         e.stopPropagation()
+
                         field.onChange(e)
                       }}
                       error={!!error}
                       helperText={error?.message}
-                      FormHelperTextProps={{
-                        sx: { 
-                          opacity: error ? 1 : 0,
-                          transition: 'opacity 0.2s'
-                        }
-                      }}
                     />
                   )}
                 />
@@ -213,10 +214,9 @@ const CreateColumnMenu = ({
                     circular
                     variant='outlined'
                     color='secondary'
-                    startIcon={<i className='ri-arrow-left-s-line' />}
+                    startIcon={<i className={'ri-arrow-left-s-line'} />}
                     size='small'
                     onClick={handleTypeClose}
-                    type="button"
                   >{`Back`}</CustomButton>
                   <CustomButton
                     type='submit'

@@ -71,7 +71,6 @@ const TaskTimeline = ({ row, refetch, canEdit }: TaskTimelineProps) => {
       }
 
       handleClose()
-      console.log('formData :', formData)
     } catch {}
   }
 

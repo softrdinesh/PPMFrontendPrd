@@ -58,7 +58,6 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
-        console.log(`WriteUpdate WebSocket connected for task ${taskID}`)
         isConnectingRef.current = false
         reconnectAttemptsRef.current = 0
       }
@@ -69,7 +68,6 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
             return
           }
           const data = JSON.parse(event.data)
-          console.log('WriteUpdate: Task update received:', data)
           
           // Notify parent about new message
           if (onRefreshMessageCount) {
@@ -171,7 +169,6 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
           }
           
           socketRef.current.send(JSON.stringify(wsMessage))
-          console.log('WriteUpdate: WebSocket message sent:', wsMessage)
         } else {
           console.warn('WebSocket is not connected yet.')
           // Try to reconnect
@@ -391,7 +388,6 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
-        console.log(`ProjectUpdates WebSocket connected for task ${taskData?.TaskID}`)
         isConnectingRef.current = false
         reconnectAttemptsRef.current = 0
       }

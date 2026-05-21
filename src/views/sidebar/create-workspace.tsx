@@ -142,7 +142,6 @@ const handleCreateWorkspaceClick = () => {
     
     if (localStorageData) {
       const parsedData = JSON.parse(localStorageData);
-      console.log('Payment data:', parsedData);
       
       const workspaceCount = parsedData?.workspaceCount;
       const isExpired = parsedData?.isExpired;

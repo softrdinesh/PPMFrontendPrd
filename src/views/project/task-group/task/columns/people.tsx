@@ -138,7 +138,7 @@ const TaskPeople = ({
       }
 
       if (isSubTask) {
-        console.log(isSubTask, 'ss')
+      
         const subRowData = rowData as AdditionalSubTaskListItem
 
         body.TaskID = subRowData?.TaskMasterID
@@ -158,7 +158,7 @@ const TaskPeople = ({
             }&UserID=${selected?.UserID}&IsRemove=0&AdditionalColumnID=${columnData?.AdditionalColumnID}`
           )
           .then(res => {
-            console.log(res.data)
+
             refetch()
             handleClose()
           })
@@ -221,7 +221,7 @@ const TaskPeople = ({
 
   // people remove
   const handleremove = async (item: any) => {
-    console.log(item?.User?.UserID)
+
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1
 
     const response = await axios
@@ -231,7 +231,6 @@ const TaskPeople = ({
         }&UserID=${item?.User?.UserID}&IsRemove=true&AdditionalColumnID=${columnData?.AdditionalColumnID}`
       )
       .then(res => {
-        console.log(res.data)
         refetch()
         handleClose()
       })
@@ -256,7 +255,6 @@ const TaskPeople = ({
                     onClick={e => {
                       e.stopPropagation()
                       handleremove(item)
-                      console.log('Remove item:', item)
                     }}
                     style={{
                       position: 'absolute',

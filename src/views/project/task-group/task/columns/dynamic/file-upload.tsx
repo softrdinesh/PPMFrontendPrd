@@ -300,7 +300,6 @@ const { profile,user } = useAuth()
 //   }
 
 const onSubmit = async (data: FormValidateType) => {
-    console.log(data,'dat')
     if (!data?.file) {
       try {
         const body: any = {
@@ -313,7 +312,7 @@ const onSubmit = async (data: FormValidateType) => {
           PreviousState: dynamicValue?.DisplayText,
           NewState: data?.displayText
         }
-console.log(data.value,'value')
+
         if (isSubTask) {
           const subRowData = rowData as AdditionalSubTaskListItem
 

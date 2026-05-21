@@ -55,8 +55,8 @@ const [projectId, setprojectId] = useState('')
   }
 const deletegroup = async() => {
   try {
-    const value = await axios.post(`https://uat.ppmbackend.projectpulse360.com/ProjectTaskGroupDelete?TaskGroupID=${id}&LoginuserID=76`);
-    console.log(value.data);
+    const value = await axios.post(`${process.env.NEXT_PUBLIC_API_URL1}/ProjectTaskGroupDelete?TaskGroupID=${id}&LoginuserID=76`);
+
     toast.success('Task Group Deleted Successfully');
     refetch();
   } catch (error) {
@@ -68,7 +68,6 @@ const deletegroup = async() => {
 
   
 const handleDelete = async () => {
-  console.log(groupName,id,ProjectID,'values of ')
   try {
     // Prepare the body payload
     // const body = {
@@ -82,7 +81,7 @@ const handleDelete = async () => {
     setDeleteOpen(false)
  
   } catch (error) {
-    console.log('Delete failed:', error)
+
   }
 }
 

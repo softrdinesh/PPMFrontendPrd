@@ -37,7 +37,6 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ k?: string }> })
 
           const obfuscate = obfuscateEmail(decodedValue?.email)
 
-          console.log('obfuscate :', obfuscate)
 
           return <VerifyEmailPage obfuscate={obfuscate} email={decodedValue?.email} />
         }

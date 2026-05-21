@@ -91,7 +91,7 @@ interface StatusLookupItem {
 const fetchStatusLookupList = async (): Promise<StatusLookupItem[]> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintGetStatusLookupList`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintGetStatusLookupList`,
       {}, // Empty body for POST request
       {
         headers: {
@@ -139,7 +139,7 @@ const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusR
     // FIXED: Don't double-encode the color code
     // Just pass the color code as is - it should already be in proper format (#RRGGBB)
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintCreateStatusLookup`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintCreateStatusLookup`,
       null,
       {
         params: {
@@ -161,7 +161,7 @@ const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusR
 const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintUpdateStatusLookup`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintUpdateStatusLookup`,
       null,
       {
         params: {
@@ -184,7 +184,7 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
 const deleteStatus = async (payload: DeleteStatusPayload): Promise<DeleteStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintRemoveStatusLookup?StatusID=${payload.StatusID}`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintRemoveStatusLookup?StatusID=${payload.StatusID}`,
       {}, // Empty body for POST request
       {
         headers: {

@@ -63,10 +63,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   }, [currentColumnData]);
 
   // API function for fetching sprint dropdown values - inside component
-  const fetchSprintDropdownValues = async (sprintGroupId: string, sprintId: string): Promise<SprintDropdownResponse[]> => {
+  const fetchSprintDropdownValues = async (taskGroupID: string, taskID: string): Promise<SprintDropdownResponse[]> => {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskLoadDynamicDropdownvalueList?SprintGroupID=${sprintGroupId}&SprintID=${sprintId}`
+      `${process.env.NEXT_PUBLIC_API_URL1}/BugGetDynamicDropdownvaluelist?GroupID=${34}&BugID=${rowData?.BugID}`
     );
+    console.log(response.data);
     return response.data;
   };
 
@@ -74,12 +75,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const callInsertDynamicValuesAPI = async (newValue: string) => {
     const DynamicColumnID = columnData?.additionalColumnID;
     const LoginuserID = user?.id;
-    const SprintID = rowData?.SprintID;
-    const SprintGroupID = rowData?.SprintGroupID;
+
     const DynamicValue = newValue;
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
-    const apiUrl = `${BASE_URL}/SprintCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
+    const apiUrl = `${BASE_URL}/BugCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${34}&BugID=${rowData?.BugID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
 
     try {
       const response = await axios.post(apiUrl);
@@ -94,26 +94,25 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
 
   // This query remains unchanged
   const { data: dropdownItems, refetch: refetchDDL } = useQuery({
-    queryKey: ['dropdown-items', rowData?.TaskGroupID],
+    queryKey: ['dropdown-items', rowData?.BugID],
     queryFn: () => fetchDropDownList({ taskGroupID: rowData?.TaskGroupID?.toString() })
   })
 
   // Query for fetching sprint dropdown values
   const { data: sprintDropdownValues, refetch: refetchSprintValues } = useQuery({
-    queryKey: ['sprint-dropdown-values', rowData?.SprintGroupID, rowData?.SprintID],
+    queryKey: ['sprint-dropdown-values', 34, rowData?.BugID],
     queryFn: () => fetchSprintDropdownValues(
-      rowData?.SprintGroupID?.toString() || '',
-      rowData?.SprintID?.toString() || ''
+      34,
+      rowData?.BugID?.toString() || ''
     ),
-    enabled: !!(rowData?.SprintGroupID && rowData?.SprintID)
+    enabled: !!(34 && rowData?.BugID)
   });
 
   // Transform sprint dropdown values to match the expected format
   const transformedSprintValues = useMemo(() => {
     if (!sprintDropdownValues) return [];
-    // console.log(sprintDropdownValues,'sprintDropdownValues')
     return sprintDropdownValues.map(item => ({
-      Dynamic_ddl_ID: item.dynamicDropdownValueID,
+      Dynamic_ddl_ID: item.dynamicDropdownID,
       Valuetxt: item.valuetxt
     }));
   }, [sprintDropdownValues]);
@@ -124,7 +123,6 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     if (transformedSprintValues.length > 0) {
       return transformedSprintValues.filter(i =>
         selectedValues?.every(val => {
-
           return val.dynamicddlID !== i?.Dynamic_ddl_ID;
         })
       );
@@ -151,7 +149,6 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
 
   const handleDropdownSelect = async (item: DynamicDropdownList | null) => {
 
-
     try {
       if (!item) return;
       
@@ -159,11 +156,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
       const DynamicColumnID = columnData?.additionalColumnID;
       const LoginuserID = user?.id;
-      const SprintID = rowData?.SprintID;
-      const SprintGroupID = rowData?.SprintGroupID;
+      const SprintID = rowData?.taskID;
+      const SprintGroupID = rowData?.taskGroupID;
       const DynamicValue = item?.Dynamic_ddl_ID;
       
-      const apiUrl = `${BASE_URL}/SprintAssignDynamicDropdownValue?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&DynamicDropDownID=${DynamicValue}`;
+      const apiUrl = `${BASE_URL}/InsertBugDynamicValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&BugID=${rowData?.BugID}&GroupID=${rowData?.groupID}&DynamicValue=${DynamicValue}`;
       
       // Make the API call using POST method
       const response = await axios.post(apiUrl);
@@ -180,51 +177,32 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     }
   }
 
-  // const handleDeleteLabel = async (id: string) => {
-  //   try {
-  //     await deleteDynamicValue(id);
-  //     toast.success('Value deleted successfully');
-  //     refetch();
-  //     refetchSprintValues();
-  //   } catch (error) {
-  //     console.error('error deleting value :', error);
-  //     toast.error('Failed to delete value');
-  //   }
-  // }
-
-  // React Hook Form setup
-  
-  
-  
-  
   const handleDeleteLabel = async (id: string) => {
-  try {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
-    const DynamicColumnID = columnData?.additionalColumnID;
-    const LoginuserID = user?.id;
-    const SprintID = rowData?.SprintID;
-    const SprintGroupID = rowData?.SprintGroupID;
-
-    
-    // Construct the URL with all required parameters
-    const apiUrl = `${BASE_URL}/SprintRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&SprintGrpID=${SprintGroupID}&SprintID=${SprintID}&DynamicDropdownValueID=${id}`;
-    
-    // Use DELETE method instead of GET (adjust based on API requirement)
-    const response = await axios.post(apiUrl, {
-      data: { dynamicDropDownID: id } // If API expects the ID in body
-    });
-    
-    if (response) {
-      toast.success('Value deleted successfully');
-      await refetch();
-      await refetchSprintValues();
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
+      const DynamicColumnID = columnData?.additionalColumnID;
+      const LoginuserID = user?.id;
+      const taskid = rowData?.taskID;
+      const groupid = rowData?.taskGroupID;
+      
+      // Construct the URL with all required parameters
+      const apiUrl = `${BASE_URL}/SprintTaskRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${groupid}&TaskID=${taskid}&DynamicDropdownValueID=${id}`;
+      
+      // Use DELETE method instead of GET (adjust based on API requirement)
+      const response = await axios.post(apiUrl, {
+        data: { dynamicDropDownID: id } // If API expects the ID in body
+      });
+      
+      if (response) {
+        toast.success('Value deleted successfully');
+        await refetch();
+        await refetchSprintValues();
+      }
+    } catch (error) {
+      console.error('error deleting value :', error);
+      toast.error('Failed to delete value');
     }
-  } catch (error) {
-    console.error('error deleting value :', error);
-    toast.error('Failed to delete value');
   }
-}
-  
   
   const {
     control,
@@ -241,7 +219,6 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const onSubmit = async (data: FormValidateType) => {
     try {
       if (!data.dropdown) return;
-      
       // Call the create API
       const response = await callInsertDynamicValuesAPI(data.dropdown);
       
@@ -263,8 +240,8 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
         {selectedValues?.length ? (
           <Box display={'flex'} alignItems={'center'} gap={2}>
-            {/* Show only first value as chip */}
-            <Chip variant='tonal' size='small' label={selectedValues?.[0]?.valueText || selectedValues?.[0]?.Dropdown?.Valuetxt} />
+            {/* Show only first value as chip - FIXED: Properly display valueText */}
+            <Chip variant='tonal' size='small' label={selectedValues?.[0]?.valueText || selectedValues?.[0]?.Dropdown?.Valuetxt || selectedValues?.[0]?.valueText} />
             {/* Show count of remaining values if more than one */}
             {selectedValues?.length > 1 && `+${selectedValues?.length - 1}`}
           </Box>
@@ -359,8 +336,8 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                   {selectedValues?.length ? (
                     <Box display={'flex'} alignItems={'center'} flexWrap={'wrap'} rowGap={3} columnGap={3}>
                       {selectedValues?.map((item, index) => {
-                        // Get the value text from either structure
-                        const valueText = item?.valueText || item?.Dropdown?.Valuetxt;
+                        // FIXED: Get the value text properly - prioritize valueText, then Dropdown.Valuetxt
+                        const valueText = item?.valueText || item?.Dropdown?.Valuetxt || item?.valueText || '';
                         
                         // Create a unique key using combination of id and index
                         const uniqueKey = item.dynamicddlID 

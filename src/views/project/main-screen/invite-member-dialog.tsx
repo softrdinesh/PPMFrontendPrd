@@ -77,7 +77,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
         const userId = parsedData.userData.UserID;
         setUserId(userId);
         
-        console.log('User ID:', userId);
+
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
@@ -110,7 +110,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
   })
 
   const onSubmit = async (values: FormField) => {
-console.log(values,'dd')
+
 
 const body ={
   inviteEmailAddress: values.invitations.map(inv => inv.email).join(', '), // Join all emails with comma

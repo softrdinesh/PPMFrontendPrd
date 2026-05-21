@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth'
 // import NewTaskDialog from './Taskboardcreation'
 
 const NewBoard = (projectlength:any) => {
-  console.log(projectlength.projectlength.length)
   const [open, setOpen] = useState(false)
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const handleOpen = () => setOpen(true)
@@ -95,7 +94,7 @@ const NewBoard = (projectlength:any) => {
     }
   }
    const handleSubmit = async (taskData: any) => {
-    console.log('Task submitted:', taskData);
+
     // Your API call or logic here
   };
   return (

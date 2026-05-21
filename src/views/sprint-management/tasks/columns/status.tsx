@@ -109,7 +109,7 @@ interface StatusLookupItem {
 const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserID: number): Promise<StatusLookupItem[]> => {
   try {
     const response = await axios.get(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
     console.log(response.data)
     return response.data;
@@ -146,7 +146,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
 const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintCreateStatusLookup`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintCreateStatusLookup`,
       null,
       {
         params: {
@@ -167,7 +167,7 @@ const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusR
 const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<CreateTaskStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusCreate`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskStatusCreate`,
       null,
       {
         params: {
@@ -193,7 +193,7 @@ const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<Creat
 const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusUpdate`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskStatusUpdate`,
       null,
       {
         params: {
@@ -222,7 +222,7 @@ const deleteStatus = async (payload: DeleteStatusPayload, row: any): Promise<Del
     const groupID = row?.taskGroupID || row?.TaskGroupID;
     
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskStatusRemove?TaskID=${taskID}&StatusID=${payload.StatusID}&GroupID=${groupID}`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskStatusRemove?TaskID=${taskID}&StatusID=${payload.StatusID}&GroupID=${groupID}`,
       {},
       {
         headers: {

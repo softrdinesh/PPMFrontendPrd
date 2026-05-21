@@ -51,7 +51,7 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
   const [dynamicColumns, setDynamicColumns] = useState<DynamicColumn[]>([])
   const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-  console.log(workspaceID, 'groupID')
+
 
   useEffect(() => {
     fetchDynamicColumns()
@@ -65,14 +65,14 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
     }
   }, [workspaceID])
 
-  console.log(workspaceID, 'grouid')
+
 
   const fetchDynamicColumns = async () => {
     setLoading(true)
     try {
       // ✅ STEP 1: Fetch all sprint task groups for this workspace
       const groupResponse = await axios.get<SprintTaskGroup[]>(
-        `https://uat.ppmbackend.projectpulse360.com/GetSprintTaskGroupInfoList`,
+        `${process.env.NEXT_PUBLIC_API_URL1}/GetSprintTaskGroupInfoList`,
         {
           params: {
             WorkspaceID: workspaceID
@@ -81,7 +81,6 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
       )
 
       const groups = groupResponse.data
-      console.log(groups, 'groups from GetSprintTaskGroupInfoList')
 
       if (!groups || !Array.isArray(groups) || groups.length === 0) {
         setLoading(false)
@@ -91,7 +90,7 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
       // ✅ STEP 2: Fetch dynamic columns for ALL group IDs in parallel
       const columnRequests = groups.map((group) =>
         axios.get<DynamicColumn[]>(
-          `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetDynamicColumList`,
+          `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetDynamicColumList`,
           {
             params: {
               LoginUserID: user?.id || '76',
@@ -102,7 +101,6 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
       )
 
       const columnResponses = await Promise.all(columnRequests)
-      console.log(columnResponses, 'all column responses')
 
       // ✅ STEP 3: Merge all columns and deduplicate by additionalColumnID
       const allColumns: DynamicColumn[] = []
@@ -119,7 +117,6 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
         }
       })
 
-      console.log(allColumns, 'merged deduplicated dynamic columns')
 
       if (allColumns.length > 0) {
         setDynamicColumns(allColumns)

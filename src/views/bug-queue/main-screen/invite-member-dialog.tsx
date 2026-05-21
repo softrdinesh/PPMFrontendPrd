@@ -90,9 +90,9 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
   })
 
   const onSubmit = async (values: FormField) => {
-    console.log('called')
+  
     const body = { ...values, projectID, workspaceID: selected?.WorkspaceID, IsOpen }
-    console.log(body,'body')
+
 
     try {
       await inviteMember(body)

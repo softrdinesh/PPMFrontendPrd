@@ -23,7 +23,6 @@ const ProjectInvitePeople = ({ IsOpen, users = [] }: { IsOpen: boolean; users?: 
     setInviteUserOpen(true)
   }
 
-  console.log('ddd')
   return (
     <>
       <CustomButton

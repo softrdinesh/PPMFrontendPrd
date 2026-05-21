@@ -7,6 +7,7 @@ import { Icon } from '@iconify/react'
 import { Controller, useForm } from 'react-hook-form'
 
 import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 
 import { getContrastingTextColor, getHexColor } from 'src/utils/functions'
 
@@ -22,20 +23,26 @@ interface PriorityMenuItemProps {
   handleClose: () => void
   handleEdit?: (item?: BugPriorityList) => void
   refetch: () => void
+  onPriorityChange?: (bugId: string | number, newPriorityId: number) => Promise<void>
 }
 
-const PriorityMenuItem = ({ item, row, handleClose, handleEdit, refetch }: PriorityMenuItemProps) => {
+const PriorityMenuItem = ({ item, row, handleClose, handleEdit, refetch, onPriorityChange }: PriorityMenuItemProps) => {
   const handlePriorityChange = async () => {
-    const body = {
-      PriorityID: item?.PriorityID,
-      Title: row?.PriorityID ? 'Priority Changed' : 'Priority Added',
-      Description: 'Bug Priority has been updated',
-      PreviousState: row?.Priority?.PriorityName,
-      NewState: item?.PriorityName
-    }
+    // Use onPriorityChange callback if provided, otherwise use the old method
+    if (onPriorityChange) {
+      await onPriorityChange(row?.BugID, item?.PriorityID)
+    } else {
+      const body = {
+        PriorityID: item?.PriorityID,
+        Title: row?.PriorityID ? 'Priority Changed' : 'Priority Added',
+        Description: 'Bug Priority has been updated',
+        PreviousState: row?.Priority?.PriorityName,
+        NewState: item?.PriorityName
+      }
 
-    await updateBug({ id: row?.BugID?.toString(), body })
-    refetch()
+      await updateBug({ id: row?.BugID?.toString(), body })
+      refetch()
+    }
   }
 
   return (
@@ -68,11 +75,11 @@ const PriorityMenuItem = ({ item, row, handleClose, handleEdit, refetch }: Prior
             {item?.PriorityName}
           </Typography>
         </Box>
-        {!item?.IsDefault && item?.PriorityID && (
+        {/* {!item?.IsDefault && item?.PriorityID && (
                  <IconButton size='small' className='p-1' onClick={() => handleEdit && handleEdit(item)}>
                    <Icon icon={'mdi:pencil-outline'} fontSize={11} />
                  </IconButton>
-        )}
+        )} */}
       </Box>
     </Grid>
   )
@@ -83,18 +90,19 @@ interface TaskPriorityProps {
   refetch: () => void
   canEdit: boolean
   workspaceID: number
+  onPriorityChange?: (bugId: string | number, newPriorityId: number) => Promise<void>
 }
 
 type FormValidateType = { PriorityName: string; Colorcode: string }
 
-const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) => {
+const BugPriority = ({ row, refetch, canEdit, workspaceID, onPriorityChange }: TaskPriorityProps) => {
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const [formAnchor, setFormAnchor] = useState<any>(null)
   const [isEdit, setIsEdit] = useState<string | null>(null)
   const { priorityList = [] } = useWorkspace()
 
   const { data: dynamicPriority, refetch: refetchPriorityList } = useQuery({
-    queryKey: ['project-priority'],
+    queryKey: ['project-priority', workspaceID],
     queryFn: () => fetchBugPriorityList({ workspaceID })
   })
 
@@ -154,25 +162,30 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
    
       const response = await addBugPriority({ ...body, WorkspaceID: workspaceID })
 
-      if (response?.status) {
+      // if (response?.status) {
         refetchPriorityList()
+        refetch()
         reset({ PriorityName: '', Colorcode: '' })
         handleFormClose()
-      }
+      // }
     }
   }
+
+  // Get the current priority name and color code with proper fallbacks
+  const currentPriorityName = row?.Priority?.priorityname || row?.priorityname || 'None'
+  const currentColorCode = row?.Priority?.Colorcode || row?.colorcode || '#E0E0E0'
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       <Box
         component={'button'}
         className='flex items-center justify-center max-w-52 px-1 border border-divider h-[60%] rounded-md'
-        bgcolor={row?.Priority?.Colorcode}
-        color={row?.Priority?.Colorcode && getContrastingTextColor(row?.Priority?.Colorcode)}
+        bgcolor={currentColorCode}
+        color={currentColorCode && getContrastingTextColor(currentColorCode)}
         onClick={handleOpen}
         sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
       >
-        <Tooltip title={row?.Priority?.PriorityName}>
+        <Tooltip title={currentPriorityName}>
           <Typography
             fontSize={'0.85rem'}
             textOverflow={'ellipsis'}
@@ -181,7 +194,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
             color={'inherit'}
             className='text-inherit'
           >
-            {row?.Priority?.PriorityName ?? 'None'}
+            {currentPriorityName}
           </Typography>
         </Tooltip>
       </Box>
@@ -199,7 +212,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
             <Grid size={6}>
               <Box pb={2}>
                 <Typography fontWeight={700} fontSize={14}>
-                  ESSENTIALSsdfsf
+                  ESSENTIALS
                 </Typography>
                 <Typography variant='subtitle2' fontSize={12}>
                   Add or edit labels
@@ -222,7 +235,8 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
                     key={item?.PriorityID}
                     handleClose={handleClose}
                     refetch={refetch}
-
+                    handleEdit={() => handleEdit(item)}
+                    onPriorityChange={onPriorityChange}
                   />
                 ))}
               </Grid>
@@ -255,6 +269,7 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID }: TaskPriorityProps) 
                     handleClose={handleClose}
                     refetch={refetch}
                     handleEdit={() => handleEdit(item)}
+                    onPriorityChange={onPriorityChange}
                   />
                 ))}
               </Grid>

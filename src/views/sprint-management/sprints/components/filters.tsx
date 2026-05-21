@@ -72,7 +72,7 @@ const SprintFilterButton = () => {
   const fetchDynamicColumns = async () => {
     setLoading(true)
     try {
-      const response = await axios.get<ApiResponse[]>(`https://uat.ppmbackend.projectpulse360.com/GetSprintDynamiccolumnLlist?LoginuserID=${user?.id}&WorkspaceID=${workspaceID}`)
+      const response = await axios.get<ApiResponse[]>(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintDynamiccolumnLlist?LoginuserID=${user?.id}&WorkspaceID=${workspaceID}`)
       if (response.data && response.data.length > 0 && response.data[0].columndetails) {
         setDynamicColumns(response.data[0].columndetails)
         

@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button, Grid2, IconButton, Menu, Typography, Zoom } from '@mui/material'
 
@@ -26,10 +26,11 @@ type FormType = {
 const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   const [open, setOpen] = useState<any>(null)
   const [countdown, setCountdown] = useState<string | null>(null)
-  const [timerStartTime, setTimerStartTime] = useState<number | null>(null)
+  // FIX: Use a ref for timerStartTime instead of state so changing it does NOT re-trigger the useEffect
+  const timerStartTimeRef = useRef<number | null>(null)
   const [overtimeSeconds, setOvertimeSeconds] = useState<number>(0)
   const [isOvertime, setIsOvertime] = useState<boolean>(false)
-
+console.log(bug,'bhfff');
   const form = useForm<FormType>({ defaultValues: { TimeResolution: null } })
 
   const handleOpen = (e: any) => {
@@ -108,9 +109,9 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   }
 
   const handleTimerToggle = async () => {
-    if (bug?.TimerStart) {
+    if (bug?.isTimerStart) {
       // Pause timer - store current countdown including overtime
-      const currentCountdown = countdown || bug?.TimeResolution || '0h 0m 0s'
+      const currentCountdown = countdown || bug?.timeResolution || '0h 0m 0s'
       const currentSeconds = parseResolutionToSeconds(currentCountdown)
 
       await updateBug({
@@ -120,7 +121,8 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         },
         id: bug?.BugID?.toString()
       })
-      setTimerStartTime(null)
+      // FIX: Clear ref instead of state
+      timerStartTimeRef.current = null
 
       // Save paused state so resume can reconstruct exact overtime moment
       if (bug?.BugID) {
@@ -150,12 +152,29 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         localStorage.removeItem(`pausedMode_${bug.BugID}`)
 
         // Do NOT set timerStartTime here — overtime path uses overtimeStartTime
-        setTimerStartTime(null)
+        timerStartTimeRef.current = null
+      } else if (pausedSecondsStr && pausedMode === 'countdown' && bug?.BugID) {
+        // Resuming from a paused countdown — reconstruct timerStartTime so remaining seconds are correct
+        const pausedSeconds = parseInt(pausedSecondsStr, 10)
+        const totalSeconds = parseResolutionToSeconds(bug?.timeResolution || '0h 0m 0s')
+        // elapsed = total - remaining; startTime = now - elapsed
+        const elapsedAtPause = totalSeconds - pausedSeconds
+        const reconstructedStart = Date.now() - elapsedAtPause * 1000
+        localStorage.setItem(`timerStartTime_${bug.BugID}`, reconstructedStart.toString())
+        // FIX: Write to ref — does NOT re-trigger the effect
+        timerStartTimeRef.current = reconstructedStart
+
+        await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
+
+        // Clean up paused keys
+        localStorage.removeItem(`pausedCountdownSeconds_${bug.BugID}`)
+        localStorage.removeItem(`pausedMode_${bug.BugID}`)
       } else {
         // Normal start/resume for countdown path
         await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
         const now = Date.now()
-        setTimerStartTime(now)
+        // FIX: Write to ref — does NOT re-trigger the effect
+        timerStartTimeRef.current = now
         if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, now.toString())
 
         // Clean up any paused markers
@@ -174,7 +193,7 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
     let syncInterval: NodeJS.Timeout
     let overtimeInterval: NodeJS.Timeout
 
-    if (bug?.TimeResolution && bug?.TimerStart) {
+    if (bug?.timeResolution && bug?.isTimerStart) {
       // Prefer overtimeStart when it exists (this fixes resume-from-overtime issues)
       const storedOvertimeStart = bug?.BugID ? localStorage.getItem(`overtimeStartTime_${bug.BugID}`) : null
       const storedStartTime = bug?.BugID ? localStorage.getItem(`timerStartTime_${bug.BugID}`) : null
@@ -206,23 +225,29 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         }, 1000)
       } else {
         // Normal countdown / not currently saved as overtime
-        const totalSeconds = parseResolutionToSeconds(bug.TimeResolution)
+        const totalSeconds = parseResolutionToSeconds(bug.timeResolution)
 
-        // Decide startTime for countdown (preserve any previously stored timerStartTime)
+        // FIX: Determine startTime strictly from localStorage first, then ref, then create new.
+        // Using a ref instead of state means this block does NOT cause an infinite re-render loop.
         let startTime: number
 
-        if (storedStartTime && timerStartTime) {
-          startTime = timerStartTime
-        } else if (storedStartTime) {
+        if (storedStartTime) {
+          // Always prefer persisted localStorage value — survives re-renders and page refreshes
           startTime = parseInt(storedStartTime, 10)
-          setTimerStartTime(startTime)
+          timerStartTimeRef.current = startTime
+        } else if (timerStartTimeRef.current) {
+          // In-memory ref exists (set earlier this session) but not yet in localStorage — persist it
+          startTime = timerStartTimeRef.current
+          if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, startTime.toString())
         } else {
+          // No record at all — this is a brand-new timer start
           startTime = Date.now()
-          setTimerStartTime(startTime)
+          timerStartTimeRef.current = startTime
           if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, startTime.toString())
         }
 
-        // Calculate elapsed time since timer started
+        // FIX: Calculate remaining seconds from wall-clock elapsed time (not interval ticks).
+        // This means the countdown is always accurate even after re-renders, refetch, or tab switching.
         const elapsedSeconds = Math.floor((now - startTime) / 1000)
 
         // Calculate remaining seconds
@@ -269,13 +294,15 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
             })
           }, 1000)
         } else {
-          // Normal countdown
+          // FIX: Normal countdown — drive the display from wall-clock time on every tick,
+          // not a stale closure variable. This prevents the timer from freezing or jumping.
           setCountdown(formatCountdown(remainingSeconds))
 
           countdownInterval = setInterval(() => {
-            remainingSeconds -= 1
+            const elapsed = Math.floor((Date.now() - startTime) / 1000)
+            const remaining = totalSeconds - elapsed
 
-            if (remainingSeconds <= 0) {
+            if (remaining <= 0) {
               clearInterval(countdownInterval)
               clearInterval(syncInterval)
               setCountdown('0h 0m 0s')
@@ -304,14 +331,16 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
                 })
               }, 1000)
             } else {
-              setCountdown(formatCountdown(remainingSeconds))
+              setCountdown(formatCountdown(remaining))
             }
           }, 1000)
 
           // 🔄 Sync with backend every 10 seconds
           syncInterval = setInterval(() => {
-            if (remainingSeconds > 0) {
-              const formatted = formatCountdown(remainingSeconds)
+            const elapsed = Math.floor((Date.now() - startTime) / 1000)
+            const remaining = totalSeconds - elapsed
+            if (remaining > 0) {
+              const formatted = formatCountdown(remaining)
               updateBug({ body: { TimeResolution: formatted }, id: bug?.BugID?.toString() })
             }
           }, 10000)
@@ -319,7 +348,7 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
       }
     } else {
       setCountdown(null)
-      setTimerStartTime(null)
+      timerStartTimeRef.current = null
       setOvertimeSeconds(0)
       setIsOvertime(false)
       if (bug?.BugID) {
@@ -333,8 +362,11 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
       clearInterval(syncInterval)
       clearInterval(overtimeInterval)
     }
+    // FIX: Removed timerStartTime from deps array — it was causing the effect to re-run and
+    // reset startTime to Date.now() on every refetch/render. Now only re-runs when the bug
+    // data actually changes from the server.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bug?.TimeResolution, bug?.TimerStart, bug?.BugID, timerStartTime])
+  }, [bug?.timeResolution, bug?.isTimerStart, bug?.BugID])
 
   // Clean up localStorage on component unmount
   useEffect(() => {
@@ -348,9 +380,9 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
 
   return (
     <div className='flex items-center gap-2'>
-      {bug?.TimeResolution && (
+      {bug?.timeResolution && (
         <IconButton size='small' className='p-0' onClick={handleTimerToggle}>
-          {!bug?.TimerStart ? (
+          {!bug?.isTimerStart ? (
             <i className='ri-play-circle-line text-textPrimary size-6' />
           ) : (
             <i className='ri-pause-circle-line text-primary size-6' />
@@ -358,18 +390,18 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         </IconButton>
       )}
 
-      {!!bug?.TimerStart && bug?.TimeResolution ? (
+      {!!bug?.isTimerStart && bug?.timeResolution ? (
         <div className='px-2'>
           {/* <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}> */}
                       <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
 
-            {countdown || bug?.TimeResolution || 'Add Time'}
+            {countdown || bug?.timeResolution || 'Add Time'}
           {/* //  {isOvertime && ' (overtime)'} */}
           </Typography>
         </div>
       ) : (
         <Button size='small' className='text-sm' onClick={handleOpen}>
-          {bug?.TimeResolution || 'Add Time'}
+          {bug?.timeResolution || 'Add Time'}
         </Button>
       )}
 

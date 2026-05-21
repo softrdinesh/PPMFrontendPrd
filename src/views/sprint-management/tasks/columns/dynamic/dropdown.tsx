@@ -65,7 +65,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   // API function for fetching sprint dropdown values - inside component
   const fetchSprintDropdownValues = async (taskGroupID: string, taskID: string): Promise<SprintDropdownResponse[]> => {
     const response = await axios.get(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetDynamicDropdownvaluelist?GroupID=${taskGroupID}&TaskID=${taskID}`
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetDynamicDropdownvaluelist?GroupID=${taskGroupID}&TaskID=${taskID}`
     );
     return response.data;
   };

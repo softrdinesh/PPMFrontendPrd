@@ -33,10 +33,12 @@ interface BugQueueContextType {
 
 const defaultColumnVisibility: ColumnVisibility = {
   BugID:true,
+  BugName:true,
   Reporter: true,
   BugDescription: true,
   TimeResolution: true,
-  Priority: true
+  Priority: true,
+  Status:true
 }
 
 

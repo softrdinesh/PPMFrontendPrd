@@ -122,7 +122,7 @@ const getGroupIdFromRow = (row: any): number => {
 const fetchPriorityLookupList = async (taskID: number, groupID: number, loginuserID: number): Promise<PriorityLookupItem[]> => {
   try {
     const response = await axios.get(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskGetPriorityList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetPriorityList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
     console.log(response.data)
     return response.data;
@@ -135,7 +135,7 @@ const fetchPriorityLookupList = async (taskID: number, groupID: number, loginuse
 // Insert dynamic value function
 const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<InsertDynamicValueResponse> => {
   try {
-    const BASE_URL = 'https://uat.ppmbackend.projectpulse360.com';
+    const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL1}`;
     const DynamicColumnID = payload.DynamicColumnID;
     const LoginuserID = payload.LoginuserID;
     const taskid = payload.SprintID;
@@ -158,7 +158,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
 // SprintTaskUpdate function
 const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<SprintTaskUpdateResponse> => {
   try {
-    const BASE_URL = 'https://uat.ppmbackend.projectpulse360.com';
+    const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL1}`;
     const params = new URLSearchParams();
     
     if (payload.TaskID) params.append('TaskID', payload.TaskID.toString());
@@ -188,7 +188,7 @@ const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<Sprin
 const createPriority = async (payload: CreatePriorityPayload): Promise<CreatePriorityResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskCreatePriority`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskCreatePriority`,
       null,
       {
         params: {
@@ -209,7 +209,7 @@ const createPriority = async (payload: CreatePriorityPayload): Promise<CreatePri
 const createTaskPriority = async (payload: CreateTaskPriorityPayload): Promise<CreateTaskPriorityResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskCreatePriority`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskCreatePriority`,
       null,
       {
         params: {
@@ -234,7 +234,7 @@ const createTaskPriority = async (payload: CreateTaskPriorityPayload): Promise<C
 const updatePriority = async (payload: UpdatePriorityPayload): Promise<UpdatePriorityResponse> => {
   try {
     const response = await axios.post(
-      `https://uat.ppmbackend.projectpulse360.com/SprintTaskUpdatePriority`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskUpdatePriority`,
       null,
       {
         params: {
@@ -587,6 +587,7 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
     formState: { isSubmitting, isDirty }
   } = useForm<FormValidateType>({ defaultValues: { PriorityName: '', Colorcode: '' } })
 
+  // FIXED: priorityName now also reads flat priorityname field from row (API returns priorityname lowercase)
   const priorityName = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
       if (dynamicValue?.Priority?.PriorityName) {
@@ -601,9 +602,11 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
       return null
     }
 
-    return row?.Priority?.PriorityName
-  }, [columnData, dynamicValue, row?.Priority?.PriorityName])
+    // Check nested Priority object first, then fall back to flat priorityname field
+    return row?.Priority?.PriorityName || (row as any)?.priorityname || null
+  }, [columnData, dynamicValue, row?.Priority?.PriorityName, (row as any)?.priorityname])
 
+  // FIXED: colorCode now also reads flat colorcode field and looks up by PriorityID from row
   const colorCode = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
       if (dynamicValue?.Priority?.Colorcode) {
@@ -641,8 +644,25 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
       return null;
     }
 
-    return row?.Priority?.Colorcode
-  }, [columnData, dynamicValue, row?.Priority?.Colorcode, priorityList, dynamicPriority])
+    // Check nested Priority object first, then flat colorcode field
+    const directColorcode = row?.Priority?.Colorcode || (row as any)?.colorcode
+    if (directColorcode) return directColorcode
+
+    // Fall back to looking up by PriorityID in priorityList
+    const rowPriorityID = (row as any)?.PriorityID || (row as any)?.priorityID
+    if (rowPriorityID && priorityList.length > 0) {
+      const found = priorityList.find((s: any) => s.PriorityID === rowPriorityID)
+      if (found?.Colorcode) return found.Colorcode
+    }
+
+    // Fall back to looking up by PriorityID in dynamicPriority list
+    if (rowPriorityID && dynamicPriority && dynamicPriority.length > 0) {
+      const found = dynamicPriority.find((s: any) => s.PriorityID === rowPriorityID)
+      if (found?.Colorcode) return found.Colorcode
+    }
+
+    return null
+  }, [columnData, dynamicValue, row?.Priority?.Colorcode, (row as any)?.colorcode, (row as any)?.PriorityID, (row as any)?.priorityID, priorityList, dynamicPriority])
 
   const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (canEdit) {

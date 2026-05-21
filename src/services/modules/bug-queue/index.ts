@@ -1,6 +1,7 @@
 import { callApi } from 'src/utils/api-utils'
 import { bugQueue } from './endpoint'
 import type { BugPriorityList, BugQueueListAPI } from './types'
+import toast from 'react-hot-toast'
 
 export const fetchBugQueueList = async (workspaceID: string): Promise<BugQueueListAPI[]> => {
   return callApi({ uriEndPoint: bugQueue.list, query: { workspaceID } })
@@ -51,7 +52,10 @@ export const fetchBugPriorityList = async ({ workspaceID }: { workspaceID?: numb
 
 export const addBugPriority = async (body: any) => {
   return callApi({ uriEndPoint: bugQueue.addPriority, body })
-    .then(res => res)
+    .then(res => res).then(()=>{
+      toast.success("Priority Added successfully")
+    })
+
     .catch(err => err)
 }
 

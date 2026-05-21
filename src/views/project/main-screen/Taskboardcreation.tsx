@@ -82,7 +82,7 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
   // Helper: Call UpdatePaymentconfirmation API
   const updatePaymentConfirmation = async (userId: number, paymentId?: string | null, status: string = '') => {
     try {
-      const baseUrl = 'https://uat.ppmbackend.projectpulse360.com/UpdatePaymentconfirmation'
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL1}/UpdatePaymentconfirmation`
       const params = new URLSearchParams()
       params.append('UserID', String(userId))
       // If paymentId is present, append it, otherwise append empty string to match example format

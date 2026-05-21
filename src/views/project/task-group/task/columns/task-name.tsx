@@ -66,7 +66,6 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
-        console.log(`TaskNameCell WebSocket connected for task ${rowData?.TaskID}`)
         isConnectingRef.current = false
         reconnectAttemptsRef.current = 0
       }
@@ -97,7 +96,6 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
             return
           }
 
-          console.log('TaskNameCell: Task update received via WS:', data)
 
           // Determine a stable message id for deduplication.
           // Prefer server/client provided uniqueId or SenderID+timestamp+Message fallback.
@@ -130,13 +128,10 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
               if (!openTaskView) {
                 messageCountRef.current = messageCountRef.current + 1
                 setMessageCount(prev => prev + 1)
-                console.log(`TaskNameCell: New message! Count: ${messageCountRef.current}`)
               } else {
-                console.log('TaskNameCell: Dialog is open, not incrementing count')
               }
             }
           } else {
-            console.log('TaskNameCell: Duplicate message ignored (seenMessageIds).')
           }
 
           // Always refetch when update is received
@@ -152,7 +147,6 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
       }
 
       ws.onclose = (event) => {
-        console.log(`TaskNameCell WebSocket closed`)
         isConnectingRef.current = false
         socketRef.current = null
 
@@ -223,7 +217,6 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
     try {
       if (!incomingData) {
         // No data provided, nothing to dedupe against; just ensure websocket active.
-        console.log('TaskNameCell: Refresh requested without data. Ensuring WS active.')
         if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
           connectWebSocket()
         }
@@ -242,7 +235,6 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
       // If we've already seen it (either via this component WS or previous notification), skip
       if (seenMessageIdsRef.current.has(messageId)) {
-        console.log('TaskNameCell: Received refresh for already-seen message. Skipping increment.')
         return
       }
 
@@ -265,9 +257,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
         if (!openTaskView) {
           messageCountRef.current = messageCountRef.current + 1
           setMessageCount(prev => prev + 1)
-          console.log(`TaskNameCell: handleRefreshMessageCount incremented. Count: ${messageCountRef.current}`)
         } else {
-          console.log('TaskNameCell: Dialog is open, not incrementing count (handleRefreshMessageCount).')
         }
       }
     } catch (err) {

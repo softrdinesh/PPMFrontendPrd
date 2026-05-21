@@ -272,7 +272,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
         let subTaskId: string | number | undefined
           const subRowData = rowData as AdditionalSubTaskListItem
           taskId = subRowData?.TaskMasterID
-          console.log(subRowData.TaskID)
   const data = await axios.post(`${BASE_URL}/UploadTaskDocument/${columnData?.AdditionalColumnID}/1/${"-"}/${subRowData?.TaskID}/${user?.id}`).then((res)=>{
 refetch()
   })

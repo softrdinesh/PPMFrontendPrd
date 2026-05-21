@@ -142,7 +142,6 @@ const LoginV2 = () => {
         ? `${redirectUri}${redirectUri.includes('?') ? '&' : '?'}${urlParams.toString()}`
         : redirectUri
 
-      console.log('Redirecting to Google login:', finalRedirectUri)
 
       // Small delay to ensure state is set before redirect
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -185,7 +184,6 @@ const LoginV2 = () => {
         const longitude = position.coords.longitude
 
         setLocation({ latitude, longitude })
-        console.log('Location obtained:', { latitude, longitude })
       },
       (error) => {
         console.warn('Error getting location:', error.message)
@@ -232,7 +230,6 @@ const LoginV2 = () => {
       const error = urlParams.get('error')
       
       if (googleLoginSuccess === 'success') {
-        console.log('Google login successful')
         
         // Clear the URL parameters to clean up the URL
         const newUrl = window.location.pathname

@@ -1908,11 +1908,7 @@ useEffect(() => {
       }
     }
     
-    console.log("Editing task with assignee:", {
-      name: taskWithAssigneeId.assignee,
-      id: taskWithAssigneeId.assigneeId,
-      teamMembers: teamMembers.length
-    });
+ 
     
     setEditingTask(taskWithAssigneeId);
     setEditingTaskColumn(columnId);
@@ -2022,9 +2018,7 @@ useEffect(() => {
         // Format: /UpdateBoardTask/title/description/priorityID/assigneeId/projectTaskID/categoryID/userId/taskID
         const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${editingTask.priorityID || ''}/${assigneeIdToSend}/${editingTask.projectTaskID || '0'}/${editingTask.categoryID || ''}/${user?.id}/${editingTask?.taskID}`;
         
-        console.log('Sending assignee ID:', assigneeIdToSend);
-        console.log('Sending projectTaskID:', editingTask.projectTaskID || '0');
-        console.log('API URL:', apiUrl);
+    
         
         const response = await axios.post(apiUrl, formData, {
           headers: {
@@ -2115,7 +2109,6 @@ useEffect(() => {
 
   // Delete Task Handler
   const handleDeleteTask = async (taskId: string, columnId: string) => {
-    console.log(taskId)
     try {
       // Find the task to get its projectTaskID
       const taskToDelete = tasks[columnId]?.find(t => t.id == taskId);

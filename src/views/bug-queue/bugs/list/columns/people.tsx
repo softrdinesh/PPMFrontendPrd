@@ -128,7 +128,7 @@ const TaskPeople = ({
       if (isSubTask) {
         const subRowData = rowData as AdditionalSubTaskListItem
         const response = await axios.post(
-          `${BASE_URL}/RemoveSubTaskOwner?TaskID=${rowData?.TaskID?.toString()}&SubTaskID=${subRowData?.SubTaskID}`
+          `${BASE_URL}/RemoveSubTaskOwner?TaskID=${(rowData as any)?.taskID }&SubTaskID=${subRowData?.SubTaskID}`
         )
         
         if (response) {
@@ -161,14 +161,14 @@ const TaskPeople = ({
       
       if (columnData?.additionalColumnID) {
         const response = await axios.post(
-          `${BASE_URL}/InsertDynamicValues`,
+          `${BASE_URL}/InsertBugDynamicValues`,
           null,
           {
             params: {
               DynamicColumnID: columnData?.additionalColumnID,
               LoginuserID: user?.id,
-              SprintID: (rowData as any)?.SprintID || '',
-              SprintGroupID: (rowData as any)?.SprintGroupID || '',
+              BugID: (rowData as any)?.BugID || '',
+              GroupID: (rowData as any)?.groupID || '',
               DynamicValue: selected?.UserID
             }
           }
@@ -218,11 +218,12 @@ const TaskPeople = ({
     try {
       const response = await axios
         .post(
-          `${BASE_URL}/SprintRemoveDynamicColumnValues?DynamicColumnID=${columnData?.additionalColumnID}&LoginuserID=${
-            user?.id}&SprintID=${(rowData as any)?.SprintID }`
+          `${BASE_URL}/BugRemoveDynamicColumnUser?BugID=${(rowData as any)?.BugID || ''}&AdditionalColumnID=${
+            columnData?.additionalColumnID}&LoginuserID=${user?.id
+            
+             }`
         )
         .then(res => {
-
           toast.success('User removed successfully')
           refetch()
           handleClose()
@@ -379,7 +380,7 @@ const TaskPeople = ({
               <>
                 {processedDynamicValue?.slice(0, 3).map((item: any, index: number) => (
                   <Box key={`avatar-${item?.User?.UserID || index}-${columnData?.additionalColumnID || ''}`} sx={{ position: 'relative', display: 'inline-block', mr: 0.5 }}>
-                    <Tooltip title={item?.User?.Email?.toLowerCase() || item?.User?.Name}>
+                    <Tooltip title={item?.User?.Name?.toLowerCase() || item?.User?.Name}>
                       <Avatar alt={item?.User?.Name} src={item?.User?.ProfilePicture} sx={{ width: 32, height: 32 }} />
                     </Tooltip>
 
