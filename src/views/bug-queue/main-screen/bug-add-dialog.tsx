@@ -11,18 +11,11 @@ import TextField from '@mui/material/TextField'
 import { Controller, useForm } from 'react-hook-form'
 
 import IconifyIcon from '@components/icon'
-<<<<<<<< HEAD:src/views/project/main-screen/task-group-add-dialog.tsx
-========
 import { useAuth } from '@/hooks/useAuth'
->>>>>>>> origin/sprintmodule:src/views/bug-queue/main-screen/bug-add-dialog.tsx
 
 // ** Local Imports
 import { useProject } from 'src/context/project-context'
 
-<<<<<<<< HEAD:src/views/project/main-screen/task-group-add-dialog.tsx
-// ** API Imports
-import { addTaskGroup } from '@/services/modules/task-group'
-========
 // ** Next Navigation
 import { useParams } from 'next/navigation'
 
@@ -32,18 +25,12 @@ import axios from 'axios'
 // ** Toast Import (assuming you're using react-hot-toast or similar)
 // If you're using different toast library, adjust accordingly
 import toast from 'react-hot-toast'
->>>>>>>> origin/sprintmodule:src/views/bug-queue/main-screen/bug-add-dialog.tsx
 
 type FormFields = {
   groupName: string
   projectID?: number
 }
 
-<<<<<<<< HEAD:src/views/project/main-screen/task-group-add-dialog.tsx
-const NewTaskDialog = ({ open, onCloseModal }: { open: boolean; onCloseModal: () => void }) => {
-  const { project, refetchTaskGroup } = useProject()
-
-========
 const NewTaskDialog = ({ 
   open, 
   onCloseModal, 
@@ -57,7 +44,6 @@ const NewTaskDialog = ({
   const params = useParams()
   const WorkspaceID = params?.WorkspaceID ?? params?.workspaceID ?? params?.id
   const { user } = useAuth()
->>>>>>>> origin/sprintmodule:src/views/bug-queue/main-screen/bug-add-dialog.tsx
   const defaultValues = {
     groupName: ''
   }
@@ -71,11 +57,6 @@ const NewTaskDialog = ({
 
   const onSubmit = async (values: FormFields) => {
     values.projectID = project?.ID
-<<<<<<<< HEAD:src/views/project/main-screen/task-group-add-dialog.tsx
-    const res = await addTaskGroup(values)
-
-    if (res?.status) {
-========
 
     try {
       const response = await axios.post(
@@ -93,7 +74,6 @@ const NewTaskDialog = ({
       const res = response.data
 
       toast.success('Bug group created successfully!')
->>>>>>>> origin/sprintmodule:src/views/bug-queue/main-screen/bug-add-dialog.tsx
       reset()
       refetchTaskGroup()
       

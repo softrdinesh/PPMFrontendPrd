@@ -1,12 +1,4 @@
 import React, { useState } from 'react'
-<<<<<<<< HEAD:src/views/project/main-screen/new-task-group-button.tsx
-
-import { Icon } from '@iconify/react'
-
-import CustomButton from '@components/button'
-import NewTaskDialog from './task-group-add-dialog'
-========
->>>>>>>> origin/sprintmodule:src/views/bug-queue/main-screen/add-button.tsx
 
 import { Icon } from '@iconify/react'
 
