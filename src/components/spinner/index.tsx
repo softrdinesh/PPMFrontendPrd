@@ -7,11 +7,18 @@ import Box from '@mui/material/Box'
 
 import type { SxProps, Theme } from '@mui/material'
 
-import ppmLogo from '@public/images/logos/logo-pp.png'
+// Images
+import logoMainDark from '@public/images/logos/logo-pp-dark.png'
+import logoMain from '@public/images/logos/logo-pp.png'
+
+import { useSettings } from '@/@core/hooks/useSettings'
 
 const FallbackSpinner = ({ sx, height }: { sx?: SxProps<Theme> | undefined; height?: string }) => {
+  const { settings } = useSettings()
+
   return (
     <Box
+      data-skin={settings.mode}
       sx={{
         width: '100%',
         height: height ?? '100vh',
@@ -24,7 +31,7 @@ const FallbackSpinner = ({ sx, height }: { sx?: SxProps<Theme> | undefined; heig
       }}
     >
       <Image
-        src={ppmLogo}
+        src={settings.mode === 'dark' || settings.mode === 'system' ? logoMainDark : logoMain}
         alt='Loading....'
         quality={100}
         sizes='100vw'

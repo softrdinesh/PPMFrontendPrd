@@ -26,6 +26,7 @@ interface DeleteDialogProps extends DialogProps {
   description?: string
   onConfirm: () => Promise<void>
   confirmText?: string
+   refetch: () => void
 }
 
 export default function DeleteDialog({
@@ -34,6 +35,7 @@ export default function DeleteDialog({
   title,
   description,
   onConfirm,
+  refetch,
   confirmText,
   ...props
 }: DeleteDialogProps) {

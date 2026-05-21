@@ -24,6 +24,8 @@ export const userLogin = async (body: LoginBody) => {
         localStorage.setItem('userData', JSON.stringify(res.data))
         toast.success(res.message ?? '')
 
+        paymentcheck(res.data?.userID || res.data?.id)
+
         return res
       } else {
         throw res
@@ -34,7 +36,32 @@ export const userLogin = async (body: LoginBody) => {
       throw err
     })
 }
+const paymentcheck = async (userId: number) => {
+  const Baseurl = process.env.NEXT_PUBLIC_API_URL1
+  try {
+    const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${userId}`)
+    
+    if (res.data && res.data.length > 0) {
+      const paymentData = {
+       isExpired: res.data[0].isExpired,
+       projectCount:res.data[0].projectCount,
+       workspaceCount:res.data[0].workspaceCount,
+       taskGroupCount:res.data[0].taskGroupCount,
+       boardCount:res.data[0].boardCount,
+       boardsectionCount:res.data[0].boardsectionCount,
+       boardTaskCount:res.data[0].boardTaskCount,
+       amount:res.data[0].amount
+            //  isExpired: true
+      }
+      // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+            localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
 
+
+    }
+  } catch (error) {
+    console.error('Payment check error:', error)
+  }
+}
 export const userRegister = async (body: any) => {
   return callApi({ uriEndPoint: authentication.register, body, nextUrl: true })
     .then(res => {

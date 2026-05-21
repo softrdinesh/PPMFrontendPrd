@@ -20,6 +20,7 @@ const checkTokenExpiration = async (verifiedToken: CookieEncData, secret: string
     if (verifiedToken?.tokenTime > date.getTime() / 1000) {
       return verifiedToken?.token
     } else if (verifiedToken?.refreshTokenTime > date.getTime() / 1000) {
+
       const newRefreshToken = await refreshToken({
         refreshToken: verifiedToken.refreshToken
       })

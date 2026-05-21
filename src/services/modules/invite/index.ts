@@ -11,7 +11,10 @@ export const projectMembers = async (projectID: string): Promise<ProjectUsers[]>
 }
 
 export const inviteMember = async (body: any) => {
-  return callApi({ uriEndPoint: invite.add, body })
+  return callApi({ uriEndPoint: invite.add,
+     body,
+      useSecondApi: true  // Add this parameter
+ })
     .then(res => {
       toast.success(res?.message ?? 'Invitation sent successfully')
 

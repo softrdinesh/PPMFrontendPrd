@@ -70,8 +70,9 @@ const callAxios = async ({
   body,
   apiHostUrl = '',
   auth = true,
-  nextUrl = false
-}: ApiUtils) => {
+  nextUrl = false,
+  useSecondApi = false // Add this optional parameter
+}: ApiUtils & { useSecondApi?: boolean }) => {
   showLogs &&
     console.log('Call AXIOS ==>', {
       uriEndPoint,
@@ -79,7 +80,8 @@ const callAxios = async ({
       query,
       body,
       apiHostUrl,
-      auth
+      auth,
+      useSecondApi
     })
 
   if (nextUrl)
@@ -92,9 +94,15 @@ const callAxios = async ({
       data: body || {}
     })
 
+  // Determine the base URL - use second API if specified
+  let baseUrl = apiHostUrl
+  if (!baseUrl && useSecondApi) {
+    baseUrl = process.env.NEXT_PUBLIC_API_URL1 || process.env.NEXT_PUBLIC_API_URL || ''
+  }
+
   return axios({
     method: uriEndPoint.method,
-    url: makeUrl({ ...uriEndPoint, pathParams, query }, apiHostUrl),
+    url: makeUrl({ ...uriEndPoint, pathParams, query }, baseUrl),
     headers: {
       ...(await getDefaultHeaders({ auth })),
       ...uriEndPoint.headerProps
@@ -103,7 +111,7 @@ const callAxios = async ({
   })
 }
 
-export const callApi = (props: ApiUtils): Promise<ApiResponse> => {
+export const callApi = (props: ApiUtils & { useSecondApi?: boolean }): Promise<ApiResponse> => {
   const {
     uriEndPoint = { uri: '', method: 'GET', headerProps: {} },
     pathParams,
@@ -111,7 +119,8 @@ export const callApi = (props: ApiUtils): Promise<ApiResponse> => {
     body,
     apiHostUrl,
     nextUrl,
-    auth
+    auth,
+    useSecondApi = false
   } = props
 
   return new Promise((resolve, reject) => {
@@ -122,7 +131,8 @@ export const callApi = (props: ApiUtils): Promise<ApiResponse> => {
       body,
       apiHostUrl,
       nextUrl,
-      auth
+      auth,
+      useSecondApi
     })
       .then(response => {
         showLogs && console.log('callApi RES ==>', response.data)

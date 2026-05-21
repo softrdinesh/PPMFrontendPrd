@@ -29,10 +29,10 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
   const { getValue, index, row, id, table, columnItem, value, refetch, isSubTask = false } = props
 
   const getColumnTypeName = useMemo(() => columnItem?.ColumnType.Keyname, [columnItem?.ColumnType.Keyname])
-
+console.log(value,'props')
   // ** "DATE" TYPE COLUMN
   if (getColumnTypeName === 'DPK')
-    return <DynamicDate canEdit={true} refetch={refetch} rowData={row} dynamicValue={value} columnData={columnItem} />
+    return <DynamicDate canEdit={true} isSubTask={isSubTask} refetch={refetch} rowData={row} dynamicValue={value} columnData={columnItem} />
 
   // ** "USER" TYPE COLUMN
   if (getColumnTypeName === 'USR') {
@@ -49,6 +49,7 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
         canEdit={true}
         isSubTask={isSubTask}
       />
+      // <TaskPeople rowData={row} refetch={refetch} />
     )
   }
 
@@ -95,6 +96,7 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
         dynamicValue={value}
         columnData={columnItem}
         isSubTask={isSubTask}
+        
       />
     )
 

@@ -119,22 +119,52 @@ const RegisterComponent = () => {
       name: urlName || '',
       email: urlEmail || ''
     })
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const latitude = position.coords.latitude
-        const longitude = position.coords.longitude
 
-        setLocation({ latitude, longitude })
-      },
-      error => {
-        console.error('Error getting location:', error)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      }
-    )
+    // Check if geolocation is supported
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const latitude = position.coords.latitude
+          const longitude = position.coords.longitude
+
+          setLocation({ latitude, longitude })
+        },
+        error => {
+          console.error('Error getting location:', {
+            code: error.code,
+            message: error.message
+          })
+          
+          // Set location to null if error occurs
+          // This allows the form to still be submitted without location data
+          setLocation(null)
+          
+          // Optional: You can show a user-friendly message based on error code
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              console.warn('User denied the request for Geolocation.')
+              break
+            case error.POSITION_UNAVAILABLE:
+              console.warn('Location information is unavailable.')
+              break
+            case error.TIMEOUT:
+              console.warn('The request to get user location timed out.')
+              break
+            default:
+              console.warn('An unknown error occurred while getting location.')
+              break
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000, // Increased timeout to 10 seconds
+          maximumAge: 0
+        }
+      )
+    } else {
+      console.warn('Geolocation is not supported by this browser.')
+      setLocation(null)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlEmail, urlName])
 

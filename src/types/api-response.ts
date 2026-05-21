@@ -1,8 +1,8 @@
-export type ApiResponse = {
+export type ApiResponse<T = any> = {
   status: boolean
   statusCode: number
   message: string
-  data: any
+  data: T
 }
 
 export type CookieEncData = {

@@ -200,7 +200,7 @@ const RegisterOnInvite = ({ invitationID }: { invitationID: string }) => {
                     variant='contained'
                     endIcon={!isSubmitting && <Icon icon={'mdi:chevron-right'} />}
                     type='submit'
-                    disabled={isSubmitting || !isValid}
+                  //  disabled={isSubmitting || !isValid}
                   >
                     {isSubmitting ? <CircularProgress color='secondary' size={22} /> : 'Continue'}
                   </Button>

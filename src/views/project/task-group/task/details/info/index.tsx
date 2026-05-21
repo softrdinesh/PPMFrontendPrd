@@ -10,9 +10,10 @@ import { updateTasks } from '@/services/modules/task'
 import type { TaskListItemType } from '@/services/modules/task/types'
 import { getInitials } from '@/utils/getInitials'
 import CustomButton from '@components/button'
-
+import { useAuth } from '@/hooks/useAuth'
 const MobileProjectDetail = () => {
   const { project: projectData } = useProject()
+const { profile,user } = useAuth()
 
   return (
     <div className='w-full relative rounded-xl bg-primaryLighter h-full flex flex-col sm:flex-row items-center justify-between p-5 gap-4'>
@@ -50,9 +51,9 @@ const MobileProjectDetail = () => {
         </Box>
       </Box>
       <Box display={'flex'} flexDirection={'column'} alignItems={'center'} gap={4}>
-        <CustomButton variant='contained' size='small'>
+        {/* <CustomButton variant='contained' size='small'>
           Sprint 1.1
-        </CustomButton>
+        </CustomButton> */}
         <Box mt={{ lg: 5 }}>
           <CustomButton variant='outlined' circular size='small'>
             View All
@@ -65,10 +66,10 @@ const MobileProjectDetail = () => {
 
 const DesktopProjectDetail = () => {
   const { project: projectData } = useProject()
-
+  const auth = useAuth()
   return (
     <div className='w-full rounded-xl bg-primaryLighter h-full flex flex-col items-center justify-center p-5 gap-1'>
-      <CustomAvatar skin='light' sx={{ height: 100, width: 100 }} src={'/images/avatars/3.png'}>
+      <CustomAvatar skin='light' sx={{ height: 100, width: 100 }} src={auth?.user?.userData?.ProfilePicture || '/images/avatars/1.png'}>
         {getInitials(projectData?.CreatedBy?.Name || '')}
       </CustomAvatar>
 
@@ -83,7 +84,7 @@ const DesktopProjectDetail = () => {
         </IconButton>
         <Typography variant='subtitle2'>Add to favourites</Typography>
       </Box>
-      <CustomButton variant='contained'>Sprint 1.1</CustomButton>
+      {/* <CustomButton variant='contained'>Sprint 1.1</CustomButton> */}
       <Box mt={{ lg: 5 }}>
         <CustomButton variant='outlined' circular size='small'>
           View All

@@ -27,7 +27,10 @@ export const viewTaskGroup = async (id: string) => {
 export const updateTaskGroup = async ({ id, body }: { id: string; body: any }) => {
   return callApi({ uriEndPoint: taskGroup.update, pathParams: { id }, body })
     .then(res => {
+            toast.success(res?.message ?? 'Project Added Successfully')
+
       return res?.data
+      
     })
     .catch(err => {
       throw err
@@ -47,6 +50,25 @@ export const addTaskGroup = async (body: any) => {
       return err
     })
 }
+
+
+export const DeleteTaskgroup = async (id: string, body: { projectID: number; groupName: string }) => {
+  return callApi({
+    uriEndPoint: taskGroup.deleteItem,
+    pathParams: { id },   // URL param
+    body                  // request body
+  }).then(res => {
+      toast.success(res?.message ?? 'Task Group Deleted  Successfully')
+
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Task Group Deleted  Successfully')
+
+      return err
+    })
+}
+
 
 export const createColumn = async (body: any) => {
   return callApi({ uriEndPoint: taskGroup.createColumn, body })
@@ -103,4 +125,45 @@ export const addDropdownItem = async (body: any) => {
   return callApi({ uriEndPoint: taskGroup.dropdownAdd, body })
     .then(res => res)
     .catch(err => err)
+}
+
+
+
+// new api 
+// export const Deleteprojectgroup = async (
+//   TaskGroupID: string, 
+//   LoginuserID: string
+// ) => {
+//   return callApi({
+//     uriEndPoint: taskGroup.Deleteprojectgroup,
+    
+//     query: { 
+//       TaskGroupID, 
+//       LoginuserID 
+//     }
+//   }).then(res => {
+//       toast.success(res?.message ?? 'Task Group Deleted Successfully')
+//       return res
+//     })
+//     .catch(err => {
+//       toast.error(err?.message ?? 'Task Group Deletion Failed')
+//       return err
+//     })
+// }
+export const Deleteprojectgroup = async (
+  TaskGroupID: string, 
+  LoginuserID: string
+) => {
+  return callApi({
+    uriEndPoint: taskGroup.Deleteprojectgroup,
+    useSecondApi: true,
+    query: `TaskGroupID=${TaskGroupID}&&LoginuserID=${LoginuserID}` // Raw query string
+  }).then(res => {
+      toast.success(res?.message ?? 'Task Group Deleted Successfully')
+      return res
+    })
+    .catch(err => {
+      toast.error(err?.message ?? 'Task Group Deletion Failed')
+      return err
+    })
 }

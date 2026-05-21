@@ -32,8 +32,8 @@ const LoginSuccessRedirect = () => {
 
           if (responseValue?.status && responseValue.data?.isVerified) {
             localStorage.setItem(authConfig.loginUserData, JSON.stringify(responseValue?.data))
+  
             setLoading(false)
-            console.log('responseValue?.data?.userData :', responseValue?.data?.userData)
 
             await axios.post('/api/set-cookies', responseValue?.data)
             setUser(responseValue?.data?.userData)
@@ -58,8 +58,13 @@ const LoginSuccessRedirect = () => {
 
   useEffect(() => {
     handleSuccessRedirect()
+  
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+
+
+
 
   if (loading)
     return (

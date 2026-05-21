@@ -8,7 +8,6 @@ import VerifyEmailPage from '@/views/auth/verify-email'
 const Page = async ({ searchParams }: { searchParams: Promise<{ k?: string }> }) => {
   const getParams = await searchParams
 
-  console.log('getParams :', getParams)
 
   // ** show email de******@gmail.com
   function obfuscateEmail(email: string) {
@@ -38,7 +37,6 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ k?: string }> })
 
           const obfuscate = obfuscateEmail(decodedValue?.email)
 
-          console.log('obfuscate :', obfuscate)
 
           return <VerifyEmailPage obfuscate={obfuscate} email={decodedValue?.email} />
         }

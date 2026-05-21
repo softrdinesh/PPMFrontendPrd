@@ -35,7 +35,15 @@ const AuthGuard = (props: AuthGuardProps) => {
         router.replace(homeRoute)
       }
 
-      if ((pathname === routes.login || pathname === routes.register) && auth?.user) {
+      // Allow access to forgot password page without authentication
+      const isAuthPage = pathname === routes.login || 
+                        pathname === routes.register || 
+                        pathname === routes.forgotPassword
+                        pathname === routes.verifyEmail
+                        pathname === routes.resetPassword
+                        pathname === routes.boards
+
+      if (isAuthPage && auth?.user) {
         router.replace(routes.dashboard)
       }
 
@@ -44,11 +52,21 @@ const AuthGuard = (props: AuthGuardProps) => {
         !window.localStorage.getItem(authConfig.loginUserData) &&
         !window.localStorage.getItem(authConfig.loginWithGoogle)
       ) {
-        if (pathname !== '/') {
+        // Allow access to forgot password page without redirecting to login
+        const allowedUnauthenticatedRoutes = [
+          '/',
+          routes.register,
+          routes.forgotPassword,
+          routes.verifyEmail,
+          routes.resetPassword,
+        ]
+
+        if (pathname !== '/' && !allowedUnauthenticatedRoutes.includes(pathname)) {
           router.replace(routes.login)
-        } else {
+        } else if (pathname === '/') {
           router.replace(routes.login)
         }
+        // If it's forgot password page, don't redirect - allow user to stay on the page
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

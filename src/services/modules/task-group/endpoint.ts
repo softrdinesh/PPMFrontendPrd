@@ -11,6 +11,7 @@ type Endpoints = {
   deleteColumn: ApiEndpoint
   dropdownList: ApiEndpoint
   dropdownAdd: ApiEndpoint
+  Deleteprojectgroup: ApiEndpoint
 }
 
 export const taskGroup: Endpoints = {
@@ -33,6 +34,10 @@ export const taskGroup: Endpoints = {
   deleteItem: {
     method: 'DELETE',
     uri: '/api/task-group/:id'
+  },
+   Deleteprojectgroup: {
+    method: 'DELETE',
+    uri: '/ProjectTaskGroupDelete'
   },
   createColumn: {
     method: 'POST',

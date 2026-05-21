@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 
 import Image from 'next/image'
 
@@ -16,6 +16,7 @@ import { useProject } from '@/context/project-context'
 import type { TaskListItemType } from '@/services/modules/task/types'
 import { getInitials } from '@/utils/getInitials'
 import CustomButton from '@components/button'
+import { useAuth } from '@/hooks/useAuth'
 
 import {
   fetchTaskUpdatesList,
@@ -31,10 +32,105 @@ interface WriteUpdateProps {
   taskID: string
   setWriteUpdate: (s: boolean) => void
   refetch: () => void
+  onRefreshMessageCount?: (data?: any) => void
 }
 
-const WriteUpdate = ({ taskID, setWriteUpdate, refetch }: WriteUpdateProps) => {
+const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }: WriteUpdateProps) => {
   const [value, setValue] = useState('')
+  const socketRef = useRef<WebSocket | null>(null)
+  const reconnectAttemptsRef = useRef(0)
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isConnectingRef = useRef(false)
+  const { profile, user } = useAuth()
+
+  const maxReconnectAttempts = 5
+  const reconnectInterval = 3000
+
+  const connectWebSocket = useCallback(() => {
+    if (isConnectingRef.current || (socketRef.current && socketRef.current.readyState === WebSocket.OPEN)) {
+      return
+    }
+
+    const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${taskID}&senderID=${user?.id}`
+    isConnectingRef.current = true
+
+    try {
+      const ws = new WebSocket(wsUrl)
+
+      ws.onopen = () => {
+        isConnectingRef.current = false
+        reconnectAttemptsRef.current = 0
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          if (event.data === "heartbeat" || typeof event.data === 'string' && event.data.trim().toLowerCase() === "heartbeat") {
+            return
+          }
+          const data = JSON.parse(event.data)
+          
+          // Notify parent about new message
+          if (onRefreshMessageCount) {
+            // pass through the incoming data so parent can dedupe/count correctly
+            onRefreshMessageCount(data)
+          }
+          
+          // Refetch updates
+          refetch()
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error)
+        }
+      }
+
+      ws.onerror = (error) => {
+        console.error('WriteUpdate WebSocket error:', error)
+        isConnectingRef.current = false
+      }
+
+      ws.onclose = (event) => {
+        isConnectingRef.current = false
+        socketRef.current = null
+
+        // Auto-reconnect logic
+        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+          reconnectAttemptsRef.current += 1
+          
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWebSocket()
+          }, reconnectInterval)
+        }
+      }
+
+      socketRef.current = ws
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error)
+      isConnectingRef.current = false
+    }
+  }, [taskID, user?.id, refetch, onRefreshMessageCount])
+
+  const disconnectWebSocket = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
+    }
+
+    if (socketRef.current) {
+      socketRef.current.close(1000, 'Component unmounting')
+      socketRef.current = null
+    }
+
+    reconnectAttemptsRef.current = 0
+    isConnectingRef.current = false
+  }, [])
+
+  // Connect on mount and disconnect on unmount
+  useEffect(() => {
+    connectWebSocket()
+
+    return () => {
+      disconnectWebSocket()
+    }
+  }, [connectWebSocket, disconnectWebSocket])
 
   const handleChange = async (v: string) => {
     try {
@@ -58,6 +154,39 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch }: WriteUpdateProps) => {
 
       if (updateRes?.status) {
         toast.success('Task-Update Message was recorded successfully!')
+        
+        // Send WebSocket notification
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+          const wsMessage = {
+            TaskID: taskID, // CRITICAL: Include TaskID
+            SenderID: user?.id,
+            Message: value,
+            ReceiverID: 0,
+            timestamp: new Date().toISOString(),
+            isUpdate: true,
+            // Add unique identifier to prevent duplicate counting
+            uniqueId: `${taskID}_${Date.now()}_${Math.random()}`
+          }
+          
+          socketRef.current.send(JSON.stringify(wsMessage))
+        } else {
+          console.warn('WebSocket is not connected yet.')
+          // Try to reconnect
+          connectWebSocket()
+        }
+
+        // Notify parent about the update
+        if (onRefreshMessageCount) {
+          // We can pass the same message we just sent; parent will dedupe using uniqueId
+          onRefreshMessageCount({
+            ...updateRes?.data,
+            TaskID: taskID,
+            SenderID: user?.id,
+            Message: value,
+            timestamp: new Date().toISOString(),
+            uniqueId: `${taskID}_${Date.now()}_${Math.random()}`
+          })
+        }
       }
     } catch {}
   }
@@ -113,7 +242,7 @@ const UpdateMessage = ({ message, refetch }: UpdateMessageProps) => {
       taskID: message?.TaskID
     }
 
-    console.log('FINAL BODY', finalBody)
+
     await giveReplyToUpdate(finalBody)
     refetch()
     reset()
@@ -221,7 +350,12 @@ const UpdateMessage = ({ message, refetch }: UpdateMessageProps) => {
   )
 }
 
-const ProjectUpdates = ({ taskData }: { taskData: TaskListItemType }) => {
+interface ProjectUpdatesProps {
+  taskData: TaskListItemType
+  onRefreshMessageCount?: (data?: any) => void
+}
+
+const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps) => {
   // ** Hooks
   const { project: projectData } = useProject()
 
@@ -231,6 +365,129 @@ const ProjectUpdates = ({ taskData }: { taskData: TaskListItemType }) => {
   })
 
   const [writeUpdate, setWriteUpdate] = useState(false)
+
+  // WebSocket connection in ProjectUpdates
+  const socketRef = useRef<WebSocket | null>(null)
+  const reconnectAttemptsRef = useRef(0)
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isConnectingRef = useRef(false)
+  const { user } = useAuth()
+
+  const maxReconnectAttempts = 5
+  const reconnectInterval = 3000
+
+  const connectWebSocket = useCallback(() => {
+    if (isConnectingRef.current || (socketRef.current && socketRef.current.readyState === WebSocket.OPEN)) {
+      return
+    }
+
+    const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${taskData?.TaskID}&senderID=${user?.id}`
+    isConnectingRef.current = true
+
+    try {
+      const ws = new WebSocket(wsUrl)
+
+      ws.onopen = () => {
+        isConnectingRef.current = false
+        reconnectAttemptsRef.current = 0
+      }
+
+      ws.onmessage = async (event) => {
+        try {
+          // Normalize incoming data
+          let raw = null
+          if (typeof event.data === 'string') {
+            raw = event.data
+          } else if (event.data instanceof Blob) {
+            raw = await event.data.text()
+          } else if (event.data instanceof ArrayBuffer) {
+            raw = new TextDecoder().decode(event.data)
+          } else {
+            raw = String(event.data)
+          }
+
+          if (raw === "heartbeat" || (typeof raw === 'string' && raw.trim().toLowerCase() === "heartbeat")) {
+            return
+          }
+
+          let data
+          try {
+            data = JSON.parse(raw)
+          } catch (err) {
+            console.error('Error parsing WebSocket message JSON:', err)
+            return
+          }
+
+          
+          // IMPORTANT: Notify parent about new message
+          // Pass the parsed data so parent can dedupe and increment appropriately
+          if (onRefreshMessageCount) {
+            onRefreshMessageCount(data)
+          }
+          
+          // Refetch updates
+          refetch()
+
+        } catch (error) {
+          console.error('Error handling WebSocket message:', error)
+        }
+      }
+
+      ws.onerror = (error) => {
+        console.error('ProjectUpdates WebSocket error:', error)
+        isConnectingRef.current = false
+      }
+
+      ws.onclose = (event) => {
+        isConnectingRef.current = false
+        socketRef.current = null
+
+        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+          reconnectAttemptsRef.current += 1
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWebSocket()
+          }, reconnectInterval)
+        }
+      }
+
+      socketRef.current = ws
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error)
+      isConnectingRef.current = false
+    }
+  }, [taskData?.TaskID, user?.id, refetch, onRefreshMessageCount])
+
+  const disconnectWebSocket = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
+    }
+
+    if (socketRef.current) {
+      socketRef.current.close(1000, 'Component unmounting')
+      socketRef.current = null
+    }
+
+    reconnectAttemptsRef.current = 0
+    isConnectingRef.current = false
+  }, [])
+
+  // Connect WebSocket when component mounts
+  useEffect(() => {
+    connectWebSocket()
+
+    return () => {
+      disconnectWebSocket()
+    }
+  }, [connectWebSocket, disconnectWebSocket])
+
+  // Notify parent when data is loaded initially
+  useEffect(() => {
+    if (data && onRefreshMessageCount) {
+      // notify parent without payload (parent will just ensure WS active)
+      onRefreshMessageCount()
+    }
+  }, [data, onRefreshMessageCount])
 
   const canSend = useMemo(
     () =>
@@ -243,7 +500,14 @@ const ProjectUpdates = ({ taskData }: { taskData: TaskListItemType }) => {
   }
 
   if (writeUpdate) {
-    return <WriteUpdate taskID={taskData?.TaskID?.toString()} setWriteUpdate={setWriteUpdate} refetch={refetch} />
+    return (
+      <WriteUpdate 
+        taskID={taskData?.TaskID?.toString()} 
+        setWriteUpdate={setWriteUpdate} 
+        refetch={refetch} 
+        onRefreshMessageCount={onRefreshMessageCount}
+      />
+    )
   }
 
   return (
@@ -259,19 +523,6 @@ const ProjectUpdates = ({ taskData }: { taskData: TaskListItemType }) => {
             {'Write an Update'}
           </CustomButton>
         )}
-        {/* {canSend && (
-          <Box display={'flex'} justifyContent={'flex-end'} alignItems={'center'} gap={2} mt={1}>
-            <Typography
-              color={'primary.main'}
-              fontSize={15}
-              component={Link}
-              href={'mailto:' + projectData?.CreatedBy?.Email}
-            >
-              Write updates via mail
-            </Typography>
-            <Icon icon={'ant-design:mail-outlined'} color={theme.palette.primary.main} fontSize={20} />
-          </Box>
-        )} */}
       </Box>
       {data?.length ? (
         <Grid container spacing={5}>

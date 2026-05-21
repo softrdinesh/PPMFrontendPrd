@@ -52,3 +52,6 @@ export const updateProject = async ({ id, body }: { id: string; body: any }): Pr
       return err
     })
 }
+export const Deleproject = async (id: string) => {
+  return callApi({ uriEndPoint: project.deleteItem, pathParams: { id } })
+}

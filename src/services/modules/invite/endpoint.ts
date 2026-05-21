@@ -15,7 +15,7 @@ export const invite: Endpoints = {
   },
   add: {
     method: 'POST',
-    uri: '/api/invite-user'
+    uri: '/SendInvite'
   },
   getInvite: {
     method: 'GET',
