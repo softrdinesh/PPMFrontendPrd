@@ -594,7 +594,7 @@ const fetchProjectTasks = async () => {
       const userid = formData.assignee ||''
       // NOTE: You need to get these IDs from your context/props
    
-const projectTaskID = formData.projectTask || '0';
+const projectTaskID = formData.projectTask || '';
       // Encode the title and description for URL
       const encodedTitle = encodeURIComponent(formData.title);
       const encodedDescription = encodeURIComponent(formData.description || '');
@@ -899,7 +899,7 @@ const projectTaskID = formData.projectTask || '0';
                   </IconButton>
                 </Typography>
                 <Select
-                  value={formData.priority}
+                  value={formData.priority || ""}
                   onChange={(e) => {
                     setFormData({
                       ...formData,
@@ -1011,7 +1011,7 @@ const projectTaskID = formData.projectTask || '0';
                   Category <span style={{ color: 'red' }}>*</span>
                 </Typography>
                 <Select
-                  value={formData.category}
+                  value={formData.category || ""}
                   onChange={(e) => {
                     setFormData({
                       ...formData,
@@ -1091,7 +1091,7 @@ const projectTaskID = formData.projectTask || '0';
                   Project Task
                 </Typography>
                 <Select
-                  value={formData.projectTask}
+                  value={formData.projectTask || ''}
                   onChange={(e) => {
                     setFormData({
                       ...formData,
@@ -1139,7 +1139,7 @@ const projectTaskID = formData.projectTask || '0';
                 </Typography>
                 <Select
                 key={1}
-                  value={formData.assignee}
+                  value={formData.assignee || ''}
                   onChange={(e) => {
                     setFormData({ ...formData, assignee: e.target.value });
                     if (errors.assignee) {
@@ -1159,8 +1159,8 @@ const projectTaskID = formData.projectTask || '0';
                     </MenuItem>
                   ))} */}
                   {teamMembers.map((member, index) => (
-                    <MenuItem key={member.value || member.id || index} value={member.value}>
-                      {member.label}
+                    <MenuItem key={member?.value || member?.id || index} value={member?.value}>
+                      {member?.label}
                     </MenuItem>
                   ))}
                 </Select>

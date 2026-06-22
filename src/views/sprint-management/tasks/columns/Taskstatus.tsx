@@ -289,7 +289,7 @@ const StatusMenuItem = ({
             ActualSP: row?.ActualSP || 0,
             isunplan: row?.IsUnplanned || false,
             StatusID: item?.StatusID === 0 ? 0 : item?.StatusID,
-            PriorityID: row?.PriorityID || 3
+            PriorityID: row?.PriorityID || 0
           };
           
           // Call the SprintTaskUpdate API

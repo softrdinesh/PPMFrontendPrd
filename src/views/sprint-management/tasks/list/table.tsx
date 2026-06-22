@@ -775,7 +775,7 @@ const TaskTableSprint = ({
                   ActualSP: currentTask?.ActualSP || 0,
                   isunplan: currentTask?.IsUnplanned || false,
                   StatusID: currentTask?.StatusID || 0,
-                  PriorityID: currentTask?.PriorityID || 3
+                  PriorityID: currentTask?.PriorityID || 0
                 };
                 
                 // Call the update API with all parameters
@@ -842,7 +842,7 @@ const TaskTableSprint = ({
                 ActualSP: currentTask?.ActualSP || 0,
                 isunplan: newValue,
                 StatusID: currentTask?.StatusID || 0,
-                PriorityID: currentTask?.PriorityID || 3
+                PriorityID: currentTask?.PriorityID || 0
               };
               
               await updateSprintTaskAPI(taskId, taskData);
@@ -1062,7 +1062,7 @@ const TaskTableSprint = ({
               ActualSP: currentTask?.ActualSP || 0,
               isunplan: currentTask?.IsUnplanned || false,
               StatusID: currentTask?.StatusID || 0,
-              PriorityID: currentTask?.PriorityID || 3
+              PriorityID: currentTask?.PriorityID || 0
             };
             
             await updateSprintTaskAPI(taskId, taskData);
@@ -1098,7 +1098,7 @@ const TaskTableSprint = ({
               ActualSP: currentTask?.ActualSP || 0,
               isunplan: currentTask?.IsUnplanned || false,
               StatusID: currentTask?.StatusID || 0,
-              PriorityID: currentTask?.PriorityID || 3
+              PriorityID: currentTask?.PriorityID || 0
             };
             
             await updateSprintTaskAPI(taskId, taskData);
@@ -1136,7 +1136,7 @@ const TaskTableSprint = ({
               ActualSP: actualSPValue,
               isunplan: currentTask?.IsUnplanned || false,
               StatusID: currentTask?.StatusID || 0,
-              PriorityID: currentTask?.PriorityID || 3
+              PriorityID: currentTask?.PriorityID || 0
             };
             
             await updateSprintTaskAPI(taskId, taskData);
@@ -1174,7 +1174,7 @@ const TaskTableSprint = ({
               ActualSP: currentTask?.ActualSP || 0,
               isunplan: currentTask?.IsUnplanned || false,
               StatusID: currentTask?.StatusID || 0,
-              PriorityID: currentTask?.PriorityID || 3
+              PriorityID: currentTask?.PriorityID || 0
             };
             
             await updateSprintTaskAPI(taskId, taskData);
@@ -1211,7 +1211,7 @@ const TaskTableSprint = ({
               ActualSP: currentTask?.ActualSP || 0,
               isunplan: isUnplannedValue,
               StatusID: currentTask?.StatusID || 0,
-              PriorityID: currentTask?.PriorityID || 3
+              PriorityID: currentTask?.PriorityID || 0
             };
             
             await updateSprintTaskAPI(taskId, taskData);

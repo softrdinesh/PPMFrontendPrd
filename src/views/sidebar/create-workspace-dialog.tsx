@@ -76,14 +76,18 @@ const body =
 
       await addWorkspace(body)
     } else {
-      const body = {
-        Workspacename: values.workspaceName,
-        OrganizationID: values.organizationID,
-        LoginuserID: user?.id,
-      };
-
+      // const body = {
+      //   Workspacename: values.workspaceName,
+      //   OrganizationID: values.organizationID,
+      //   LoginuserID: user?.id,
+      // };
+const body =
+{
+  workspaceName:values.workspaceName,
+   organizationID: user?.userData.OrganizationID
+}
       //await CreateSprintWorkspace(body)
-      await addSprintWorkspace(values)
+      await addSprintWorkspace(body)
     }
 
     reset()

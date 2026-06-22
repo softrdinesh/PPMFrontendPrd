@@ -52,7 +52,7 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
   // ** Hooks
   const { role } = useProject()
 
-  const [expanded, setExpanded] = useState<string | null>(index === 0 ? 'panel1' : null)
+  const [expanded, setExpanded] = useState<string | null>('panel1')
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [showCard, setShowCard] = useState(false)
   const [open, setOpen] = useState(false)

@@ -79,8 +79,6 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
     }
   })
 
-
- 
   // Check payment status
   const checkPaymentStatus = () => {
     const paymentStatus = localStorage.getItem('paymentStatus')
@@ -121,15 +119,21 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
     } else {
       setShouldOpenDialog(false)
       setShowPaymentExpiredDialog(false)
+      // Reset form when dialog closes
+      reset({ groupName: '' })
     }
-  }, [open])
+  }, [open, reset])
 
-  // Set initial form values
+  // Set initial form values when dialog opens with edit mode
   useEffect(() => {
     if (open && initialGroupName) {
       setValue('groupName', initialGroupName)
     }
-  }, [open, initialGroupName, setValue])
+    // Reset form when dialog opens in create mode
+    if (open && !isEdit && !initialGroupName) {
+      reset({ groupName: '' })
+    }
+  }, [open, initialGroupName, setValue, reset, isEdit])
 
   const onSubmit = async (values: FormFields) => {
     values.projectID = project?.ID
@@ -142,11 +146,12 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
       if (TaskGroupID) {
         await updateTaskGroup({ id: TaskGroupID.toString(), body })
         refetchTaskGroup()
-        reset()
+        reset({ groupName: '' }) // Reset form after successful update
         onCloseModal()
       } else {
         await addTaskGroup(values)
         refetchTaskGroup()
+        reset({ groupName: '' }) // Reset form after successful creation
         onCloseModal()
       }
     } catch (error) {
@@ -162,70 +167,7 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
   return (
     <>
       {/* Payment Expired Dialog */}
-      {/* <Dialog
-        open={showPaymentExpiredDialog}
-        onClose={handleClosePaymentDialog}
-        TransitionComponent={Zoom}
-        fullWidth
-        maxWidth='sm'
-      >
-        <Box bgcolor={'background.default'}>
-          <Box className='flex flex-col items-center justify-center px-8 py-10'>
-        
-            <Box
-              className='mb-6 rounded-full flex items-center justify-center'
-              sx={{
-                width: 80,
-                height: 80,
-                backgroundColor: 'none',
-                color: 'error.main'
-              }}
-            >
-              <Icon icon={'mdi:alert-circle-outline'} fontSize={100} />
-            </Box>
-
-            <Typography className='text-2xl font-bold mb-3 text-center'>
-              Subscription Expired
-            </Typography>
-
-            <Typography className='text-base text-center mb-6' color='text.secondary'>
-              Your subscription has expired. Please renew your subscription to continue creating Task Groups and accessing premium features.
-            </Typography>
-
-          
-
-            <Box className='flex gap-3 w-full'>
-              <CustomButton
-                circular
-                variant='outlined'
-                size='large'
-                onClick={handleClosePaymentDialog}
-                fullWidth
-                disabled={isLoading}
-              >
-                Cancel
-              </CustomButton>
-              <CustomButton
-                circular
-                variant='contained'
-                size='large'
-                onClick={generateRazorPayOrder}
-                fullWidth
-                disabled={isLoading || !razorpayLoaded}
-                sx={{
-                  backgroundColor: 'primary.main',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark'
-                  }
-                }}
-              >
-                {isLoading ? <CircularProgress size={20} color='inherit' /> : 'Renew Subscription'}
-              </CustomButton>
-            </Box>
-          </Box>
-        </Box>
-      </Dialog> */}
-  <SubscriptionExpiredDialog
+      <SubscriptionExpiredDialog
         open={showPaymentExpiredDialog}
         onClose={handleClosePaymentDialog}
         onRenew={generateRazorPayOrder}
@@ -259,7 +201,10 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
           </Typography>
           <IconButton
             aria-label='close'
-            onClick={onCloseModal}
+            onClick={() => {
+              reset({ groupName: '' }) // Reset form when closing
+              onCloseModal()
+            }}
             style={{
               height: 35,
               width: 35,
@@ -359,6 +304,7 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
                 variant='outlined'
                 size='small'
                 onClick={() => {
+                  reset({ groupName: '' }) // Reset form when canceling
                   onCloseModal()
                 }}
               >

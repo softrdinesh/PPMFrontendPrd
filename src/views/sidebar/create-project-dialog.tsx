@@ -351,7 +351,7 @@ const checkPaymentStatus = () => {
                   name='IsOpen'
                   control={control}
                   render={({ field }) => (
-                    <Switch checked={field?.value === 0} onChange={e => field?.onChange(e?.target?.checked ? 0 : 1)} />
+                    <Switch checked={field?.value === 1} onChange={e => field?.onChange(e?.target?.checked ? 0 : 1)} />
                   )}
                 />
                 Closed

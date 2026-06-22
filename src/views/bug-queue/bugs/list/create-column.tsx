@@ -91,6 +91,8 @@ const CreateColumnMenu = ({
 
   const handleClose = () => {
     setAnchorEl(null)
+            setSelectedColumnType(null)
+
   }
 
   const handleTypeClose = () => setSelectedColumnType(null)
@@ -126,6 +128,7 @@ const CreateColumnMenu = ({
       return createSubTaskColumn(body).then(() => {
         refetch()
         handleClose()
+        setSelectedColumnType(null)
         reset()
       })
     }

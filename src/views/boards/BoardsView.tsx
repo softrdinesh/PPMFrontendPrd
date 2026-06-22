@@ -53,7 +53,7 @@ interface Task {
   description: string
   priority: 'high' | 'medium' | 'low'
   assignee: string
-  assigneeId?: string  // ADD THIS LINE
+  assigneeId?: string
   taskID?: number
   priorityID?: number
   priorityName?: string
@@ -70,7 +70,7 @@ interface TaskColumns {
   inProgress: Task[]
   review: Task[]
   done: Task[]
-  [key: string]: Task[] // Allow dynamic keys for new categories
+  [key: string]: Task[]
 }
 
 interface Column {
@@ -81,11 +81,10 @@ interface Column {
   iconColor: string
   lightBg: string
   count: number
-  boardCategoryID?: number // Add API ID field
-  categoryID?: number // API category ID
+  boardCategoryID?: number
+  categoryID?: number
 }
 
-// Interface for API response
 interface ApiTaskItem {
   taskID: number
   taskTitle: string
@@ -108,14 +107,12 @@ interface ApiCategory {
   details: ApiTaskItem[]
 }
 
-// Filter types
 interface FilterOptions {
   priority: ('high' | 'medium' | 'low')[]
   assignee: string[]
   category: string[]
 }
 
-// Add priority interface
 interface ApiPriority {
   priorityID: number
   priorityname: string
@@ -125,7 +122,7 @@ interface ProjectTask {
   taskID: number;
   taskname: string;
 }
-// Task Details Dialog Component
+
 const TaskDetailsDialog = ({ 
   open, 
   onClose, 
@@ -187,27 +184,21 @@ const TaskDetailsDialog = ({
     }
   };
 
-  // Function to download attachment directly
   const handleDownloadAttachment = (url: string) => {
     try {
       const fileName = getFileNameFromUrl(url);
       const link = document.createElement('a');
       
-      // Create proper download URL
       let downloadUrl = url;
       
-      // Check if URL needs protocol
       if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('blob:')) {
-        // If it's a relative URL starting with /
         if (url.startsWith('/')) {
           downloadUrl = `${window.location.origin}${url}`;
         } else if (url.startsWith('./') || url.startsWith('../')) {
-          // Handle relative URLs
           const baseUrl = window.location.href;
           const urlObj = new URL(url, baseUrl);
           downloadUrl = urlObj.href;
         } else {
-          // Assume it's a path relative to current domain
           downloadUrl = `${window.location.origin}/${url}`;
         }
       }
@@ -238,7 +229,6 @@ const TaskDetailsDialog = ({
       });
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback - open in new tab
       window.open(task.attachmentLink, '_blank');
       
       toast.info('Opening file in new tab', {
@@ -302,9 +292,7 @@ const TaskDetailsDialog = ({
       
       <DialogContent sx={{ pt: 3, pb: 2 }}>
         <Grid container spacing={3}>
-          {/* Left Column - Main Content */}
           <Grid item xs={12} md={8}>
-            {/* Description Section */}
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ 
                 fontWeight: 600, 
@@ -335,7 +323,6 @@ const TaskDetailsDialog = ({
               </Paper>
             </Box>
 
-            {/* Attachments Section */}
             {task.attachmentLink && (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="subtitle1" sx={{ 
@@ -439,7 +426,6 @@ const TaskDetailsDialog = ({
             )}
           </Grid>
 
-          {/* Right Column - Metadata */}
           <Grid item xs={12} md={4}>
             <Typography variant="subtitle1" sx={{ 
               fontWeight: 600, 
@@ -466,7 +452,6 @@ const TaskDetailsDialog = ({
                 flexDirection: 'column',
                 gap: 2.5
               }}>
-                {/* Priority */}
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ 
                     fontWeight: 500, 
@@ -503,7 +488,6 @@ const TaskDetailsDialog = ({
                   </Box>
                 </Box>
 
-                {/* Assignee */}
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ 
                     fontWeight: 500, 
@@ -550,7 +534,6 @@ const TaskDetailsDialog = ({
                   </Box>
                 </Box>
 
-                {/* Category */}
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ 
                     fontWeight: 500, 
@@ -588,7 +571,6 @@ const TaskDetailsDialog = ({
                   </Box>
                 </Box>
 
-                {/* Additional Info */}
                 <Box>
                   <Typography variant="caption" color="textSecondary" sx={{ 
                     fontWeight: 500, 
@@ -603,7 +585,6 @@ const TaskDetailsDialog = ({
                     gridTemplateColumns: '1fr 1fr',
                     gap: 1.5
                   }}>
-                    {/* Create Date */}
                     <Box sx={{ 
                       p: 1.5,
                       borderRadius: 1.5,
@@ -673,15 +654,14 @@ const YourFeaturePage = () => {
   const [openDialog, setOpenDialog] = useState(false)
   const { users, role } = useProject()
   const [searchText, setSearchText] = useState('')
-  const [teamMembers, setTeamMembers] = useState<any[]>([])  // Loading states
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
-  const [showTaskPaymentDialog, setShowTaskPaymentDialog] = useState(false) // NEW: Separate dialog for task creation
+  const [showTaskPaymentDialog, setShowTaskPaymentDialog] = useState(false)
   const [teamMembersLoading, setTeamMembersLoading] = useState(false)
   const [selectedUser, setSelectedUser] = useState<string>('');
   
-  // Add this state for filtered columns and tasks
   const [filteredByUserColumns, setFilteredByUserColumns] = useState<Column[]>([]);
   const [filteredByUserTasks, setFilteredByUserTasks] = useState<TaskColumns>({
     todo: [],
@@ -696,7 +676,7 @@ const YourFeaturePage = () => {
     },
     [searchText]
   )
-  // Interface for team members API response
+
 interface ApiTeamMember {
   userID: number
   name: string
@@ -704,7 +684,6 @@ interface ApiTeamMember {
   profilepicture: string
 }
 
-  // Initialize with empty tasks - will be populated from API
   const [tasks, setTasks] = useState<TaskColumns>({
     todo: [],
     inProgress: [],
@@ -712,12 +691,11 @@ interface ApiTeamMember {
     done: []
   })
 
-  // Initialize with empty array - will be populated from API
   const [columns, setColumns] = useState<Column[]>([])
 useEffect(() => {
   fetchProjectTasks()
 }, [])
-  // Helper function to convert priority name to priority level
+
   const getPriorityLevel = (priorityName: string): 'high' | 'medium' | 'low' => {
     if (!priorityName) return 'medium'
     
@@ -726,7 +704,6 @@ useEffect(() => {
     if (lowerPriority.includes('low')) return 'low'
     if (lowerPriority.includes('medium')) return 'medium'
     
-    // Fallback: check for any other patterns
     if (lowerPriority.includes('urgent') || lowerPriority.includes('critical')) return 'high'
     if (lowerPriority.includes('minor') || lowerPriority.includes('trivial')) return 'low'
     
@@ -763,36 +740,31 @@ const fetchProjectTasks = async () => {
     });
   }
 };
-  // Check payment status - USING API COUNTS
+
   const checkPaymentStatus = () => {
     try {
       const paymentStatus = localStorage.getItem('paymentStatus')
       
       if (!paymentStatus) {
-        // No payment status found - treat as expired
         setShowPaymentExpiredDialog(true)
         return false
       }
       
       const parsed = JSON.parse(paymentStatus)
       
-      // Check if payment is explicitly expired
       if (parsed.isExpired === true) {
         setShowPaymentExpiredDialog(true)
         return false
       }
       
-      // Calculate current task count from API data stored in tasks state
       let currentTaskCount = 0;
       Object.values(tasks).forEach(columnTasks => {
         currentTaskCount += columnTasks.length;
       });
       
-      // Get current category count from columns state (from GetBoardList API)
       const currentCategoryCount = columns.length;
      
       
-      // Check if user has reached their category limit
       if (parsed.boardSectionCount !== undefined && parsed.boardSectionCount !== null) {
         if (currentCategoryCount >= parsed.boardSectionCount) {
           setShowPaymentExpiredDialog(true)
@@ -800,7 +772,6 @@ const fetchProjectTasks = async () => {
         }
       }
       
-      // Check if user has reached their task limit
       if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
         if (currentTaskCount >= parsed.boardTaskCount) {
           setShowTaskPaymentDialog(true)
@@ -808,38 +779,32 @@ const fetchProjectTasks = async () => {
         }
       }
       
-      // Payment is valid
       setShowPaymentExpiredDialog(false)
       setShowTaskPaymentDialog(false)
       return true
     } catch (error) {
       console.error('Error checking payment status:', error)
-      // On error, be conservative - show payment dialog
       setShowPaymentExpiredDialog(true)
       return false
     }
   }
 
-  // Check task payment status - NEW: Separate function for task creation
   const checkTaskPaymentStatus = () => {
     try {
       const paymentStatus = localStorage.getItem('paymentStatus')
       
       if (!paymentStatus) {
-        // No payment status found - treat as expired
         setShowTaskPaymentDialog(true)
         return false
       }
       
       const parsed = JSON.parse(paymentStatus)
       
-      // Check if payment is explicitly expired
       if (parsed.isExpired === true) {
         setShowTaskPaymentDialog(true)
         return false
       }
       
-      // Calculate current task count from API data stored in tasks state
       let currentTaskCount = 0;
       Object.values(tasks).forEach(columnTasks => {
         currentTaskCount += columnTasks.length;
@@ -847,7 +812,6 @@ const fetchProjectTasks = async () => {
       
      
       
-      // Check if user has reached their task limit
       if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
         if (currentTaskCount >= parsed.boardTaskCount) {
           setShowTaskPaymentDialog(true)
@@ -855,7 +819,6 @@ const fetchProjectTasks = async () => {
         }
       }
       
-      // Payment is valid for task creation
       setShowTaskPaymentDialog(false)
       return true
     } catch (error) {
@@ -865,7 +828,6 @@ const fetchProjectTasks = async () => {
     }
   }
 
-// Fetch team members from API - ADDED FUNCTION
 const fetchTeamMembers = async () => {
   if (!user?.id) return;
   
@@ -874,7 +836,6 @@ const fetchTeamMembers = async () => {
     const response = await axios.get(`${Baseurl}/GetBoardUserList?LoginuserID=${user.id}`);
     
     if (response.data && Array.isArray(response.data)) {
-      // Remove duplicates based on userID and map to just names
       const uniqueMembers = response.data.reduce((acc: ApiTeamMember[], current: ApiTeamMember) => {
         const exists = acc.find(item => item.userID === current.userID);
         if (!exists) {
@@ -883,7 +844,6 @@ const fetchTeamMembers = async () => {
         return acc;
       }, []);
       
-      // Extract just the names for the teamMembers array
       const formattedMembers = uniqueMembers.map((member: ApiTeamMember) => ({
         label: member.name,
         value: member.userID.toString()
@@ -908,54 +868,44 @@ const fetchTeamMembers = async () => {
         fontWeight: 500,
       },
     });
-    // Fallback to empty array
     setTeamMembers([]);
   } finally {
     setTeamMembersLoading(false);
   }
 }
 
-  // Edit states
   const [editCategoryDialog, setEditCategoryDialog] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Column | null>(null)
   const [editTaskDialog, setEditTaskDialog] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editingTaskColumn, setEditingTaskColumn] = useState<string | null>(null)
   
-  // Delete states
   const [deleteCategoryDialog, setDeleteCategoryDialog] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<Column | null>(null)
   
-  // Create category states
   const [newCategoryName, setNewCategoryName] = useState('')
-  const [selectedColor, setSelectedColor] = useState('#2196F3') // Default primary color
+  const [selectedColor, setSelectedColor] = useState('#2196F3')
   
-  // Filter states - UPDATED: Changed to store priority names instead of mapped values
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     priority: [],
     assignee: [],
     category: []
   })
-  const [selectedPriorities, setSelectedPriorities] = useState<Set<string>>(new Set()) // Changed to Set<string>
+  const [selectedPriorities, setSelectedPriorities] = useState<Set<string>>(new Set())
   const [selectedAssignees, setSelectedAssignees] = useState<Set<string>>(new Set())
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
   
-  // Validation errors for create category
   const [categoryValidationErrors, setCategoryValidationErrors] = useState<{name?: string, color?: string}>({})
   const [categoryLoading, setCategoryLoading] = useState(false)
 
-  // Task Details Dialog State
   const [taskDetailsDialog, setTaskDetailsDialog] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
-  // Priority states - ADDED
   const [priorities, setPriorities] = useState<ApiPriority[]>([])
   const [priorityLoading, setPriorityLoading] = useState(false)
 
-  // File upload state for edit task
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  // Get icon based on category name
   const getCategoryIcon = (categoryName: string) => {
     const icons: Record<string, string> = {
       'todo': 'mdi:clipboard-list-outline',
@@ -985,15 +935,12 @@ const fetchTeamMembers = async () => {
     return icons[key] || defaultIcons[Math.floor(Math.random() * defaultIcons.length)]
   }
 
-  // Update the razorpay payment hook - FIXED VERSION
   const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
     userId: Number(user?.id),
     onPaymentSuccess: () => {
-      // Refresh payment status from localStorage
       setTimeout(() => {
         const canOpen = checkPaymentStatus()
         if (canOpen) {
-          // Payment successful, now open the category dialog
           setNewCategoryName('')
           setSelectedColor('#2196F3')
           setCategoryValidationErrors({})
@@ -1001,7 +948,7 @@ const fetchTeamMembers = async () => {
         }
         setShowPaymentExpiredDialog(false)
         setShowTaskPaymentDialog(false)
-      }, 1000) // Small delay to ensure localStorage is updated
+      }, 1000)
     },
     onPaymentFailure: () => {
       setShowPaymentExpiredDialog(true)
@@ -1009,7 +956,6 @@ const fetchTeamMembers = async () => {
     }
   })
 
-  // Update the useEffect for createCategoryDialog - FIXED
   useEffect(() => {
     if (createCategoryDialog) {
       const canOpen = checkPaymentStatus()
@@ -1019,7 +965,6 @@ const fetchTeamMembers = async () => {
     }
   }, [createCategoryDialog])
 
-  // NEW: useEffect to check payment status when opening new task dialog
   useEffect(() => {
     if (openDialog) {
       const canCreateTask = checkTaskPaymentStatus()
@@ -1029,7 +974,6 @@ const fetchTeamMembers = async () => {
     }
   }, [openDialog])
 
-  // Fetch priorities from API - ADDED FUNCTION
   const fetchPriorities = async () => {
     setPriorityLoading(true)
     try {
@@ -1060,7 +1004,6 @@ const fetchTeamMembers = async () => {
     }
   }
 
-  // Fetch tasks from API
   const fetchTasks = async () => {
     try {
       const response = await axios.get(`${Baseurl}/GetBoardTaskList?LoginuserID=${user?.id}`)
@@ -1068,24 +1011,20 @@ const fetchTeamMembers = async () => {
       if (response.data && Array.isArray(response.data)) {
         const apiTasks: TaskColumns = {}
         
-        // Start by creating empty arrays for all existing columns
         columns.forEach(col => {
           apiTasks[col.id] = []
         })
         
-        // Process each category from API response
         response.data.forEach((category: ApiCategory) => {
-          // Generate column ID from category name - MUST MATCH THE SAME LOGIC AS IN fetchCategories
           const columnId = category.categoryname.toLowerCase().replace(/\s+/g, '')
           
-          // Map API tasks to Task format
           const categoryTasks: Task[] = category.details.map((item: ApiTaskItem) => ({
             id: item.taskID.toString(),
             title: item.taskTitle,
             description: item.taskDescription,
             priority: getPriorityLevel(item.priorityName),
             assignee: item.assignedTo,
-            assigneeId: item.assignedTo, // ADD THIS LINE - assuming assignedTo contains ID
+            assigneeId: item.assignedTo,
             taskID: item.taskID,
             priorityID: item.priorityID,
             priorityName: item.priorityName,
@@ -1097,19 +1036,15 @@ const fetchTeamMembers = async () => {
             categoryName: item.categoryName
           }))
           
-          // Add tasks to the tasks object
-          // If the column doesn't exist in apiTasks yet, create it
           if (!apiTasks[columnId]) {
             apiTasks[columnId] = []
           }
           apiTasks[columnId] = categoryTasks
         })
         
-        // Update tasks state - this will preserve any columns that don't have tasks yet
         setTasks(prevTasks => {
           const mergedTasks = { ...prevTasks }
           
-          // Update with API data
           Object.keys(apiTasks).forEach(key => {
             mergedTasks[key] = apiTasks[key]
           })
@@ -1138,7 +1073,6 @@ const fetchTeamMembers = async () => {
     }
   }
 
-  // Fetch categories from API
   const fetchCategories = async () => {
     setLoading(true)
     setError(null)
@@ -1146,9 +1080,7 @@ const fetchTeamMembers = async () => {
       const response = await axios.get(`${Baseurl}/GetBoardList?LoginuserID=${user?.id}`)
       
       if (response.data && Array.isArray(response.data)) {
-        // Map API response to Column format
         const apiColumns: Column[] = response.data.map((item: any) => {
-          // Generate ID from category name (lowercase, no spaces) - MUST MATCH THE SAME LOGIC AS IN fetchTasks
           const columnId = item.categoryname.toLowerCase().replace(/\s+/g, '')
           
           return {
@@ -1158,7 +1090,7 @@ const fetchTeamMembers = async () => {
             icon: getCategoryIcon(item.categoryname),
             iconColor: item.colorCode || '#2196F3',
             lightBg: alpha(item.colorCode || '#2196F3', 0.08),
-            count: 0, // Will be updated when tasks are fetched
+            count: 0,
             boardCategoryID: item.boardCategoryID,
             categoryID: item.boardCategoryID
           }
@@ -1166,7 +1098,6 @@ const fetchTeamMembers = async () => {
         
         setColumns(apiColumns)
         
-        // Initialize empty task arrays for any new categories from API
         const updatedTasks = { ...tasks }
         apiColumns.forEach(col => {
           if (!updatedTasks[col.id]) {
@@ -1175,7 +1106,6 @@ const fetchTeamMembers = async () => {
         })
         setTasks(updatedTasks)
         
-        // Fetch tasks after categories are loaded
         await fetchTasks()
         
       } else {
@@ -1201,12 +1131,11 @@ const fetchTeamMembers = async () => {
         },
       })
       
-      // Fallback to default columns if API fails
       const defaultColumns: Column[] = [
         { 
           id: 'todo', 
           title: 'To Do', 
-          color: '#2196F3', // Primary color
+          color: '#2196F3',
           icon: 'mdi:clipboard-list-outline',
           iconColor: '#2196F3',
           lightBg: alpha('#2196F3', 0.08),
@@ -1215,7 +1144,7 @@ const fetchTeamMembers = async () => {
         { 
           id: 'inprogress', 
           title: 'In Progress', 
-          color: '#FF9800', // Warning color
+          color: '#FF9800',
           icon: 'mdi:progress-clock',
           iconColor: '#FF9800',
           lightBg: alpha('#FF9800', 0.08),
@@ -1224,7 +1153,7 @@ const fetchTeamMembers = async () => {
         { 
           id: 'review', 
           title: 'Review', 
-          color: '#00BCD4', // Info color
+          color: '#00BCD4',
           icon: 'mdi:eye-check-outline',
           iconColor: '#00BCD4',
           lightBg: alpha('#00BCD4', 0.08),
@@ -1233,7 +1162,7 @@ const fetchTeamMembers = async () => {
         { 
           id: 'done', 
           title: 'Done', 
-          color: '#4CAF50', // Success color
+          color: '#4CAF50',
           icon: 'mdi:checkbox-marked-circle-outline',
           iconColor: '#4CAF50',
           lightBg: alpha('#4CAF50', 0.08),
@@ -1246,20 +1175,18 @@ const fetchTeamMembers = async () => {
     }
   }
 
-  // Fetch categories on component mount
 useEffect(() => {
   const fetchAllData = async () => {
     await Promise.all([
       fetchCategories(),
       fetchPriorities(),
-      fetchTeamMembers() // Added team members fetch
+      fetchTeamMembers()
     ]);
   };
   
   fetchAllData();
 }, [])
 
-  // Update columns count when tasks change
   useEffect(() => {
     const updatedColumns = columns.map(col => ({
       ...col,
@@ -1268,7 +1195,6 @@ useEffect(() => {
     setColumns(updatedColumns)
   }, [tasks])
 
-  // Get all unique assignees from tasks
   const allAssignees = useMemo(() => {
     const assignees = new Set<string>()
     Object.values(tasks).forEach(columnTasks => {
@@ -1281,10 +1207,8 @@ useEffect(() => {
     return Array.from(assignees)
   }, [tasks])
 
-  // Get filtered tasks based on search and filter options - UPDATED for priority filtering
   const getFilteredTasks = useCallback((columnTasks: Task[], columnId: string) => {
     return columnTasks.filter(task => {
-      // Search filter
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase()
         const matchesSearch = 
@@ -1296,11 +1220,9 @@ useEffect(() => {
         if (!matchesSearch) return false
       }
 
-      // Priority filter - FIXED: Compare priority names from API, not mapped values
       if (selectedPriorities.size > 0) {
         const taskPriorityName = task.priorityName || task.priority;
         const isPriorityMatch = Array.from(selectedPriorities).some(selectedPriority => {
-          // Normalize both strings for comparison
           const normalizedTaskPriority = taskPriorityName.toLowerCase().trim();
           const normalizedSelectedPriority = selectedPriority.toLowerCase().trim();
           return normalizedTaskPriority === normalizedSelectedPriority;
@@ -1309,12 +1231,10 @@ useEffect(() => {
         if (!isPriorityMatch) return false;
       }
 
-      // Assignee filter
       if (selectedAssignees.size > 0 && !selectedAssignees.has(task.assignee)) {
         return false
       }
 
-      // Category filter
       if (selectedCategories.size > 0 && !selectedCategories.has(columnId)) {
         return false
       }
@@ -1323,7 +1243,6 @@ useEffect(() => {
     })
   }, [searchQuery, selectedPriorities, selectedAssignees, selectedCategories])
 
-  // Get filtered columns with filtered tasks
   const columnsWithFilteredTasks = useMemo(() => {
     return columns.map(col => ({
       ...col,
@@ -1335,18 +1254,15 @@ useEffect(() => {
   const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
   const totalFilteredTasks = columnsWithFilteredTasks.reduce((sum, col) => sum + col.count, 0)
 
-  // Filter categories and tasks based on selected user
   useEffect(() => {
     const filterDataByUser = async () => {
       if (!selectedUser) {
-        // If no user selected, show all data
         setFilteredByUserColumns(columns);
         setFilteredByUserTasks(tasks);
         return;
       }
 
       try {
-        // Fetch categories for selected user
         const categoriesResponse = await axios.get(`${Baseurl}/GetBoardList?LoginuserID=${selectedUser}`);
         
         if (categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
@@ -1367,7 +1283,6 @@ useEffect(() => {
           setFilteredByUserColumns(userColumns);
         }
 
-        // Fetch tasks for selected user
         const tasksResponse = await axios.get(`${Baseurl}/GetBoardTaskList?LoginuserID=${selectedUser}`);
         
         if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
@@ -1428,7 +1343,6 @@ useEffect(() => {
     filterDataByUser();
   }, [selectedUser, columns, tasks]);
 
-  // Initialize filtered states with default data
   useEffect(() => {
     if (columns.length > 0 && Object.keys(tasks).length > 0) {
       setFilteredByUserColumns(columns);
@@ -1450,7 +1364,6 @@ useEffect(() => {
 
     if (taskToMove && sourceColumn !== columnId) {
       try {
-        // Find the destination category ID
         const destinationColumn = columns.find(col => col.id === columnId)
         const destinationCategoryID = destinationColumn?.boardCategoryID
         
@@ -1458,13 +1371,11 @@ useEffect(() => {
           throw new Error('Destination category not found')
         }
 
-        // Call the API to move the task
         const apiUrl = `${Baseurl}/MoveTaskToanotherCategory?BoardTaskID=${taskToMove.taskID}&LoginuserID=${user?.id}&DestinationCategoryID=${destinationCategoryID}`
         
         const response = await axios.post(apiUrl)
         
         if (response.data) {
-          // API call successful, update local state
           const updatedTasks = { ...tasks }
           updatedTasks[sourceColumn] = updatedTasks[sourceColumn].filter(t => t.id !== taskId)
           if (!updatedTasks[columnId]) {
@@ -1489,7 +1400,6 @@ useEffect(() => {
             },
           })
           
-          // Refresh data from API to ensure consistency
           await fetchCategories()
         } else {
           throw new Error('Failed to move task')
@@ -1538,53 +1448,43 @@ useEffect(() => {
     // Your API call or logic here
   }
 
-  // NEW: Handle new task creation with payment check
   const handleNewTaskClick = () => {
    
     
     const canCreateTask = checkTaskPaymentStatus()
     if (!canCreateTask) {
-      // Payment dialog will be shown by checkTaskPaymentStatus
       return
     }
     
-    // Only open new task dialog if payment is valid
     setOpenDialog(true)
   }
 
-  // Fix the handleOpenCreateCategory function - FIXED VERSION
   const handleOpenCreateCategory = () => {
   
     
-    // First check payment status
     const canOpen = checkPaymentStatus()
     
     if (!canOpen) {
-      // Payment dialog will be shown by checkPaymentStatus
       return
     }
     
-    // Only open create category dialog if payment is valid
     setNewCategoryName('')
     setSelectedColor('#2196F3')
     setCategoryValidationErrors({})
     setCreateCategoryDialog(true)
   }
 
-  // Fix the payment dialog close handler
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
     setShowTaskPaymentDialog(false)
   }
 
   const handleCreateCategory = async () => {
-    // Clear previous validation errors
     setCategoryValidationErrors({})
     
     let hasError = false
     const errors: {name?: string, color?: string} = {}
 
-    // Validate category name
     if (!newCategoryName.trim()) {
       errors.name = 'Category name is required'
       hasError = true
@@ -1593,14 +1493,12 @@ useEffect(() => {
       hasError = true
     }
 
-    // Validate category name already exists
     const newId = newCategoryName.toLowerCase().replace(/\s+/g, '')
     if (columns.find(col => col.id === newId)) {
       errors.name = 'Category with this name already exists'
       hasError = true
     }
 
-    // Validate color format
     const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
     if (!colorRegex.test(selectedColor)) {
       errors.color = 'Invalid color format. Use hex format like #2196F3'
@@ -1615,17 +1513,13 @@ useEffect(() => {
     setCategoryLoading(true)
 
     try {
-      // Prepare API request parameters
-      const colorCode = encodeURIComponent(selectedColor) // URL encode the color code
+      const colorCode = encodeURIComponent(selectedColor)
       
-      // Make API call to create board category
       const apiUrl = `${Baseurl}/CreateBoardCategory?Categoryname=${encodeURIComponent(newCategoryName)}&ColorCode=${colorCode}&LoginuserID=${user?.id}`
       
       const response = await axios.post(apiUrl)
       
-      // Check if API call was successful
       if (response.data) {
-        // Refresh categories from API after successful creation
         await fetchCategories()
         
         setCreateCategoryDialog(false)
@@ -1654,26 +1548,20 @@ useEffect(() => {
     } catch (error: any) {
       console.error('Error creating category:', error)
       
-      // Handle specific error cases
       let errorMessage = 'Failed to create category'
       
       if (error.response) {
-        // Server responded with error status
         errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
         
-        // Handle duplicate category error from server
         if (error.response.status === 400 || (error.response.data?.message && error.response.data.message.toLowerCase().includes('already exists'))) {
           setCategoryValidationErrors({ name: 'Category with this name already exists on the server' })
         }
       } else if (error.request) {
-        // Request made but no response received
         errorMessage = 'Network error: No response from server'
       } else {
-        // Something else happened
         errorMessage = error.message || 'Unknown error occurred'
       }
       
-      // Only show toast if there's no field-specific error
       if (!categoryValidationErrors.name) {
         toast.error(errorMessage, {
           position: 'top-center',
@@ -1703,7 +1591,6 @@ useEffect(() => {
     setSelectedColor('#2196F3')
   }
 
-  // Edit Category handlers
   const handleEditCategory = (column: Column) => {
     setEditingCategory(column)
     setEditCategoryDialog(true)
@@ -1712,17 +1599,13 @@ useEffect(() => {
   const handleSaveCategory = async () => {
     if (editingCategory) {
       try {
-        // Prepare API request parameters for update
-        const colorCode = encodeURIComponent(editingCategory.color) // URL encode the color code
+        const colorCode = encodeURIComponent(editingCategory.color)
         
-        // Make API call to update board category
         const apiUrl = `${Baseurl}/UpdateBoardCategory?Categoryname=${encodeURIComponent(editingCategory.title)}&ColorCode=${colorCode}&LoginuserID=${user?.id}&CategoryID=${editingCategory.boardCategoryID}`
         
         const response = await axios.post(apiUrl)
         
-        // Check if API call was successful
         if (response.data) {
-          // Refresh categories from API after successful update
           await fetchCategories()
           
           setEditCategoryDialog(false)
@@ -1749,17 +1632,13 @@ useEffect(() => {
       } catch (error: any) {
         console.error('Error updating category:', error)
         
-        // Handle specific error cases
         let errorMessage = 'Failed to update category'
         
         if (error.response) {
-          // Server responded with error status
           errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
         } else if (error.request) {
-          // Request made but no response received
           errorMessage = 'Network error: No response from server'
         } else {
-          // Something else happened
           errorMessage = error.message || 'Unknown error occurred'
         }
         
@@ -1782,7 +1661,6 @@ useEffect(() => {
     }
   }
 
-  // Delete Category handlers
   const handleDeleteCategory = (column: Column) => {
     setCategoryToDelete(column)
     setDeleteCategoryDialog(true)
@@ -1790,7 +1668,6 @@ useEffect(() => {
 
   const handleConfirmDeleteCategory = async () => {
     if (categoryToDelete) {
-      // Check if there are tasks in the category
       const tasksInCategory = tasks[categoryToDelete.id] || []
       
       if (tasksInCategory.length > 0) {
@@ -1815,7 +1692,6 @@ useEffect(() => {
       }
 
       try {
-        // Check if category has an ID from API
         if (!categoryToDelete.boardCategoryID) {
           throw new Error('Category does not have a valid ID')
         }
@@ -1824,9 +1700,7 @@ useEffect(() => {
         
         const response = await axios.post(apiUrl)
         
-        // Check if API call was successful
         if (response.data) {
-          // Refresh categories from API after successful deletion
           await fetchCategories()
           
           setDeleteCategoryDialog(false)
@@ -1853,17 +1727,13 @@ useEffect(() => {
       } catch (error: any) {
         console.error('Error deleting category:', error)
         
-        // Handle specific error cases
         let errorMessage = 'Failed to delete category'
         
         if (error.response) {
-          // Server responded with error status
           errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
         } else if (error.request) {
-          // Request made but no response received
           errorMessage = 'Network error: No response from server'
         } else {
-          // Something else happened
           errorMessage = error.message || 'Unknown error occurred'
         }
         
@@ -1886,12 +1756,9 @@ useEffect(() => {
     }
   }
 
-  // Edit Task handlers
   const handleEditTask = (task: Task, columnId: string) => {
-    // Create a copy of the task
     const taskWithAssigneeId = { ...task };
     
-    // Find the team member by matching the name
     if (taskWithAssigneeId.assignee) {
       const foundMember = teamMembers.find(member => 
         member.label.toLowerCase() === taskWithAssigneeId.assignee.toLowerCase()
@@ -1900,27 +1767,22 @@ useEffect(() => {
       if (foundMember) {
         taskWithAssigneeId.assigneeId = foundMember.value;
       } else {
-        // If not found, try to find by assigneeId if it exists
         if (!taskWithAssigneeId.assigneeId) {
-          // Set assigneeId as the assignee name if no match found (fallback)
           taskWithAssigneeId.assigneeId = taskWithAssigneeId.assignee;
         }
       }
     }
-    
- 
     
     setEditingTask(taskWithAssigneeId);
     setEditingTaskColumn(columnId);
     setEditTaskDialog(true);
   }
 
-  // Edit Task handlers - UPDATED with exact URL format you requested
+  // FIX: Updated handleSaveTask function to handle undefined values properly
   const handleSaveTask = async () => {
     if (editingTask && editingTaskColumn && user?.id) {
       try {
-        // Validate required fields
-        if (!editingTask.title || !editingTask.assigneeId) { // Changed from assignee to assigneeId
+        if (!editingTask.title || !editingTask.assigneeId) {
           toast.error('Please fill in all required fields', {
             position: 'top-center',
             duration: 4000,
@@ -1939,9 +1801,8 @@ useEffect(() => {
           return;
         }
 
-        // Validate file size if a file is selected (MAX 5MB)
         if (selectedFile) {
-          const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+          const maxSize = 5 * 1024 * 1024;
           
           if (selectedFile.size > maxSize) {
             toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
@@ -1962,7 +1823,6 @@ useEffect(() => {
             return;
           }
           
-          // Validate file type
           const allowedTypes = [
             'application/pdf',
             'application/msword',
@@ -1999,26 +1859,23 @@ useEffect(() => {
           }
         }
 
-        // Prepare form data for file upload
         const formData = new FormData();
-        
-        // Add only the file to form data (if selected)
         if (selectedFile) {
           formData.append('file', selectedFile);
         }
         
-        // Use assigneeId instead of assignee for the API call
         const assigneeIdToSend = editingTask.assigneeId || editingTask.assignee;
         
-        // Encode values for URL
         const encodedTitle = encodeURIComponent(editingTask.title);
         const encodedDescription = encodeURIComponent(editingTask.description || '');
         
-        // FIX: Add projectTaskID parameter to the URL (between assignee and categoryID)
-        // Format: /UpdateBoardTask/title/description/priorityID/assigneeId/projectTaskID/categoryID/userId/taskID
-        const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${editingTask.priorityID || ''}/${assigneeIdToSend}/${editingTask.projectTaskID || '0'}/${editingTask.categoryID || ''}/${user?.id}/${editingTask?.taskID}`;
+        // FIX: Ensure all values are properly handled and not undefined
+        const priorityId = editingTask.priorityID || '';
+        const projectTaskId = editingTask.projectTaskID || '0';
+        const categoryId = editingTask.categoryID || '';
+        const taskId = editingTask.taskID || editingTask.id;
         
-    
+        const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${priorityId}/${assigneeIdToSend}/${projectTaskId}/${categoryId}/${user?.id}/${taskId}`;
         
         const response = await axios.post(apiUrl, formData, {
           headers: {
@@ -2026,9 +1883,7 @@ useEffect(() => {
           },
         });
         
-        // Check if API call was successful
         if (response.data) {
-          // Update local state with the updated task
           const updatedTasks = { ...tasks };
           const columnTasks = updatedTasks[editingTaskColumn] || [];
           
@@ -2041,7 +1896,7 @@ useEffect(() => {
               assigneeId: editingTask.assigneeId,
               priorityID: editingTask.priorityID,
               categoryID: editingTask.categoryID,
-              projectTaskID: editingTask.projectTaskID, // Save projectTaskID
+              projectTaskID: editingTask.projectTaskID,
             } : t
           );
           
@@ -2069,7 +1924,6 @@ useEffect(() => {
             },
           });
           
-          // Refresh data from API to ensure consistency
           await fetchCategories();
         } else {
           throw new Error('Failed to update task');
@@ -2106,20 +1960,15 @@ useEffect(() => {
     }
   };
 
-  // Delete Task Handler
   const handleDeleteTask = async (taskId: string, columnId: string) => {
     try {
-      // Find the task to get its projectTaskID
       const taskToDelete = tasks[columnId]?.find(t => t.id == taskId);
       
-      // Call the delete API
       const apiUrl = `${Baseurl}/RemoveBoardTask?BoardTaskID=${taskId}&LoginuserID=${user?.id}`;
       
       const response = await axios.post(apiUrl);
       
-      // Check if API call was successful
       if (response.data) {
-        // Remove task from local state
         const updatedTasks = { ...tasks };
         updatedTasks[columnId] = updatedTasks[columnId].filter(t => t.id !== taskId);
         setTasks(updatedTasks);
@@ -2173,13 +2022,11 @@ useEffect(() => {
     }
   };
 
-  // View Task Handler
   const handleViewTask = (task: Task) => {
     setSelectedTask(task)
     setTaskDetailsDialog(true)
   }
 
-  // Filter handlers - ADD THESE FUNCTIONS
   const handlePriorityFilter = (priorityName: string) => {
     const newSelectedPriorities = new Set(selectedPriorities);
     if (newSelectedPriorities.has(priorityName)) {
@@ -2225,7 +2072,6 @@ useEffect(() => {
         backgroundColor: theme.palette.background.default
       }}
     >
-      {/* Add Toaster component */}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -2257,7 +2103,6 @@ useEffect(() => {
         }}
       />
       
-      {/* Header */}
       <Paper 
         elevation={0}
         sx={{ 
@@ -2350,29 +2195,6 @@ useEffect(() => {
             mt: { xs: 1, sm: 0 }
           }}>
                
-            {/* <Button
-              variant="outlined"
-              startIcon={<Icon icon="mdi:plus" width={20} />}
-             // onClick={handleOpenCreateCategory}
-              sx={{
-                borderColor: theme.palette.divider,
-                color: theme.palette.text.primary,
-                px: { xs: 2.5, sm: 3 },
-                py: { xs: 1, sm: 1.2 },
-                borderRadius: '10px',
-                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                fontWeight: 600,
-                textTransform: 'none',
-                whiteSpace: 'nowrap',
-                width: { xs: 'auto', sm: 'auto' },
-                '&:hover': {
-                  borderColor: theme.palette.primary.main,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                }
-              }}
-            >
-              New Board
-            </Button> */}
             <Button
               variant="outlined"
               startIcon={<Icon icon="mdi:plus" width={20} />}
@@ -2399,7 +2221,7 @@ useEffect(() => {
             <Button
               variant="contained"
               startIcon={<Icon icon="mdi:plus-circle" width={20} />}
-              onClick={handleNewTaskClick} // UPDATED: Changed to handleNewTaskClick
+              onClick={handleNewTaskClick}
               sx={{
                 backgroundColor: theme.palette.primary.main,
                 px: { xs: 2.5, sm: 3 },
@@ -2428,13 +2250,12 @@ useEffect(() => {
           gap: 2,
           flexDirection: { xs: 'column', sm: 'row' }
         }}>
-          {/* Search input with increased width */}
           <Box sx={{ 
             position: 'relative', 
             flex: 1, 
             width: '100%',
-            maxWidth: { xs: '100%', sm: '520px' }, // Increased from 420px to 520px
-            minWidth: { sm: '400px' } // Added minimum width for larger screens
+            maxWidth: { xs: '100%', sm: '520px' },
+            minWidth: { sm: '400px' }
           }}>
             <Icon 
               icon="mdi:magnify" 
@@ -2479,12 +2300,11 @@ useEffect(() => {
             />
           </Box>
           
-          {/* Filter and Task Count moved to top right corner */}
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: 2,
-            ml: 'auto' // This pushes it to the right
+            ml: 'auto'
           }}>
             <Chip
               label={`${searchQuery || selectedPriorities.size > 0 || selectedAssignees.size > 0 || selectedCategories.size > 0 ? totalFilteredTasks : totalTasks} tasks`}
@@ -2541,8 +2361,7 @@ useEffect(() => {
             </Button>
           </Box>
 
-          {/* User Dropdown - ADD THIS AFTER SEARCH BOX */}
-          {/* User Dropdown - FIXED VERSION */}
+          {/* FIX: User Dropdown - ensure value is always defined */}
           <Box sx={{ 
             position: 'relative',
             minWidth: { xs: '100%', sm: '200px' },
@@ -2578,7 +2397,7 @@ useEffect(() => {
                 Select User
               </InputLabel>
               <Select
-                value={selectedUser}
+                value={selectedUser || ''} // FIX: Ensure value is never undefined
                 onChange={async (e) => {
                   const selectedValue = e.target.value;
                   setSelectedUser(selectedValue);
@@ -2601,24 +2420,8 @@ useEffect(() => {
                       },
                     });
                   } else {
-                    // Reset to show all data
                     setFilteredByUserColumns(columns);
                     setFilteredByUserTasks(tasks);
-                    // toast.success('Showing all users data', {
-                    //   position: 'top-center',
-                    //   duration: 3000,
-                    //   style: {
-                    //     background: 'white',
-                    //     color: 'black',
-                    //     padding: '12px 20px',
-                    //     borderRadius: '12px',
-                    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-                    //     border: '1px solid rgba(0, 0, 0, 0.08)',
-                    //     maxWidth: '400px',
-                    //     fontSize: '14px',
-                    //     fontWeight: 500,
-                    //   },
-                    // });
                   }
                 }}
                 displayEmpty
@@ -2692,17 +2495,15 @@ useEffect(() => {
         </Box>
       </Paper>
 
-      {/* UPDATED LINE: Added onTaskCreated prop */}
       <NewTaskDialog
         open={openDialog}
         onOpenChange={setOpenDialog}
         onSubmit={handleSubmit}
         teamMembers={teamMembers}
         onTaskCreated={fetchCategories} 
-        onPriorityCreated={fetchPriorities} // ADD THIS LINE
+        onPriorityCreated={fetchPriorities}
       />  
 
-      {/* Enhanced Filter Menu - UPDATED with fixed priority filtering */}
       <Menu
         anchorEl={filterAnchorEl}
         open={Boolean(filterAnchorEl)}
@@ -2728,7 +2529,6 @@ useEffect(() => {
         </Box>
         
         <Box sx={{ maxHeight: 400, overflow: 'auto', p: 2 }}>
-          {/* Priority Filter - FIXED VERSION */}
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: theme.palette.text.primary, mb: 1.5, mt: 1 }}>
             Priority
           </Typography>
@@ -2739,7 +2539,6 @@ useEffect(() => {
               </Box>
             ) : priorities.length > 0 ? (
               priorities.map((priority) => {
-                // Use the actual priority name from API
                 const priorityName = priority.priorityname;
                 const isSelected = selectedPriorities.has(priorityName);
                 
@@ -2795,7 +2594,6 @@ useEffect(() => {
           
           <Divider sx={{ my: 1 }} />
           
-          {/* Assignee Filter */}
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: theme.palette.text.primary, mb: 1.5, mt: 2 }}>
             Assignee
           </Typography>
@@ -2836,7 +2634,6 @@ useEffect(() => {
           
           <Divider sx={{ my: 1 }} />
           
-          {/* Category Filter */}
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: theme.palette.text.primary, mb: 1.5, mt: 2 }}>
             Category
           </Typography>
@@ -2886,7 +2683,6 @@ useEffect(() => {
           </Box>
         </Box>
         
-        {/* Clear All Filters Button */}
         {(selectedPriorities.size > 0 || selectedAssignees.size > 0 || selectedCategories.size > 0) && (
           <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
             <Button
@@ -2906,7 +2702,6 @@ useEffect(() => {
         )}
       </Menu>
 
-      {/* Mobile Menu Drawer */}
       <Drawer
         anchor="left"
         open={mobileMenuOpen}
@@ -2938,7 +2733,6 @@ useEffect(() => {
         </Box>
       </Drawer>
 
-      {/* Loading State */}
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
           <CircularProgress />
@@ -2946,7 +2740,6 @@ useEffect(() => {
         </Box>
       )}
 
-      {/* Task Details Dialog */}
       <TaskDetailsDialog
         open={taskDetailsDialog}
         onClose={() => {
@@ -2956,7 +2749,6 @@ useEffect(() => {
         task={selectedTask}
       />
 
-      {/* Create Category Dialog */}
       <Dialog 
         open={createCategoryDialog} 
         onClose={handleCloseCreateCategoryDialog}
@@ -2997,7 +2789,6 @@ useEffect(() => {
             Category Color
           </Typography>
           
-          {/* Compact Color Picker with Input */}
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -3081,7 +2872,6 @@ useEffect(() => {
             </Alert>
           )}
           
-          {/* Color format hint */}
           <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
             Use hex format (e.g., #2196F3 for blue, #4CAF50 for green)
           </Typography>
@@ -3104,7 +2894,6 @@ useEffect(() => {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Category Dialog */}
       <Dialog 
         open={editCategoryDialog} 
         onClose={() => setEditCategoryDialog(false)}
@@ -3127,7 +2916,6 @@ useEffect(() => {
             Category Color
           </Typography>
           
-          {/* Compact Color Picker with Input */}
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -3182,15 +2970,12 @@ useEffect(() => {
             />
           </Box>
           
-          {/* Color format hint */}
           <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
             Use hex format (e.g., #2196F3 for blue, #4CAF50 for green)
           </Typography>
           
-          {/* Display Category ID if available */}
           {editingCategory?.boardCategoryID && (
             <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 2 }}>
-              {/* Category ID: {editingCategory.boardCategoryID} */}
             </Typography>
           )}
         </DialogContent>
@@ -3208,7 +2993,6 @@ useEffect(() => {
         </DialogActions>
       </Dialog>
       
-      {/* Delete Category Dialog */}
       <Dialog 
         open={deleteCategoryDialog} 
         onClose={() => setDeleteCategoryDialog(false)}
@@ -3221,7 +3005,6 @@ useEffect(() => {
             Are you sure you want to delete the category "{categoryToDelete?.title}"?
             {categoryToDelete?.boardCategoryID && (
               <Typography variant="caption" display="block" color="textSecondary">
-                {/* Category ID: {categoryToDelete.boardCategoryID} */}
               </Typography>
             )}
           </Typography>
@@ -3250,7 +3033,7 @@ useEffect(() => {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Task Dialog - UPDATED with complete form */}
+      {/* FIX: Edit Task Dialog - ensure all Select values have fallback to empty string */}
       <Dialog 
         open={editTaskDialog} 
         onClose={() => {
@@ -3263,7 +3046,6 @@ useEffect(() => {
         <DialogTitle sx={{ fontWeight: 600 }}>Edit Task</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            {/* Task Title */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -3274,7 +3056,6 @@ useEffect(() => {
               />
             </Grid>
             
-            {/* Description */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -3286,12 +3067,12 @@ useEffect(() => {
               />
             </Grid>
             
-            {/* Priority */}
+            {/* FIX: Priority Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
-                  value={editingTask?.priorityID || ''}
+                  value={editingTask?.priorityID ?? ''} // FIX: Use nullish coalescing to ensure value is never undefined
                   label="Priority"
                   onChange={(e) => setEditingTask(editingTask ? {...editingTask, priorityID: Number(e.target.value)} : null)}
                 >
@@ -3312,12 +3093,12 @@ useEffect(() => {
               </FormControl>
             </Grid>
             
-            {/* Project Task - EXACT FIX: Using the same structure as other fields */}
+            {/* FIX: Project Task Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Project Task</InputLabel>
                 <Select
-                  value={editingTask?.projectTaskID?.toString() || ''}
+                  value={editingTask?.projectTaskID?.toString() ?? ''} // FIX: Use nullish coalescing
                   label="Project Task"
                   onChange={(e) => {
                     if (editingTask) {
@@ -3340,12 +3121,12 @@ useEffect(() => {
               </FormControl>
             </Grid>
             
-            {/* Assignee */}
+            {/* FIX: Assignee Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Assignee</InputLabel>
                 <Select
-                  value={editingTask?.assigneeId || (editingTask?.assignee || '')}
+                  value={editingTask?.assigneeId ?? (editingTask?.assignee ?? '')} // FIX: Use nullish coalescing
                   label="Assignee"
                   onChange={(e) => {
                     const selectedValue = e.target.value;
@@ -3374,12 +3155,12 @@ useEffect(() => {
               </FormControl>
             </Grid>
 
-            {/* Category */}
+            {/* FIX: Category Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
-                  value={editingTask?.categoryID || ''}
+                  value={editingTask?.categoryID ?? ''} // FIX: Use nullish coalescing
                   label="Category"
                   onChange={(e) => {
                     const categoryID = Number(e.target.value);
@@ -3392,7 +3173,7 @@ useEffect(() => {
                   }}
                 >
                   {columns.map(column => (
-                    <MenuItem key={column.boardCategoryID} value={column.boardCategoryID}>
+                    <MenuItem key={column.boardCategoryID} value={column.boardCategoryID || ''}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ 
                           width: 8, 
@@ -3408,7 +3189,6 @@ useEffect(() => {
               </FormControl>
             </Grid>
             
-            {/* File Upload */}
             <Grid item xs={12}>
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
@@ -3460,7 +3240,6 @@ useEffect(() => {
         </DialogActions>
       </Dialog>
 
-      {/* Board */}
       {!loading && (
         <Box 
           sx={{ 
@@ -3501,7 +3280,6 @@ useEffect(() => {
               }
             }}
           >
-            {/* Use filtered columns based on selected user */}
             {(selectedUser ? filteredByUserColumns : columnsWithFilteredTasks).length === 0 && !loading ? (
               <Box sx={{ textAlign: 'center', width: '100%', py: 8 }}>
                 <Typography variant="h6" color="textSecondary">
@@ -3510,12 +3288,10 @@ useEffect(() => {
               </Box>
             ) : (
               (selectedUser ? filteredByUserColumns : columnsWithFilteredTasks).map((column) => {
-                // Get tasks based on user selection
                 const columnTasks = selectedUser 
                   ? (filteredByUserTasks[column.id] || [])
                   : (getFilteredTasks(tasks[column.id] || [], column.id));
                 
-                // Get count for the column
                 const columnCount = selectedUser 
                   ? columnTasks.length
                   : column.count;
@@ -3539,7 +3315,6 @@ useEffect(() => {
                       }
                     }}
                   >
-                    {/* Compact Column Header */}
                     <Box
                       sx={{
                         display: 'flex',
@@ -3561,7 +3336,6 @@ useEffect(() => {
                         minWidth: 0,
                         mr: 1
                       }}>
-                        {/* Compact Icon */}
                         <Box
                           sx={{
                             width: 36,
@@ -3657,7 +3431,6 @@ useEffect(() => {
                       </Box>
                     </Box>
 
-                    {/* Task Column with filtered tasks */}
                     <TaskColumn
                       title={column.title}
                       tasks={columnTasks}
@@ -3675,7 +3448,6 @@ useEffect(() => {
             )}
           </Box>
           
-          {/* Subscription Expired Dialog for Categories */}
           <SubscriptionExpiredDialog
             open={showPaymentExpiredDialog}
             onClose={handleClosePaymentDialog}
@@ -3684,7 +3456,6 @@ useEffect(() => {
             razorpayLoaded={razorpayLoaded}
           />
           
-          {/* Subscription Expired Dialog for Tasks - NEW */}
           <SubscriptionExpiredDialog
             open={showTaskPaymentDialog}
             onClose={handleClosePaymentDialog}

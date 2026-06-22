@@ -39,7 +39,7 @@ const TaskTextValues = ({ table, getValue, index, id, columnData, dynamicValue, 
   }
 
   useEffect(() => {
-    setValue(initialValue)
+ setValue(initialValue ?? '-')
   }, [initialValue])
 
   return canEdit ? (

@@ -107,12 +107,14 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         >
           Recent Activity
         </MenuItem>
+          {profile === 'projects' &&
  <MenuItem
           href='/super-admin'
           icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
         >
           Admin
         </MenuItem>
+}
         <Divider className='my-4 bg-white dark:bg-actionHover' />
         <CreateWorkspace icon={<Icon icon={'f7:plus-app'} className='h-6 w-6 text-white' />} />
 

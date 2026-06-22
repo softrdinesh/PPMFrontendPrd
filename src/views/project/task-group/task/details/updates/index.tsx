@@ -47,8 +47,20 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
   const reconnectInterval = 3000
 
   const connectWebSocket = useCallback(() => {
-    if (isConnectingRef.current || (socketRef.current && socketRef.current.readyState === WebSocket.OPEN)) {
+    // Check if already connected or connecting
+    if (isConnectingRef.current) {
       return
+    }
+
+    // Check if socket is already open
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      return
+    }
+
+    // Close any existing connection
+    if (socketRef.current) {
+      socketRef.current.close()
+      socketRef.current = null
     }
 
     const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${taskID}&senderID=${user?.id}`
@@ -58,6 +70,7 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
+        console.log('WriteUpdate WebSocket connected successfully')
         isConnectingRef.current = false
         reconnectAttemptsRef.current = 0
       }
@@ -71,7 +84,6 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
           
           // Notify parent about new message
           if (onRefreshMessageCount) {
-            // pass through the incoming data so parent can dedupe/count correctly
             onRefreshMessageCount(data)
           }
           
@@ -85,15 +97,24 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
       ws.onerror = (error) => {
         console.error('WriteUpdate WebSocket error:', error)
         isConnectingRef.current = false
+        // Attempt to reconnect on error if connection is not closed
+        if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
+          ws.close()
+        }
       }
 
       ws.onclose = (event) => {
+        console.log(`WriteUpdate WebSocket closed with code: ${event.code}, reason: ${event.reason}`)
         isConnectingRef.current = false
         socketRef.current = null
 
-        // Auto-reconnect logic
-        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        // Auto-reconnect logic (only for abnormal closure)
+        if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1
+          
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current)
+          }
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connectWebSocket()
@@ -105,6 +126,14 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
     } catch (error) {
       console.error('Failed to create WebSocket:', error)
       isConnectingRef.current = false
+      
+      // Retry connection after delay
+      if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        reconnectAttemptsRef.current += 1
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWebSocket()
+        }, reconnectInterval)
+      }
     }
   }, [taskID, user?.id, refetch, onRefreshMessageCount])
 
@@ -158,26 +187,27 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
         // Send WebSocket notification
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
           const wsMessage = {
-            TaskID: taskID, // CRITICAL: Include TaskID
+            TaskID: taskID,
             SenderID: user?.id,
             Message: value,
             ReceiverID: 0,
             timestamp: new Date().toISOString(),
             isUpdate: true,
-            // Add unique identifier to prevent duplicate counting
             uniqueId: `${taskID}_${Date.now()}_${Math.random()}`
           }
           
-          socketRef.current.send(JSON.stringify(wsMessage))
+          try {
+            socketRef.current.send(JSON.stringify(wsMessage))
+          } catch (sendError) {
+            console.error('Error sending WebSocket message:', sendError)
+          }
         } else {
-          console.warn('WebSocket is not connected yet.')
-          // Try to reconnect
+          console.warn('WebSocket is not connected. Attempting to reconnect...')
           connectWebSocket()
         }
 
         // Notify parent about the update
         if (onRefreshMessageCount) {
-          // We can pass the same message we just sent; parent will dedupe using uniqueId
           onRefreshMessageCount({
             ...updateRes?.data,
             TaskID: taskID,
@@ -188,7 +218,10 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
           })
         }
       }
-    } catch {}
+    } catch (error) {
+      console.error('Error sending update:', error)
+      toast.error('Failed to send update. Please try again.')
+    }
   }
 
   return (
@@ -227,7 +260,10 @@ const UpdateMessage = ({ message, refetch }: UpdateMessageProps) => {
     try {
       await likeTaskUpdate(message?.UpdateID?.toString())
       refetch()
-    } catch {}
+    } catch (error) {
+      console.error('Error liking update:', error)
+      toast.error('Failed to like update')
+    }
   }
 
   const onReplyClick = () => {
@@ -236,17 +272,22 @@ const UpdateMessage = ({ message, refetch }: UpdateMessageProps) => {
   }
 
   const onGiveReply = async (formData: FormType) => {
-    const finalBody = {
-      ...formData,
-      updateID: message?.UpdateID,
-      taskID: message?.TaskID
+    try {
+      const finalBody = {
+        ...formData,
+        updateID: message?.UpdateID,
+        taskID: message?.TaskID
+      }
+
+      await giveReplyToUpdate(finalBody)
+      refetch()
+      reset()
+      setGiveReply(false)
+      toast.success('Reply added successfully')
+    } catch (error) {
+      console.error('Error replying:', error)
+      toast.error('Failed to add reply')
     }
-
-
-    await giveReplyToUpdate(finalBody)
-    refetch()
-    reset()
-    setGiveReply(false)
   }
 
   return (
@@ -308,6 +349,7 @@ const UpdateMessage = ({ message, refetch }: UpdateMessageProps) => {
                     {...field}
                     size='small'
                     error={!!fieldState?.error}
+                    helperText={fieldState?.error?.message}
                     fullWidth
                     placeholder='Write your reply here'
                     InputProps={{
@@ -377,8 +419,22 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
   const reconnectInterval = 3000
 
   const connectWebSocket = useCallback(() => {
-    if (isConnectingRef.current || (socketRef.current && socketRef.current.readyState === WebSocket.OPEN)) {
+    // Prevent multiple connection attempts
+    if (isConnectingRef.current) {
+      console.log('WebSocket connection already in progress')
       return
+    }
+
+    // Check if socket is already open
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      console.log('WebSocket already connected')
+      return
+    }
+
+    // Close any existing connection
+    if (socketRef.current) {
+      socketRef.current.close()
+      socketRef.current = null
     }
 
     const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${taskData?.TaskID}&senderID=${user?.id}`
@@ -388,6 +444,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
+        console.log('ProjectUpdates WebSocket connected successfully')
         isConnectingRef.current = false
         reconnectAttemptsRef.current = 0
       }
@@ -410,19 +467,17 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
             return
           }
 
-          let data
+          let parsedData
           try {
-            data = JSON.parse(raw)
+            parsedData = JSON.parse(raw)
           } catch (err) {
             console.error('Error parsing WebSocket message JSON:', err)
             return
           }
 
-          
           // IMPORTANT: Notify parent about new message
-          // Pass the parsed data so parent can dedupe and increment appropriately
           if (onRefreshMessageCount) {
-            onRefreshMessageCount(data)
+            onRefreshMessageCount(parsedData)
           }
           
           // Refetch updates
@@ -436,17 +491,32 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       ws.onerror = (error) => {
         console.error('ProjectUpdates WebSocket error:', error)
         isConnectingRef.current = false
+        
+        // Attempt to close on error if not already closed
+        if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
+          ws.close()
+        }
       }
 
       ws.onclose = (event) => {
+        console.log(`ProjectUpdates WebSocket closed with code: ${event.code}, reason: ${event.reason}`)
         isConnectingRef.current = false
         socketRef.current = null
 
-        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        // Auto-reconnect only for abnormal closures
+        if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1
+          
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current)
+          }
+          
           reconnectTimeoutRef.current = setTimeout(() => {
+            console.log(`Attempting to reconnect WebSocket (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`)
             connectWebSocket()
           }, reconnectInterval)
+        } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+          console.warn('Max WebSocket reconnection attempts reached')
         }
       }
 
@@ -454,6 +524,14 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
     } catch (error) {
       console.error('Failed to create WebSocket:', error)
       isConnectingRef.current = false
+      
+      // Retry connection after delay
+      if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        reconnectAttemptsRef.current += 1
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWebSocket()
+        }, reconnectInterval)
+      }
     }
   }, [taskData?.TaskID, user?.id, refetch, onRefreshMessageCount])
 
@@ -464,7 +542,11 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
     }
 
     if (socketRef.current) {
-      socketRef.current.close(1000, 'Component unmounting')
+      try {
+        socketRef.current.close(1000, 'Component unmounting')
+      } catch (error) {
+        console.error('Error closing WebSocket:', error)
+      }
       socketRef.current = null
     }
 
@@ -474,9 +556,13 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
 
   // Connect WebSocket when component mounts
   useEffect(() => {
-    connectWebSocket()
+    // Wait a moment before connecting to ensure component is fully mounted
+    const timer = setTimeout(() => {
+      connectWebSocket()
+    }, 500)
 
     return () => {
+      clearTimeout(timer)
       disconnectWebSocket()
     }
   }, [connectWebSocket, disconnectWebSocket])
@@ -484,7 +570,6 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
   // Notify parent when data is loaded initially
   useEffect(() => {
     if (data && onRefreshMessageCount) {
-      // notify parent without payload (parent will just ensure WS active)
       onRefreshMessageCount()
     }
   }, [data, onRefreshMessageCount])

@@ -89,6 +89,8 @@ const CreateColumnMenu = ({
 
   const handleClose = () => {
     setAnchorEl(null)
+    reset()
+     setSelectedColumnType(null)
   }
 
   const handleTypeClose = () => setSelectedColumnType(null)
@@ -107,12 +109,15 @@ const CreateColumnMenu = ({
         refetch()
         handleClose()
         reset()
+              setSelectedColumnType(null)
+
       })
     }
 
     // Add logic here to add the new column
     await createColumn(body).then(() => {
       refetch()
+          setAnchorEl(null)
       handleClose()
       reset()
     })
