@@ -67,7 +67,7 @@ const ProjectFilterButton = () => {
     const fetchGroups = async () => {
       try {
         const response = await fetch(
-          `https://uat.ppmbackend.projectpulse360.com/GetBuggroupList?WorkspaceID=${selected?.WorkspaceID}`
+          `${process.env.NEXT_PUBLIC_API_URL1}/GetBuggroupList?WorkspaceID=${selected?.WorkspaceID}`
         )
         const groupsData: BugGroup[] = await response.json()
 
@@ -92,12 +92,12 @@ const ProjectFilterButton = () => {
       // Fetch dynamic columns for every group in parallel
       const requests = currentGroups.map(group =>
         fetch(
-          `https://uat.ppmbackend.projectpulse360.com/GetBugInfoList?GroupID=${group.bugGroupID}`
+          `${process.env.NEXT_PUBLIC_API_URL1}/GetBugInfoList?GroupID=${group.bugGroupID}`
         ).then(res => res.json())
       )
 
       const results = await Promise.all(requests)
-      console.log(results, 'dfdfd');
+
       
       // Merge all dynamic columns across all groups, deduplicate by additionalColumnID
       const mergedColumnsMap = new Map<number, DynamicColumn>()

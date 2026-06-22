@@ -167,12 +167,7 @@ const DynamicTableHeader = ({
         return;
       }
       
-      console.log('Deleting column with:', {
-        dynamicColumnId,
-        groupID,
-        WorkspaceID: selected?.WorkspaceID,
-        userID: user?.id
-      });
+     
       
       await axios.post(
         `${Baseurl}/RemoveBugDynamicColumn?WorkspaceID=${selected?.WorkspaceID}&GroupID=${groupID}&LoginuserID=${user?.id}&AdditionalColumnID=${dynamicColumnId}`

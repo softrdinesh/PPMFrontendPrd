@@ -83,7 +83,7 @@ const ForgotPassword = () => {
     setIsLoggingIn(true)
     await verifyEmail(data)
       .then(res => {
-        console.log('res :', res)
+      
 
         if (res?.status) {
           const encString = sign(

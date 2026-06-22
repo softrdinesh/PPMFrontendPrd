@@ -24,7 +24,7 @@ const DeleteTasksComponent = ({
   setSelectedRows
 }: DeleteTasksComponentProps) => {
   const [deleteOpen, setDeleteOpen] = useState(false)
-console.log(selectedRows,sprintlist,'selectedRows')
+
   // ** Memos
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 

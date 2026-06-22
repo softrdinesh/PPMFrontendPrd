@@ -121,10 +121,13 @@ const SubTable = ({ taskRow, taskGroupData, canEdit }: SubTableProps) => {
             },
             cell: ({ getValue, row: { index, original: row }, column: { id }, table }) => {
               const value = filterDynamicValue(i?.AdditionalColumnID, row?.additionalValues ?? [])
+              
+              // Safely handle null/undefined values
+              const safeValue = getValue() ?? ''
 
               return (
                 <DynamicColumnCell
-                  getValue={getValue}
+                  getValue={() => safeValue}
                   columnItem={i}
                   index={index}
                   row={{ ...row, TaskGroupID: taskGroupData?.taskGroupID, TaskID: row?.TaskMasterID }}
@@ -194,7 +197,17 @@ const SubTable = ({ taskRow, taskGroupData, canEdit }: SubTableProps) => {
         size: 200,
         maxSize: 200,
         cell: ({ getValue, row: { index }, column: { id }, table }) => {
-          return <TaskEffortCell canEdit={canEdit} getValue={getValue} index={index} id={id} table={table} />
+          // Safely handle null/undefined values by converting to empty string or 0
+          const safeValue = getValue() ?? ''
+          return (
+            <TaskEffortCell 
+              canEdit={canEdit} 
+              getValue={() => safeValue} 
+              index={index} 
+              id={id} 
+              table={table} 
+            />
+          )
         },
         header: () => (
           <Typography variant='body2' fontWeight={800}>
@@ -254,7 +267,7 @@ const SubTable = ({ taskRow, taskGroupData, canEdit }: SubTableProps) => {
             if (columnId === 'effort') {
               body.Effort = value
               body.Title = 'Sub-task Effort changed'
-              body.PreviousState = subTaskList?.[rowIndex]?.Effort
+              body.PreviousState = subTaskList?.[rowIndex]?.Effort ?? ''
               body.NewState = value
             }
 

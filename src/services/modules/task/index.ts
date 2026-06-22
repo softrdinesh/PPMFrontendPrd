@@ -35,7 +35,6 @@ export const updateTasks = async ({ id, body }: { id: string; body: any }) => {
 }
 
 export const addTasks = async (body: any) => {
-  console.log('body :', body)
 
   return callApi({ uriEndPoint: tasks.add, body })
     .then(res => {

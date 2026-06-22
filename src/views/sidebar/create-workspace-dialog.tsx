@@ -34,7 +34,7 @@ type CreateWorkspaceDialogProps = {
 
 const defaultValues: FormType = {
   workspaceName: '',
-  organizationID: 3 // TODO:: parse dynamic value
+  organizationID: '' // TODO:: parse dynamic value
 }
 
 const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: CreateWorkspaceDialogProps) => {
@@ -66,9 +66,15 @@ const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: Create
   } = useForm<FormType>({ defaultValues })
 
   const onSubmit = async (values: FormType) => {
-    console.log(values, 'value')
+
     if (profile === 'projects') {
-      await addWorkspace(values)
+const body =
+{
+  workspaceName:values.workspaceName,
+   organizationID: user?.userData.OrganizationID
+}
+
+      await addWorkspace(body)
     } else {
       const body = {
         Workspacename: values.workspaceName,
@@ -172,7 +178,7 @@ const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: Create
 
   // const checkPaymentStatus = () => {
   //   const paymentStatus = localStorage.getItem('paymentStatus')
-  //   console.log(paymentStatus, 'payment status')
+
 
   //   try {
   //     if (paymentStatus) {
@@ -404,7 +410,6 @@ const CreateWorkspaceDialog = ({ open, onCloseModal, refetchWorkspaces }: Create
 //             const canOpen = checkPaymentStatus()
 //             setShouldOpenDialog(canOpen)
 //             setShowPaymentExpiredDialog(true)
-//             console.log('Failed payment confirmation result:', res)
 //           })
 //           .catch(err => {
 //             console.error('Error updating failed payment confirmation:', err)

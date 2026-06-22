@@ -53,7 +53,7 @@ const { profile,user } = useAuth()
 //       }
 
 //       if (isSubTask) {
-//         console.log('called')
+//     
 //         const subRowData = rowData as AdditionalSubTaskListItem
 //      const taskRowData = rowData as TaskListItemType
 //         body.TaskID = subRowData?.TaskMasterID
@@ -61,7 +61,7 @@ const { profile,user } = useAuth()
 //    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
 // const response = await axios.post(`${BASE_URL}/UpdateDyanmicDateSubtask?TaskID=${taskRowData?.TaskID?.toString()}&LoginuserID=${user?.id}&Subtaskid=${subRowData?.SubTaskID?.toString()}&IsRemove=0&AdditionalColumnID=${columnData?.AdditionalColumnID}&DateValue=${moment(selectedDate).format('LLL')}`).then((res)=>{
-//   console.log(res.data)
+
 //    refetch()
 //        handleClose()
 // })
@@ -71,7 +71,7 @@ const { profile,user } = useAuth()
 //         // }
 //       } else {
 //         const taskRowData = rowData as TaskListItemType
-//         console.log('called')
+
 //         const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
 
 //         if (response) {

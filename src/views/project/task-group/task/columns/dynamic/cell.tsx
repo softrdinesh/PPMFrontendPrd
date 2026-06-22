@@ -29,7 +29,7 @@ const DynamicColumnCell = (props: DynamicColumnCellProps) => {
   const { getValue, index, row, id, table, columnItem, value, refetch, isSubTask = false } = props
 
   const getColumnTypeName = useMemo(() => columnItem?.ColumnType.Keyname, [columnItem?.ColumnType.Keyname])
-console.log(value,'props')
+
   // ** "DATE" TYPE COLUMN
   if (getColumnTypeName === 'DPK')
     return <DynamicDate canEdit={true} isSubTask={isSubTask} refetch={refetch} rowData={row} dynamicValue={value} columnData={columnItem} />

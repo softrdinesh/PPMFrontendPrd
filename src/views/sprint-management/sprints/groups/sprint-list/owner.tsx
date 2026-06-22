@@ -185,7 +185,6 @@ const TaskPeople = ({
         )
         
         if (response) {
-          console.log('Dynamic value inserted:', response.data)
           toast.success('User assigned successfully')
           refetch()
           handleClose()
@@ -240,7 +239,6 @@ const TaskPeople = ({
       )
       
       if (response.data) {
-        console.log(response.data)
         toast.success('User removed successfully')
         refetch()
         if (userListAnchor) {

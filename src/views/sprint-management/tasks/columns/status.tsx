@@ -111,7 +111,7 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
-    console.log(response.data)
+
     return response.data;
   } catch (error) {
     console.error('Error fetching status lookup list:', error);
@@ -344,7 +344,6 @@ const StatusMenuItem = ({
           });
         } else if (item?.StatusID === 0) {
           // Handle "None" option - this would clear the status
-          console.log('None option selected - status cleared');
         }
 
         refetch();

@@ -34,7 +34,7 @@ const GroupItem = ({ sg }: { sg: SprintGroupItem }) => {
   //   queryFn: () => fetchSprintGroups(sg.WorkspaceID),
   //   enabled: !!sg.WorkspaceID
   // })
-  // console.log(groupsData,'groupsData')
+
 
   
 const handleDelete = async () => {

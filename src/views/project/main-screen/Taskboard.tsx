@@ -880,7 +880,7 @@ const projectTaskID = formData.projectTask || '0';
               }}
             >
               {/* Priority */}
-              {/* <FormControl fullWidth>
+              <FormControl fullWidth>
                 <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
                   Priority <span style={{ color: 'red' }}>*</span>
                   <IconButton
@@ -915,7 +915,28 @@ const projectTaskID = formData.projectTask || '0';
                     if (!selected) {
                       return <span style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Select Priority</span>;
                     }
-                    const priority = priorities.find(p => p.id === selected);
+                    
+                    // Find the selected priority from the priorities array
+                    const selectedPriority = priorities.find(p => p.id === selected);
+                    
+                    // If priority is found, show the color and name
+                    if (selectedPriority) {
+                      return (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: selectedPriority.colorCode,
+                            }}
+                          />
+                          <span>{selectedPriority.name}</span>
+                        </Box>
+                      );
+                    }
+                    
+                    // Fallback: show the selected value if priority not found
                     return (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box
@@ -923,10 +944,10 @@ const projectTaskID = formData.projectTask || '0';
                             width: 12,
                             height: 12,
                             borderRadius: '50%',
-                            backgroundColor: priority?.colorCode || '#FF9800',
+                            backgroundColor: '#FF9800', // Default color
                           }}
                         />
-                        <span>{priority?.name || getPriorityName(selected)}</span>
+                        <span>{selected}</span>
                       </Box>
                     );
                   }}
@@ -983,133 +1004,7 @@ const projectTaskID = formData.projectTask || '0';
                     {errors?.priority}
                   </Typography>
                 )}
-              </FormControl> */}
-{/* Priority */}
-<FormControl fullWidth>
-  <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
-    Priority <span style={{ color: 'red' }}>*</span>
-    <IconButton
-      id="priority-button"
-      size="small"
-      onClick={handlePriorityIconClick}
-      sx={{
-        padding: 0,
-        marginLeft: 1,
-        '&:hover': {
-          backgroundColor: 'transparent',
-        },
-      }}
-    >
-      <Icon icon="mdi:plus-circle" fontSize={16} />
-    </IconButton>
-  </Typography>
-  <Select
-    value={formData.priority}
-    onChange={(e) => {
-      setFormData({
-        ...formData,
-        priority: e.target.value,
-      });
-      if (errors.priority) {
-        setErrors({ ...errors, priority: undefined });
-      }
-    }}
-    error={Boolean(errors?.priority)}
-    fullWidth
-    renderValue={(selected) => {
-      if (!selected) {
-        return <span style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Select Priority</span>;
-      }
-      
-      // Find the selected priority from the priorities array
-      const selectedPriority = priorities.find(p => p.id === selected);
-      
-      // If priority is found, show the color and name
-      if (selectedPriority) {
-        return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                backgroundColor: selectedPriority.colorCode,
-              }}
-            />
-            <span>{selectedPriority.name}</span>
-          </Box>
-        );
-      }
-      
-      // Fallback: show the selected value if priority not found
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: '#FF9800', // Default color
-            }}
-          />
-          <span>{selected}</span>
-        </Box>
-      );
-    }}
-  >
-    <MenuItem value="" disabled>
-      Select Priority
-    </MenuItem>
-    {priorities.map((priority) => (
-      <MenuItem 
-        key={priority.id} 
-        value={priority.id}
-        onContextMenu={(e) => handleContextMenuOpen(e, priority)}
-        sx={{
-          '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)',
-          },
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: priority.colorCode,
-            }}
-          />
-          <span>{priority.name}</span>
-        </Box>
-        <IconButton
-          size="small"
-          onClick={(e) => handleContextMenuOpen(e, priority)}
-          sx={{
-            padding: '4px',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.08)',
-            },
-          }}
-        >
-          <Icon icon="mdi:dots-vertical" fontSize={16} />
-        </IconButton>
-      </MenuItem>
-    ))}
-  </Select>
-  {Boolean(errors?.priority) && (
-    <Typography
-      sx={{
-        color: 'error.main',
-        fontSize: '0.75rem',
-        marginTop: '3px',
-        marginLeft: '14px',
-      }}
-    >
-      {errors?.priority}
-    </Typography>
-  )}
-</FormControl>
+              </FormControl>
               {/* Category Dropdown */}
               <FormControl fullWidth>
                 <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
@@ -1172,7 +1067,7 @@ const projectTaskID = formData.projectTask || '0';
                       </MenuItem>
                     ))
                   ) : (
-                    <MenuItem value="" disabled>
+                    <MenuItem key="no-categories" value="" disabled>
                       No categories available
                     </MenuItem>
                   )}
@@ -1190,53 +1085,53 @@ const projectTaskID = formData.projectTask || '0';
                   </Typography>
                 )}
               </FormControl>
-{/* Project Tasks Dropdown - NEW */}
-<FormControl fullWidth>
-  <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
-    Project Task
-  </Typography>
-  <Select
-    value={formData.projectTask}
-    onChange={(e) => {
-      setFormData({
-        ...formData,
-        projectTask: e.target.value,
-      });
-    }}
-    fullWidth
-    renderValue={(selected) => {
-      if (!selected) {
-        return <span style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Select Project Task</span>;
-      }
-      const task = projectTasks.find(t => t.taskID.toString() === selected);
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <span>{task?.taskname || selected}</span>
-        </Box>
-      );
-    }}
-  >
-    <MenuItem value="">
-      <em>None</em>
-    </MenuItem>
-    {projectTasks.length > 0 ? (
-      projectTasks.map((task) => (
-        <MenuItem 
-          key={task.taskID} 
-          value={task.taskID.toString()}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-            <span>{task.taskname}</span>
-          </Box>
-        </MenuItem>
-      ))
-    ) : (
-      <MenuItem value="" disabled>
-        No project tasks available
-      </MenuItem>
-    )}
-  </Select>
-</FormControl>
+              {/* Project Tasks Dropdown - NEW */}
+              <FormControl fullWidth>
+                <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
+                  Project Task
+                </Typography>
+                <Select
+                  value={formData.projectTask}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      projectTask: e.target.value,
+                    });
+                  }}
+                  fullWidth
+                  renderValue={(selected) => {
+                    if (!selected) {
+                      return <span style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Select Project Task</span>;
+                    }
+                    const task = projectTasks.find(t => t.taskID.toString() === selected);
+                    return (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <span>{task?.taskname || selected}</span>
+                      </Box>
+                    );
+                  }}
+                >
+                  <MenuItem key="none" value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {projectTasks.length > 0 ? (
+                    projectTasks.map((task) => (
+                      <MenuItem 
+                        key={task.taskID} 
+                        value={task.taskID.toString()}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                          <span>{task.taskname}</span>
+                        </Box>
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem key="no-tasks" value="" disabled>
+                      No project tasks available
+                    </MenuItem>
+                  )}
+                </Select>
+              </FormControl>
               {/* Assignee */}
               <FormControl fullWidth>
                 <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
@@ -1263,11 +1158,11 @@ const projectTaskID = formData.projectTask || '0';
                       {member}
                     </MenuItem>
                   ))} */}
-                  {teamMembers.map((member) => (
-    <MenuItem key={member.value} value={member.value}>
-      {member.label}
-    </MenuItem>
-  ))}
+                  {teamMembers.map((member, index) => (
+                    <MenuItem key={member.value || member.id || index} value={member.value}>
+                      {member.label}
+                    </MenuItem>
+                  ))}
                 </Select>
                 {Boolean(errors?.assignee) && (
                   <Typography
@@ -1346,7 +1241,7 @@ const projectTaskID = formData.projectTask || '0';
 
               {/* Selected Image Preview */}
               {selectedImage && (
-                <Box sx={{ marginBottom: 2 }}>
+                <Box key="image-preview" sx={{ marginBottom: 2 }}>
                   <Typography variant="subtitle2" sx={{ marginBottom: 1 }}>
                     Image Preview
                   </Typography>
@@ -1408,7 +1303,7 @@ const projectTaskID = formData.projectTask || '0';
 
               {/* Selected File Info */}
               {selectedFile && !selectedImage && (
-                <Box sx={{ marginBottom: 2 }}>
+                <Box key="file-preview" sx={{ marginBottom: 2 }}>
                   <Typography variant="subtitle2" sx={{ marginBottom: 1 }}>
                     Selected File
                   </Typography>
@@ -1670,11 +1565,11 @@ const projectTaskID = formData.projectTask || '0';
         }}
       >
         <Box sx={{ padding: 1 }}>
-          <MenuItem onClick={handleEditPriority}>
+          <MenuItem onClick={handleEditPriority} key="edit-priority">
             <Icon icon="mdi:pencil" fontSize={16} style={{ marginRight: 8 }} />
             Edit
           </MenuItem>
-          <MenuItem onClick={handleDeleteClick}>
+          <MenuItem onClick={handleDeleteClick} key="delete-priority">
             <Icon icon="mdi:delete" fontSize={16} style={{ marginRight: 8 }} />
             Delete
           </MenuItem>
@@ -1698,7 +1593,7 @@ const projectTaskID = formData.projectTask || '0';
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteDialogClose} disabled={isDeletingPriority}>
+          <Button onClick={handleDeleteDialogClose} disabled={isDeletingPriority} key="cancel-delete">
             Cancel
           </Button>
           <Button 
@@ -1707,6 +1602,7 @@ const projectTaskID = formData.projectTask || '0';
             color="error"
             disabled={isDeletingPriority}
             startIcon={isDeletingPriority ? <CircularProgress size={16} color="inherit" /> : null}
+            key="confirm-delete"
           >
             {isDeletingPriority ? 'Deleting...' : 'Delete'}
           </Button>

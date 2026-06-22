@@ -119,7 +119,7 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
       
   //    if (localStorageData) {
   //       const parsedData = JSON.parse(localStorageData)
-  //       console.log(parsedData)
+  
   //   if (parsedData?.workspaceCount == 1 && workspaceLength >= 1) {
   //         setShowPaymentExpiredDialog(true)
   //      } else {

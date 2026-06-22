@@ -90,15 +90,11 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
   })
 
   const onSubmit = async (values: FormField) => {
-<<<<<<<< HEAD:src/views/project/main-screen/invite-member-dialog.tsx
-    const body = { ...values, projectID, workspaceID: selected?.WorkspaceID, IsOpen }
 
-========
   
     const body = { ...values, projectID, workspaceID: selected?.WorkspaceID, IsOpen }
 
 
->>>>>>>> origin/sprintmodule:src/views/bug-queue/main-screen/invite-member-dialog.tsx
     try {
       await inviteMember(body)
       handleClose()

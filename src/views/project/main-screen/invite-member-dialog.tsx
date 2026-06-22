@@ -74,7 +74,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
         const parsedData = JSON.parse(userData);
         
  
-        const userId = parsedData.userData.UserID;
+        const userId = parsedData?.userData?.UserID;
         setUserId(userId);
         
 
@@ -119,7 +119,7 @@ const body ={
   workspaceid:Number(selected?.WorkspaceID),
   roleID: values.invitations[0].roleID,
   projectID:Number(projectID),
-  isMultiple: true
+  isMultiple: false
 }
 
     try {

@@ -30,7 +30,7 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   const timerStartTimeRef = useRef<number | null>(null)
   const [overtimeSeconds, setOvertimeSeconds] = useState<number>(0)
   const [isOvertime, setIsOvertime] = useState<boolean>(false)
-console.log(bug,'bhfff');
+
   const form = useForm<FormType>({ defaultValues: { TimeResolution: null } })
 
   const handleOpen = (e: any) => {

@@ -124,7 +124,7 @@ const fetchPriorityLookupList = async (taskID: number, groupID: number, loginuse
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetPriorityList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
-    console.log(response.data)
+
     return response.data;
   } catch (error) {
     console.error('Error fetching priority lookup list:', error);
@@ -408,7 +408,7 @@ const PriorityMenuItem = ({
       }
     }
   }
-  console.log(row,'roww')
+
   
   return (
     <Grid size={12}>

@@ -37,11 +37,12 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupIte
   const [showCard, setShowCard] = useState(false)
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const { user } = useAuth()
-  
+  console.log(group,'gr');
   const bugQueueGroupRef = useRef<BugQueueGroupRef>(null)
   const handleBugGroupCreated = () => {
     bugQueueGroupRef.current?.refetchGroups()
   }
+  console.log(selectedRows,'selectedRows');
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
   const [deleteOpen, setDeleteOpen] = useState(false)
   const toggleCollapse = () => setCollapse(!collapse)
@@ -150,6 +151,23 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupIte
     }
   }
 
+  // ✅ FIXED: Extract bugIDs from selectedRows based on the API response structure
+  // The API returns an array where detailList contains the bug objects
+  const selectedBugIDs = useMemo(() => 
+    Object.values(selectedRows).map((row: any) => {
+      // Handle different possible row structures
+      if (row && row.bugID) {
+        return row.bugID
+      } else if (row && row.detailList && Array.isArray(row.detailList)) {
+        // If row has detailList array, extract bugIDs from it
+        return row.detailList.map((bug: any) => bug.bugID)
+      }
+      return null
+    }).flat().filter(Boolean), // flatten the array and remove falsy values
+  [selectedRows])
+
+  console.log(selectedBugIDs,'selectedBugIDs');
+
   return (
     <Card className='rounded-lg'>
       <div className='py-2 px-3 flex items-center gap-2 justify-between'>
@@ -201,7 +219,15 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupIte
             bugGroupID={group.bugGroupID}
           />
 
-          <DeleteBugsComponent showCard={showCard} selectedRows={selectedRows} setSelectedRows={setSelectedRows} />
+          {/* ✅ Pass selectedBugIDs to DeleteBugsComponent */}
+          <DeleteBugsComponent 
+            groupid={group.bugGroupID} 
+            workspaceid={workspaceID} 
+            showCard={showCard} 
+            selectedRows={selectedRows} 
+            setSelectedRows={setSelectedRows}
+            selectedBugIDs={selectedBugIDs}
+          />
         </CardContent>
       </Collapse>
 

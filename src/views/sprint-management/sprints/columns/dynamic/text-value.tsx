@@ -41,7 +41,7 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
 
     try {
       const response = await axios.post(apiUrl);
-      console.log('API call successful:', response.data);
+      
       // Show success toaster
       toast.success('Value updated successfully');
     } catch (error) {

@@ -2081,7 +2081,6 @@ useEffect(() => {
         
         if (error.response) {
           errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
-          console.log('Error response:', error.response.data);
         } else if (error.request) {
           errorMessage = 'Network error: No response from server';
         } else {

@@ -475,7 +475,7 @@ const BugGroupTable = ({
   const [adding, setAdding] = useState(false)
   const [addColumnAnchor, setAddColumnAnchor] = useState<any>(null)
   const [showSprintSelector, setShowSprintSelector] = useState(false)
-console.log(groupData,'dd');
+
   // useRef stores the sprintTaskID chosen from the dialog so it is always
   // available inside handler closures without stale-closure issues.
   // It is seeded on mount/groupData change from existing bugs in this group.
@@ -508,7 +508,7 @@ console.log(groupData,'dd');
   const handleUpdateBugName = async (bugId: string | number, updatedBugName: string) => {
     try {
       const currentBug = groupData.find((bug: any) => bug.BugID === bugId)
-      console.log(currentBug,'rrr');
+      
       if (!currentBug) return
       if (currentBug.BugName === updatedBugName) return
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL1}/UpdateBugQueue`, null, {
@@ -594,7 +594,7 @@ console.log(groupData,'dd');
   const handleUpdateReporter = async (bugId: string | number, reporter: { UserID: number; Name: string; Email: string; ProfilePicture?: string } | null) => {
     try {
       const currentBug = groupData.find((bug: any) => bug.bugID == bugId)
-      console.log(currentBug,'ddd');
+     
       // if (!currentBug) return
       
       const reporterId = reporter ? reporter.UserID : 0
@@ -757,7 +757,7 @@ console.log(groupData,'dd');
           ) => {
             const bugId = original?.BugID?.toString()
             if (!bugId) return
-            console.log('clledbhh');
+         
             await handleUpdateReporter(bugId, newReporter)
           }
           return (

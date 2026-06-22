@@ -49,7 +49,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const [anchorEl, setAnchorEl] = useState(null)
   const [createMenu, setCreateMenu] = useState(false)
   const { user } = useAuth();
-
+console.log(rowData,'dd');
   // Find the specific column data from dynamicValue array
   const currentColumnData = useMemo(() => {
     if (!dynamicValue || !columnData) return null;
@@ -65,9 +65,9 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   // API function for fetching sprint dropdown values - inside component
   const fetchSprintDropdownValues = async (taskGroupID: string, taskID: string): Promise<SprintDropdownResponse[]> => {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL1}/BugGetDynamicDropdownvaluelist?GroupID=${34}&BugID=${rowData?.BugID}`
+      `${process.env.NEXT_PUBLIC_API_URL1}/BugGetDynamicDropdownvaluelist?GroupID=${rowData?.groupID}&BugID=${rowData?.BugID}`
     );
-    console.log(response.data);
+
     return response.data;
   };
 
@@ -79,7 +79,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     const DynamicValue = newValue;
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1;
 
-    const apiUrl = `${BASE_URL}/BugCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${34}&BugID=${rowData?.BugID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
+    const apiUrl = `${BASE_URL}/BugCreateDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${rowData?.groupID}&BugID=${rowData?.BugID}&Dynamicvalue=${encodeURIComponent(DynamicValue)}`;
 
     try {
       const response = await axios.post(apiUrl);
@@ -100,12 +100,12 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
 
   // Query for fetching sprint dropdown values
   const { data: sprintDropdownValues, refetch: refetchSprintValues } = useQuery({
-    queryKey: ['sprint-dropdown-values', 34, rowData?.BugID],
+    queryKey: ['sprint-dropdown-values', rowData?.groupID, rowData?.BugID],
     queryFn: () => fetchSprintDropdownValues(
-      34,
+      rowData?.groupID,
       rowData?.BugID?.toString() || ''
     ),
-    enabled: !!(34 && rowData?.BugID)
+    enabled: !!(rowData?.groupID && rowData?.BugID)
   });
 
   // Transform sprint dropdown values to match the expected format
@@ -158,7 +158,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       const LoginuserID = user?.id;
       const SprintID = rowData?.taskID;
       const SprintGroupID = rowData?.taskGroupID;
-      const DynamicValue = item?.Dynamic_ddl_ID;
+      const DynamicValue = item?.Valuetxt;
       
       const apiUrl = `${BASE_URL}/InsertBugDynamicValues?DynamicColumnID=${DynamicColumnID}&LoginuserID=${LoginuserID}&BugID=${rowData?.BugID}&GroupID=${rowData?.groupID}&DynamicValue=${DynamicValue}`;
       
@@ -186,7 +186,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       const groupid = rowData?.taskGroupID;
       
       // Construct the URL with all required parameters
-      const apiUrl = `${BASE_URL}/SprintTaskRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${groupid}&TaskID=${taskid}&DynamicDropdownValueID=${id}`;
+      const apiUrl = `${BASE_URL}/BugRemoveDynamicDropdownValues?AdditionalColID=${DynamicColumnID}&LoginUserID=${LoginuserID}&GroupID=${rowData?.groupID}&BugID=${rowData?.BugID}&DynamicDropdownValueID=${id}`;
       
       // Use DELETE method instead of GET (adjust based on API requirement)
       const response = await axios.post(apiUrl, {

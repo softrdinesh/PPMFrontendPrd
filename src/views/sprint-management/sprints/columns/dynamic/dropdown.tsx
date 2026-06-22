@@ -111,7 +111,6 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   // Transform sprint dropdown values to match the expected format
   const transformedSprintValues = useMemo(() => {
     if (!sprintDropdownValues) return [];
-    // console.log(sprintDropdownValues,'sprintDropdownValues')
     return sprintDropdownValues.map(item => ({
       Dynamic_ddl_ID: item.dynamicDropdownValueID,
       Valuetxt: item.valuetxt

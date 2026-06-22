@@ -309,7 +309,6 @@ const StatusMenuItem = ({
   bugId // Add this
 }: StatusMenuItemProps) => {
   const { profile, user } = useAuth()
-console.log(row,'rowww');
   const generateTextColor = (colorCode: string): string => {
     if (!colorCode) return ''
 
@@ -578,7 +577,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
   const { selected } = useWorkspace()
-console.log(row,'rowww');
+
   // ✅ FIXED: Use GetBugStatusList API with WorkspaceID from props
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
     queryKey: ['bug-status-list', selected?.WorkspaceID],
@@ -810,8 +809,7 @@ console.log(row,'rowww');
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
-console.log(statusName,'statusName');
-console.log(colorCode,'colorCode');
+
   // Get bug ID from row for BugList
   const bugId = (row as any)?.BugID || (row as any)?.bugID;
 

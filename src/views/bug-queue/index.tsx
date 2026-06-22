@@ -33,7 +33,7 @@ import ProjectFilterButton from './main-screen/filters'
 // ── fetch bug groups ────────────────────────────────────────────────────────
 const fetchBugGroupList = async (workspaceID: string) => {
   const res = await fetch(
-    `https://uat.ppmbackend.projectpulse360.com/GetBuggroupList?WorkspaceID=${workspaceID}`
+    `${process.env.NEXT_PUBLIC_API_URL1}/GetBuggroupList?WorkspaceID=${workspaceID}`
   )
   if (!res.ok) throw new Error('Failed to fetch bug groups')
   return res.json() as Promise<{ bugGroupID: number; groupname: string }[]>

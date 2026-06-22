@@ -9,8 +9,9 @@ export const routes = {
   dashboard: '/dashboard',
   project: '/project',
   invite: '/invite/',
-  boards:'/boards',
-
+  boards:'/Boards',
+ view:'/view',
+ superadmin:'/super-admin',
   // ** Sprints
   workspace: '/workspace/',
   workspaceItem: (id: string, item: string) => `/workspace/${id}/${item}`,

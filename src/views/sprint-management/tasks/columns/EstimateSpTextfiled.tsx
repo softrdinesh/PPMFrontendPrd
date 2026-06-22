@@ -14,7 +14,7 @@ export const EstimateSpTextfiled = ({ table, getValue, index, id, canEdit = true
   const initialValue = getValue()
   const [value, setValue] = useState(initialValue || '')
   const maxLength = 2000
-console.log(initialValue,'value')
+
   const onBlur = () => {
     table.options.meta?.updateData(index, id, value)
   }

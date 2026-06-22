@@ -52,7 +52,6 @@ const SprintFilterButton = () => {
   const [loading, setLoading] = useState(false)
   const { profile, user } = useAuth()
   // Fetch dynamic columns from API
-  console.log(columnVisibility,visibleColumns,dynamicColumns,'columnVisibility')
   useEffect(() => {
     fetchDynamicColumns()
 

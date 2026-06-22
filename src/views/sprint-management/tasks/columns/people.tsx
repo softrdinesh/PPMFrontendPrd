@@ -175,7 +175,6 @@ const TaskPeople = ({
         )
         
         if (response) {
-          console.log('Dynamic value inserted:', response.data)
           toast.success('User assigned successfully')
           refetch()
           handleClose()
@@ -212,7 +211,7 @@ const TaskPeople = ({
 
   // people remove
   const handleremove = async (item: any) => {
-    console.log(item?.User?.UserID)
+   
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL1
 
     try {
@@ -224,7 +223,7 @@ const TaskPeople = ({
              }`
         )
         .then(res => {
-          console.log(res.data)
+       
           toast.success('User removed successfully')
           refetch()
           handleClose()

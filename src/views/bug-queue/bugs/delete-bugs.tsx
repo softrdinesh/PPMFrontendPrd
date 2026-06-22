@@ -11,19 +11,26 @@ import { deleteBugApi } from '@/services/modules/bug-queue'
 interface DeleteBugsComponentProps {
   showCard: boolean
   selectedRows: any[]
+  groupid: any
+  workspaceid:any
   setSelectedRows: (value: any) => void
 }
 
-const DeleteBugsComponent = ({ showCard, selectedRows, setSelectedRows }: DeleteBugsComponentProps) => {
+const DeleteBugsComponent = ({ showCard, groupid,workspaceid, selectedRows, setSelectedRows }: DeleteBugsComponentProps) => {
   const [deleteOpen, setDeleteOpen] = useState(false)
+  console.log(groupid,workspaceid, 'values');
 
   const { data, refetch } = useBugQueue()
+  console.log(selectedRows, 'selectedRows');
 
   // ** Memos
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
+  console.log(showSelected, 'showSelected');
 
   const handleDelete = async () => {
-    const finalArray = data?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))?.map(t => t?.BugID)
+    // Use values directly as it contains all the selected bug objects with their full data
+    const finalArray = values?.map((bug: any) => bug?.BugID) || 
+      data?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))?.map(t => t?.BugID)
 
     await deleteBugApi(finalArray)
     await refetch()
@@ -40,7 +47,7 @@ const DeleteBugsComponent = ({ showCard, selectedRows, setSelectedRows }: Delete
         }}
       >
         <div className='m-2 p-2 flex gap-5 items-center'>
-          <Typography fontWeight={600}>{`${Object?.keys(selectedRows)?.length} entries  selected`}</Typography>
+          <Typography fontWeight={600}>{`${Object?.keys(selectedRows)?.length} entries selected`}</Typography>
           <CustomButton
             variant='contained'
             size='small'
@@ -65,7 +72,7 @@ const DeleteBugsComponent = ({ showCard, selectedRows, setSelectedRows }: Delete
       <DeleteDialog
         open={deleteOpen}
         setOpen={val => setDeleteOpen(!!val)}
-        description={`All selected rows will be permenantly deleted! You cannot revert once deleted.`}
+        description={`All selected rows will be permanently deleted! You cannot revert once deleted.`}
         onConfirm={handleDelete}
       />
     </Grid2>

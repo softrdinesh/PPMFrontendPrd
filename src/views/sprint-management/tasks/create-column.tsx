@@ -124,7 +124,7 @@ const CreateColumnMenu = ({
   }
 
   const fetchSprintDynamicColumns = async () => {
-    const response = await axios.get('https://uat.ppmbackend.projectpulse360.com/GetSprintDynamiccolumnLlist', {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintDynamiccolumnLlist`, {
       params: {
         LoginuserID: user?.id,
         WorkspaceID: spintid

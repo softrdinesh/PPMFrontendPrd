@@ -131,7 +131,7 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
       // ✅ Use activeColumn instead of selectedColumn (selectedColumn is null after menu closes)
       const dynamicColumnId = activeColumn?.additionalColumnID?.toString();
-      console.log(dynamicColumnId,'dynamicColumnId')
+
       
       if (!dynamicColumnId) {
         toast.error('Column ID not found');

@@ -130,7 +130,7 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetStatusList?TaskID=${taskID}&GroupID=${groupID}&LoginuserID=${loginuserID}`,
     )
-    console.log(response.data,'dfere')
+
     return response.data;
   } catch (error) {
     console.error('Error fetching status lookup list:', error);

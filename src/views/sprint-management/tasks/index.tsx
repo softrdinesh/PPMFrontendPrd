@@ -26,7 +26,7 @@ const SprintTaskManagementContent = ({ workspaceID }: { workspaceID: string }) =
   const [showTaskDropdown, setShowTaskDropdown] = useState<boolean>(false) // New state for task dropdown
   const inputRef = useRef<HTMLInputElement>(null)
   const taskInputRef = useRef<HTMLInputElement>(null)
-console.log(workspaceID,'workspaceID')
+
   const [groupid, setgroupid] = useState('')
 
   const { data: sprintListData = [], refetch: refetchSprints, isLoading: isLoadingSprints } = useQuery({
@@ -34,7 +34,6 @@ console.log(workspaceID,'workspaceID')
     queryFn: () => fetchSprintTaskList({sprintID: groupid}),
     enabled: !!groupid
   })
-  console.log(sprintListData,'sprintListData')
 
   const sprintDataArray = sprintListData && sprintListData.data ? sprintListData.data : []
 
