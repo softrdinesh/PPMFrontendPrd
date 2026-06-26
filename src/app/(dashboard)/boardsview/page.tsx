@@ -1,5 +1,5 @@
 
-import YourFeatureView from '@/views/boards/BoardsView'
+import YourFeatureView from '@/views/bordsview/BoardsView'
 export default function BoardsPage() {
   return <YourFeatureView />
 }

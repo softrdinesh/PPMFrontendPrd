@@ -640,7 +640,7 @@ const TaskDetailsDialog = ({
   );
 };
 
-const YourFeaturePage = () => {
+const BoardsView = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'))
@@ -3556,4 +3556,4 @@ useEffect(() => {
   )
 }
 
-export default YourFeaturePage
+export default BoardsView
