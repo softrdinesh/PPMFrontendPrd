@@ -366,7 +366,7 @@ const LoginV2 = () => {
                   <Button fullWidth variant='contained' type='submit' disabled={isSubmitting}>
                     {isSubmitting ? <CircularProgress size={22} color='secondary' /> : 'LOGIN'}
                   </Button>
-                  <Divider className='gap-3 text-textPrimary'>or</Divider>
+                  {/* <Divider className='gap-3 text-textPrimary'>or</Divider>
                   <div className='flex justify-center items-center gap-2'>
                     <Button
                       onClick={handleGoogleSignin}
@@ -382,7 +382,7 @@ const LoginV2 = () => {
                     >
                       {isGoogleLoading ? 'Redirecting to Google...' : 'Sign in with Google'}
                     </Button>
-                  </div>
+                  </div> */}
                 </form>
                 {!mdEndpoint && (
                   <Box
