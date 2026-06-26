@@ -229,8 +229,8 @@ const SprintList = ({
     }
 
     return allColumns.filter(column => {
-      const accessorKey = column.accessorKey as string
-      
+      // const accessorKey = column.accessorKey as string
+      const accessorKey = (column as any).accessorKey as string
       // Always show select column
       if (accessorKey === 'select') return true
       
@@ -260,7 +260,8 @@ const SprintList = ({
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     meta: {
-      updateData: async (rowIndex: number, columnId: any, value: { AdditionalColumnID: string }) => {
+      updateData: async (rowIndex: number, columnId: any, value: string | { AdditionalColumnID: string }
+) => {
         if (columnId === 'Name' && filteredSprintData?.[rowIndex]?.SprintID) {
           try {
             const response = await updateSprint({
