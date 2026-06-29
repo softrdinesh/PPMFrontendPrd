@@ -8,7 +8,7 @@ import Link from 'next/link'
 
 // MUI Imports
 import { useSearchParams } from 'next/navigation'
-
+// s
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
@@ -205,7 +205,7 @@ const RegisterComponent = () => {
               <Typography className='text-2xl text-textPrimary font-bold'>
                 {` you can `}
                 <Typography component={Link} href={routes.login} className='text-2xl font-bold text-primary'>
-                  {`login here`}
+                  {`Login Here`}
                 </Typography>
               </Typography>
             </Box>

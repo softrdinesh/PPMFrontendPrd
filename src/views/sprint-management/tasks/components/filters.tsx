@@ -93,7 +93,7 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
           `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetDynamicColumList`,
           {
             params: {
-              LoginUserID: user?.id || '76',
+              LoginUserID: user?.id || '0',
               GroupID: group.taskGroupID
             }
           }

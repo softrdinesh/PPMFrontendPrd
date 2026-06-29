@@ -261,7 +261,7 @@
 //     const groupID = row?.taskGroupID || row?.TaskGroupID;
     
 //     const response = await axios.post(
-//       `${process.env.NEXT_PUBLIC_API_URL1}/RemoveBugStatus?StatusID=${payload.StatusID}&LoginuserID=${76}&WorkspaceID=${workspaceID}`,
+//       `${process.env.NEXT_PUBLIC_API_URL1}/RemoveBugStatus?StatusID=${payload.StatusID}&LoginuserID=${7s6}&WorkspaceID=${workspaceID}`,
 //       {},
 //       {
 //         headers: {

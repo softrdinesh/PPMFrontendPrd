@@ -40,7 +40,6 @@ const DeleteTasksComponent = ({
 
     // Delete using SprintTaskID
     try {
-      const loginUserID = 76 // Replace with actual login user ID from your auth system
       
       // Delete all selected tasks using SprintTaskID
       const deletePromises = finalArray?.map(taskID => {
