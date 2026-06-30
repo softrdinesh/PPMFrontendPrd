@@ -41,7 +41,7 @@ const AuthGuard = (props: AuthGuardProps) => {
                         pathname === routes.forgotPassword
                         pathname === routes.verifyEmail
                         pathname === routes.resetPassword
-                        pathname === routes.boards
+                        pathname === routes.boardsview
 
       if (isAuthPage && auth?.user) {
         router.replace(routes.dashboard)
