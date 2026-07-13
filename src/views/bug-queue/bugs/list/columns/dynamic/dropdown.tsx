@@ -49,7 +49,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const [anchorEl, setAnchorEl] = useState(null)
   const [createMenu, setCreateMenu] = useState(false)
   const { user } = useAuth();
-console.log(rowData,'dd');
+
   // Find the specific column data from dynamicValue array
   const currentColumnData = useMemo(() => {
     if (!dynamicValue || !columnData) return null;

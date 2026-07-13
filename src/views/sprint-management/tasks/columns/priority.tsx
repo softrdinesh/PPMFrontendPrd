@@ -341,8 +341,13 @@ const PriorityMenuItem = ({
           });
           handleClose()
 
-          // if (response?.status) {
-        //  }
+          // FIX: this refetch() call was commented out, so the table never reloaded
+          // after a dynamic-column priority update. Re-enabled it.
+          if (response?.status) {
+            if (refetch) {
+              await refetch();
+            }
+          }
         } else {
           console.error('Missing required values for dynamic value insertion:', {
             dynamicColumnID,
@@ -363,11 +368,11 @@ const PriorityMenuItem = ({
         // Get current task data from row to preserve existing values
         const currentTaskName = (row as any)?.Taskname || (row as any)?.taskname || (row as any)?.Name || '';
         const currentDescription = (row as any)?.Description || (row as any)?.description || '';
-        const currentOwnerID = (row as any)?.OwnerID || (row as any)?.ownerID || (row as any)?.OwnerId || loginuserID;
+        const currentOwnerID = (row as any)?.OwnerID || (row as any)?.ownerID || (row as any)?.OwnerId || 0;
         const currentEstimatedSP = (row as any)?.EstimatedSP || (row as any)?.estimatedSP || (row as any)?.EstimateSP || 0;
         const currentActualSP = (row as any)?.ActualSP || (row as any)?.actualSP || (row as any)?.ActualSpent || 0;
         const currentIsUnplan = (row as any)?.isunplan || (row as any)?.IsUnplan || false;
-        const currentStatusID = (row as any)?.StatusID || (row as any)?.statusID || (row as any)?.StatusId || 1;
+        const currentStatusID = (row as any)?.StatusID || (row as any)?.statusID || (row as any)?.StatusId || 0;
 
         // Determine priority ID to send
         let priorityIDToSend;
@@ -391,11 +396,12 @@ const PriorityMenuItem = ({
             PriorityID: priorityIDToSend
           });
           
+          // FIX: this refetch() call was commented out, so the table never reloaded
+          // after a normal task priority update. Re-enabled it.
           if (response?.status) {
-            // Refetch the priority list to update the UI
-            // if (refetch) {
-            //   await refetch();
-            // }
+            if (refetch) {
+              await refetch();
+            }
           }
         } else {
           console.error('Missing required values for SprintTaskUpdate:', {

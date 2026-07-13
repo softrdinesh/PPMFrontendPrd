@@ -319,6 +319,20 @@ const StatusMenuItem = ({
 }: StatusMenuItemProps) => {
   const { profile, user } = useAuth()
 
+  // FIX: guard against `refetch` not being a function. Previously every call
+  // site in this component invoked `refetch()` directly, so if a parent ever
+  // rendered TaskStatus/StatusMenuItem without passing a proper function for
+  // `refetch` (e.g. undefined, or something non-callable), it crashed with
+  // "refetch is not a function". This wrapper makes that safe everywhere,
+  // with zero behavior change when `refetch` is a valid function.
+  const safeRefetch = async () => {
+    if (typeof refetch === 'function') {
+      await refetch()
+    } else {
+      console.warn('StatusMenuItem: refetch prop is not a function, skipping refetch call')
+    }
+  }
+
   const generateTextColor = (colorCode: string): string => {
     if (!colorCode) return ''
 
@@ -363,7 +377,8 @@ const StatusMenuItem = ({
   
 
           if (response?.status) {
-            refetch();
+            // FIX: was `refetch();` directly — now goes through safeRefetch()
+            await safeRefetch();
             
           }
         } else {
@@ -387,7 +402,7 @@ const StatusMenuItem = ({
         // Get current task data from row to preserve existing values
         const currentTaskName = (row as any)?.Taskname || (row as any)?.taskname || (row as any)?.Name || '';
         const currentDescription = (row as any)?.Description || (row as any)?.description || '';
-        const currentOwnerID = (row as any)?.OwnerID || (row as any)?.ownerID || (row as any)?.OwnerId || loginuserID;
+        const currentOwnerID = (row as any)?.OwnerID || (row as any)?.ownerID || (row as any)?.OwnerId || 0;
         const currentEstimatedSP = (row as any)?.EstimatedSP || (row as any)?.estimatedSP || (row as any)?.EstimateSP || 0;
         const currentActualSP = (row as any)?.ActualSP || (row as any)?.actualSP || (row as any)?.ActualSpent || 0;
         const currentIsUnplan = (row as any)?.isunplan || (row as any)?.IsUnplan || false;
@@ -417,9 +432,9 @@ const StatusMenuItem = ({
           
           if (response?.status) {
             // Refetch the status list to update the UI
-            if (refetch) {
-              await refetch();
-            }
+            // FIX: was `if (refetch) { await refetch(); }` — a truthy-but-not-a-function
+            // refetch prop would still crash here. Now goes through safeRefetch().
+            await safeRefetch();
           }
         } else {
           console.error('Missing required values for SprintTaskUpdate:', {
@@ -456,7 +471,10 @@ const StatusMenuItem = ({
             
             if (currentStatusId != item?.StatusID) {
               await handleStatusChange();
-              refetch();
+              // FIX: was `refetch();` directly (also a redundant second
+              // refetch, since handleStatusChange already refetches on
+              // success) — now goes through safeRefetch() so it can't crash.
+              await safeRefetch();
             }
 
             handleClose();
@@ -577,6 +595,17 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const [statusToDelete, setStatusToDelete] = useState<ProjectStatusList | null>(null)
   const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
+console.log(row,'row');
+  // FIX: guard against `refetch` not being a function, mirroring the same
+  // safeguard added in StatusMenuItem above. Zero behavior change when
+  // `refetch` is a valid function; prevents a hard crash when it isn't.
+  const safeRefetch = async () => {
+    if (typeof refetch === 'function') {
+      await refetch()
+    } else {
+      console.warn('TaskStatus: refetch prop is not a function, skipping refetch call')
+    }
+  }
 
   // Update the useQuery to use the new API with taskID and groupID from row
   // FIX (TS2551 @ ~577, 579, 580, 588): `row` is typed as
@@ -622,6 +651,22 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     formState: { isSubmitting, isDirty }
   } = useForm<FormValidateType>({ defaultValues: { Statusname: '', Colorcode: '' } })
 
+  // FIX: API returns Statusname as a packed "StatusID;Statusname" string
+  // (e.g. "26;Done") with the real StatusID field left at 0, instead of a
+  // nested row.Status object. row?.Status?.Statusname / row?.Status?.Colorcode
+  // were always undefined because row.Status doesn't exist on this data shape
+  // — that's why the status label/color never showed correctly. This parses
+  // the packed flat field so it can be used as a fallback below, without
+  // touching any of the existing dynamicValue/columnData branch logic.
+  const parsedFlatStatus = useMemo(() => {
+    const raw = (row as any)?.Statusname
+    if (typeof raw === 'string' && raw.includes(';')) {
+      const [idPart, ...nameParts] = raw.split(';')
+      return { StatusID: Number(idPart), Statusname: nameParts.join(';') }
+    }
+    return { StatusID: (row as any)?.StatusID, Statusname: raw }
+  }, [(row as any)?.Statusname, (row as any)?.StatusID])
+
   const statusName = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
       if (dynamicValue?.Status?.Statusname) {
@@ -636,8 +681,10 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       return null
     }
 
-    return row?.Status?.Statusname
-  }, [columnData, dynamicValue, row?.Status?.Statusname])
+    // FIX: was row?.Status?.Statusname (always undefined on this data shape)
+    // — fall back to the parsed flat Statusname field.
+    return row?.Status?.Statusname ?? parsedFlatStatus.Statusname
+  }, [columnData, dynamicValue, row?.Status?.Statusname, parsedFlatStatus])
 
   const colorCode = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
@@ -676,8 +723,20 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       return null;
     }
 
-    return row?.Status?.Colorcode
-  }, [columnData, dynamicValue, row?.Status?.Colorcode, statusList, dynamicStatus])
+    // FIX: was `return row?.Status?.Colorcode` (always undefined on this data
+    // shape). Fall back to the flat StatusColorCode field, and if that's also
+    // empty, look up the color from statusList using the parsed StatusID
+    // extracted from the packed "26;Done" Statusname string.
+    if (row?.Status?.Colorcode) return row.Status.Colorcode
+    if ((row as any)?.StatusColorCode) return (row as any).StatusColorCode
+    if (parsedFlatStatus.StatusID) {
+      const foundInStatusList = (statusList || []).find(
+        (s: any) => s.StatusID === parsedFlatStatus.StatusID
+      )
+      if (foundInStatusList?.Colorcode) return foundInStatusList.Colorcode
+    }
+    return undefined
+  }, [columnData, dynamicValue, row?.Status?.Colorcode, (row as any)?.StatusColorCode, statusList, dynamicStatus, parsedFlatStatus])
 
   const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
     canEdit && setAnchorEl(e.currentTarget)
@@ -730,7 +789,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
      // if (response?.status) {
        // toast.success('Status Deleted Successfully');
         refetchStatusList();
-        refetch();
+        // FIX: was `refetch();` called directly — now goes through safeRefetch()
+        await safeRefetch();
         handleFormClose();
    //   }
     } catch (error) {
@@ -768,7 +828,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
 
     // if (response?.status) {
       refetchStatusList()
-      refetch()
+      // FIX: was `refetch()` called directly — now goes through safeRefetch()
+      await safeRefetch()
       reset({ Statusname: '', Colorcode: '' })
       handleFormClose()
     // }
@@ -787,7 +848,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     });
     
     refetchStatusList()
-    refetch()
+    // FIX: was `refetch()` called directly — now goes through safeRefetch()
+    await safeRefetch()
     reset({ Statusname: '', Colorcode: '' })
     handleFormClose()
     setFormAnchor(null)

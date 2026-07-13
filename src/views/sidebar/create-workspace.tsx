@@ -11,8 +11,7 @@ import { usePathname } from 'next/navigation'
 import type { CSSObject } from '@emotion/styled'
 import classnames from 'classnames'
 import { useUpdateEffect } from 'react-use'
-import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
-import { useRazorpayPayment } from '../paymentpopup/useRazorpayPayment'
+
 // Type Imports
 import MenuButton from '@/@menu/components/vertical-menu/MenuButton'
 import useVerticalMenu from '@/@menu/hooks/useVerticalMenu'
@@ -23,6 +22,8 @@ import type { MenuItemElement, MenuItemExactMatchUrlProps, RootStylesType } from
 import { menuClasses } from '@/@menu/utils/menuClasses'
 import { renderMenuIcon } from '@/@menu/utils/menuUtils'
 import CreateWorkspaceDialog from './create-workspace-dialog'
+import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
+import { useRazorpayPayment } from '../paymentpopup/useRazorpayPayment'
 import { useWorkspace } from '@/context/workspace-context'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -61,37 +62,28 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
   // States
   const [active, setActive] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showTrialPopup, setShowTrialPopup] = useState(false)
   const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
-  const { profile, user } = useAuth()
 
   // Hooks
   const pathname = usePathname()
-  const { refetchWorkspaces, workspace } = useWorkspace()
+  const { profile, user } = useAuth()
+  const { refetchWorkspaces, workspace, projects } = useWorkspace() // <-- added `projects` here, swap the field name if your context uses a different key
   const { menuItemStyles, renderExpandedMenuItemIcon, textTruncate } = useVerticalMenu()
-  const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const { isCollapsed, isPopoutWhenCollapsed, isBreakpointReached } = useVerticalNav()
+  const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
 
   // Get the styles for the specified element.
   const getMenuItemStyles = (element: MenuItemElement): CSSObject | undefined => {
-    // If the menuItemStyles prop is provided, get the styles for the specified element.
     if (menuItemStyles) {
-      // Define the parameters that are passed to the style functions.
       const params = { level, disabled, active, isSubmenu: false }
 
-      // Get the style function for the specified element.
       const styleFunction = menuItemStyles[element]
 
       if (styleFunction) {
-        // If the style function is a function, call it and return the result.
-        // Otherwise, return the style function itself.
         return typeof styleFunction === 'function' ? styleFunction(params) : styleFunction
       }
     }
   }
-
-  const workspaceLength = workspace?.length || 0
-
 
   // Change active state when the url changes
   useEffect(() => {
@@ -105,102 +97,77 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
         setActive(false)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  // Call the onActiveChange callback when the active state changes.
   useUpdateEffect(() => {
     onActiveChange?.(active)
   }, [active])
 
-  // const handleCreateWorkspaceClick = () => {
-  //    try {
-  //     const localStorageData = localStorage.getItem('paymentStatus')
-      
-  //    if (localStorageData) {
-  //       const parsedData = JSON.parse(localStorageData)
-  
-  //   if (parsedData?.workspaceCount == 1 && workspaceLength >= 1) {
-  //         setShowPaymentExpiredDialog(true)
-  //      } else {
-  //       setShowPaymentExpiredDialog(false)
-  //   }
-  //     } else {
-  //       setShowPaymentExpiredDialog(true)
-  //    }
-  //    } catch (error) {
-  //     console.error('Error parsing localStorage:', error)
-  //     setIsModalOpen(true)
-  //    }
-  // }
-const handleCreateWorkspaceClick = () => {
-  try {
-    const localStorageData = localStorage.getItem('paymentStatus');
-    
-    // Default: show payment dialog (restrict access)
-    let shouldShowPaymentDialog = true;
-    
-    if (localStorageData) {
-      const parsedData = JSON.parse(localStorageData);
-      
-      const workspaceCount = parsedData?.workspaceCount;
-      const isExpired = parsedData?.isExpired;
-      
-      // User is allowed if EITHER:
-      // 1. They have more than 1 workspace allowed, OR
-      // 2. Their subscription is not expired
-      if (workspaceCount > 1 || isExpired === false) {
-        shouldShowPaymentDialog = false;
-      }
+
+  useUpdateEffect(() => {
+    if (shouldOpenDialog) {
+      setIsModalOpen(true)
+      setShouldOpenDialog(false)
     }
-    
-    // Show/hide payment dialog based on the logic above
-    setShowPaymentExpiredDialog(shouldShowPaymentDialog);
-    
-    // If allowed, proceed with workspace creation
-    if (!shouldShowPaymentDialog) {
-      // TODO: Add your workspace creation logic here
+  }, [shouldOpenDialog])
 
-      setIsModalOpen(true);
-    }
-    
-  } catch (error) {
-    console.error('Error parsing localStorage:', error);
-    setIsModalOpen(true);
-    setShowPaymentExpiredDialog(true); // Show payment dialog on error
+  const handleCreateWorkspaceClick = () => {
+       setIsModalOpen(true)
+//     const workspaceCount = workspace?.length ?? 0
+//     const projectCount = projects?.length ?? 0
+// console.log(workspaceCount,projectCount);
+//     if (workspaceCount > 0) {
+
+//       const canOpen = checkPaymentStatus()
+
+//       if (canOpen) {
+//         setIsModalOpen(true)
+//       }
+//     } else {
+//       setIsModalOpen(true)
+//     }
   }
-};
 
-
- const handleClosePaymentDialog = () => {
-    setShowPaymentExpiredDialog(false)
-  }
-    const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
+  const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
     userId: Number(user?.id),
     onPaymentSuccess: () => {
       const canOpen = checkPaymentStatus()
+
       setShouldOpenDialog(canOpen)
       setShowPaymentExpiredDialog(false)
     },
     onPaymentFailure: () => {
       const canOpen = checkPaymentStatus()
+
       setShouldOpenDialog(canOpen)
       setShowPaymentExpiredDialog(true)
     }
   })
+
   const checkPaymentStatus = () => {
     const paymentStatus = localStorage.getItem('paymentStatus')
+
+    const workspaceCount = workspace?.length ?? 0
+    const projectCount = projects?.length ?? 0
+
+    // If either the workspace count or project count is greater than 0, block and show the payment popup.
+    // Only when BOTH are 0 is the user allowed through without payment.
+    if (workspaceCount > 0 || projectCount > 0) {
+      setShowPaymentExpiredDialog(true)
+      return false
+    }
 
     try {
       if (paymentStatus) {
         const parsed = JSON.parse(paymentStatus)
+
         // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-        if (parsed.isExpired === true) {
+        if (parsed.isExpired == true) {
           setShowPaymentExpiredDialog(true)
           return false
         }
         // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-        if (parsed.isExpired === false) {
+        if (parsed.isExpired == false) {
           setShowPaymentExpiredDialog(false)
           return true
         }
@@ -208,9 +175,9 @@ const handleCreateWorkspaceClick = () => {
         setShowPaymentExpiredDialog(true)
         return false
       }
-      // No stored status → treat as expired by default (user must renew)
-      setShowPaymentExpiredDialog(true)
-      return false
+      // No stored status, but both workspaceCount and projectCount are 0, so allow the first creation
+      setShowPaymentExpiredDialog(false)
+      return true
     } catch (error) {
       console.error('Error parsing payment status:', error)
       // On parse error, treat as expired to be safe
@@ -218,6 +185,11 @@ const handleCreateWorkspaceClick = () => {
       return false
     }
   }
+
+  const handleClosePaymentDialog = () => {
+    setShowPaymentExpiredDialog(false)
+  }
+
   return (
     <>
       <StyledVerticalMenuItem
@@ -261,42 +233,13 @@ const handleCreateWorkspaceClick = () => {
         onCloseModal={() => setIsModalOpen(false)}
         refetchWorkspaces={refetchWorkspaces}
       />
-         <SubscriptionExpiredDialog
+      <SubscriptionExpiredDialog
         open={showPaymentExpiredDialog}
         onClose={handleClosePaymentDialog}
         onRenew={generateRazorPayOrder}
         isLoading={isLoading}
         razorpayLoaded={razorpayLoaded}
       />
-      
-      {/* Trial Version Expired Popup */}
-      {showTrialPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h2 className="text-xl font-semibold mb-4">Trial Version Expired</h2>
-            <p className="text-gray-600 mb-6">
-              Subscribe and enjoy the premium features!
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowTrialPopup(false)}
-                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  setShowTrialPopup(false)
-                  // Add your subscription redirect logic here
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Subscribe Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

@@ -33,133 +33,21 @@ interface WriteUpdateProps {
   setWriteUpdate: (s: boolean) => void
   refetch: () => void
   onRefreshMessageCount?: (data?: any) => void
+  // NEW: instead of opening its own socket, WriteUpdate now sends
+  // through the single socket owned by the parent (ProjectUpdates).
+  sendMessage: (msg: any) => void
 }
 
-const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }: WriteUpdateProps) => {
+const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount, sendMessage }: WriteUpdateProps) => {
   const [value, setValue] = useState('')
-  const socketRef = useRef<WebSocket | null>(null)
-  const reconnectAttemptsRef = useRef(0)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const isConnectingRef = useRef(false)
-  const { profile, user } = useAuth()
+  const { user } = useAuth()
 
-  const maxReconnectAttempts = 5
-  const reconnectInterval = 3000
-
-  const connectWebSocket = useCallback(() => {
-    // Check if already connected or connecting
-    if (isConnectingRef.current) {
-      return
-    }
-
-    // Check if socket is already open
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      return
-    }
-
-    // Close any existing connection
-    if (socketRef.current) {
-      socketRef.current.close()
-      socketRef.current = null
-    }
-
-    const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${taskID}&senderID=${user?.id}`
-    isConnectingRef.current = true
-
-    try {
-      const ws = new WebSocket(wsUrl)
-
-      ws.onopen = () => {
-        console.log('WriteUpdate WebSocket connected successfully')
-        isConnectingRef.current = false
-        reconnectAttemptsRef.current = 0
-      }
-
-      ws.onmessage = (event) => {
-        try {
-          if (event.data === "heartbeat" || typeof event.data === 'string' && event.data.trim().toLowerCase() === "heartbeat") {
-            return
-          }
-          const data = JSON.parse(event.data)
-          
-          // Notify parent about new message
-          if (onRefreshMessageCount) {
-            onRefreshMessageCount(data)
-          }
-          
-          // Refetch updates
-          refetch()
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error)
-        }
-      }
-
-      ws.onerror = (error) => {
-        console.error('WriteUpdate WebSocket error:', error)
-        isConnectingRef.current = false
-        // Attempt to reconnect on error if connection is not closed
-        if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
-          ws.close()
-        }
-      }
-
-      ws.onclose = (event) => {
-        console.log(`WriteUpdate WebSocket closed with code: ${event.code}, reason: ${event.reason}`)
-        isConnectingRef.current = false
-        socketRef.current = null
-
-        // Auto-reconnect logic (only for abnormal closure)
-        if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
-          reconnectAttemptsRef.current += 1
-          
-          if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current)
-          }
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connectWebSocket()
-          }, reconnectInterval)
-        }
-      }
-
-      socketRef.current = ws
-    } catch (error) {
-      console.error('Failed to create WebSocket:', error)
-      isConnectingRef.current = false
-      
-      // Retry connection after delay
-      if (reconnectAttemptsRef.current < maxReconnectAttempts) {
-        reconnectAttemptsRef.current += 1
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connectWebSocket()
-        }, reconnectInterval)
-      }
-    }
-  }, [taskID, user?.id, refetch, onRefreshMessageCount])
-
-  const disconnectWebSocket = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current)
-      reconnectTimeoutRef.current = null
-    }
-
-    if (socketRef.current) {
-      socketRef.current.close(1000, 'Component unmounting')
-      socketRef.current = null
-    }
-
-    reconnectAttemptsRef.current = 0
-    isConnectingRef.current = false
-  }, [])
-
-  // Connect on mount and disconnect on unmount
-  useEffect(() => {
-    connectWebSocket()
-
-    return () => {
-      disconnectWebSocket()
-    }
-  }, [connectWebSocket, disconnectWebSocket])
+  // NOTE: The separate WebSocket connect/disconnect logic that used to
+  // live here has been REMOVED. It was opening a second live connection
+  // to the same `statusTaskUpdate` endpoint that ProjectUpdates already
+  // has open, which caused the instability (duplicate connects/reconnects)
+  // and duplicate refetch/count calls. Sending now goes through the
+  // single shared socket via the `sendMessage` prop.
 
   const handleChange = async (v: string) => {
     try {
@@ -183,28 +71,19 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount }:
 
       if (updateRes?.status) {
         toast.success('Task-Update Message was recorded successfully!')
-        
-        // Send WebSocket notification
-        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-          const wsMessage = {
-            TaskID: taskID,
-            SenderID: user?.id,
-            Message: value,
-            ReceiverID: 0,
-            timestamp: new Date().toISOString(),
-            isUpdate: true,
-            uniqueId: `${taskID}_${Date.now()}_${Math.random()}`
-          }
-          
-          try {
-            socketRef.current.send(JSON.stringify(wsMessage))
-          } catch (sendError) {
-            console.error('Error sending WebSocket message:', sendError)
-          }
-        } else {
-          console.warn('WebSocket is not connected. Attempting to reconnect...')
-          connectWebSocket()
+
+        // Send WebSocket notification through the shared socket
+        const wsMessage = {
+          TaskID: taskID,
+          SenderID: user?.id,
+          Message: value,
+          ReceiverID: 0,
+          timestamp: new Date().toISOString(),
+          isUpdate: true,
+          uniqueId: `${taskID}_${Date.now()}_${Math.random()}`
         }
+
+        sendMessage(wsMessage)
 
         // Notify parent about the update
         if (onRefreshMessageCount) {
@@ -408,11 +287,17 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
 
   const [writeUpdate, setWriteUpdate] = useState(false)
 
-  // WebSocket connection in ProjectUpdates
+  // WebSocket connection — this is now the ONLY socket for this task.
+  // WriteUpdate no longer opens its own connection (see sendWebSocketMessage below).
   const socketRef = useRef<WebSocket | null>(null)
   const reconnectAttemptsRef = useRef(0)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isConnectingRef = useRef(false)
+
+  // Guards the "notify parent on initial load" effect so it only fires
+  // once per task, instead of on every refetch-triggered data change.
+  const hasNotifiedInitialLoadRef = useRef(false)
+
   const { user } = useAuth()
 
   const maxReconnectAttempts = 5
@@ -437,7 +322,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       socketRef.current = null
     }
 
-    const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${taskData?.TaskID}&senderID=${user?.id}`
+    const wsUrl = `${process.env.NEXT_PUBLIC_SOCKET_URL}/statusTaskUpdate?taskId=${taskData?.TaskID}&senderID=${user?.id}`
     isConnectingRef.current = true
 
     try {
@@ -479,7 +364,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
           if (onRefreshMessageCount) {
             onRefreshMessageCount(parsedData)
           }
-          
+
           // Refetch updates
           refetch()
 
@@ -491,7 +376,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       ws.onerror = (error) => {
         console.error('ProjectUpdates WebSocket error:', error)
         isConnectingRef.current = false
-        
+
         // Attempt to close on error if not already closed
         if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
           ws.close()
@@ -506,11 +391,11 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
         // Auto-reconnect only for abnormal closures
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1
-          
+
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current)
           }
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             console.log(`Attempting to reconnect WebSocket (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`)
             connectWebSocket()
@@ -524,7 +409,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
     } catch (error) {
       console.error('Failed to create WebSocket:', error)
       isConnectingRef.current = false
-      
+
       // Retry connection after delay
       if (reconnectAttemptsRef.current < maxReconnectAttempts) {
         reconnectAttemptsRef.current += 1
@@ -554,6 +439,25 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
     isConnectingRef.current = false
   }, [])
 
+  // NEW: single send path used by both this component and WriteUpdate.
+  // If the socket isn't open when we try to send, it reconnects instead
+  // of silently failing.
+  const sendWebSocketMessage = useCallback(
+    (message: any) => {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        try {
+          socketRef.current.send(JSON.stringify(message))
+        } catch (sendError) {
+          console.error('Error sending WebSocket message:', sendError)
+        }
+      } else {
+        console.warn('WebSocket is not connected. Attempting to reconnect...')
+        connectWebSocket()
+      }
+    },
+    [connectWebSocket]
+  )
+
   // Connect WebSocket when component mounts
   useEffect(() => {
     // Wait a moment before connecting to ensure component is fully mounted
@@ -567,9 +471,18 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
     }
   }, [connectWebSocket, disconnectWebSocket])
 
-  // Notify parent when data is loaded initially
+  // Notify parent when data is loaded initially.
+  // FIX: previously this fired on every `data` change (including the
+  // refetch() triggered by every incoming socket message), which double
+  // counted alongside the ws.onmessage handler above. Now it only fires
+  // once, on the first successful load, and resets the guard per task.
   useEffect(() => {
-    if (data && onRefreshMessageCount) {
+    hasNotifiedInitialLoadRef.current = false
+  }, [taskData?.TaskID])
+
+  useEffect(() => {
+    if (data && onRefreshMessageCount && !hasNotifiedInitialLoadRef.current) {
+      hasNotifiedInitialLoadRef.current = true
       onRefreshMessageCount()
     }
   }, [data, onRefreshMessageCount])
@@ -586,11 +499,12 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
 
   if (writeUpdate) {
     return (
-      <WriteUpdate 
-        taskID={taskData?.TaskID?.toString()} 
-        setWriteUpdate={setWriteUpdate} 
-        refetch={refetch} 
+      <WriteUpdate
+        taskID={taskData?.TaskID?.toString()}
+        setWriteUpdate={setWriteUpdate}
+        refetch={refetch}
         onRefreshMessageCount={onRefreshMessageCount}
+        sendMessage={sendWebSocketMessage}
       />
     )
   }

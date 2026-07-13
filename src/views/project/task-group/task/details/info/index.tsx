@@ -11,6 +11,7 @@ import type { TaskListItemType } from '@/services/modules/task/types'
 import { getInitials } from '@/utils/getInitials'
 import CustomButton from '@components/button'
 import { useAuth } from '@/hooks/useAuth'
+import toast from 'react-hot-toast'
 const MobileProjectDetail = () => {
   const { project: projectData } = useProject()
 const { profile,user } = useAuth()
@@ -109,7 +110,7 @@ const ProjectDetailsTab = ({ taskData, refetchTasks }: ProjectDetailsTabProps) =
     try {
       const body = { TaskDescription: v, Title: 'Task Description Changed' }
       const response = await updateTasks({ id: taskData?.TaskID?.toString(), body })
-
+toast.success('Project Details Updated Successfully!')
       if (response) {
         refetchTasks()
       }

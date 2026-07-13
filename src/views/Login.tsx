@@ -44,7 +44,8 @@ import { authConfig } from '@/configs/authConfig'
 
 const defaultValues = {
   email: process?.env?.NODE_ENV === 'development' ? 'dhamukotti123@gmail.com' : '',
-  password: process?.env?.NODE_ENV === 'development' ? 'Abc@223133' : ''
+  password: process?.env?.NODE_ENV === 'development' ? 'Abc@223133' : '',
+  rememberMe: false // Added default value for remember me
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -58,6 +59,7 @@ type FormFields = {
   password: string
   latitude: number
   longitude: number
+  rememberMe: boolean // Added rememberMe field
 }
 
 const LoginV2 = () => {
@@ -71,15 +73,20 @@ const LoginV2 = () => {
   const {
     handleSubmit,
     control,
-    formState: { isSubmitting }
+    formState: { isSubmitting },
+    watch // Added watch to monitor form values
   } = useForm<FormFields>({
     defaultValues: {
       email: defaultValues.email,
       password: defaultValues.password,
       latitude: 0,
-      longitude: 0
+      longitude: 0,
+      rememberMe: defaultValues.rememberMe
     }
   })
+
+  // Watch the rememberMe value
+  const rememberMe = watch('rememberMe')
 
   // Hooks
   const auth = useContext(AuthContext)
@@ -89,9 +96,18 @@ const LoginV2 = () => {
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
   const onSubmit = async (data: FormFields) => {
+    // Check if remember me is checked
+    if (!data.rememberMe) {
+      // Show error message or prevent login
+      alert('Please check "Remember me" to proceed with login')
+      return
+    }
+
     const body = {
-      ...data,
-      ...location
+      email: data.email,
+      password: data.password,
+      latitude: location?.latitude || 0,
+      longitude: location?.longitude || 0
     }
 
     await auth.login(body)
@@ -358,12 +374,31 @@ const LoginV2 = () => {
                     )}
                   />
                   <div className='flex justify-between items-center flex-wrap gap-x-3 gap-y-1'>
-                    <FormControlLabel control={<Checkbox />} label='Remember me' />
+                    <Controller
+                      name='rememberMe'
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel 
+                          control={
+                            <Checkbox 
+                              checked={field.value} 
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          } 
+                          label='Remember me' 
+                        />
+                      )}
+                    />
                     <Typography href={routes.forgotPassword} className='text-end' color='primary' component={Link}>
                       Forgot password?
                     </Typography>
                   </div>
-                  <Button fullWidth variant='contained' type='submit' disabled={isSubmitting}>
+                  <Button 
+                    fullWidth 
+                    variant='contained' 
+                    type='submit' 
+                    disabled={isSubmitting || !rememberMe}
+                  >
                     {isSubmitting ? <CircularProgress size={22} color='secondary' /> : 'LOGIN'}
                   </Button>
                   {/* <Divider className='gap-3 text-textPrimary'>or</Divider>

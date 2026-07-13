@@ -10,6 +10,7 @@ export const routes = {
   project: '/project',
   invite: '/invite/',
   boardsview:'/boardsview',
+  feedback:'/feedback',
  view:'/view',
  superadmin:'/super-admin',
   // ** Sprints

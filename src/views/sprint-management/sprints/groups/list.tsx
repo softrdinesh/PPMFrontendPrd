@@ -48,7 +48,6 @@ const handleDelete = async () => {
     setDeleteOpen(false)
  
   } catch (error) {
-    console.log('Delete failed:', error)
   }
 }
 

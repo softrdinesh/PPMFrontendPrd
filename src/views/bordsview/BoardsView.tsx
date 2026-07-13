@@ -763,10 +763,10 @@ const fetchProjectTasks = async () => {
       });
       
       const currentCategoryCount = columns.length;
-     
-      
-      if (parsed.boardSectionCount !== undefined && parsed.boardSectionCount !== null) {
-        if (currentCategoryCount >= parsed.boardSectionCount) {
+
+      // FIX: actual stored key is "boardsectionCount" (lowercase s), not "boardSectionCount"
+      if (parsed.boardsectionCount !== undefined && parsed.boardsectionCount !== null) {
+        if (currentCategoryCount >= parsed.boardsectionCount) {
           setShowPaymentExpiredDialog(true)
           return false
         }
@@ -809,8 +809,6 @@ const fetchProjectTasks = async () => {
       Object.values(tasks).forEach(columnTasks => {
         currentTaskCount += columnTasks.length;
       });
-      
-     
       
       if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
         if (currentTaskCount >= parsed.boardTaskCount) {
@@ -1009,9 +1007,6 @@ const fetchTeamMembers = async () => {
       const response = await axios.get(`${Baseurl}/GetBoardTaskList?LoginuserID=${user?.id}`)
       
       if (response.data && Array.isArray(response.data)) {
-        // const apiTasks: TaskColumns = {
-        //   Todo:[], inProgress:[], review:[], done:[]
-        // }
          const apiTasks: TaskColumns = {
         todo: [],
         inProgress: [],
@@ -1375,78 +1370,6 @@ useEffect(() => {
       }
     })
 
-    // if (taskToMove && sourceColumn !== columnId) {
-    //   try {
-    //     const destinationColumn = columns.find(col => col.id === columnId)
-    //     const destinationCategoryID = destinationColumn?.boardCategoryID
-        
-    //     if (!destinationCategoryID) {
-    //       throw new Error('Destination category not found')
-    //     }
-
-    //     const apiUrl = `${Baseurl}/MoveTaskToanotherCategory?BoardTaskID=${taskToMove.taskID}&LoginuserID=${user?.id}&DestinationCategoryID=${destinationCategoryID}`
-        
-    //     const response = await axios.post(apiUrl)
-        
-    //     if (response.data) {
-    //       const updatedTasks = { ...tasks }
-    //       updatedTasks[sourceColumn] = updatedTasks[sourceColumn].filter(t => t.id !== taskId)
-    //       if (!updatedTasks[columnId]) {
-    //         updatedTasks[columnId] = []
-    //       }
-    //       updatedTasks[columnId] = [...updatedTasks[columnId], taskToMove]
-    //       setTasks(updatedTasks)
-          
-    //       toast.success('Task moved successfully', {
-    //         position: 'top-center',
-    //         duration: 4000,
-    //         style: {
-    //           background: 'white',
-    //           color: 'black',
-    //           padding: '12px 20px',
-    //           borderRadius: '12px',
-    //           boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-    //           border: '1px solid rgba(0, 0, 0, 0.08)',
-    //           maxWidth: '400px',
-    //           fontSize: '14px',
-    //           fontWeight: 500,
-    //         },
-    //       })
-          
-    //       await fetchCategories()
-    //     } else {
-    //       throw new Error('Failed to move task')
-    //     }
-    //   } catch (error: any) {
-    //     console.error('Error moving task:', error)
-        
-    //     let errorMessage = 'Failed to move task'
-        
-    //     if (error.response) {
-    //       errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
-    //     } else if (error.request) {
-    //       errorMessage = 'Network error: No response from server'
-    //     } else {
-    //       errorMessage = error.message || 'Unknown error occurred'
-    //     }
-        
-    //     toast.error(errorMessage, {
-    //       position: 'top-center',
-    //       duration: 4000,
-    //       style: {
-    //         background: 'white',
-    //         color: 'black',
-    //         padding: '12px 20px',
-    //         borderRadius: '12px',
-    //         boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-    //         border: '1px solid rgba(0, 0, 0, 0.08)',
-    //         maxWidth: '400px',
-    //         fontSize: '14px',
-    //         fontWeight: 500,
-    //       },
-    //     })
-    //   }
-    // }
     if (taskToMove && sourceColumn !== columnId) {
   const movingTask: Task = taskToMove // FIX: explicit const copy resolves 'never' narrowing issue
 
@@ -1536,8 +1459,6 @@ useEffect(() => {
   }
 
   const handleNewTaskClick = () => {
-   
-    
     const canCreateTask = checkTaskPaymentStatus()
     if (!canCreateTask) {
       return
@@ -1547,8 +1468,6 @@ useEffect(() => {
   }
 
   const handleOpenCreateCategory = () => {
-  
-    
     const canOpen = checkPaymentStatus()
     
     if (!canOpen) {
@@ -1865,7 +1784,6 @@ useEffect(() => {
     setEditTaskDialog(true);
   }
 
-  // FIX: Updated handleSaveTask function to handle undefined values properly
   const handleSaveTask = async () => {
     if (editingTask && editingTaskColumn && user?.id) {
       try {
@@ -1956,7 +1874,6 @@ useEffect(() => {
         const encodedTitle = encodeURIComponent(editingTask.title);
         const encodedDescription = encodeURIComponent(editingTask.description || '');
         
-        // FIX: Ensure all values are properly handled and not undefined
         const priorityId = editingTask.priorityID || '';
         const projectTaskId = editingTask.projectTaskID || '0';
         const categoryId = editingTask.categoryID || '';
@@ -2448,7 +2365,6 @@ useEffect(() => {
             </Button>
           </Box>
 
-          {/* FIX: User Dropdown - ensure value is always defined */}
           <Box sx={{ 
             position: 'relative',
             minWidth: { xs: '100%', sm: '200px' },
@@ -2484,7 +2400,7 @@ useEffect(() => {
                 Select User
               </InputLabel>
               <Select
-                value={selectedUser || ''} // FIX: Ensure value is never undefined
+                value={selectedUser || ''}
                 onChange={async (e) => {
                   const selectedValue = e.target.value;
                   setSelectedUser(selectedValue);
@@ -3120,7 +3036,6 @@ useEffect(() => {
         </DialogActions>
       </Dialog>
 
-      {/* FIX: Edit Task Dialog - ensure all Select values have fallback to empty string */}
       <Dialog 
         open={editTaskDialog} 
         onClose={() => {
@@ -3154,12 +3069,11 @@ useEffect(() => {
               />
             </Grid>
             
-            {/* FIX: Priority Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
-                  value={editingTask?.priorityID ?? ''} // FIX: Use nullish coalescing to ensure value is never undefined
+                  value={editingTask?.priorityID ?? ''}
                   label="Priority"
                   onChange={(e) => setEditingTask(editingTask ? {...editingTask, priorityID: Number(e.target.value)} : null)}
                 >
@@ -3180,12 +3094,11 @@ useEffect(() => {
               </FormControl>
             </Grid>
             
-            {/* FIX: Project Task Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Project Task</InputLabel>
                 <Select
-                  value={editingTask?.projectTaskID?.toString() ?? ''} // FIX: Use nullish coalescing
+                  value={editingTask?.projectTaskID?.toString() ?? ''}
                   label="Project Task"
                   onChange={(e) => {
                     if (editingTask) {
@@ -3208,12 +3121,11 @@ useEffect(() => {
               </FormControl>
             </Grid>
             
-            {/* FIX: Assignee Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Assignee</InputLabel>
                 <Select
-                  value={editingTask?.assigneeId ?? (editingTask?.assignee ?? '')} // FIX: Use nullish coalescing
+                  value={editingTask?.assigneeId ?? (editingTask?.assignee ?? '')}
                   label="Assignee"
                   onChange={(e) => {
                     const selectedValue = e.target.value;
@@ -3242,12 +3154,11 @@ useEffect(() => {
               </FormControl>
             </Grid>
 
-            {/* FIX: Category Select - ensure value is never undefined */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
-                  value={editingTask?.categoryID ?? ''} // FIX: Use nullish coalescing
+                  value={editingTask?.categoryID ?? ''}
                   label="Category"
                   onChange={(e) => {
                     const categoryID = Number(e.target.value);
@@ -3534,7 +3445,7 @@ useEffect(() => {
               })
             )}
           </Box>
-          
+
           <SubscriptionExpiredDialog
             open={showPaymentExpiredDialog}
             onClose={handleClosePaymentDialog}

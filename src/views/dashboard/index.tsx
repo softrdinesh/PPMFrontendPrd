@@ -25,19 +25,19 @@ const DashboardPage = () => {
   const { refetchWorkspaces } = useWorkspace()
 
   // ** Use Payment Hook
-  const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
-    userId: Number(user?.id),
-    onPaymentSuccess: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-      setShowPaymentExpiredDialog(false)
-    },
-    onPaymentFailure: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-      setShowPaymentExpiredDialog(true)
-    }
-  })
+  // const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
+  //   userId: Number(user?.id),
+  //   onPaymentSuccess: () => {
+  //     const canOpen = checkPaymentStatus()
+  //     setShouldOpenDialog(canOpen)
+  //     setShowPaymentExpiredDialog(false)
+  //   },
+  //   onPaymentFailure: () => {
+  //     const canOpen = checkPaymentStatus()
+  //     setShouldOpenDialog(canOpen)
+  //     setShowPaymentExpiredDialog(true)
+  //   }
+  // })
 
   const handleOpen = () => setOpen(true)
 
@@ -49,21 +49,21 @@ const DashboardPage = () => {
     setShowPaymentExpiredDialog(false)
   }
 
-  useEffect(() => {
-    if (open) {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-    } else {
-      setShouldOpenDialog(false)
-      setShowPaymentExpiredDialog(false)
-    }
-  }, [open])
+  // useEffect(() => {
+  //   if (open) {
+  //     const canOpen = checkPaymentStatus()
+  //     setShouldOpenDialog(canOpen)
+  //   } else {
+  //     setShouldOpenDialog(false)
+  //     setShowPaymentExpiredDialog(false)
+  //   }
+  // }, [open])
 
   // Run payment status check on mount (no logic changes)
-  useEffect(() => {
-    const canOpen = checkPaymentStatus()
-    setShouldOpenDialog(canOpen)
-  }, [])
+  // useEffect(() => {
+  //   const canOpen = checkPaymentStatus()
+  //   setShouldOpenDialog(canOpen)
+  // }, [])
 
   const checkPaymentStatus = () => {
     const paymentStatus = localStorage.getItem('paymentStatus')
@@ -98,13 +98,13 @@ const DashboardPage = () => {
 
   return (
     <>
-      <SubscriptionExpiredDialog
+      {/* <SubscriptionExpiredDialog
         open={showPaymentExpiredDialog}
         onClose={handleClosePaymentDialog}
         onRenew={generateRazorPayOrder}
         isLoading={isLoading}
         razorpayLoaded={razorpayLoaded}
-      />
+      /> */}
 
       <Box>
         <Typography className='text-lg lg:text-3xl font-bold text-textPrimary'>Create your workspace</Typography>

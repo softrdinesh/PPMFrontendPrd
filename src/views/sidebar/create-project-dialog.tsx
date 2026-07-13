@@ -70,8 +70,13 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
   } = useForm<FormValues>({ defaultValues })
 
   const onSubmit = async (values: FormValues) => {
+    // Check if WorkspaceID exists before submitting
+    if (!selected?.WorkspaceID) {
+      toast.error('No workspace selected. Please select a workspace first.')
+      return
+    }
+    
     values.WorkspaceID = selected?.WorkspaceID
-
 
     const res = await addProject(values)
 
@@ -82,152 +87,44 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
     }
   }
 
-// // payment integration
+  const checkPaymentStatus = () => {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    
+    // Projects length 0 -> allow creating one project (no payment popup)
+    if ((projects?.length ?? 0) === 0) {
+      setShowPaymentExpiredDialog(false)
+      return true
+    }
 
-//   // Helper: Call UpdatePaymentconfirmation API
-//   const updatePaymentConfirmation = async (userId: number, paymentId?: string | null, status: string = '') => {
-//     try {
-//       const baseUrl = 'https://uat.ppmbackend.projectpulse360.com/UpdatePaymentconfirmation'
-//       const params = new URLSearchParams()
-//       params.append('UserID', String(userId))
-//       // If paymentId is present, append it, otherwise append empty string to match example format
-//       params.append('PaymentID', paymentId ?? '')
-
-//       const url = `${baseUrl}?${params.toString()}`
-
-//       const resp = await fetch(url, {
-//         method: 'POST'
-//       })
-
-//       const text = await resp.text()
-
-//       // Persist a local client-side status for UI decisions.
-//       // Only treat subscription as active (isExpired: false) when status === 'Success'.
-//       // For all other statuses (Cancelled, Failed, Timeout, or empty), treat as expired (isExpired: true).
-//       const isExpired = status !== 'Success'
-//       const paymentData = {
-//         isExpired,
-//         // paymentId: paymentId ?? '',
-//         // status
-//       }
-//       localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
-
-//       return { ok: resp.ok, status: resp.status, body: text }
-//     } catch (err) {
-//       console.error('Error calling UpdatePaymentconfirmation:', err)
-//       // On error, be conservative: treat as expired so user is prompted to renew.
-//       const paymentData = {
-//         isExpired: true,
-//         // paymentId: paymentId ?? '',
-//         // status
-//       }
-//       try {
-//         localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
-//       } catch (e) {
-//         console.error('Error saving paymentStatus to localStorage on failure:', e)
-//       }
-//       return { ok: false, error: err }
-//     }
-//   }
-
-//   // Load Razorpay script
-//   useEffect(() => {
-//     const loadRazorpay = () => {
-//       // Check if already loaded
-//       if (window.Razorpay) {
-//         setRazorpayLoaded(true)
-//         return
-//       }
-
-//       // Check if script already exists
-//       const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')
-//       if (existingScript) {
-//         existingScript.addEventListener('load', () => setRazorpayLoaded(true))
-//         return
-//       }
-
-//       const script = document.createElement("script")
-//       script.src = "https://checkout.razorpay.com/v1/checkout.js"
-//       script.async = true
-//       script.onload = () => {
-//         setRazorpayLoaded(true)
-//       }
-//       script.onerror = () => {
-//         console.error('Failed to load Razorpay SDK')
-//         setRazorpayLoaded(false)
-//       }
-//       document.body.appendChild(script)
-//     }
-
-//     loadRazorpay()
-//   }, [])
-
-
-
-
-
-
-
-
-
-
-  // const checkPaymentStatus = () => {
-  //   const paymentStatus = localStorage.getItem('paymentStatus')
-
-  //   try {
-  //     if (paymentStatus) {
-  //       const parsed = JSON.parse(paymentStatus)
-  //       // If expired, show payment expired dialog
-  //       if (parsed.isExpired === true) {
-  //         setShowPaymentExpiredDialog(true)
-  //         return false
-  //       }
-  //       // Only open if isExpired is false
-  //       return parsed.isExpired === false
-  //     }
-  //     return false
-  //   } catch (error) {
-  //     console.error('Error parsing payment status:', error)
-  //     return false
-  //   }
-  // }
-   // Check payment status
-  
-const checkPaymentStatus = () => {
-  const paymentStatus = localStorage.getItem('paymentStatus')
-  try {
-    if (paymentStatus) {
-      const parsed = JSON.parse(paymentStatus)
-      // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-      if (parsed.isExpired === true) {
-        setShowPaymentExpiredDialog(true)
-        return false
-      }
-      
-      if (parsed?.projectCount == 1 && projects.length >= 1) {
-        setShowPaymentExpiredDialog(true)
-        return false
-      }
-      
-      // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-      if (parsed.isExpired === false) {
-        setShowPaymentExpiredDialog(false)
-        return true
-      }
-      // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
+    // Projects length >= 1 -> block and show payment popup
+    if ((projects?.length ?? 0) >= 1) {
       setShowPaymentExpiredDialog(true)
       return false
     }
-    // No stored status → treat as expired by default (user must renew)
-    setShowPaymentExpiredDialog(true)
-    return false
-  } catch (error) {
-    console.error('Error parsing payment status:', error)
-    // On parse error, treat as expired to be safe
-    setShowPaymentExpiredDialog(true)
-    return false
+
+    try {
+      if (paymentStatus) {
+        const parsed = JSON.parse(paymentStatus)
+        if (parsed.isExpired === true) {
+          setShowPaymentExpiredDialog(true)
+          return false
+        }
+        
+        if (parsed.isExpired === false) {
+          setShowPaymentExpiredDialog(false)
+          return true
+        }
+        setShowPaymentExpiredDialog(true)
+        return false
+      }
+      setShowPaymentExpiredDialog(false)
+      return true
+    } catch (error) {
+      console.error('Error parsing payment status:', error)
+      setShowPaymentExpiredDialog(true)
+      return false
+    }
   }
-}
 
   // Use useEffect to check payment status when 'open' changes
   useEffect(() => {
@@ -238,7 +135,7 @@ const checkPaymentStatus = () => {
       setShouldOpenDialog(false)
       setShowPaymentExpiredDialog(false)
     }
-  }, [open])
+  }, [open, projects?.length])
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
@@ -252,12 +149,6 @@ const checkPaymentStatus = () => {
     onCloseModal()
   }
 
-
-  
-
-
-
-
   return (
     <>
        <SubscriptionExpiredDialog
@@ -267,10 +158,6 @@ const checkPaymentStatus = () => {
         isLoading={isLoading}
         razorpayLoaded={razorpayLoaded}
       />
-
-
-
-
 
     <Dialog open={shouldOpenDialog} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
       <Box

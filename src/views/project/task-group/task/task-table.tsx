@@ -41,6 +41,7 @@ import TaskTimeline from './columns/timeline'
 import SubTaskTable from './sub-task/sub-task-table'
 import CreateColumnMenu from './create-column'
 import TaskNameCell from './columns/task-name'
+import toast from 'react-hot-toast'
 
 interface TaskTableProps {
   taskList?: TaskListItemType[]
@@ -331,7 +332,7 @@ const table = useReactTable({
             }
 
             const response = await updateTasks({ id: taskList?.[rowIndex]?.TaskID?.toString(), body })
-
+toast.success('Task Updated Successfully!')
             if (response) {
               refetch()
             }
@@ -344,7 +345,7 @@ const table = useReactTable({
           const body = { ...value }
 
           const response = await updateTasks({ id: taskList?.[rowIndex]?.TaskID?.toString(), body })
-
+toast.success('Task Updated Successfully!')
           if (response) {
             refetch()
           }

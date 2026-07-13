@@ -128,10 +128,6 @@ const ReporterSelector = ({
     handleClose()
   }
 
-  // FIX 1: Removed the `isNotCurrentUser` filter — it was hiding the current
-  // reporter (and all users on small teams) from the dropdown list entirely.
-  // FIX 2: Moved search filter inline into useMemo to avoid a stale-closure
-  // where `searchText` updates did not trigger re-filtering.
   const filteredUsers = useMemo(() => {
     if (!searchText.trim()) return users
     const lower = searchText.toLowerCase()
@@ -144,7 +140,6 @@ const ReporterSelector = ({
   const resolvedValue = useMemo(() => {
     if (!value?.UserID) return null
     
-    // Try to find the user in allUsers first for complete data
     const matched = allUsers.find((u: any) => {
       if (u?.User?.UserID === value.UserID) return true
       if (u?.userID === value.UserID) return true
@@ -170,7 +165,6 @@ const ReporterSelector = ({
       }
     }
     
-    // If we have at least name or email, return the value
     if (value.Name || value.Email) {
       return {
         UserID: value.UserID,
@@ -269,7 +263,6 @@ const ReporterSelector = ({
             ) : filteredUsers?.length !== 0 ? (
               filteredUsers.map((userItem, index) => {
                 const uniqueKey = `reporter-${userItem?.User?.UserID || userItem?.UserProjectID}-${index}`
-                // FIX 3: Highlight the currently selected reporter instead of hiding them
                 const isCurrentReporter = userItem?.User?.UserID === value?.UserID
                 return (
                   <MenuItem
@@ -331,7 +324,6 @@ const SprintTaskSelectorDialog = ({
         params: { WorkspaceID: workspaceID }
       })
       
-      // Filter out already used sprint tasks
       const availableTasks = response.data.filter((task: any) => 
         !existingSprintTasks.some((existing: any) => existing.sprintTaskID === task.taskGroupID)
       )
@@ -367,8 +359,6 @@ const SprintTaskSelectorDialog = ({
       return
     }
 
-    // selectedSprintTask comes from GetSprintTaskGroupInfoList — its PK is taskGroupID
-    // This is the value that must be passed as SprintTaskID everywhere
     const sprintTaskID = selectedSprintTask.taskGroupID
 
     try {
@@ -382,7 +372,6 @@ const SprintTaskSelectorDialog = ({
         }
       })
       toast.success('Bug created successfully!')
-      // Pass back the full row + the resolved sprintTaskID explicitly
       onConfirm({ ...selectedSprintTask, resolvedSprintTaskID: sprintTaskID })
       onClose()
     } catch (error) {
@@ -471,6 +460,7 @@ interface BugGroupTableProps {
   users: any[];
   fetchBugList: any;
   existingSprintTasks: any[];
+  searchTerm?: string; // NEW: bug-detail search term
 }
 
 interface BugListProps {
@@ -478,6 +468,7 @@ interface BugListProps {
   setSelectedRows: any;
   workspaceID: any;
   bugGroupID: any;
+  searchTerm?: string; // NEW
 }
 
 // ─── BugGroupTable — renders ONE group's table ────────────────────────────
@@ -496,14 +487,12 @@ const BugGroupTable = ({
   users,
   fetchBugList,
   existingSprintTasks,
+  searchTerm, // NEW
 }: BugGroupTableProps) => {
   const [adding, setAdding] = useState(false)
   const [addColumnAnchor, setAddColumnAnchor] = useState<any>(null)
   const [showSprintSelector, setShowSprintSelector] = useState(false)
 
-  // useRef stores the sprintTaskID chosen from the dialog so it is always
-  // available inside handler closures without stale-closure issues.
-  // It is seeded on mount/groupData change from existing bugs in this group.
   const selectedSprintTaskIDRef = useRef<number>(0)
 
   useEffect(() => {
@@ -520,15 +509,24 @@ const BugGroupTable = ({
     }
   }, [groupData])
 
-  // Resolve SprintTaskID for a bug: use the bug's own value first,
-  // then fall back to whatever was last selected in the dialog for this group.
   const resolveSprintTaskID = (bug: any): number => {
     const fromBug = bug?.SprintTaskID || bug?.sprintTaskID || 0
     if (fromBug && fromBug !== 0) return fromBug
     return selectedSprintTaskIDRef.current || 0
   }
 
-  // ── All handlers — only SprinttaskID uses resolveSprintTaskID now ─────────
+  // NEW: filter groupData by BugName / BugID against searchTerm. This is the
+  // dataset actually rendered in the table — all handlers below still use
+  // the full `groupData` for lookups (e.g. resolveSprintTaskID, update calls),
+  // only the rendered/table rows are narrowed.
+  const filteredGroupData = useMemo(() => {
+    if (!searchTerm || !searchTerm.trim()) return groupData
+    const lower = searchTerm.toLowerCase()
+    return groupData.filter((bug: any) =>
+      bug?.BugName?.toLowerCase()?.includes(lower) ||
+      bug?.BugID?.toString()?.includes(lower)
+    )
+  }, [groupData, searchTerm])
 
   const handleUpdateBugName = async (bugId: string | number, updatedBugName: string) => {
     try {
@@ -544,7 +542,7 @@ const BugGroupTable = ({
           reportby: currentBug?.createdBy?.UserID || currentBug?.reporterID || 0,
           timeresolution: currentBug?.timeResolution || '',
           priorityID: currentBug?.PriorityID || 0,
-          istimerstart: currentBug?.isTimerStart || false,
+             istimerstart:false,
           statusID: currentBug?.StatusID || 0,
           LoginuserID: user?.id,
           SprinttaskID: resolveSprintTaskID(currentBug)
@@ -572,7 +570,7 @@ const BugGroupTable = ({
           reportby: currentBug?.createdBy?.UserID || currentBug?.reporterID || 0,
           timeresolution: currentBug?.timeResolution || '',
           priorityID: currentBug?.PriorityID || 0,
-          istimerstart: currentBug?.isTimerStart || false,
+             istimerstart:false,
           statusID: currentBug?.StatusID || 0,
           LoginuserID: user?.id,
           SprinttaskID: resolveSprintTaskID(currentBug)
@@ -600,7 +598,7 @@ const BugGroupTable = ({
           reportby: currentBug?.createdBy?.UserID || currentBug?.reporterID || 0,
           timeresolution: currentBug?.timeResolution || '',
           priorityID: newPriorityId,
-          istimerstart: currentBug?.isTimerStart || false,
+             istimerstart:false,
           statusID: currentBug?.StatusID || 0,
           LoginuserID: user?.id,
           SprinttaskID: resolveSprintTaskID(currentBug)
@@ -615,13 +613,10 @@ const BugGroupTable = ({
     }
   }
 
-  // FIXED: Handle reporter update - now expects reporter object or null
   const handleUpdateReporter = async (bugId: string | number, reporter: { UserID: number; Name: string; Email: string; ProfilePicture?: string } | null) => {
     try {
       const currentBug = groupData.find((bug: any) => bug.bugID == bugId)
      
-      // if (!currentBug) return
-      
       const reporterId = reporter ? reporter.UserID : 0
       
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL1}/UpdateBugQueue`, null, {
@@ -632,7 +627,7 @@ const BugGroupTable = ({
           reportby: reporterId,
           timeresolution: currentBug?.timeResolution || '',
           priorityID: currentBug?.PriorityID || 0,
-          istimerstart: currentBug?.isTimerStart || false,
+             istimerstart:false,
           statusID: currentBug?.StatusID || 0,
           LoginuserID: user?.id,
           SprinttaskID: resolveSprintTaskID(currentBug)
@@ -648,6 +643,7 @@ const BugGroupTable = ({
   }
 
   const handleUpdateStatus = async (bugId: string | number, newStatusId: number) => {
+  
     try {
       const currentBug = groupData.find((bug: any) => bug.BugID === bugId)
       if (!currentBug) return
@@ -660,7 +656,7 @@ const BugGroupTable = ({
           reportby: currentBug?.createdBy?.UserID || currentBug?.reporterID || 0,
           timeresolution: currentBug?.timeResolution || '',
           priorityID: currentBug?.PriorityID || 0,
-          istimerstart: currentBug?.isTimerStart || false,
+             istimerstart:false,
           statusID: newStatusId || 0,
           LoginuserID: user?.id,
           SprinttaskID: resolveSprintTaskID(currentBug)
@@ -686,7 +682,6 @@ const BugGroupTable = ({
     )
   }
 
-  // ── Static columns (identical to original) ───────────────────────────────
   const staticColumns: ColumnDef<any>[] = useMemo(
     () => [
       {
@@ -759,7 +754,6 @@ const BugGroupTable = ({
           return (
             <ColumnTextField
               canEdit={true}
-              // getValue={() => value || ''}
                       getValue= {() => (value || "") as any  }          
 
               index={index}
@@ -778,7 +772,6 @@ const BugGroupTable = ({
         header: () => <Typography variant='body2' fontWeight={800}>Reporter</Typography>,
         cell: ({ row: { original } }) => {
           const reporter = original?.createdBy || null
-          // FIXED: Pass the correct handler that expects reporter object
           const handleReporterUpdate = async (
             newReporter: { UserID: number; Name: string; Email: string; ProfilePicture?: string } | null
           ) => {
@@ -804,7 +797,6 @@ const BugGroupTable = ({
         maxSize: 200,
         header: () => <Typography variant='body2' fontWeight={800}>Time until resolution</Typography>,
         cell: ({ row: { original } }) => (
-          // <TimeResolutionColumn bug={original} refetch={fetchBugList} workspaceID={workspaceID} userID={user?.id} />
                     <TimeResolutionColumn bug={original} refetch={fetchBugList} />
         )
       },
@@ -832,11 +824,11 @@ const BugGroupTable = ({
         header: () => <Typography variant='body2' fontWeight={800}>Status</Typography>,
         cell: ({ row: { original } }) => (
           <TaskStatus
-            // row={original}
-            // refetch={refetch}
-            // canEdit={true}
-            // workspaceID={workspaceID}
-            // onStatusChange={handleUpdateStatus}
+            row={original}
+            refetch={refetch}
+            canEdit={true}
+            workspaceID={workspaceID}
+            onStatusChange={handleUpdateStatus}
           />
         )
       }
@@ -844,7 +836,6 @@ const BugGroupTable = ({
     [fetchBugList, workspaceID, user?.id, refetch, groupData, handleUpdateBugDescription, handlePriorityUpdate, handleUpdateReporter, handleUpdateStatus, users]
   )
 
-  // ── Dynamic columns (FIXED: passing row data to header) ──────────────────────────────
   const dynamicColumnDefs = useMemo((): ColumnDef<any>[] => {
     if (!dynamicColumns || dynamicColumns.length === 0) return []
     return dynamicColumns.map((column: any, index: number) => {
@@ -855,13 +846,12 @@ const BugGroupTable = ({
         size: 200,
         maxSize: 300,
         header: () => {
-          // Prepare all bugs data to pass to header
           const allBugsData = (groupData || []).map((bug: any) => ({
             bugId: bug?.BugID,
             bugName: bug?.BugName,
             currentValue: getDynamicValueForBug(bug?.BugID, columnId)
           }))
-          
+
           return (
             <DynamicTableHeader
               column={column}
@@ -880,8 +870,7 @@ const BugGroupTable = ({
           const dynamicValue = getDynamicValueForBug(original?.BugID, columnId)
           return (
             <BugDynamicCell
-              // getValue={() => null}
-getValue={() => null as any}
+              getValue={() => null as any}
               columnItem={column}
               index={0}
               row={original}
@@ -896,6 +885,7 @@ getValue={() => null as any}
     })
   }, [dynamicColumns, colValueList, fetchBugList, refetchProject, groupData])
 
+
   const allColumns = useMemo(() => [...staticColumns, ...dynamicColumnDefs], [staticColumns, dynamicColumnDefs])
 
   const visibleColumns = useMemo(() => {
@@ -906,38 +896,13 @@ getValue={() => null as any}
     })
   }, [allColumns, sprintColumnVisibility])
 
-  
-  // const table = useReactTable({
-  //   data: groupData,
-  //   columns: visibleColumns,
-  //   state: { rowSelection: selectedRows },
-  //   enableRowSelection: true,
-  //   getCoreRowModel: getCoreRowModel(),
-  //   onRowSelectionChange: setSelectedRows,
-  //   getPaginationRowModel: getPaginationRowModel(),
-  //   meta: {
-  //     updateData: async (rowIndex: number, columnId: string, value: unknown) => {
-  //       const stringValue = typeof value === 'string' ? value : String(value ?? '')
 
-  //       if (columnId === 'BugName' && groupData[rowIndex]?.BugID) {
-  //         const currentBug = groupData[rowIndex]
-  //         if (currentBug?.BugName !== stringValue) await handleUpdateBugName(currentBug?.BugID, stringValue)
-  //       }
-  //       if (columnId === 'BugDescription' && groupData[rowIndex]?.BugID) {
-  //         const currentBug = groupData[rowIndex]
-  //         if (currentBug?.BugDescription !== stringValue) await handleUpdateBugDescription(currentBug?.BugID, stringValue)
-  //       }
-  //     }
-  //   } as TableMeta<any>
-  // })
-
-  // ── Add Bug with Sprint Selection ─────────────────────────────────────────
-  // ── Table instance ─────────────────────────────────────────────────────
 const table = useReactTable({
-  data: groupData,
+  data: filteredGroupData, // CHANGED: was groupData — now uses the search-filtered rows
   columns: visibleColumns,
   state: { rowSelection: selectedRows },
   enableRowSelection: true,
+  getRowId: (row: any) => String(row?.BugID ?? ''),
   getCoreRowModel: getCoreRowModel(),
   onRowSelectionChange: setSelectedRows,
   getPaginationRowModel: getPaginationRowModel(),
@@ -945,14 +910,14 @@ const table = useReactTable({
     updateData: async (rowIndex: number, columnId: string, value: unknown) => {
       const stringValue = typeof value === 'string' ? value : String(value ?? '')
 
-      if (columnId === 'BugName' && groupData[rowIndex]?.BugID) {
-        const currentBug = groupData[rowIndex]
+      if (columnId === 'BugName' && filteredGroupData[rowIndex]?.BugID) {
+        const currentBug = filteredGroupData[rowIndex]
         if (currentBug?.BugName !== stringValue) {
           await handleUpdateBugName(currentBug?.BugID, stringValue)
         }
       }
-      if (columnId === 'BugDescription' && groupData[rowIndex]?.BugID) {
-        const currentBug = groupData[rowIndex]
+      if (columnId === 'BugDescription' && filteredGroupData[rowIndex]?.BugID) {
+        const currentBug = filteredGroupData[rowIndex]
         if (currentBug?.BugDescription !== stringValue) {
           await handleUpdateBugDescription(currentBug?.BugID, stringValue)
         }
@@ -965,8 +930,6 @@ const table = useReactTable({
   }
 
   const handleSprintConfirm = async (selectedSprintTask: any) => {
-    // Store the chosen taskGroupID in the ref immediately so every
-    // UpdateBugQueue call after this point uses the correct SprintTaskID
     const resolvedID = selectedSprintTask?.resolvedSprintTaskID || selectedSprintTask?.taskGroupID || 0
     if (resolvedID && resolvedID !== 0) {
       selectedSprintTaskIDRef.current = resolvedID
@@ -976,7 +939,6 @@ const table = useReactTable({
     if (refetch) refetch()
   }
 
-  // ── Render (identical to original) ───────────────────────────────────────
   return (
     <div>
       <TableContainer>
@@ -1009,7 +971,9 @@ const table = useReactTable({
               <TableRow>
                 <TableCell colSpan={visibleColumns.length}>
                   <div className='flex items-center justify-center h-20 w-full'>
-                    <Typography>No Tasks Added</Typography>
+                    <Typography>
+                      {searchTerm && searchTerm.trim() ? 'No matching bugs found' : 'No Tasks Added'}
+                    </Typography>
                   </div>
                 </TableCell>
               </TableRow>
@@ -1059,7 +1023,7 @@ const table = useReactTable({
 }
 
 // ─── BugList — fetches ALL groups, renders one BugGroupTable per group ───────
-const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: BugListProps) => {
+const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID, searchTerm }: BugListProps) => {
   const { data, refetch } = useBugQueue()
   const { columnVisibility: sprintColumnVisibility } = useContext(BugQueueContext)
   const { user } = useAuth()
@@ -1069,7 +1033,6 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
   const [loading, setLoading] = useState(false)
   const [allSprintTasks, setAllSprintTasks] = useState<any[]>([])
 
-  // ── Fetch: API returns an array of groups ────────────────────────────────
   const fetchBugList = async () => {
     setLoading(true)
     try {
@@ -1077,11 +1040,9 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
         params: { GroupID: bugGroupID }
       })
 
-      // API returns [ { colList, detailList, colvalueList }, ... ]
       const groups = Array.isArray(response.data) ? response.data : [response.data]
       setAllGroups(groups)
       
-      // Extract all used sprint task IDs from the bugs
       const usedSprintTaskIds = new Set()
       groups.forEach((group: any) => {
         if (group.detailList && Array.isArray(group.detailList)) {
@@ -1093,12 +1054,10 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
         }
       })
       
-      // Fetch all available sprint tasks
       const sprintTasksResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintTaskGroupInfoList`, {
         params: { WorkspaceID: workspaceID }
       })
       
-      // Mark which tasks are already used
       const tasksWithStatus = sprintTasksResponse.data.map((task: any) => ({
         ...task,
         sprintTaskID: task.taskGroupID,
@@ -1123,12 +1082,16 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
     return () => { window.removeEventListener('columnCreated', handleColumnCreated) }
   }, [workspaceID, bugGroupID])
 
-  // ── Transform detailList rows ─────────────────────────────────────────────
+  useEffect(() => {
+    const handleBugDeleted = () => { fetchBugList() }
+    window.addEventListener('bugDeleted', handleBugDeleted)
+    return () => { window.removeEventListener('bugDeleted', handleBugDeleted) }
+  }, [workspaceID, bugGroupID])
+
   const transformBugList = (bugList: any[]) => {
     return bugList.map((bug: any) => {
       let reporterInfo = null
       
-      // FIXED: Better handling of reporter data from API
       if (bug.reporterID && bug.reporterID !== 0) {
         if (bug.reporterinfo && typeof bug.reporterinfo === 'string') {
           const parts = bug.reporterinfo.split(';')
@@ -1140,7 +1103,6 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
               ProfilePicture: parts[3] || ''
             }
           } else {
-            // Fallback: just use the ID
             reporterInfo = {
               UserID: bug.reporterID,
               Name: `User ${bug.reporterID}`,
@@ -1149,7 +1111,6 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
             }
           }
         } else if (bug.reporterName) {
-          // Alternative data structure
           reporterInfo = {
             UserID: bug.reporterID,
             Name: bug.reporterName || '',
@@ -1157,7 +1118,6 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
             ProfilePicture: bug.reporterProfilePicture || ''
           }
         } else {
-          // Minimal fallback
           reporterInfo = {
             UserID: bug.reporterID,
             Name: '',
@@ -1182,7 +1142,6 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
         statusID: bug.statusID || 0,
         StatusName: bug.statusname || '',
         statusname: bug.statusname || '',
-        // Preserve both casings so resolveSprintTaskID always finds it
         SprintTaskID: bug.taskID || bug.sprintTaskID || 0,
         sprintTaskID: bug.taskID || bug.sprintTaskID || 0,
         timeResolution: bug.timeResolution || '',
@@ -1205,19 +1164,17 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
     )
   }
 
-  // ── Get used sprint tasks for each group ──────────────────────────────────
   const getUsedSprintTasksForGroup = (groupDetailList: any[]) => {
     const usedSprintTasks = groupDetailList
-      .filter((bug: any) => bug.sprintTaskID)
+      .filter((bug: any) => (bug.taskID || bug.sprintTaskID))
       .map((bug: any) => ({
-        sprintTaskID: bug.sprintTaskID,
+        sprintTaskID: bug.taskID || bug.sprintTaskID,
         sprintName: bug.sprintname || bug.SprintName,
         groupName: bug.groupname
       }))
     return usedSprintTasks
   }
 
-  // ── Render one BugGroupTable per group ────────────────────────────────────
   return (
     <div>
       {allGroups.map((group, groupIndex) => {
@@ -1226,7 +1183,6 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
         const colValueList = group?.colvalueList || []
         const usedSprintTasks = getUsedSprintTasksForGroup(group?.detailList || [])
 
-        // Use groupID from the group object if present, else fall back to the prop
         const currentGroupID = group?.groupID || group?.bugGroupID || bugGroupID
 
         return (
@@ -1246,6 +1202,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID }: Bug
               users={users}
               fetchBugList={fetchBugList}
               existingSprintTasks={usedSprintTasks}
+              searchTerm={searchTerm} // NEW: pass down to filter table rows
             />
           </Box>
         )

@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid2'
 
 import {
   Avatar,
+  Chip,
   ClickAwayListener,
   Divider,
   InputAdornment,
@@ -70,14 +71,12 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
   })
   // ─────────────────────────────────────────────────────────────────────────
 
-  // ── filtered list (excludes already-selected group) ───────────────────────
+  // ── filtered list of GROUPS (for the browse dropdown) ─────────────────────
   const filteredGroups = bugGroups.filter(group => {
-    const notSelected = selectedGroup ? group.bugGroupID !== selectedGroup.bugGroupID : true
-    if (searchTerm.trim() === '') return notSelected
+    if (searchTerm.trim() === '') return true
     return (
-      notSelected &&
-      (group.groupname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        group.bugGroupID?.toString().includes(searchTerm))
+      group.groupname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.bugGroupID?.toString().includes(searchTerm)
     )
   })
   // ─────────────────────────────────────────────────────────────────────────
@@ -91,15 +90,17 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
     const value = e.target.value
     setSearchTerm(value)
     setShowDropdown(true)
-    // Clear selection if user edits the text
-    if (selectedGroup && selectedGroup.groupname !== value) {
-      setSelectedGroup(null)
-    }
   }
 
   const handleGroupSelect = (group: { bugGroupID: number; groupname: string }) => {
+    if (selectedGroup?.bugGroupID === group.bugGroupID) {
+      setSelectedGroup(null)
+      setShowDropdown(false)
+      return
+    }
     setSelectedGroup(group)
-    setSearchTerm(group.groupname)
+    // NEW: clear the text so the box is empty and ready for bug-detail search
+    setSearchTerm('')
     setShowDropdown(false)
   }
 
@@ -107,7 +108,6 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
     setShowDropdown(false)
   }
 
-  // Clear selected group (optional - you can add a clear button if needed)
   const handleClearGroupFilter = () => {
     setSelectedGroup(null)
     setSearchTerm('')
@@ -131,11 +131,30 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
             <div className='flex-1 min-w-[300px]'>
               <ClickAwayListener onClickAway={handleClickAway}>
                 <div style={{ position: 'relative' }}>
+                  {/* Selected group shown as a chip ABOVE the search bar */}
+                  {selectedGroup && (
+                    <Box sx={{ mb: 1 }}>
+                      <Chip
+                        icon={<Icon icon='ion:folder' style={{ fontSize: '16px' }} />}
+                        label={`Filtering: ${selectedGroup.groupname}`}
+                        onDelete={handleClearGroupFilter}
+                        color='primary'
+                        variant='outlined'
+                        size='small'
+                      />
+                    </Box>
+                  )}
+
                   <TextField
                     ref={inputRef}
                     fullWidth
                     size='small'
-                    placeholder='Search ID, Bug, Keywords or click to browse groups...'
+                    // NEW: placeholder changes depending on mode
+                    placeholder={
+                      selectedGroup
+                        ? 'Search bug name or bug ID in this group...'
+                        : 'Search ID, Bug, Keywords or click to browse groups...'
+                    }
                     value={searchTerm}
                     onChange={handleSearchChange}
                     onFocus={handleInputFocus}
@@ -173,7 +192,11 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
                     }}
                   />
 
-                  {showDropdown && (
+                  {/* NEW: only show the GROUP-browsing dropdown when no group is
+                      selected yet. Once a group is selected, this same box is
+                      repurposed to search bug details instead, so the group
+                      dropdown no longer opens on top of it. */}
+                  {showDropdown && !selectedGroup && (
                     <Paper
                       elevation={8}
                       sx={{
@@ -264,10 +287,12 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
         </Grid>
 
         <Grid size={12}>
-          {/* Pass the selected group ID to filter the bug queue */}
+          {/* Pass the selected group ID to filter which group loads,
+              and the bug-detail search term (only active once a group is picked) */}
           <BugQueueGroup 
             ref={bugQueueGroupRef} 
             selectedGroupId={selectedGroup?.bugGroupID}
+            bugSearchTerm={selectedGroup ? searchTerm : ''}
           />
         </Grid>
       </Grid>

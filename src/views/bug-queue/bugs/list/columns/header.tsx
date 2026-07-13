@@ -73,7 +73,7 @@ const DynamicTableHeader = ({
     setSelectedColumn(columnData)
     setActiveColumn(columnData)
   }
-  
+
   const handleMenuClose = () => {
     setAnchorEl(null)
     setSelectedColumn(null)

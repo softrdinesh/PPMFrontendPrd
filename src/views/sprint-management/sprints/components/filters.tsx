@@ -155,7 +155,7 @@ const SprintFilterButton = () => {
     <FilterMenuItem key="Name" menuID='Name' name={'Sprint'} />,
     <FilterMenuItem key="Goals" menuID='Goals' name='Goals' />,
     <FilterMenuItem key="SprintTimeline" menuID='SprintTimeline' name='Sprint Timeline' />,
-    <FilterMenuItem key="SprintStatus" menuID='SprintStatus' name='Sprint Status' />,
+    // <FilterMenuItem key="SprintStatus" menuID='SprintStatus' name='Sprint Status' />,
     // <FilterMenuItem key="ActiveSprint" menuID='ActiveSprint' name='Active Sprint' />,
   ]
 

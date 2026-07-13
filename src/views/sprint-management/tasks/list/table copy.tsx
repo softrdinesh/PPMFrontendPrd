@@ -1,4 +1,4 @@
-import { useMemo, useState, useContext, useEffect, useCallback } from 'react'
+import { useMemo, useState, useContext, useEffect } from 'react'
 
 import {
   Box,
@@ -123,58 +123,17 @@ interface SprintTaskInfoResponse {
 type SprintTaskInfoApiResult = SprintTaskInfoResponse | SprintTaskInfoResponse[]
 
 // Helper to extract colvalueList from query result
-// const extractColvalueList = (data: SprintTaskInfoApiResult | undefined): any[] => {
-//   if (!data) return []
-//   if (Array.isArray(data)) {
-//     if (data.length > 0 && (data[0] as SprintTaskInfoResponse)?.colvalueList) {
-//       return (data[0] as SprintTaskInfoResponse).colvalueList || []
-//     }
-//     return []
-//   }
-//   return (data as SprintTaskInfoResponse).colvalueList || []
-// }
-// Helper to extract colvalueList from query result
-// FIX: data can be an array of per-taskGroup responses, and each per-taskGroup response
-// can ITSELF be an array (per API shape) or a flat object. The previous version only
-// unwrapped one level (data[0]?.colvalueList), so when data[0] was itself an array
-// (the normal case per your API), colvalueList was never found and got reset to [].
-const extractColvalueList = (
-  data: SprintTaskInfoApiResult | undefined,
-  taskGroupIds?: number[],
-  currentTaskGroupId?: number | null
-): any[] => {
+const extractColvalueList = (data: SprintTaskInfoApiResult | undefined): any[] => {
   if (!data) return []
-
   if (Array.isArray(data)) {
-    // Prefer the entry matching the currently active task group, same logic as queryFn
-    if (taskGroupIds && taskGroupIds.length > 0 && currentTaskGroupId !== undefined && currentTaskGroupId !== null) {
-      const currentIndex = taskGroupIds.findIndex(id => Number(id) === Number(currentTaskGroupId))
-      if (currentIndex !== -1 && data[currentIndex]) {
-        const currentResponse: any = data[currentIndex]
-        if (Array.isArray(currentResponse) && currentResponse.length > 0 && currentResponse[0]?.colvalueList) {
-          return currentResponse[0].colvalueList || []
-        }
-        if (currentResponse?.colvalueList) {
-          return currentResponse.colvalueList || []
-        }
-      }
+    if (data.length > 0 && (data[0] as SprintTaskInfoResponse)?.colvalueList) {
+      return (data[0] as SprintTaskInfoResponse).colvalueList || []
     }
-
-    // Fallback: scan all entries for the first one that has a colvalueList
-    for (const response of data as any[]) {
-      if (Array.isArray(response) && response.length > 0 && response[0]?.colvalueList) {
-        return response[0].colvalueList || []
-      }
-      if ((response as SprintTaskInfoResponse)?.colvalueList) {
-        return (response as SprintTaskInfoResponse).colvalueList || []
-      }
-    }
-
     return []
   }
-
   return (data as SprintTaskInfoResponse).colvalueList || []
 }
+
 // Add the API function directly in the component file
 const fetchSprintTaskGroupInfo = async (workspaceID: string | number) => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintTaskGroupInfoList?WorkspaceID=${workspaceID}`, {
@@ -519,7 +478,7 @@ const TaskTableSprint = ({
   const [sprintDynamicColumns, setSprintDynamicColumns] = useState<any[]>([])
   const [colvalueList, setColvalueList] = useState<any[]>([])
   const [showCard, setShowCard] = useState(false)
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
+  
   const { profile, user } = useAuth()
   
   // Get column visibility from sprint context
@@ -723,8 +682,8 @@ const TaskTableSprint = ({
   }, [transformedData, selectedTask])
 
   // Add showSelected state for delete button visibility
-  // const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-    const showSelected = useMemo(() => Object?.keys(rowSelection)?.length !== 0, [rowSelection])
+  const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
+
   // Handle showCard state when rows are selected
   useEffect(() => {
     if (showSelected) {
@@ -735,61 +694,43 @@ const TaskTableSprint = ({
     }
   }, [showSelected])
 
-  // const syncColvalueList = (freshData?: SprintTaskInfoApiResult) => {
-  //   const source = freshData ?? sprintTaskInfoApi.data
-  //   if (source) {
-  //     setColvalueList(extractColvalueList(source))
-  //   }
-  // }
-  
-  // const syncColvalueList = (freshData?: SprintTaskInfoApiResult) => {
-  //   const source = freshData ?? sprintTaskInfoApi.data
-  //   if (source) {
-  //     setColvalueList(extractColvalueList(source, taskGroupIds, currentTaskGroupId))
-  //   }
-  // }
-  const syncColvalueList = (freshData?: SprintTaskInfoApiResult) => {
-  const source = freshData ?? sprintTaskInfoApi.data
-  if (source) {
-    setColvalueList(extractColvalueList(source, taskGroupIds, currentTaskGroupId))
+  // Helper to sync colvalueList after refetch
+  const syncColvalueList = () => {
+    if (sprintTaskInfoApi.data) {
+      setColvalueList(extractColvalueList(sprintTaskInfoApi.data))
+    }
   }
-}
-const handleRefetch = useCallback(() => {
-  sprintTaskInfoApi.refetch().then((refetchResult) => {
-    syncColvalueList(refetchResult?.data)
-  });
-}, [sprintTaskInfoApi.refetch, taskGroupIds, currentTaskGroupId]);
 
   // Static columns definition
   const staticColumns: ColumnDef<any>[] = useMemo(
     () => [
-     {
-  id: 'select',
-  accessorKey: 'select',
-  size: 20,
-  maxSize: 20,
-  header: function SelectHeader({ table }) {
-    return (
-      <div className='flex justify-start ml-1 !w-20'>
-        <Checkbox
-          checked={table?.getIsAllRowsSelected?.() ?? false}
-          indeterminate={table?.getIsSomeRowsSelected?.() ?? false}
-          onChange={table?.getToggleAllRowsSelectedHandler?.()}
-        />
-      </div>
-    )
-  },
-  cell: ({ row }) => (
-    <div className='flex px-1 !w-20'>
-      <Checkbox
-        checked={row.getIsSelected() ?? false}
-        disabled={!row.getCanSelect()}
-        indeterminate={row.getIsSomeSelected?.() ?? false}
-        onChange={row.getToggleSelectedHandler()}
-      />
-    </div>
-  )
-},
+      {
+        id: 'select',
+        accessorKey: 'select',
+        size: 20,
+        maxSize: 20,
+        header: function SelectHeader({ table }) {
+          return (
+            <div className='flex justify-start ml-1 !w-20'>
+              <Checkbox
+                checked={table?.getIsAllRowsSelected?.() ?? false}
+                indeterminate={table?.getIsSomeRowsSelected?.()}
+                onChange={table?.getToggleAllRowsSelectedHandler?.()}
+              />
+            </div>
+          )
+        },
+        cell: ({ row }) => (
+          <div className='flex px-1 !w-20'>
+            <Checkbox
+              checked={row.getIsSelected()}
+              disabled={!row.getCanSelect()}
+              indeterminate={row.getIsSomeSelected()}
+              onChange={row.getToggleSelectedHandler()}
+            />
+          </div>
+        )
+      },
       {
         id: 'Taskname',
         accessorKey: 'Taskname',
@@ -875,9 +816,8 @@ const handleRefetch = useCallback(() => {
               }
               
               // Refetch to get latest data
-              // FIX: use the resolved refetch result instead of the stale closure value
-              const refetchResult = await sprintTaskInfoApi?.refetch();
-              syncColvalueList(refetchResult?.data)
+              await sprintTaskInfoApi?.refetch();
+              syncColvalueList()
               
               // Update the table data
               table.options.meta?.updateData?.(index, 'Owner', newOwner ? JSON.stringify(newOwner) : '');
@@ -932,9 +872,8 @@ const handleRefetch = useCallback(() => {
               
               toast.success(`Task marked as ${newValue ? 'Unplanned' : 'Planned'} successfully`);
               
-              // FIX: use the resolved refetch result instead of the stale closure value
-              const refetchResult = await sprintTaskInfoApi?.refetch();
-              syncColvalueList(refetchResult?.data)
+              await sprintTaskInfoApi?.refetch();
+              syncColvalueList()
               
               table.options.meta?.updateData?.(index, 'IsUnplanned', String(newValue));
             } catch (error) {
@@ -993,22 +932,9 @@ const handleRefetch = useCallback(() => {
           )
         },
          cell: ({ row: { original: row } }) => {
-          // FIX: was `refetch={row}` — passing the row data object instead of a
-          // refetch function, so TaskPriority had no way to trigger a refetch after
-          // updating priority. That's why priority changes didn't reflect immediately.
-          // Now wired the same way as the Status/dynamic-column cells.
-          return (
-            <TaskPriority
-              row={row}
-              refetch={() => {
-                sprintTaskInfoApi.refetch().then((refetchResult) => {
-                  syncColvalueList(refetchResult?.data)
-                });
-              }}
-              canEdit={true}
-            />
-          )
+          return <TaskPriority row={row} refetch={row} canEdit={true} />
         }
+        
       },
 {
   id: 'Status',
@@ -1020,39 +946,23 @@ const handleRefetch = useCallback(() => {
       </Typography>
     )
   },
-  //        cell: ({ row: { original: row } }) => {
-  //   return (
-  //     <TaskStatus
-  //               row={row}
-  //       // FIX: removed sprintTaskInfoApi, setColvalueList, updateSprintTask props that don't exist on TaskStatusProps
-  //       // FIX: use the resolved refetch result instead of the stale closure value
-  //       refetch={() => {
-  //         sprintTaskInfoApi.refetch().then((refetchResult) => {
-  //           syncColvalueList(refetchResult?.data)
-  //         });
-  //       }}
-  //       canEdit={true}
-  //     />
-  //   );
-  // }
-  cell: ({ row: { original: row } }) => {
-  return (
-    <TaskStatus
-      row={row}
-      refetch={() => {
-        sprintTaskInfoApi.refetch().then((refetchResult) => {
-          syncColvalueList(refetchResult?.data)
-        });
-      }}
-      canEdit={true}
-    />
-  );
-}
+  cell: ({ row: { original, index }, table }) => {
+    return (
+      <TaskStatus
+        row={original}
+        // FIX: removed sprintTaskInfoApi, setColvalueList, updateSprintTask props that don't exist on TaskStatusProps
+        refetch={() => {
+          sprintTaskInfoApi.refetch().then(() => {
+            syncColvalueList()
+          });
+        }}
+        canEdit={true}
+      />
+    );
+  }
 }
     ],
-    // [currentSprintGroupInfo, sprintTaskInfoApi, currentTaskGroupId, sp?.SprintID, user?.id]
-        [currentSprintGroupInfo, sprintTaskInfoApi.refetch, currentTaskGroupId, sp?.SprintID, user?.id]
-
+    [currentSprintGroupInfo, sprintTaskInfoApi, currentTaskGroupId, sp?.SprintID, user?.id]
   );
 
   // Dynamic columns from colList with custom headers and dynamic cells
@@ -1089,9 +999,8 @@ const handleRefetch = useCallback(() => {
               table={table}
               value={dynamicValue}
               refetch={() => {
-                // FIX: use the resolved refetch result instead of the stale closure value
-                sprintTaskInfoApi.refetch().then((refetchResult) => {
-                  syncColvalueList(refetchResult?.data)
+                sprintTaskInfoApi.refetch().then(() => {
+                  syncColvalueList()
                 });
               }}
             />
@@ -1130,11 +1039,11 @@ const handleRefetch = useCallback(() => {
     columns: visibleColumns,
     initialState: { columnPinning: { left: ['select', 'Taskname'], right: ['add-column'] } },
     state: {
-    rowSelection: rowSelection  // <-- CHANGED
+      rowSelection: selectedRows
     },
     getRowCanExpand: () => true,
     enableRowSelection: true,
-  onRowSelectionChange: setRowSelection,  // <-- CHANGED
+    onRowSelectionChange: setSelectedRows,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -1161,9 +1070,8 @@ const handleRefetch = useCallback(() => {
             
             toast.success("Task name updated successfully");
             
-            // FIX: use the resolved refetch result instead of the stale closure value
-            const refetchResult = await sprintTaskInfoApi?.refetch();
-            syncColvalueList(refetchResult?.data)
+            await sprintTaskInfoApi?.refetch();
+            syncColvalueList()
           } catch (error) {
             console.error('Error updating task name:', error);
             toast.error("Failed to update task name");
@@ -1190,9 +1098,8 @@ const handleRefetch = useCallback(() => {
             
             toast.success("Task description updated successfully");
             
-            // FIX: use the resolved refetch result instead of the stale closure value
-            const refetchResult = await sprintTaskInfoApi?.refetch();
-            syncColvalueList(refetchResult?.data)
+            await sprintTaskInfoApi?.refetch();
+            syncColvalueList()
           } catch (error) {
             console.error('Error updating task description:', error);
             toast.error("Failed to update task description");
@@ -1221,9 +1128,8 @@ const handleRefetch = useCallback(() => {
             
             toast.success("Actual SP updated successfully");
             
-            // FIX: use the resolved refetch result instead of the stale closure value
-            const refetchResult = await sprintTaskInfoApi?.refetch();
-            syncColvalueList(refetchResult?.data)
+            await sprintTaskInfoApi?.refetch();
+            syncColvalueList()
           } catch (error) {
             console.error('Error updating actual SP:', error);
             toast.error("Failed to update actual SP");
@@ -1252,9 +1158,8 @@ const handleRefetch = useCallback(() => {
             
             toast.success("Estimated SP updated successfully");
             
-            // FIX: use the resolved refetch result instead of the stale closure value
-            const refetchResult = await sprintTaskInfoApi?.refetch();
-            syncColvalueList(refetchResult?.data)
+            await sprintTaskInfoApi?.refetch();
+            syncColvalueList()
           } catch (error) {
             console.error('Error updating estimated SP:', error);
             toast.error("Failed to update estimated SP");
@@ -1283,9 +1188,8 @@ const handleRefetch = useCallback(() => {
             
             toast.success(`Task marked as ${isUnplannedValue ? 'Unplanned' : 'Planned'} successfully`);
             
-            // FIX: use the resolved refetch result instead of the stale closure value
-            const refetchResult = await sprintTaskInfoApi?.refetch();
-            syncColvalueList(refetchResult?.data)
+            await sprintTaskInfoApi?.refetch();
+            syncColvalueList()
           } catch (error) {
             console.error('Error updating IsUnplanned:', error);
             toast.error("Failed to update task status");
@@ -1294,9 +1198,8 @@ const handleRefetch = useCallback(() => {
         
         else if (typeof value === 'object' && value !== null && 'AdditionalColumnID' in value && filteredData[rowIndex]?.SprintTaskID) {
           try {
-            // FIX: use the resolved refetch result instead of the stale closure value
-            const refetchResult = await sprintTaskInfoApi?.refetch();
-            syncColvalueList(refetchResult?.data)
+            await sprintTaskInfoApi?.refetch();
+            syncColvalueList()
           } catch (error) {
             console.error('error updating dynamic column:', error);
           }
@@ -1336,9 +1239,8 @@ const handleRefetch = useCallback(() => {
 
       const result = await response.json()
       
-      // FIX: use the resolved refetch result instead of the stale closure value
-      const refetchResult = await sprintTaskInfoApi.refetch()
-      syncColvalueList(refetchResult?.data)
+      await sprintTaskInfoApi.refetch()
+      syncColvalueList()
       
     } catch (error) {
       console.error('Error creating task:', error)
@@ -1351,9 +1253,8 @@ const handleRefetch = useCallback(() => {
 
   useEffect(() => {
     if (enabled && taskGroupIds.length > 0 && currentTaskGroupId) {
-      // FIX: use the resolved refetch result instead of the stale closure value
-      sprintTaskInfoApi.refetch().then((refetchResult) => {
-        syncColvalueList(refetchResult?.data)
+      sprintTaskInfoApi.refetch().then(() => {
+        syncColvalueList()
       });
     }
   }, [enabled, taskGroupIds.join(','), currentTaskGroupId]);
@@ -1371,8 +1272,7 @@ const handleRefetch = useCallback(() => {
   }
 
   // FIX: Convert Record<string, boolean> to string[] for DeleteTasksComponent
-  // const selectedRowIds = Object.keys(selectedRows).filter(key => selectedRows[key])
-const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key])
+  const selectedRowIds = Object.keys(selectedRows).filter(key => selectedRows[key])
 
   return (
     <div className='px-3'>
@@ -1451,29 +1351,19 @@ const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key]
           // FIX: pass selectedRowIds (string[]) instead of selectedRows (Record<string,boolean>)
           selectedRows={selectedRowIds}
           sprintlist={transformedData}
-            refetch={handleRefetch}   // CHANGED: was an inline arrow function before
-
-          // refetch={() => {
-          //   // FIX: use the resolved refetch result instead of the stale closure value
-          //   sprintTaskInfoApi.refetch().then((refetchResult) => {
-          //     syncColvalueList(refetchResult?.data)
-          //   });
-          // }}
-        //  setSelectedRows={setSelectedRows}
-        setSelectedRows={setRowSelection}  // <-- CHANGED
-
-        />
-        
-        
-        
-        }
+          refetch={() => {
+            sprintTaskInfoApi.refetch().then(() => {
+              syncColvalueList()
+            });
+          }}
+          setSelectedRows={setSelectedRows}
+        />}
       <CreateColumnMenu
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
         onSubmit={(data) => {
-          // FIX: use the resolved refetch result instead of the stale closure value
-          sprintTaskInfoApi.refetch().then((refetchResult) => {
-            syncColvalueList(refetchResult?.data)
+          sprintTaskInfoApi.refetch().then(() => {
+            syncColvalueList()
           });
         }}
         // FIX: Use WorkSpaceID (correct casing)

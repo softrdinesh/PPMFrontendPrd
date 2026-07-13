@@ -1,51 +1,75 @@
 import { useMemo, useState } from 'react'
 
 import { Card, Grid2, Typography } from '@mui/material'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 
 import CustomButton from '@/components/button'
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import IconifyIcon from '@/components/icon'
 import { useBugQueue } from '@/context/bug-queue-context'
-import { deleteBugApi } from '@/services/modules/bug-queue'
+import { useAuth } from '@/hooks/useAuth'
 
 interface DeleteBugsComponentProps {
   showCard: boolean
-  selectedRows: any[]
+  selectedRows: any // row-selection state object: { [bugID]: true }
   groupid: any
-  workspaceid:any
+  workspaceid: any
   setSelectedRows: (value: any) => void
 }
 
-const DeleteBugsComponent = ({ showCard, groupid,workspaceid, selectedRows, setSelectedRows }: DeleteBugsComponentProps) => {
+const DeleteBugsComponent = ({ showCard, groupid, workspaceid, selectedRows, setSelectedRows }: DeleteBugsComponentProps) => {
   const [deleteOpen, setDeleteOpen] = useState(false)
-  console.log(groupid,workspaceid, 'values');
 
-  const { data, refetch } = useBugQueue()
-  console.log(selectedRows, 'selectedRows');
+
+  const { refetch } = useBugQueue()
+  const { user } = useAuth()
+
 
   // ** Memos
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-  console.log(showSelected, 'showSelected');
+ 
 
-  // const handleDelete = async () => {
-  //   // Use values directly as it contains all the selected bug objects with their full data
-  //   const finalArray = values?.map((bug: any) => bug?.BugID) || 
-  //     data?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))?.map(t => t?.BugID)
-
-  //   await deleteBugApi(finalArray)
-  //   await refetch()
-  //   setDeleteOpen(false)
-  //   setSelectedRows({})
-  // }
   const handleDelete = async () => {
-    // Use selectedRows directly as it contains all the selected bug objects with their full data
-    const finalArray = selectedRows?.map((bug: any) => bug?.BugID) || // FIX: replaced undefined 'values' with 'selectedRows'
-      data?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))?.map(t => t?.BugID)
+    const finalArray = Object.keys(selectedRows)
+      .filter(key => selectedRows[key]) // keep only truthy (selected) entries
+      .map(id => Number(id))
+      .filter(id => !isNaN(id) && id !== 0)
 
-    await deleteBugApi(finalArray)
-    await refetch()
-    setDeleteOpen(false)
-    setSelectedRows({})
+    if (finalArray.length === 0) {
+      setDeleteOpen(false)
+      return
+    }
+
+    try {
+      await Promise.all(
+        finalArray.map(bugId =>
+          axios.post(`${process.env.NEXT_PUBLIC_API_URL1}/RemoveBugQueue`, null, {
+            params: {
+              BugID: bugId,
+              GroupID: groupid,
+              LoginuserID: user?.id
+            }
+          })
+        )
+      )
+
+      // FIX: re-fetch the group's bug list from GetBugInfoList after delete
+      // so the table reflects the removed rows immediately.
+      await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetBugInfoList`, {
+        params: { GroupID: groupid }
+      })
+
+      toast.success('Bug deleted successfully')
+        window.dispatchEvent(new Event('bugDeleted'))
+      await refetch()
+      setSelectedRows({})
+    } catch (error) {
+      console.error('Error deleting bug(s):', error)
+      toast.error('Failed to delete bug(s)')
+    } finally {
+      setDeleteOpen(false)
+    }
   }
 
   return (
@@ -84,7 +108,7 @@ const DeleteBugsComponent = ({ showCard, groupid,workspaceid, selectedRows, setS
         setOpen={val => setDeleteOpen(!!val)}
         description={`All selected rows will be permanently deleted! You cannot revert once deleted.`}
         onConfirm={handleDelete}
-        refetch={()=>{}}
+        refetch={refetch}
       />
     </Grid2>
   )

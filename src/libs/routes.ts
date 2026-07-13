@@ -10,6 +10,7 @@ export const PROTECTED_ROUTES = [
   routes.profile,
   '/boardsview',
   '/view',
+  '/feedback',
   '/super-admin',
 
   routes.workspace

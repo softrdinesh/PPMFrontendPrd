@@ -5,6 +5,7 @@ import DeleteDialog from '@/components/dialog/delete-dialog'
 import NewTaskDialog from '../main-screen/task-group-add-dialog'
 import { DeleteTaskgroup,fetchTaskGroupList,Deleteprojectgroup } from '@/services/modules/task-group'
 import axios from 'axios'
+import { useAuth } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
 interface TaskGroupActionsProps {
   groupName?: string
@@ -20,7 +21,7 @@ const TaskGroupActions = ({ groupName,id,ProjectID,refetch  }: TaskGroupActionsP
   const [editGroupName, setEditGroupName] = useState('')
 const [editgroupid, seteditgroupid] = useState('')
 const [projectId, setprojectId] = useState('')
-
+const {user} = useAuth()
 
   const handleMenuOpen = (e: any) => {
     e.stopPropagation()
@@ -56,7 +57,7 @@ const [projectId, setprojectId] = useState('')
   }
 const deletegroup = async() => {
   try {
-    const value = await axios.post(`${process.env.NEXT_PUBLIC_API_URL1}/ProjectTaskGroupDelete?TaskGroupID=${id}&LoginuserID=76`);
+    const value = await axios.post(`${process.env.NEXT_PUBLIC_API_URL1}/ProjectTaskGroupDelete?TaskGroupID=${id}&LoginuserID=${user?.id}`);
  refetch();
     toast.success('Task Group Deleted Successfully');
     refetch();

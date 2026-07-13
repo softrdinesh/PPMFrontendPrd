@@ -7,7 +7,7 @@ import { useWorkspace } from '@/context/workspace-context'
 import { routes } from '@/constants/routes'
 import type { SprintItem } from '@/services/modules/sprint-item/types'
 import TaskTableSprint from './table'
-import SprintTimelineManagement from '../../sprints/groups/sprint-list/timeline'
+import SprintTimelineManagement from '../../tasks/columns/timeline'
 import CustomButton from '@/components/button'
 import CreateColumnMenu from '@/views/sprint-management/tasks/components/create-column'
 import axios from 'axios';

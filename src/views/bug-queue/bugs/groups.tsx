@@ -28,21 +28,20 @@ interface BugGroupItemProps {
   group: BugGroup
   workspaceID: number
   onRefetch: () => void
-  isSelected?: boolean // Add this prop
+  isSelected?: boolean
+  bugSearchTerm?: string // NEW: bug-detail search term to filter rows by
 }
 
-const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupItemProps) => {
+const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected, bugSearchTerm }: BugGroupItemProps) => {
   const [collapse, setCollapse] = useState(true)
   const [selectedRows, setSelectedRows] = useState([])
   const [showCard, setShowCard] = useState(false)
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const { user } = useAuth()
-  console.log(group,'gr');
   const bugQueueGroupRef = useRef<BugQueueGroupRef>(null)
   const handleBugGroupCreated = () => {
     bugQueueGroupRef.current?.refetchGroups()
   }
-  console.log(selectedRows,'selectedRows');
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
   const [deleteOpen, setDeleteOpen] = useState(false)
   const toggleCollapse = () => setCollapse(!collapse)
@@ -151,22 +150,16 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupIte
     }
   }
 
-  // ✅ FIXED: Extract bugIDs from selectedRows based on the API response structure
-  // The API returns an array where detailList contains the bug objects
   const selectedBugIDs = useMemo(() => 
     Object.values(selectedRows).map((row: any) => {
-      // Handle different possible row structures
       if (row && row.bugID) {
         return row.bugID
       } else if (row && row.detailList && Array.isArray(row.detailList)) {
-        // If row has detailList array, extract bugIDs from it
         return row.detailList.map((bug: any) => bug.bugID)
       }
       return null
-    }).flat().filter(Boolean), // flatten the array and remove falsy values
+    }).flat().filter(Boolean),
   [selectedRows])
-
-  console.log(selectedBugIDs,'selectedBugIDs');
 
   return (
     <Card className='rounded-lg'>
@@ -220,20 +213,21 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupIte
       <Collapse in={collapse}>
         <CardContent className='space-y-4'>
           <BugList
+            key={`${group.bugGroupID}-${isSelected ? 'selected' : 'default'}`}  // NEW: forces remount on selection change
+
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
             workspaceID={workspaceID}
             bugGroupID={group.bugGroupID}
+            searchTerm={bugSearchTerm} // NEW: pass bug-detail search term down
           />
 
-          {/* ✅ Pass selectedBugIDs to DeleteBugsComponent */}
           <DeleteBugsComponent 
             groupid={group.bugGroupID} 
             workspaceid={workspaceID} 
             showCard={showCard} 
             selectedRows={selectedRows} 
             setSelectedRows={setSelectedRows}
-           // selectedBugIDs={selectedBugIDs}
           />
         </CardContent>
       </Collapse>
@@ -279,7 +273,8 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected }: BugGroupIte
 
 // Update the forwardRef to accept props
 interface BugQueueGroupProps {
-  selectedGroupId?: number // Add this prop
+  selectedGroupId?: number
+  bugSearchTerm?: string // NEW
 }
 
 const BugQueueGroup = forwardRef<BugQueueGroupRef, BugQueueGroupProps>((props, ref) => {
@@ -347,6 +342,7 @@ const BugQueueGroup = forwardRef<BugQueueGroupRef, BugQueueGroupProps>((props, r
           workspaceID={selected.WorkspaceID} 
           onRefetch={fetchGroups}
           isSelected={props.selectedGroupId === group.bugGroupID}
+          bugSearchTerm={props.bugSearchTerm} // NEW
         />
       ))}
     </div>

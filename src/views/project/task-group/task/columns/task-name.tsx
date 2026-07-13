@@ -46,10 +46,25 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
   const reconnectAttemptsRef = useRef(0)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isConnectingRef = useRef(false)
-  
+
   // Track message IDs to prevent duplicate counting
   const seenMessageIdsRef = useRef<Set<string>>(new Set())
   const messageCountRef = useRef(0)
+
+  // FIX: ref that always mirrors the latest openTaskView value.
+  // The WebSocket's onmessage handler is a long-lived closure - reading
+  // openTaskView directly inside it would use whatever value was true
+  // at the moment the socket connected (stale closure), so the dialog
+  // open/close state was effectively ignored after the first connection.
+  const openTaskViewRef = useRef(openTaskView)
+  useEffect(() => {
+    openTaskViewRef.current = openTaskView
+  }, [openTaskView])
+
+  // FIX: track first render so the "reconnect on TaskID change" effect
+  // doesn't also fire on initial mount (it was racing with the
+  // "connect on mount" effect and closing a socket that was still CONNECTING).
+  const isInitialMountRef = useRef(true)
 
   const maxReconnectAttempts = 5
   const reconnectInterval = 3000
@@ -74,7 +89,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
       return
     }
 
-    const wsUrl = `wss://uat.ppmbackend.projectpulse360.com/statusTaskUpdate?taskId=${rowData?.TaskID}&senderID=${user?.id}`
+    const wsUrl = `${process.env.NEXT_PUBLIC_SOCKET_URL}/statusTaskUpdate?taskId=${rowData?.TaskID}&senderID=${user?.id}`
     isConnectingRef.current = true
 
     try {
@@ -135,7 +150,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
           // Only process if we haven't seen this message before
           if (!seenMessageIdsRef.current.has(messageId)) {
             seenMessageIdsRef.current.add(messageId)
-            
+
             // Check if this message is for the current task
             const candidateIds = [
               data?.TaskID,
@@ -149,8 +164,10 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
             const appliesToCurrentTask = foundId == null || String(foundId) === String(currentTaskId)
 
             if (appliesToCurrentTask) {
-              // Only increment if dialog is NOT open
-              if (!openTaskView) {
+              // FIX: read from the ref (always current) instead of the
+              // closed-over openTaskView value, so the count correctly
+              // stops incrementing while the dialog is actually open.
+              if (!openTaskViewRef.current) {
                 messageCountRef.current = messageCountRef.current + 1
                 setMessageCount(prev => prev + 1)
               }
@@ -189,7 +206,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
           reconnectAttemptsRef.current += 1
           const delay = Math.min(reconnectInterval * Math.pow(1.5, reconnectAttemptsRef.current - 1), 30000)
           console.log(`TaskNameCell: Attempting to reconnect in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`)
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connectWebSocket()
           }, delay)
@@ -203,7 +220,13 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
       console.error('Failed to create WebSocket:', error)
       isConnectingRef.current = false
     }
-  }, [rowData?.TaskID, user?.id, refetch, openTaskView])
+    // FIX: removed `openTaskView` from deps. It's now read via
+    // openTaskViewRef inside onmessage, so this callback no longer needs
+    // to be recreated every time the dialog opens/closes. That previously
+    // caused a new function identity on every toggle (not itself a
+    // reconnect trigger here, but unnecessary churn worth removing since
+    // the ref makes it redundant).
+  }, [rowData?.TaskID, user?.id, refetch])
 
   const disconnectWebSocket = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -240,6 +263,15 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
   // Reconnect when task ID changes
   useEffect(() => {
+    // FIX: skip the first run - the "connect on mount" effect above
+    // already handles the initial connection. Without this guard, both
+    // effects fired together on mount and this one would tear down /
+    // recreate a socket that was still CONNECTING, causing flapping.
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false
+      return
+    }
+
     if (rowData?.TaskID && user?.id) {
       disconnectWebSocket()
       const timer = setTimeout(() => {
@@ -252,12 +284,13 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
   const handleTaskViewClick = () => {
     setOpenTaskView(true)
+    openTaskViewRef.current = true
     // Reset message count when opening dialog
     messageCountRef.current = 0
     setMessageCount(0)
     // Clear seen messages for this session
     seenMessageIdsRef.current.clear()
-    
+
     // Ensure WebSocket is connected
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       connectWebSocket()
@@ -266,6 +299,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
   const handleClose = () => {
     setOpenTaskView(false)
+    openTaskViewRef.current = false
     // Ensure WebSocket is connected after closing
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       connectWebSocket()
@@ -315,7 +349,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
       if (appliesToCurrentTask) {
         // Only increment if dialog is NOT open
-        if (!openTaskView) {
+        if (!openTaskViewRef.current) {
           messageCountRef.current = messageCountRef.current + 1
           setMessageCount(prev => prev + 1)
         }
@@ -340,11 +374,11 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
           </SmallBadge>
         </IconButton>
       </Box>
-      <TaskDetailsDialog 
-        open={openTaskView} 
-        close={handleClose} 
-        taskData={rowData} 
-        refetchTasks={refetch} 
+      <TaskDetailsDialog
+        open={openTaskView}
+        close={handleClose}
+        taskData={rowData}
+        refetchTasks={refetch}
         onRefreshMessageCount={handleRefreshMessageCount}
       />
     </>

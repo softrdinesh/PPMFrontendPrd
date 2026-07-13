@@ -128,10 +128,14 @@ const ProjectFilterButton = () => {
       const currentVisibility = { ...columnVisibilityRef.current }
       let hasChanges = false
 
+      // FIX: static column keys never carry a "Dynamic_" prefix in BugList,
+      // so we identify dynamic keys as any key that is a plain number string.
+      const staticKeys = ['BugID', 'BugName', 'Reporter', 'BugDescription', 'TimeResolution', 'Priority', 'Status']
+
       // Remove stale dynamic column keys that no longer exist
       Object.keys(currentVisibility).forEach(key => {
-        if (key.startsWith('Dynamic_')) {
-          const dynamicId = parseInt(key.replace('Dynamic_', ''))
+        if (!staticKeys.includes(key) && !isNaN(Number(key))) {
+          const dynamicId = Number(key)
           const stillExists = mergedColumnsMap.has(dynamicId)
           if (!stillExists) {
             delete currentVisibility[key]
@@ -142,7 +146,12 @@ const ProjectFilterButton = () => {
 
       // Add new dynamic columns that are not yet in visibility
       mergedColumns.forEach(col => {
-        const columnKey = `Dynamic_${col.additionalColumnID}`
+        // FIX: key must be the raw additionalColumnID (as string) — no "Dynamic_"
+        // prefix — because BugGroupTable's columnId is `column.additionalColumnID.toString()`
+        // and does `sprintColumnVisibility[columnId]`. A mismatched key here meant
+        // the lookup was always undefined, so the column always stayed visible
+        // no matter what the checkbox said.
+        const columnKey = `${col.additionalColumnID}`
         if (currentVisibility[columnKey] === undefined) {
           currentVisibility[columnKey] = true // Default to visible
           hasChanges = true
@@ -178,6 +187,19 @@ const ProjectFilterButton = () => {
     return () => clearInterval(interval)
   }, [fetchAllDynamicColumns, isFetching])
 
+  // Step 5 (NEW): Listen for the 'columnCreated' event (already dispatched
+  // elsewhere in the app after a dynamic column is created) so the filter
+  // list updates immediately instead of waiting up to 5s for the next poll.
+  useEffect(() => {
+    const handleColumnCreated = () => {
+      if (groupsRef.current.length > 0) {
+        fetchAllDynamicColumns(groupsRef.current)
+      }
+    }
+    window.addEventListener('columnCreated', handleColumnCreated)
+    return () => { window.removeEventListener('columnCreated', handleColumnCreated) }
+  }, [fetchAllDynamicColumns])
+
   const handleOpen = (e: any) => setAnchorEl(e?.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
@@ -196,7 +218,8 @@ const ProjectFilterButton = () => {
     }
 
     dynamicColumns.forEach(col => {
-      newVisibility[`Dynamic_${col.additionalColumnID}`] = !currentAllSelected
+      // FIX: no "Dynamic_" prefix — must match columnId used in BugGroupTable
+      newVisibility[`${col.additionalColumnID}`] = !currentAllSelected
     })
 
     // setColumnVisibility(newVisibility)
@@ -249,8 +272,10 @@ const ProjectFilterButton = () => {
       dynamicColumns.forEach(column => {
         children.push(
           <FilterMenuItem
-            key={`Dynamic_${column.additionalColumnID}`}
-            menuID={`Dynamic_${column.additionalColumnID}`}
+            key={`dynamic-col-${column.additionalColumnID}`}
+            // FIX: menuID must be the raw ID (no "Dynamic_" prefix) so toggling
+            // this checkbox flips the SAME key BugGroupTable reads for visibility
+            menuID={`${column.additionalColumnID}`}
             name={column.colname}
           />
         )

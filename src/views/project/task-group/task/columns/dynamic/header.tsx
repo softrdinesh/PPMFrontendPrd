@@ -17,6 +17,7 @@ import {
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import type { AdditionalColumn } from '@/services/modules/project/types'
 import { deleteColumn, updateColumn } from '@/services/modules/task-group'
+import toast from 'react-hot-toast'
 
 interface DynamicTableHeaderProps {
   column: AdditionalColumn
@@ -53,7 +54,7 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
 
       await updateColumn({ id: column?.AdditionalColumnID?.toString(), body: updateColumnBody })
       setEditOpen(false)
-
+toast.success('Column Name Updated Successfully!')
       refetch()
     } catch (error) {
       console.log('error :', error)

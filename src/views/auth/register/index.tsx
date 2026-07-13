@@ -54,7 +54,8 @@ const defaultValues = {
   countryID: null,
   address: '',
   organizationName: '',
-  organizationSize: ''
+  organizationSize: '',
+  agreeToTerms: false
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -71,6 +72,7 @@ type FormFields = {
   address: string
   organizationName: string
   organizationSize: string
+  agreeToTerms: boolean
 }
 
 const RegisterComponent = () => {
@@ -94,8 +96,13 @@ const RegisterComponent = () => {
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { isSubmitting }
   } = useForm<FormFields>({ defaultValues })
+
+  // Watch the checkbox value
+  const agreeToTerms = watch('agreeToTerms')
+  const countryID = watch('countryID')
 
   // Hooks
   const theme = useTheme()
@@ -313,8 +320,8 @@ const RegisterComponent = () => {
                   <Controller
                     name='countryID'
                     control={control}
-                    rules={{ required: 'Please enter a password' }}
-                    render={({ field }) => (
+                    rules={{ required: 'Please select a country' }}
+                    render={({ field, fieldState: { error } }) => (
                       <Autocomplete
                         size='small'
                         value={field?.value}
@@ -336,7 +343,14 @@ const RegisterComponent = () => {
                             {option.Name} ({option.Code})
                           </Box>
                         )}
-                        renderInput={params => <TextField {...params} label='Country' />}
+                        renderInput={params => (
+                          <TextField 
+                            {...params} 
+                            label='Country' 
+                            error={!!error}
+                            helperText={error?.message}
+                          />
+                        )}
                       />
                     )}
                   />
@@ -372,12 +386,29 @@ const RegisterComponent = () => {
                   />
 
                   <div className='flex justify-between items-center flex-wrap gap-x-3 gap-y-1'>
-                    <FormControlLabel
-                      control={<Checkbox />}
-                      label={<Fragment>I agree to privacy policy & terms</Fragment>}
+                    <Controller
+                      name='agreeToTerms'
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox 
+                              checked={field.value} 
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={<Fragment>I agree to privacy policy & terms</Fragment>}
+                        />
+                      )}
                     />
                   </div>
-                  <Button size='small' fullWidth variant='contained' type='submit' disabled={isSubmitting}>
+                  <Button 
+                    size='small' 
+                    fullWidth 
+                    variant='contained' 
+                    type='submit' 
+                    disabled={!agreeToTerms || !countryID || isSubmitting}
+                  >
                     {isSubmitting ? <CircularProgress size={22} color='secondary' /> : 'Sign up'}
                   </Button>
 

@@ -67,6 +67,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL1}/SprintTaskGetDynamicDropdownvaluelist?GroupID=${taskGroupID}&TaskID=${taskID}`
     );
+    
     return response.data;
   };
 
@@ -110,7 +111,9 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   // Transform sprint dropdown values to match the expected format
   const transformedSprintValues = useMemo(() => {
     if (!sprintDropdownValues) return [];
+    console.log(sprintDropdownValues,'sprintDropdownValues');
     return sprintDropdownValues.map(item => ({
+    
       Dynamic_ddl_ID: item.dynamicDropdownID,
       Valuetxt: item.valuetxt
     }));
@@ -165,12 +168,12 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       // Make the API call using POST method
       const response = await axios.post(apiUrl);
       
-      if (response) {
+      // if (response) {
         toast.success('Value selected successfully');
         await refetch();
         await refetchSprintValues();
         handleClose();
-      }
+      // }
     } catch (error) {
       console.error('error selecting dropdown value :', error)
       toast.error('Failed to select value');

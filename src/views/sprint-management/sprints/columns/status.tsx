@@ -171,6 +171,7 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
         }
       }
     );   
+    
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
