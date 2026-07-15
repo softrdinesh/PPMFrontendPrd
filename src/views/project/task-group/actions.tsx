@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useState,useMemo } from 'react'
 import { Box, IconButton, Menu, MenuItem, Typography } from '@mui/material'
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import NewTaskDialog from '../main-screen/task-group-add-dialog'
@@ -7,6 +7,7 @@ import { DeleteTaskgroup,fetchTaskGroupList,Deleteprojectgroup } from '@/service
 import axios from 'axios'
 import { useAuth } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
+
 interface TaskGroupActionsProps {
   groupName?: string
   id?: Number,
@@ -22,6 +23,28 @@ const TaskGroupActions = ({ groupName,id,ProjectID,refetch  }: TaskGroupActionsP
 const [editgroupid, seteditgroupid] = useState('')
 const [projectId, setprojectId] = useState('')
 const {user} = useAuth()
+  // const router = useRouter()
+
+
+
+  // const { data} = useQuery({
+  //     queryKey: ['project-view', ProjectID],
+  //     queryFn: () =>
+  //  viewProject(ProjectID?.toString() ?? '').then(res => {
+  //         if (res?.statusCode === 403) {
+  //           router.replace('/401')
+  //           return undefined
+  //         } else {
+  //           return res?.data
+  //         }
+  //       })
+  //   })
+  //   console.log(data,ProjectID,'isLoading1');
+
+
+  // const role = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
+
+
 
   const handleMenuOpen = (e: any) => {
     e.stopPropagation()

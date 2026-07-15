@@ -13,11 +13,15 @@ import {
   TextField,
   Typography
 } from '@mui/material'
+import { useParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import type { AdditionalColumn } from '@/services/modules/project/types'
 import { deleteColumn, updateColumn } from '@/services/modules/task-group'
 import toast from 'react-hot-toast'
+import { viewProject } from '@/services/modules/project'
+import { useRouter } from 'next/navigation'
 
 interface DynamicTableHeaderProps {
   column: AdditionalColumn
@@ -28,12 +32,30 @@ interface DynamicTableHeaderProps {
 const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTableHeaderProps) => {
   // ** Memo
   const initialValue = useMemo(() => column?.ColumnName, [column?.ColumnName])
-
+    const router = useRouter()
   // ** State
   const [anchorEl, setAnchorEl] = useState(null)
   const [editOpen, setEditOpen] = useState(false)
   const [value, setValue] = useState(initialValue)
   const [deleteOpen, setDeleteOpen] = useState(false)
+   const params = useParams()
+  const projectId = Number(params.id)
+const { data, isLoading, } = useQuery({
+    queryKey: ['project-view', projectId],
+    queryFn: () =>
+      viewProject((projectId).toString()).then(res => {
+        if (res?.statusCode === 403) {
+          router.replace('/401')
+          return undefined
+        } else {
+          return res?.data
+        }
+      })
+  })
+  const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
+
+console.log(data,'data');
+
 
   const handleMenuOpen = (e: any) => {
     setAnchorEl(e?.currentTarget)
@@ -95,10 +117,11 @@ toast.success('Column Name Updated Successfully!')
   return (
     <Box display={'flex'} alignItems={'center'} width={'100%'} justifyContent={'space-between'}>
       <p style={{ whiteSpace: 'nowrap', marginRight: 15 }}>{column?.ColumnName}</p>
-
+{role1?.RoleName !=="Viewer" &&
       <IconButton size='small' onClick={handleMenuOpen}>
         <Icon icon={'lets-icons:meatballs-menu'} rotate={45} />
       </IconButton>
+}
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleMenuClose} TransitionComponent={Grow}>
         <MenuItem onClick={onEditClick}>
           <Box display={'flex'} alignItems={'center'} gap={3}>

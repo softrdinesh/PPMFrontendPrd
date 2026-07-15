@@ -117,7 +117,7 @@ const ProjectItem = ({ project }: { project: ProjectListItem }) => {
   )
 }
 
-const ListProjects = () => {
+const ListProjects = ({ hideAddProject = false }: { hideAddProject?: boolean }) => {
   const { projects: projectList, selected } = useWorkspace()
 
   const { isCollapsed, isHovered } = useVerticalNav()
@@ -137,7 +137,7 @@ const ListProjects = () => {
 
   return (
     <div className='space-y-3 py-3'>
-      {!!selected && (
+     {!!selected && !hideAddProject && (
         <div className='flex items-center gap-1'>
           <div className='flex-1'>
             <FormControl fullWidth>

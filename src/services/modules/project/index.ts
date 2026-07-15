@@ -17,6 +17,7 @@ export const fetchProjectList = async (workspaceID: string): Promise<ProjectList
 
 export interface ProjectViewResponse extends ApiResponse {
   data: ProjectViewData
+  value:ProjectViewData
 }
 
 export const viewProject = async (id: string): Promise<ProjectViewResponse> => {

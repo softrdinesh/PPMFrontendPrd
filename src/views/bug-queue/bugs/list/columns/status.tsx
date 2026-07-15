@@ -890,7 +890,6 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   // FIX: use ?? instead of || so a BugID/bugID of 0 is preserved instead of
   // being coerced away, which previously caused the `bugId` truthy-check in
   // handleStatusChange to fail for that edge case.
-  console.log(row,'rowbug');
   const bugId = (row as any)?.BugID ?? (row as any)?.bugID;
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>

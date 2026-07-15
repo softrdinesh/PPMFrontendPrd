@@ -36,7 +36,7 @@ const DatePickerDynamic = ({
 
 const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem; refetch: () => void }) => {
   const [startDate, setStartDate] = useState<Date | null>(null)
-console.log(original,'orgi');
+
   const [endDate, setEndDate] = useState<Date | null>(null)
   const { profile, user } = useAuth()
   const handleDateChange = async (dates: [Date | null, Date | null]) => {

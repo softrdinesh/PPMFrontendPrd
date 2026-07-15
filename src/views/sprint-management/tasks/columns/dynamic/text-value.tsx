@@ -83,6 +83,7 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
           borderBottom: 0
         }
       }}
+       style={{width:300}}
       placeholder='Please enter a value'
       fullWidth
       value={value}

@@ -31,7 +31,7 @@ const TaskGroupList = ({ isLoading }: TaskGroupListProps) => {
     <Card sx={{ borderRadius: '15px', overflow: 'hidden' }}>
       {taskGroups?.length ? (
         <div className='px-2 py-2'>
-          {taskGroups?.map((item, index) => <CustomizedAccordions key={item?.TaskGroupID} index={index} data={item} />)}
+          {taskGroups?.map((item, index) => <CustomizedAccordions key={item?.TaskGroupID} index={index} groupData={item} />)}
         </div>
       ) : (
         <div className='px-3 py-10  flex gap-10 items-center justify-center flex-col'>

@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState,useMemo } from 'react'
 import Image from 'next/image'
 import { Icon } from '@iconify/react'
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+
 import {
   Box,
   Dialog,
@@ -20,7 +22,8 @@ import {
 } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import axios from 'axios'
-
+import { useParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import ImgUploadBg from '@public/images/cards/upload-files.svg'
 import CustomButton from '@components/button'
 
@@ -31,7 +34,7 @@ import { taskFileUpload, updateTasks } from '@/services/modules/task'
 import type { AdditionalValue, TaskListItemType } from '@/services/modules/task/types'
 import type { TFileUploadMenuItems } from './dynamic-files-menu'
 import { menuItems } from './dynamic-files-menu'
-  
+  import { viewProject } from '@/services/modules/project'
 type FormValidateType = {
   value: string
   file: File | null
@@ -70,8 +73,24 @@ const DynamicFiles = ({
   const [errorAlert, setErrorAlert] = useState<string | null>(null)
   const [successAlert, setSuccessAlert] = useState<string | null>(null)
 const { profile,user } = useAuth()
+   const router = useRouter()
   // ** Constants
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB in bytes
+      const params = useParams()
+  const projectId = Number(params.id)
+  const { data, isLoading, } = useQuery({
+    queryKey: ['project-view', projectId],
+    queryFn: () =>
+      viewProject((projectId).toString()).then(res => {
+        if (res?.statusCode === 403) {
+          router.replace('/401')
+          return undefined
+        } else {
+          return res?.data
+        }
+      })
+  })
+    const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
   
   // Allowed file types
   const ALLOWED_FILE_TYPES = {
@@ -477,7 +496,7 @@ const onSubmit = async (data: FormValidateType) => {
         {/* {!dynamicValue ? ( */}
               {!dynamicValue || !dynamicValue?.DisplayText ? (
 
-          canEdit ? (
+          canEdit && role1?.RoleName !=="Viewer"  ? (
             <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />
             </IconButton>
@@ -494,6 +513,7 @@ const onSubmit = async (data: FormValidateType) => {
      
             <Box sx={{ position: 'relative' }}>
   {/* Close Icon - positioned absolutely on top */}
+  {role1?.RoleName !=="Viewer" &&
   <IconButton 
     size='small' 
     sx={{ 
@@ -509,7 +529,10 @@ const onSubmit = async (data: FormValidateType) => {
   >
     <Icon icon={'icon-park-twotone:close-one'} color='red' />
   </IconButton>
-  
+}
+
+
+
   {/* Share Icon */}
   {/* <IconButton
     size='small'

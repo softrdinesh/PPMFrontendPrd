@@ -104,8 +104,9 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
         }
       }}
       placeholder='Please enter a value'
-      fullWidth
+      // fullWidth
       value={value}
+      style={{width:300}}
       inputProps={{ maxLength: 50 }}
       onChange={e => {
         let newValue = e.target.value;

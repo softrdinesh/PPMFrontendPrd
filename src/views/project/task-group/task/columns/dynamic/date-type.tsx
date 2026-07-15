@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState,useMemo } from 'react'
 
 import { Icon } from '@iconify/react'
 import { Box, Chip, Dialog, DialogContent, Grid2 as Grid, IconButton, Typography } from '@mui/material'
@@ -13,7 +13,10 @@ import { updateTasks } from '@/services/modules/task'
 import type { TaskListItemType } from '@/services/modules/task/types'
 import CustomButton from '@components/button'
 import { useAuth } from '@/hooks/useAuth'
-
+  import { viewProject } from '@/services/modules/project'
+  import { useParams } from 'next/navigation'
+  import { useQuery } from '@tanstack/react-query'
+  import { useRouter } from 'next/navigation'
 interface DynamicDateProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
   refetch: () => void
@@ -28,6 +31,30 @@ const DynamicDate = ({ columnData, rowData, dynamicValue, refetch, isSubTask=fal
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dynamicValue?.DynamicColumnValues ?? null)
 const { profile,user } = useAuth()
+const router = useRouter()
+
+ const params = useParams()
+  const projectId = Number(params.id)
+  const { data, isLoading, } = useQuery({
+    queryKey: ['project-view', projectId],
+    queryFn: () =>
+      viewProject((projectId).toString()).then(res => {
+        if (res?.statusCode === 403) {
+          router.replace('/401')
+          return undefined
+        } else {
+          return res?.data
+        }
+      })
+  })
+    const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
+  
+
+
+
+
+
+
   const handleOpenDialog = () => {
     if (canEdit) {
       setSelectedDate(dynamicValue?.DynamicColumnValues ?? null)
@@ -142,13 +169,13 @@ const handleSave = async () => {
       {selectedDate ? (
         <Box display={'flex'} alignItems={'center'} gap={3} justifyContent={'space-between'} pr={2}>
           <Typography className='truncate'> {selectedDate}</Typography>
-          {canEdit && (
+          {canEdit && role1?.RoleName !== "Viewer" && (
             <IconButton size='small' onClick={handleOpenDialog}>
               <Icon icon={'mdi:pencil-outline'} />
             </IconButton>
           )}
         </Box>
-      ) : canEdit ? (
+      ) : canEdit && role1?.RoleName !== "Viewer" ? (
         <Chip label={'Pick a date'} size='small' variant='tonal' onClick={handleOpenDialog} />
       ) : (
         '-'

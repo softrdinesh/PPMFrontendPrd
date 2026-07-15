@@ -15,14 +15,15 @@ import { useAuth } from '@/hooks/useAuth'
 import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
 import { useRazorpayPayment } from '../paymentpopup/useRazorpayPayment'
 
+
 const DashboardPage = () => {
   // ** State
   const [open, setOpen] = useState(false)
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
+  const { refetchWorkspaces, workspace, projects } = useWorkspace() // <-- added `projects` here, swap the field name if your context uses a different key
 
   const { profile, user } = useAuth()
-  const { refetchWorkspaces } = useWorkspace()
 
   // ** Use Payment Hook
   // const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
@@ -39,72 +40,136 @@ const DashboardPage = () => {
   //   }
   // })
 
-  const handleOpen = () => setOpen(true)
+  const handleOpen = () =>{
+    const workspaceCount = workspace?.length ?? 0
+  const projectCount = projects?.length ?? 0
+ 
+  const hasUsedFreeQuota = workspaceCount > 0 || projectCount > 0
+
+  if (hasUsedFreeQuota) {
+    const canOpen = checkPaymentStatus()
+    if (canOpen) {
+  setOpen(true)
+    }
+  } else {
+    // First workspace/project — always free, no payment check needed
+    setOpen(true)
+  }
+  } 
 
   const handleClose = () => {
     setOpen(false)
   }
 
-  const handleClosePaymentDialog = () => {
+
+  const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
+    userId: Number(user?.id),
+    onPaymentSuccess: () => {
+      const canOpen = checkPaymentStatus()
+
+      setShouldOpenDialog(canOpen)
+      setShowPaymentExpiredDialog(false)
+    },
+    onPaymentFailure: () => {
+      const canOpen = checkPaymentStatus()
+
+      setShouldOpenDialog(canOpen)
+      setShowPaymentExpiredDialog(true)
+    }
+  })
+
+  // const checkPaymentStatus = () => {
+  //   const paymentStatus = localStorage.getItem('paymentStatus')
+
+  //   const workspaceCount = workspace?.length ?? 0
+  //   const projectCount = projects?.length ?? 0
+
+  //   // If either the workspace count or project count is greater than 0, block and show the payment popup.
+  //   // Only when BOTH are 0 is the user allowed through without payment.
+  //   if (workspaceCount > 0 ) {
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
+
+  //   try {
+  //     if (paymentStatus) {
+  //       const parsed = JSON.parse(paymentStatus)
+
+  //       // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
+  //       if (parsed.isExpired == true) {
+  //         setShowPaymentExpiredDialog(true)
+  //         return false
+  //       }
+  //       // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
+  //       if (parsed.isExpired == false) {
+  //         setShowPaymentExpiredDialog(false)
+  //         return true
+  //       }
+  //       // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
+  //       setShowPaymentExpiredDialog(true)
+  //       return false
+  //     }
+  //     // No stored status, but both workspaceCount and projectCount are 0, so allow the first creation
+  //     setShowPaymentExpiredDialog(false)
+  //     return true
+  //   } catch (error) {
+  //     console.error('Error parsing payment status:', error)
+  //     // On parse error, treat as expired to be safe
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
+  // }
+const checkPaymentStatus = () => {
+  const paymentStatus = localStorage.getItem('paymentStatus')
+  const workspaceCount = workspace?.length ?? 0
+  const projectCount = projects?.length ?? 0
+  const hasUsedFreeQuota = workspaceCount > 0 || projectCount > 0
+
+  // If the free quota hasn't been used yet, always allow — no need to even
+  // look at payment status.
+  if (!hasUsedFreeQuota) {
     setShowPaymentExpiredDialog(false)
+    return true
   }
 
-  // useEffect(() => {
-  //   if (open) {
-  //     const canOpen = checkPaymentStatus()
-  //     setShouldOpenDialog(canOpen)
-  //   } else {
-  //     setShouldOpenDialog(false)
-  //     setShowPaymentExpiredDialog(false)
-  //   }
-  // }, [open])
+  // Free quota is used up — payment status now decides.
+  try {
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
 
-  // Run payment status check on mount (no logic changes)
-  // useEffect(() => {
-  //   const canOpen = checkPaymentStatus()
-  //   setShouldOpenDialog(canOpen)
-  // }, [])
-
-  const checkPaymentStatus = () => {
-    const paymentStatus = localStorage.getItem('paymentStatus')
-
-    try {
-      if (paymentStatus) {
-        const parsed = JSON.parse(paymentStatus)
-        // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-        if (parsed.isExpired === true) {
-          setShowPaymentExpiredDialog(true)
-          return false
-        }
-        // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-        if (parsed.isExpired === false) {
-          setShowPaymentExpiredDialog(false)
-          return true
-        }
-        // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
+      if (parsed.isExpired == true) {
         setShowPaymentExpiredDialog(true)
         return false
       }
-      // No stored status → treat as expired by default (user must renew)
-      setShowPaymentExpiredDialog(true)
-      return false
-    } catch (error) {
-      console.error('Error parsing payment status:', error)
-      // On parse error, treat as expired to be safe
+      if (parsed.isExpired == false) {
+        setShowPaymentExpiredDialog(false)
+        return true
+      }
+      // Unexpected shape — be conservative
       setShowPaymentExpiredDialog(true)
       return false
     }
+    // No stored status at all, quota already used → must pay
+    setShowPaymentExpiredDialog(true)
+    return false
+  } catch (error) {
+    console.error('Error parsing payment status:', error)
+    setShowPaymentExpiredDialog(true)
+    return false
   }
-
+}
+  const handleClosePaymentDialog = () => {
+    setShowPaymentExpiredDialog(false)
+  }
   return (
     <>
-      {/* <SubscriptionExpiredDialog
+      <SubscriptionExpiredDialog
         open={showPaymentExpiredDialog}
         onClose={handleClosePaymentDialog}
         onRenew={generateRazorPayOrder}
         isLoading={isLoading}
         razorpayLoaded={razorpayLoaded}
-      /> */}
+      />
 
       <Box>
         <Typography className='text-lg lg:text-3xl font-bold text-textPrimary'>Create your workspace</Typography>

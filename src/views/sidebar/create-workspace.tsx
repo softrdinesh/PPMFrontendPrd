@@ -111,23 +111,40 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
     }
   }, [shouldOpenDialog])
 
-  const handleCreateWorkspaceClick = () => {
-       setIsModalOpen(true)
+//   const handleCreateWorkspaceClick = () => {
+     
 //     const workspaceCount = workspace?.length ?? 0
 //     const projectCount = projects?.length ?? 0
 // console.log(workspaceCount,projectCount);
 //     if (workspaceCount > 0) {
-
+// console.log('ccc');
 //       const canOpen = checkPaymentStatus()
 
 //       if (canOpen) {
 //         setIsModalOpen(true)
 //       }
 //     } else {
+//       console.log('ccc222');
+
 //       setIsModalOpen(true)
 //     }
-  }
+//   }
+const handleCreateWorkspaceClick = () => {
+  const workspaceCount = workspace?.length ?? 0
+  const projectCount = projects?.length ?? 0
 
+  const hasUsedFreeQuota = workspaceCount > 0 || projectCount > 0
+
+  if (hasUsedFreeQuota) {
+    const canOpen = checkPaymentStatus()
+    if (canOpen) {
+      setIsModalOpen(true)
+    }
+  } else {
+    // First workspace/project — always free, no payment check needed
+    setIsModalOpen(true)
+  }
+}
   const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
     userId: Number(user?.id),
     onPaymentSuccess: () => {
@@ -144,48 +161,86 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
     }
   })
 
-  const checkPaymentStatus = () => {
-    const paymentStatus = localStorage.getItem('paymentStatus')
+  // const checkPaymentStatus = () => {
+  //   const paymentStatus = localStorage.getItem('paymentStatus')
 
-    const workspaceCount = workspace?.length ?? 0
-    const projectCount = projects?.length ?? 0
+  //   const workspaceCount = workspace?.length ?? 0
+  //   const projectCount = projects?.length ?? 0
 
-    // If either the workspace count or project count is greater than 0, block and show the payment popup.
-    // Only when BOTH are 0 is the user allowed through without payment.
-    if (workspaceCount > 0 || projectCount > 0) {
-      setShowPaymentExpiredDialog(true)
-      return false
-    }
+  //   // If either the workspace count or project count is greater than 0, block and show the payment popup.
+  //   // Only when BOTH are 0 is the user allowed through without payment.
+  //   if (workspaceCount > 0 ) {
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
 
-    try {
-      if (paymentStatus) {
-        const parsed = JSON.parse(paymentStatus)
+  //   try {
+  //     if (paymentStatus) {
+  //       const parsed = JSON.parse(paymentStatus)
 
-        // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-        if (parsed.isExpired == true) {
-          setShowPaymentExpiredDialog(true)
-          return false
-        }
-        // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-        if (parsed.isExpired == false) {
-          setShowPaymentExpiredDialog(false)
-          return true
-        }
-        // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
+  //       // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
+  //       if (parsed.isExpired == true) {
+  //         setShowPaymentExpiredDialog(true)
+  //         return false
+  //       }
+  //       // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
+  //       if (parsed.isExpired == false) {
+  //         setShowPaymentExpiredDialog(false)
+  //         return true
+  //       }
+  //       // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
+  //       setShowPaymentExpiredDialog(true)
+  //       return false
+  //     }
+  //     // No stored status, but both workspaceCount and projectCount are 0, so allow the first creation
+  //     setShowPaymentExpiredDialog(false)
+  //     return true
+  //   } catch (error) {
+  //     console.error('Error parsing payment status:', error)
+  //     // On parse error, treat as expired to be safe
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
+  // }
+const checkPaymentStatus = () => {
+  const paymentStatus = localStorage.getItem('paymentStatus')
+  const workspaceCount = workspace?.length ?? 0
+  const projectCount = projects?.length ?? 0
+  const hasUsedFreeQuota = workspaceCount > 0 || projectCount > 0
+
+  // If the free quota hasn't been used yet, always allow — no need to even
+  // look at payment status.
+  if (!hasUsedFreeQuota) {
+    setShowPaymentExpiredDialog(false)
+    return true
+  }
+
+  // Free quota is used up — payment status now decides.
+  try {
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+
+      if (parsed.isExpired == true) {
         setShowPaymentExpiredDialog(true)
         return false
       }
-      // No stored status, but both workspaceCount and projectCount are 0, so allow the first creation
-      setShowPaymentExpiredDialog(false)
-      return true
-    } catch (error) {
-      console.error('Error parsing payment status:', error)
-      // On parse error, treat as expired to be safe
+      if (parsed.isExpired == false) {
+        setShowPaymentExpiredDialog(false)
+        return true
+      }
+      // Unexpected shape — be conservative
       setShowPaymentExpiredDialog(true)
       return false
     }
+    // No stored status at all, quota already used → must pay
+    setShowPaymentExpiredDialog(true)
+    return false
+  } catch (error) {
+    console.error('Error parsing payment status:', error)
+    setShowPaymentExpiredDialog(true)
+    return false
   }
-
+}
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
   }

@@ -308,7 +308,14 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
   // Function to force refresh message count (called from dialog)
   // Now supports receiving optional WS message data from child components so parent can dedupe & increment.
-  const handleRefreshMessageCount = (incomingData?: any) => {
+  // FIX: wrapped in useCallback so this function has a STABLE identity across
+  // re-renders. Previously it was a plain function recreated on every render of
+  // TaskNameCell (which happens on every incoming WS message, since a message
+  // bumps messageCount state). Since this function is passed down as the
+  // onRefreshMessageCount prop, and ProjectUpdates' connectWebSocket depends on
+  // that prop, a new identity on every render was tearing down and reconnecting
+  // the child socket constantly, causing the flaky connection / missed messages.
+  const handleRefreshMessageCount = useCallback((incomingData?: any) => {
     try {
       if (!incomingData) {
         // No data provided, nothing to dedupe against; just ensure websocket active.
@@ -362,7 +369,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
         connectWebSocket()
       }
     }
-  }
+  }, [rowData?.TaskID, connectWebSocket])
 
   return (
     <>

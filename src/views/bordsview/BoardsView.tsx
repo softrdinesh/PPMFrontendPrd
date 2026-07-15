@@ -677,6 +677,7 @@ const BoardsView = () => {
     [searchText]
   )
 
+
 interface ApiTeamMember {
   userID: number
   name: string
@@ -740,6 +741,7 @@ const fetchProjectTasks = async () => {
     });
   }
 };
+
 
   const checkPaymentStatus = () => {
     try {
@@ -954,23 +956,23 @@ const fetchTeamMembers = async () => {
     }
   })
 
-  useEffect(() => {
-    if (createCategoryDialog) {
-      const canOpen = checkPaymentStatus()
-      if (!canOpen) {
-        setCreateCategoryDialog(false)
-      }
-    }
-  }, [createCategoryDialog])
+  // useEffect(() => {
+  //   if (createCategoryDialog) {
+  //     const canOpen = checkPaymentStatus()
+  //     if (!canOpen) {
+  //       setCreateCategoryDialog(false)
+  //     }
+  //   }
+  // }, [createCategoryDialog])
 
-  useEffect(() => {
-    if (openDialog) {
-      const canCreateTask = checkTaskPaymentStatus()
-      if (!canCreateTask) {
-        setOpenDialog(false)
-      }
-    }
-  }, [openDialog])
+  // useEffect(() => {
+  //   if (openDialog) {
+  //     const canCreateTask = checkTaskPaymentStatus()
+  //     if (!canCreateTask) {
+  //       setOpenDialog(false)
+  //     }
+  //   }
+  // }, [openDialog])
 
   const fetchPriorities = async () => {
     setPriorityLoading(true)
@@ -1459,26 +1461,77 @@ useEffect(() => {
   }
 
   const handleNewTaskClick = () => {
-    const canCreateTask = checkTaskPaymentStatus()
-    if (!canCreateTask) {
-      return
-    }
-    
+ 
+    const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
+
+
+  if (totalTasks >= 10) {
+    setShowTaskPaymentDialog(true)
+    return
+  }
     setOpenDialog(true)
   }
 
-  const handleOpenCreateCategory = () => {
-    const canOpen = checkPaymentStatus()
+
+
+  // const handleNewTaskClick = () => {
+  //   // const canCreateTask = checkTaskPaymentStatus()
+  //   // if (!canCreateTask) {
+  //   //   return
+  //   // }
+  //   const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
+
+  //  console.log(totalTasks,'totalTasks');
+
+  // // if (categoryCount >= 3) {
+  // //   setShowPaymentExpiredDialog(true)
+  // //   return
+  // // }
+  //   setOpenDialog(true)
+  // }
+
+
+
+
+//   const handleOpenCreateCategory = () => {
+//     // const canOpen = checkPaymentStatus()
     
-    if (!canOpen) {
-      return
-    }
+//     // if (!canOpen) {
+//     //   return
+//     // }
+// const categoryCount = columns.length
+
+//     if(categoryCount > 3){
+
+//     }
     
-    setNewCategoryName('')
-    setSelectedColor('#2196F3')
-    setCategoryValidationErrors({})
-    setCreateCategoryDialog(true)
+//     setNewCategoryName('')
+//     setSelectedColor('#2196F3')
+//     setCategoryValidationErrors({})
+//     setCreateCategoryDialog(true)
+//   }
+const handleOpenCreateCategory = () => {
+  // const canOpen = checkPaymentStatus()
+  
+  // if (!canOpen) {
+  //   return
+  // }
+
+  const categoryCount = columns.length
+
+  if (categoryCount >= 3) {
+    setShowPaymentExpiredDialog(true)
+    return
   }
+
+  setNewCategoryName('')
+  setSelectedColor('#2196F3')
+  setCategoryValidationErrors({})
+  setCreateCategoryDialog(true)
+}
+
+
+
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
@@ -3446,7 +3499,7 @@ useEffect(() => {
             )}
           </Box>
 
-          <SubscriptionExpiredDialog
+           <SubscriptionExpiredDialog
             open={showPaymentExpiredDialog}
             onClose={handleClosePaymentDialog}
             onRenew={generateRazorPayOrder}
@@ -3460,7 +3513,7 @@ useEffect(() => {
             onRenew={generateRazorPayOrder}
             isLoading={isLoading}
             razorpayLoaded={razorpayLoaded}
-          />
+          /> 
         </Box>
       )}
     </Box>

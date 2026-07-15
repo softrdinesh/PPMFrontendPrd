@@ -10,6 +10,8 @@ import CustomButton from '@/components/button'
 import toast from 'react-hot-toast'
 import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
 import { useRazorpayPayment } from '../../paymentpopup/useRazorpayPayment'
+import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 
 // ** Icons Imports
 import { Controller, useForm } from 'react-hook-form'
@@ -23,6 +25,7 @@ import { useProject } from 'src/context/project-context'
 // ** API Imports
 import { addTaskGroup, updateTaskGroup } from '@/services/modules/task-group'
 import { useAuth } from '@/hooks/useAuth'
+import { viewProject } from '@/services/modules/project'
 
 // Extend Window interface for Razorpay
 declare global {
@@ -49,7 +52,7 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
   const { project, refetchTaskGroup } = useProject()
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
-
+  const router = useRouter()
   const [paymentStatus, setPaymentStatus] = useState("")
   const { profile,user } = useAuth()
   const logoImage = "https://appsuresolutions.netlify.app/assets/header_logo-Bj3Dgdu3.svg" // Replace with your actual logo
@@ -67,6 +70,19 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
       setShowPaymentExpiredDialog(true)
     }
   })
+    // const { data, refetch } = useQuery({
+    //   queryKey: ['project-view', 8],
+    //   queryFn: () =>
+    //     viewProject("8").then(res => {
+    //       if (res?.statusCode === 403) {
+    //         router.replace('/401')
+    //         return undefined
+    //       } else {
+    //         return res?.data
+    //       }
+    //     })
+    // })
+   
   const {
     handleSubmit,
     control,

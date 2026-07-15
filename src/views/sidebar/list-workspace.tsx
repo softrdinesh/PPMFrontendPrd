@@ -49,7 +49,7 @@ const MenuItemTextMetaWrapper = styled(Box)(({ theme }) => ({
   transition: 'opacity .25s ease-in-out'
 }))
 
-const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
+const WorkspaceItem = ({ workspaces }: { workspaces: WorkspaceListItem }) => {
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
   const [open, setOpen] = useState(false)
@@ -58,7 +58,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   
   const { profile, user } = useAuth()
-  const { selected, setSelected, refetchWorkspaces } = useWorkspace()
+  const { selected, setSelected, refetchWorkspaces,projects, workspace} = useWorkspace()
 
   const { isCollapsed, isHovered, collapsedWidth } = useVerticalNav()
 
@@ -77,7 +77,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
 
   // ** Functions
   const isNavLinkActive = () => {
-    if (selected?.WorkspaceID === workspace?.WorkspaceID) {
+    if (selected?.WorkspaceID === workspaces?.WorkspaceID) {
       return true
     } else {
       return false
@@ -106,14 +106,14 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
       const response =
         profile === 'projects'
           ? await deleteWorkspace({
-              OrganizationID: workspace.OrganizationID,
-              WorkspaceID: workspace.WorkspaceID?.toString(),
-              WorkspaceName: workspace.WorkspaceName
+              OrganizationID: workspaces.OrganizationID,
+              WorkspaceID: workspaces.WorkspaceID?.toString(),
+              WorkspaceName: workspaces.WorkspaceName
             })
           : await deleteSprintWorkspace({
-              OrganizationID: workspace.OrganizationID,
-              WorkspaceID: workspace.WorkspaceID?.toString(),
-              WorkspaceName: workspace.WorkspaceName
+              OrganizationID: workspaces.OrganizationID,
+              WorkspaceID: workspaces.WorkspaceID?.toString(),
+              WorkspaceName: workspaces.WorkspaceName
             })
 
       if (response?.status) {
@@ -121,7 +121,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
         setOpen(false)
         handleOpenClose()
 
-        if (selected?.WorkspaceID === workspace?.WorkspaceID) {
+        if (selected?.WorkspaceID === workspaces?.WorkspaceID) {
           setSelected(null)
         }
       }
@@ -132,50 +132,94 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
 
   const debouncedDelete = debounce(handleDelete, 400)
 
-  // check payment status stored in localStorage and set dialog state accordingly
-  const checkPaymentStatus = (): boolean => {
-    const paymentStatus = localStorage.getItem('paymentStatus')
-
-    try {
-      if (paymentStatus) {
-        const parsed = JSON.parse(paymentStatus)
-        // If parsed explicitly says expired, show payment dialog and disallow selecting the workspace
-        if (parsed.isExpired === true) {
-          setShowPaymentExpiredDialog(true)
-          return false
-        }
-        // If parsed explicitly says not expired, hide dialog and allow selecting the workspace
-        if (parsed.isExpired === false) {
-          setShowPaymentExpiredDialog(false)
-          return true
-        }
-        // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
-        setShowPaymentExpiredDialog(true)
-        return false
-      }
-      // No stored status → treat as expired by default (user must renew)
-      setShowPaymentExpiredDialog(true)
-      return false
-    } catch (error) {
-      console.error('Error parsing payment status:', error)
-      // On parse error, treat as expired to be safe
-      setShowPaymentExpiredDialog(true)
-      return false
-    }
+  
+    const handleSelect = (ws: WorkspaceListItem) => {
+    setSelected(ws)
   }
 
-  const handleSelect = (ws: WorkspaceListItem) => {
-    const canOpen = checkPaymentStatus()
-    if (canOpen) {
-      setSelected(ws)
-    }
-    // if cannot open, checkPaymentStatus already set the expired dialog
-  }
+ 
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
   }
 
+   const handleCreateWorkspaceClick = () => {
+     const workspaceCount = workspace?.length ?? 0
+
+    if (workspaceCount >= 1) {
+    const canOpen = checkPaymentStatus()
+handleOpenClose()
+        if (canOpen) {
+      setIsModalOpen(true)
+    }
+      return
+    }
+
+    setIsModalOpen(true)
+    handleOpenClose()
+  }
+
+
+   const handleCreateproject= () => {
+     const projectcount = projects?.length ?? 0
+
+    if (projectcount >= 1) {
+    const canOpen = checkPaymentStatus()
+handleOpenClose()
+        if (canOpen) {
+      setOpen1(true)
+    }
+      return
+    }
+
+    setOpen1(true)
+    handleOpenClose()
+  }
+
+
+
+
+
+
+  const checkPaymentStatus = () => {
+  const paymentStatus = localStorage.getItem('paymentStatus')
+  const workspaceCount = workspace?.length ?? 0
+  const projectCount = projects?.length ?? 0
+  const hasUsedFreeQuota = workspaceCount > 0 || projectCount > 0
+
+  // If the free quota hasn't been used yet, always allow — no need to even
+  // look at payment status.
+  if (!hasUsedFreeQuota) {
+    setShowPaymentExpiredDialog(false)
+    return true
+  }
+
+  // Free quota is used up — payment status now decides.
+  try {
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+
+      if (parsed.isExpired == true) {
+        setShowPaymentExpiredDialog(true)
+        return false
+      }
+      if (parsed.isExpired == false) {
+        setShowPaymentExpiredDialog(false)
+        return true
+      }
+      // Unexpected shape — be conservative
+      setShowPaymentExpiredDialog(true)
+      return false
+    }
+    // No stored status at all, quota already used → must pay
+    setShowPaymentExpiredDialog(true)
+    return false
+  } catch (error) {
+    console.error('Error parsing payment status:', error)
+    setShowPaymentExpiredDialog(true)
+    return false
+  }
+}
   return (
     <ListItem
       disablePadding
@@ -188,7 +232,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
         disableTouchRipple
         disableRipple
         className={isNavLinkActive() ? 'active' : ''}
-        onClick={() => handleSelect(workspace)}
+        onClick={() => handleSelect(workspaces)}
         sx={{
           py: 2.25,
           backgroundColor: isNavLinkActive() ? 'rgba(255,255,255,0.8)' : 'inherit',
@@ -212,7 +256,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
             variant='circular'
             sx={{ width: 28, height: 28, fontSize: '1rem' }}
           >
-            {getInitials(workspace?.WorkspaceName)}
+            {getInitials(workspaces?.WorkspaceName)}
           </CustomAvatar>
         </ListItemIcon>
 
@@ -229,7 +273,7 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
               })}
             className={`truncate !font-normal ${isNavLinkActive() ? 'text-black' : 'text-white'}`}
           >
-            {workspace?.WorkspaceName}
+            {workspaces?.WorkspaceName}
           </Typography>
           <IconButton size='small' onClick={handleOpenMenu}>
             <Icon
@@ -240,14 +284,14 @@ const WorkspaceItem = ({ workspace }: { workspace: WorkspaceListItem }) => {
             />
           </IconButton>
           <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleOpenClose} TransitionComponent={Zoom}>
-            <MenuItem onClick={() => setIsModalOpen(true)}>
+            <MenuItem onClick={handleCreateWorkspaceClick}>
               <Box display={'flex'} alignItems={'center'} gap={2}>
                 <Icon icon={'mdi:plus-circle-outline'} />
                 <Typography>Create WorkSpace</Typography>
               </Box>
             </MenuItem>
             {profile === 'projects' && (
-              <MenuItem onClick={() => setOpen1(true)}>
+              <MenuItem onClick={handleCreateproject}>
                 <Box display={'flex'} alignItems={'center'} gap={2}>
                   <Icon icon={'mdi:plus-circle-outline'} />
                   <Typography>Create Project</Typography>
@@ -287,7 +331,7 @@ const ListWorkspaces = () => {
 
   return (
     <div className='space-y-1 py-3'>
-      {workspaceList?.map(workspace => <WorkspaceItem key={workspace?.WorkspaceID} workspace={workspace} />)}
+      {workspaceList?.map(workspace => <WorkspaceItem key={workspace?.WorkspaceID} workspaces={workspace} />)}
     </div>
   )
 }

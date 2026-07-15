@@ -1,5 +1,6 @@
 import type { SyntheticEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Icon } from '@iconify/react'
 import { Grid2, Typography } from '@mui/material'
@@ -24,6 +25,7 @@ import Image from 'next/image'
 import noDataImage from '@public/images/cards/no-data.svg'
 import CustomButton from '@/components/button'
 import NewTaskDialog from '../main-screen/task-group-add-dialog'
+import { viewProject } from '@/services/modules/project'
 
 const Accordion = styled(MuiAccordion)<AccordionProps>(() => ({
   boxShadow: 'none !important'
@@ -44,11 +46,11 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }))
 
 interface CustomizedAccordionsType {
-  data: TaskGroup
+  groupData: TaskGroup
   index: number
 }
 
-export default function CustomizedAccordions({ data, index }: CustomizedAccordionsType) {
+export default function CustomizedAccordions({ groupData, index }: CustomizedAccordionsType) {
   // ** Hooks
   const { role } = useProject()
 
@@ -56,11 +58,30 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
   const [selectedRows, setSelectedRows] = useState<any>({})
   const [showCard, setShowCard] = useState(false)
   const [open, setOpen] = useState(false)
-
+  const router = useRouter()
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
   const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
+
+
+const { data,  refetch } = useQuery({
+    queryKey: ['project-view', groupData.ProjectID],
+    queryFn: () =>
+      viewProject((groupData.ProjectID).toString()).then(res => {
+        if (res?.statusCode === 403) {
+          router.replace('/401')
+          return undefined
+        } else {
+          return res?.data
+        }
+      })
+  })
+
+  const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
+
+
+
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleChange = (panel: string) => (event: SyntheticEvent, newExpanded: boolean) => {
@@ -72,10 +93,10 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
     isLoading,
     refetch: refetchTaskList
   } = useQuery({
-    queryKey: ['task-list', data?.TaskGroupID],
-    queryFn: () => fetchTaskList(data?.TaskGroupID?.toString()),
+    queryKey: ['task-list', groupData?.TaskGroupID],
+    queryFn: () => fetchTaskList(groupData?.TaskGroupID?.toString()),
     retry: false,
-    enabled: !!data?.TaskGroupID
+    enabled: !!groupData?.TaskGroupID
   })
 
   const {
@@ -83,9 +104,9 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
     isLoading: taskLoading,
     refetch: refetchTaskGroup
   } = useQuery({
-    queryKey: ['task-group', data?.ProjectID],
-    // queryFn: () => fetchTaskGroupList(data?.ProjectID),
-    queryFn: () => fetchTaskGroupList(data?.ProjectID?.toString()),
+    queryKey: ['task-group', groupData?.ProjectID],
+    // queryFn: () => fetchTaskGroupList(groupData?.ProjectID),
+    queryFn: () => fetchTaskGroupList(groupData?.ProjectID?.toString()),
     retry: false
   })
 
@@ -140,14 +161,15 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
           >
             <div className='flex items-center justify-between gap-1 w-full'>
               <Typography ml={3} fontWeight={700}>
-                {data?.TaskGroupName ?? '-'}
+                {groupData?.TaskGroupName ?? '-'}
               </Typography>
+              {role1?.RoleName !=='Viewer' &&
               <TaskGroupActions 
-                groupName={data.TaskGroupName} 
-                id={data.TaskGroupID} 
-                ProjectID={data.ProjectID} 
+                groupName={groupData.TaskGroupName} 
+                id={groupData.TaskGroupID} 
+                ProjectID={groupData.ProjectID} 
                 refetch={refetchTaskGroup}  
-              />
+              />}
             </div>
           </AccordionSummary>
           <AccordionDetails>
@@ -158,7 +180,7 @@ export default function CustomizedAccordions({ data, index }: CustomizedAccordio
                     taskList={taskList}
                     selectedRows={selectedRows}
                     isLoading={isLoading}
-                    taskGroupID={data?.TaskGroupID}
+                    taskGroupID={groupData?.TaskGroupID}
                     refetch={refetchTaskList}
                     setSelectedRows={setSelectedRows}
                   />

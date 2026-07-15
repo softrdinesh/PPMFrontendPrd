@@ -69,6 +69,8 @@ const UserDropdown = () => {
   const handleUserLogout = async () => {
     // Redirect to login page
     auth.logout()
+    localStorage.removeItem("paymentStatus")
+    
   }
 
   return (

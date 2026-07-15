@@ -595,10 +595,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const [statusToDelete, setStatusToDelete] = useState<ProjectStatusList | null>(null)
   const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
-console.log(row,'row');
-  // FIX: guard against `refetch` not being a function, mirroring the same
-  // safeguard added in StatusMenuItem above. Zero behavior change when
-  // `refetch` is a valid function; prevents a hard crash when it isn't.
+
+
   const safeRefetch = async () => {
     if (typeof refetch === 'function') {
       await refetch()

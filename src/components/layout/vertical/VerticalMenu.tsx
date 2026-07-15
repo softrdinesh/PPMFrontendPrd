@@ -1,5 +1,5 @@
 // MUI Imports
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 import { useTheme } from '@mui/material/styles'
 import { usePathname, useRouter } from 'next/navigation'
@@ -58,6 +58,11 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const pathname = usePathname()
   const router = useRouter()
   const isDark = useMemo(() => theme.palette.mode === 'dark', [theme.palette.mode])
+const [boardSelected, setBoardSelected] = useState(false)
+
+useEffect(() => {
+  setBoardSelected(false)
+}, [JSON.stringify(selected)])
 
   // Vars
   const { isBreakpointReached, transitionDuration } = verticalNavOptions
@@ -67,11 +72,10 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
     router.push(`${routes.profile}`)
   }
 
-  // Add board click handler
-  const handleBoardClick = (boardId: string) => {
-    // Navigate to the board page
-    router.push(routes.boardsview)
-  }
+const handleBoardClick = (boardId: string) => {
+     setBoardSelected(true)
+     router.push(routes.boardsview)
+   }
 
   return (
     // eslint-disable-next-line lines-around-comment
@@ -152,7 +156,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         </Box>
         {profile == 'projects' &&
         <ListBoards onBoardClick={handleBoardClick} />}
-        {profile === 'projects' ? <ListProjects /> : selected && <SprintNavItemsList />}
+        {profile === 'projects' ? <ListProjects hideAddProject={boardSelected} /> : selected && <SprintNavItemsList />}
       </Menu>
     </ScrollWrapper>
   )

@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState,useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Icon } from '@iconify/react'
 import {
@@ -30,6 +31,9 @@ import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/type
 import { updateTasks } from '@/services/modules/task'
 import type { Owner, TaskListItemType } from '@/services/modules/task/types'
 import { useAuth } from '@/hooks/useAuth'
+import { viewProject } from '@/services/modules/project'
+import { useParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 
 interface TaskPeopleProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
@@ -50,11 +54,29 @@ const TaskPeople = ({
 }: TaskPeopleProps) => {
   // ** Hooks
   const { users, role } = useProject()
+   const router = useRouter()
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(rowData?.Owner ?? null)
   const [searchText, setSearchText] = useState('')
   const { profile, user } = useAuth()
+     const params = useParams()
+  const projectId = Number(params.id)
+  const { data, isLoading, } = useQuery({
+    queryKey: ['project-view', projectId],
+    queryFn: () =>
+      viewProject((projectId).toString()).then(res => {
+        if (res?.statusCode === 403) {
+          router.replace('/401')
+          return undefined
+        } else {
+          return res?.data
+        }
+      })
+  })
+    const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
   
+
+
   // New state for user list popover
   const [userListAnchor, setUserListAnchor] = useState<HTMLElement | null>(null)
 
@@ -251,6 +273,7 @@ const TaskPeople = ({
                   </IconButton>
 
                   {/* Small close button */}
+                  {role1?.RoleName !== "Viewer" &&
                   <button
                     onClick={e => {
                       e.stopPropagation()
@@ -278,12 +301,14 @@ const TaskPeople = ({
                   >
                     ✕
                   </button>
+}
                 </div>
               ))}
             </AvatarGroup>
           </Box>
 
           {/* Popover to show full user list */}
+          { role1?.RoleName !== "Viewer" && 
           <Popover
             open={Boolean(userListAnchor)}
             anchorEl={userListAnchor}
@@ -380,8 +405,9 @@ const TaskPeople = ({
               </List>
             </Box>
           </Popover>
+}
+          {canEdit && role1?.RoleName !== "Viewer" && (
 
-          {canEdit && (
             <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />
             </IconButton>

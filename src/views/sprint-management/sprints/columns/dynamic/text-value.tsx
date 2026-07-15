@@ -78,6 +78,7 @@ const SprintGroupID = (rowData as any)?.SprintGroupID;
   return canEdit ? (
     <TextField
       variant='standard'
+       style={{width:300}}
       sx={{
         border: 0,
         '& .MuiInputBase-root::before': {
@@ -88,7 +89,7 @@ const SprintGroupID = (rowData as any)?.SprintGroupID;
         }
       }}
       placeholder='Please enter a value'
-      fullWidth
+      // fullWidth
       value={value}
       inputProps={{ maxLength: 50 }}
       onChange={e => {

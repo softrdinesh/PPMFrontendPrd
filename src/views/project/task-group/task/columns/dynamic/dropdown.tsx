@@ -13,9 +13,9 @@ import {
   Typography,
   Zoom
 } from '@mui/material'
-import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
-
+import { viewProject } from '@/services/modules/project'
+import { useRouter } from 'next/navigation'
 import type { AdditionalColumn } from '@/services/modules/project/types'
 import { updateSubTask } from '@/services/modules/sub-task'
 import type { AdditionalSubTaskListItem } from '@/services/modules/sub-task/types'
@@ -24,7 +24,8 @@ import { addDropdownItem, fetchDropDownList } from '@/services/modules/task-grou
 import type { DynamicDropdownList } from '@/services/modules/task-group/types'
 import type { AdditionalValue, TaskListItemType } from '@/services/modules/task/types'
 import CustomButton from '@components/button'
-
+import { useParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 interface DynamicDropdownProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
   refetch: () => void
@@ -38,13 +39,31 @@ type FormValidateType = { dropdown: any }
 
 const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask, canEdit }: DynamicDropdownProps) => {
   const [anchorEl, setAnchorEl] = useState(null)
-
+   const router = useRouter()
   const [createMenu, setCreateMenu] = useState(false)
 
   const { data: dropdownItems, refetch: refetchDDL } = useQuery({
     queryKey: ['dropdown-items', rowData?.TaskGroupID],
     queryFn: () => fetchDropDownList({ taskGroupID: rowData?.TaskGroupID?.toString() })
   })
+
+    const params = useParams()
+  const projectId = Number(params.id)
+  const { data } = useQuery({
+    queryKey: ['project-view', projectId],
+    queryFn: () =>
+      viewProject((projectId).toString()).then(res => {
+        if (res?.statusCode === 403) {
+          router.replace('/401')
+          return undefined
+        } else {
+          return res?.data
+        }
+      })
+  })
+    const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
+  
+
 
   const listItems = useMemo(() => {
     const finalArr = dropdownItems?.filter(i =>
@@ -135,7 +154,8 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
+    
+      {/* <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
         {dynamicValue?.length ? (
           <Box display={'flex'} alignItems={'center'} gap={2}>
             <Chip variant='tonal' size='small' label={dynamicValue?.[0]?.Dropdown?.Valuetxt} />
@@ -148,7 +168,34 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
         ) : (
           '-'
         )}
+      </Box> */}
+     {role1?.RoleName !== "Viewer" ? (
+  <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
+    {dynamicValue?.length ? (
+      <Box display={'flex'} alignItems={'center'} gap={2}>
+        <Chip variant='tonal' size='small' label={dynamicValue?.[0]?.Dropdown?.Valuetxt} />
+        {dynamicValue?.length >= 2 && `+${dynamicValue?.length - 1}`}
       </Box>
+    ) : canEdit ? (
+      <IconButton>
+        <Icon icon={'bi:plus-circle-dotted'} />
+      </IconButton>
+    ) : (
+      '-'
+    )}
+  </Box>
+) : (
+  <Box sx={{ cursor: 'not-allowed' }}>
+    {dynamicValue?.length ? (
+      <Box display={'flex'} alignItems={'center'} gap={2}>
+        <Chip variant='tonal' size='small' label={dynamicValue?.[0]?.Dropdown?.Valuetxt} />
+        {dynamicValue?.length >= 2 && `+${dynamicValue?.length - 1}`}
+      </Box>
+    ) : (
+      '-'
+    )}
+  </Box>
+)}
       <Menu
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
