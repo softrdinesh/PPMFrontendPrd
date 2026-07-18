@@ -575,9 +575,12 @@ const fetchProjectTasks = async () => {
     if (!formData.priority) {
       newErrors.priority = 'Please select a priority';
     }
-    if (!formData.assignee) {
+if (rolename == 'Admin') {
+   if (!formData.assignee) {
       newErrors.assignee = 'Please select an assignee';
-    }
+   }
+}
+   
     if (!formData.category) {
       newErrors.category = 'Please select a category';
     }
@@ -605,9 +608,8 @@ const projectTaskID = formData.projectTask || '';
       // Encode the title and description for URL
       const encodedTitle = encodeURIComponent(formData.title);
       const encodedDescription = encodeURIComponent(formData.description || '');
-
       // Construct the API URL according to the curl example
-      const apiUrl = `${Baseurl}/CreateBoardTask/${encodedTitle}/${encodedDescription}/${priorityID}/${userid}/${projectTaskID}/${categoryID}/${user?.id}`;
+      const apiUrl = `${Baseurl}/CreateBoardTask/${encodedTitle}/${encodedDescription}/${priorityID}/${rolename =='Member'? user?.id: userid}/${projectTaskID}/${categoryID}/${user?.id}`;
 
       // Create FormData for file upload
       const formDataToSend = new FormData();
@@ -782,7 +784,9 @@ const projectTaskID = formData.projectTask || '';
   const priorityOpen = Boolean(priorityAnchorEl);
   const priorityPopupId = priorityOpen ? 'priority-popup' : undefined;
   const contextMenuOpen = Boolean(contextMenuAnchorEl);
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <>
       {/* MAIN DIALOG */}
@@ -1152,9 +1156,10 @@ const projectTaskID = formData.projectTask || '';
               {/* Assignee */}
               <FormControl fullWidth>
                 <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 1 }}>
-                  Assign To <span style={{ color: 'red' }}>*</span>
+                  Assign To   {rolename == 'Admin'&&<span style={{ color: 'red' }}>*</span>}
                 </Typography>
-                <Select
+                {rolename =='Admin' ? (
+   <Select
                 key={1}
                   value={formData.assignee || ''}
                   onChange={(e) => {
@@ -1181,6 +1186,12 @@ const projectTaskID = formData.projectTask || '';
                     </MenuItem>
                   ))}
                 </Select>
+                ): (
+                  <div className='mt-1'>
+<Typography variant='body1' style={{marginTop:10}} >{user?.userData.Name}</Typography>
+</div>
+                )}
+             
                 {Boolean(errors?.assignee) && (
                   <Typography
                     sx={{

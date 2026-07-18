@@ -54,7 +54,7 @@ const { data, isLoading, } = useQuery({
   })
   const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
 
-console.log(data,'data');
+
 
 
   const handleMenuOpen = (e: any) => {

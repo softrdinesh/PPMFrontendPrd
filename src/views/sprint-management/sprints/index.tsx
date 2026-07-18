@@ -228,6 +228,9 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
     const colors = ['#1976d2', '#388e3c', '#f57c00', '#7b1fa2', '#d32f2f', '#0288d1', '#689f38', '#f9a825']
     return colors[index % colors.length]
   }
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
 
   return (
     <SprintManagementProvider workspaceID={workspaceID}>
@@ -509,8 +512,14 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
               </ClickAwayListener>
             </div>
             <div className='flex items-center gap-5 flex-wrap justify-center'>
+                {rolename !== 'Viewer'&&
+          
               <NewSprintGroup />
+                }
+                                {rolename !== 'Viewer'&&
+
               <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
+                                }
               <SprintFilterButton />
               <CustomButton
                 variant='outlined'

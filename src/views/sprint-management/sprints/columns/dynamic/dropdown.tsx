@@ -259,8 +259,12 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
     }
   };
 
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
+  
       <Box onClick={handleOpen} sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}>
         {selectedValues?.length ? (
           <Box display={'flex'} alignItems={'center'} gap={2}>
@@ -269,7 +273,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
             {/* Show count of remaining values if more than one */}
             {selectedValues?.length > 1 && `+${selectedValues?.length - 1}`}
           </Box>
-        ) : canEdit ? (
+        ) : canEdit && rolename!=='Viewer' ? (
           <IconButton>
             <Icon icon={'bi:plus-circle-dotted'} />
           </IconButton>
@@ -277,6 +281,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
           '-'
         )}
       </Box>
+ 
       <Menu
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -332,6 +337,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
               <Grid item xs={12} p={2}>
                 <Box display={'flex'} alignItems={'center'} mt={2} gap={2}>
                   <FormControl fullWidth>
+                    {rolename !=='Viewer' &&
                     <Autocomplete
                       clearOnBlur
                       value={null}
@@ -352,6 +358,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                         handleDropdownSelect(newValue)
                       }}
                     />
+}
                   </FormControl>
                 </Box>
               </Grid>
@@ -385,6 +392,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                               {valueText}
                             </Typography>
                             
+                            {rolename !=='Viewer' &&
                             <IconButton
                               size='small'
                               sx={{ p: 0 }}
@@ -392,6 +400,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                             >
                               <Icon icon={'ep:close-bold'} color='red' />
                             </IconButton>
+                      }
                           </Box>
                         );
                       })}
@@ -410,11 +419,14 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                 </Box>
               </Grid>
               <Grid item xs={12}>
+                {rolename !=='Viewer' &&
                 <Box display={'flex'} alignItems={'center'} justifyContent={'end'} p={2}>
                   <CustomButton onClick={() => setCreateMenu(true)} size='small' variant='contained'>
                     {'Create new value'}
                   </CustomButton>
+
                 </Box>
+}
               </Grid>
             </Grid>
           </Box>

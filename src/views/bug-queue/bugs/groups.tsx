@@ -160,7 +160,9 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected, bugSearchTerm
       return null
     }).flat().filter(Boolean),
   [selectedRows])
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <Card className='rounded-lg'>
       <div className='py-2 px-3 flex items-center gap-2 justify-between'>
@@ -171,10 +173,12 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected, bugSearchTerm
 
           <Typography className='font-semibold text-lg'>{group.groupname}</Typography>
         </div>
+        {rolename !=='Viewer' &&
         
         <IconButton onClick={handleMenuClick} size="small">
           <i className='ri-more-2-fill' />
         </IconButton>
+}
         
         <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleMenuClose}>
           <MenuItem

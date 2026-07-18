@@ -595,7 +595,9 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const [statusToDelete, setStatusToDelete] = useState<ProjectStatusList | null>(null)
   const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
 
   const safeRefetch = async () => {
     if (typeof refetch === 'function') {
@@ -872,7 +874,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box
+      {rolename !== 'Viewer' ? (
+ <Box
         component={'button'}
         className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
         bgcolor={colorCode}
@@ -893,6 +896,30 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
           </Typography>
         </Tooltip>
       </Box>
+      ):(
+ <Box
+        component={'button'}
+        className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
+        bgcolor={colorCode}
+        color={colorCode && getContrastingTextColor(colorCode)}
+        // onClick={handleOpen}
+        sx={{ cursor: 'not-allowed' }}
+      >
+        <Tooltip title={statusName || 'None'}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            overflow={'hidden'}
+            color={'inherit'}
+            className='text-inherit'
+          >
+            {statusName ?? 'None'}
+          </Typography>
+        </Tooltip>
+      </Box>
+      )}
+     
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}

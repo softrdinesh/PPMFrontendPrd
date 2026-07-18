@@ -239,7 +239,9 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
       return true
     })
   }, [localData, selectedSprint, sprintSearchTerm])
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // Define static columns
   const staticColumns: ColumnDef<any>[] = useMemo(
     () => [
@@ -251,16 +253,19 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         header: ({ table }) => {
           return (
             <div className='flex justify-start ml-1 !w-20'>
+              {/* {rolename !== 'Viewer' && */}
               <Checkbox
                 checked={!!table?.getIsAllRowsSelected?.()}
                 indeterminate={!!table?.getIsSomeRowsSelected?.()}
                 onChange={table?.getToggleAllRowsSelectedHandler?.()}
               />
+   
             </div>
           )
         },
         cell: ({ row }) => (
           <div className='flex px-1 !w-20'>
+           {rolename !== 'Viewer' &&
             <Checkbox
               {...{
                 checked: row.getIsSelected(),
@@ -269,6 +274,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
                 onChange: row.getToggleSelectedHandler()
               }}
             />
+  }
           </div>
         )
       },
@@ -308,7 +314,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         ),
         
         cell: ({ row: { original } }) => (
-          <SprintTimelineManagement original={original} refetch={sprintListApi?.refetch} />
+          <SprintTimelineManagement   original={original} refetch={sprintListApi?.refetch} />
         )
       },
     ],
@@ -597,6 +603,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
         </TableBody>
       </Table>
       </div>
+{rolename !== 'Viewer'&&
       <div className='flex justify-between items-center gap-2 m-2'>
         <CustomButton
           variant='text'
@@ -620,6 +627,7 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
           Add New Column
         </CustomButton>
       </div>
+}
       {showCard &&
         <DeleteTasksComponent
           showCard={showCard}

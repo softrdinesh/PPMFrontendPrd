@@ -453,24 +453,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const [statusToDelete, setStatusToDelete] = useState<ProjectStatusList | null>(null)
   const { statusList = [] } = useWorkspace()
 
-  // Update the useQuery to use the new API
-  // const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
-  //   queryKey: ['status-lookup-list'],
-  //   queryFn: fetchStatusLookupList,
-  //   select: (data) => {
-  //     // Transform the API response to match ProjectStatusList format
-  //     return data.map((item: StatusLookupItem) => ({
-  //       StatusID: item.statusID,
-  //       Statusname: item.statusname,
-  //       Colorcode: item.colorcode,
-  //       IsDefault: false, // Set default value since API doesn't provide this
-  //       TaskgroupID: null,
-  //       CreateDate: '',    // ✅ added — required by ProjectStatusList
-  //     CreatedBy: 0,      // ✅ added — required by ProjectStatusList
-  //     IsDelete: 0  // Set default value since API doesn't provide this
-  //     }));
-  //   }
-  // })
+
 const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
   queryKey: ['status-lookup-list'],
   queryFn: fetchStatusLookupList,
@@ -681,16 +664,19 @@ const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box
+    {rolename !== 'Viewer' ? (
+ <Box
         component={'button'}
         className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
         bgcolor={colorCode}
         color={colorCode && getContrastingTextColor(colorCode)}
         onClick={handleOpen}
-        sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
+        sx={{ cursor: canEdit ? 'pointer' :  'not-allowed' }}
       >
         <Tooltip title={statusName || 'None'}>
           <Typography
@@ -705,6 +691,34 @@ const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
           </Typography>
         </Tooltip>
       </Box>
+    
+    ): (
+ <Box
+        component={'button'}
+        className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
+        bgcolor={colorCode}
+        color={colorCode && getContrastingTextColor(colorCode)}
+        // onClick={handleOpen}
+         sx={{ cursor: canEdit && rolename!=='Viewer' ? 'pointer' :  'not-allowed' }}
+      >
+        <Tooltip title={statusName || 'None'}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            overflow={'hidden'}
+            color={'inherit'}
+            className='text-inherit'
+          >
+            {statusName ?? 'None'}
+          </Typography>
+        </Tooltip>
+      </Box>
+    
+    )}
+     
+    
+    
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}

@@ -30,7 +30,9 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   const timerStartTimeRef = useRef<number | null>(null)
   const [overtimeSeconds, setOvertimeSeconds] = useState<number>(0)
   const [isOvertime, setIsOvertime] = useState<boolean>(false)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const form = useForm<FormType>({ defaultValues: { TimeResolution: null } })
 
   const handleOpen = (e: any) => {
@@ -362,10 +364,7 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
       clearInterval(syncInterval)
       clearInterval(overtimeInterval)
     }
-    // FIX: Removed timerStartTime from deps array — it was causing the effect to re-run and
-    // reset startTime to Date.now() on every refetch/render. Now only re-runs when the bug
-    // data actually changes from the server.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+ 
   }, [bug?.timeResolution, bug?.isTimerStart, bug?.BugID])
 
   // Clean up localStorage on component unmount
@@ -380,9 +379,9 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
 
   return (
     <div className='flex items-center gap-2'>
-      {bug?.timeResolution && (
+      {bug?.timeResolution  &&  rolename!='Viewer' && (
         <IconButton size='small' className='p-0' onClick={handleTimerToggle}>
-          {!bug?.isTimerStart ? (
+          {!bug?.isTimerStart   ? (
             <i className='ri-play-circle-line text-textPrimary size-6' />
           ) : (
             <i className='ri-pause-circle-line text-primary size-6' />
@@ -391,7 +390,8 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
       )}
 
       {!!bug?.isTimerStart && bug?.timeResolution ? (
-        <div className='px-2'>
+            rolename!='Viewer' ? (
+        <div className='px-1'>
           {/* <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}> */}
                       <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
 
@@ -399,10 +399,22 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
           {/* //  {isOvertime && ' (overtime)'} */}
           </Typography>
         </div>
+            ):
+               <div className='px-1'>
+           <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
+            {countdown || bug?.timeResolution || 'Add Time'}
+          </Typography>
+        </div>
       ) : (
-        <Button size='small' className='text-sm' onClick={handleOpen}>
+        rolename!='Viewer' ? (
+ <Button size='small' className='text-sm' onClick={handleOpen}>
           {bug?.timeResolution || 'Add Time'}
         </Button>
+        ):(
+
+          <Typography variant="body1">{bug?.timeResolution || 'None'}</Typography>
+        )
+       
       )}
 
       <Menu

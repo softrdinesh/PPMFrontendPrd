@@ -1922,7 +1922,7 @@ const handleOpenCreateCategory = () => {
           formData.append('file', selectedFile);
         }
         
-        const assigneeIdToSend = editingTask.assigneeId || editingTask.assignee;
+        const assigneeIdToSend = editingTask.assigneeId || user?.id;
         
         const encodedTitle = encodeURIComponent(editingTask.title);
         const encodedDescription = encodeURIComponent(editingTask.description || '');
@@ -1932,7 +1932,7 @@ const handleOpenCreateCategory = () => {
         const categoryId = editingTask.categoryID || '';
         const taskId = editingTask.taskID || editingTask.id;
         
-        const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${priorityId}/${assigneeIdToSend}/${projectTaskId}/${categoryId}/${user?.id}/${taskId}`;
+        const apiUrl = `${Baseurl}/UpdateBoardTask/${encodedTitle}/${encodedDescription}/${priorityId}/${rolename =='Admin'?assigneeIdToSend:user.id}/${projectTaskId}/${categoryId}/${user?.id}/${taskId}`;
         
         const response = await axios.post(apiUrl, formData, {
           headers: {
@@ -2120,7 +2120,9 @@ const handleOpenCreateCategory = () => {
     setSelectedCategories(new Set());
     handleFilterClose();
   };
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <Box 
       sx={{ 
@@ -2417,7 +2419,7 @@ const handleOpenCreateCategory = () => {
               )}
             </Button>
           </Box>
-
+{rolename == 'Admin' &&
           <Box sx={{ 
             position: 'relative',
             minWidth: { xs: '100%', sm: '200px' },
@@ -2548,7 +2550,9 @@ const handleOpenCreateCategory = () => {
               </Select>
             </FormControl>
           </Box>
+}
         </Box>
+        
       </Paper>
 
       <NewTaskDialog
@@ -3175,9 +3179,11 @@ const handleOpenCreateCategory = () => {
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              {rolename =='Admin' ?(
+  <FormControl fullWidth>
                 <InputLabel>Assignee</InputLabel>
-                <Select
+  
+  <Select
                   value={editingTask?.assigneeId ?? (editingTask?.assignee ?? '')}
                   label="Assignee"
                   onChange={(e) => {
@@ -3204,7 +3210,17 @@ const handleOpenCreateCategory = () => {
                     </MenuItem>
                   ))}
                 </Select>
+       
+
+              
               </FormControl>
+              ):(
+                <>
+               <Typography style={{alignItems:"center", fontWeight:'bold'}}  className='mt-2'>{"Assign To"}</Typography>
+            <Typography style={{alignItems:"center", fontWeight:'bold'}}  className='mt-2'>{user?.userData?.Name}</Typography>
+           </>
+              )}
+            
             </Grid>
 
             <Grid item xs={12} sm={6}>

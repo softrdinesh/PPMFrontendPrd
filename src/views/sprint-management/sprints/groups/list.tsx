@@ -79,7 +79,9 @@ const deleteSprintGroup = async () => {
   }
 };
 
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <Card className='rounded-lg'>
       <div className='py-2 px-3 flex items-center gap-2 justify-between'>
@@ -92,10 +94,10 @@ const deleteSprintGroup = async () => {
         </div>
 
         <div>
+                  {rolename !== 'Viewer'&&
           <IconButton size='small' className='rounded-xl' onClick={handleMenuOpen}>
             <i className={`ri-more-2-line`} />
-          </IconButton>
-
+          </IconButton>}
           <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleMenuClose}>
             <MenuItem
               onClick={() => {

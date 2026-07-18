@@ -38,7 +38,7 @@ const router = useRouter()
       })
   })
     const role1 = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])
-  console.log(role1?.RoleName);
+ 
 
 const isViewer= role1?.RoleName
 
@@ -95,9 +95,12 @@ const isViewer= role1?.RoleName
 //       onBlur={onBlur}
 //     />
 <TextField
-  style={{ width: 300 }}
-  disabled={isViewer === 'Viewer'}
+  style={{ width: 200 }}
+  disabled={isViewer == 'Viewer'}
   variant='standard'
+    multiline
+        minRows={3}
+        maxRows={6}
   sx={{
     border: 0,
     '& .MuiInputBase-root::before': {
@@ -106,13 +109,16 @@ const isViewer= role1?.RoleName
     '& .MuiInputBase-root:hover::before': {
       borderBottom: 0
     },
-    '& .MuiInputBase-input': {
-      color: '#1a1a1a' // normal text color
-    },
-    '& .MuiInputBase-input.Mui-disabled': {
-      color: '#1a1a1a', // color when disabled (overrides MUI's default gray)
-      WebkitTextFillColor: '#1a1a1a' // needed because MUI uses -webkit-text-fill-color for disabled inputs
+   '& .MuiInputBase-root.Mui-disabled': {
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    '&:before': {
+      borderBottom: 0
     }
+  },
+  '& .MuiInputBase-input.Mui-disabled': {
+    WebkitTextFillColor: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000'
+  }
   }}
   placeholder='Please enter a value'
   fullWidth

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Button } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 
 import moment from 'moment'
 
@@ -36,7 +36,9 @@ const DatePickerDynamic = ({
 
 const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem; refetch: () => void }) => {
   const [startDate, setStartDate] = useState<Date | null>(null)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const [endDate, setEndDate] = useState<Date | null>(null)
   const { profile, user } = useAuth()
   const handleDateChange = async (dates: [Date | null, Date | null]) => {
@@ -98,8 +100,9 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
       setEndDate(null)
     }
   }, [original?.SprintTimelineStart, original?.SprintTimelineEnd, original])
-  return (
-    <DatePickerDynamic
+  return (<>
+    {rolename !== 'Viewer' ? (
+ <DatePickerDynamic
       startDate={startDate}
       endDate={endDate}
       onChange={handleDateChange}
@@ -115,6 +118,11 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
         </Button>
       }
     />
+    ):(
+<Typography style={{cursor:"pointer"}}>{moment(startDate).format('MMM DD')} - {moment(endDate).format('MMM DD')}</Typography>
+    )}
+   
+    </>
   )
 }
 

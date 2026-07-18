@@ -131,7 +131,7 @@ const SprintFilterButton = () => {
   const selectedCount = useMemo(() => {
     return visibleColumns?.length || 0
   }, [visibleColumns])
-
+console.log(dynamicColumns,'dynamicColumns');
   // Prepare menu items as an array
   const menuItems = [
     // All option

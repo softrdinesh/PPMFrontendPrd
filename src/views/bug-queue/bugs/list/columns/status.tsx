@@ -604,6 +604,10 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const { statusList = [] } = useWorkspace()
   const { user } = useAuth()
   const { selected } = useWorkspace()
+
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // ✅ FIXED: Use GetBugStatusList API with WorkspaceID from props
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
     queryKey: ['bug-status-list', selected?.WorkspaceID],
@@ -617,12 +621,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     select: (data) => {
       // Transform the API response to match ProjectStatusList format
       if (Array.isArray(data)) {
-        // FIX: the mapped objects only include a subset of ProjectStatusList's
-        // fields (missing CreateDate/CreatedBy/IsDelete, IsDefault/TaskgroupID
-        // typed as boolean/null instead of number), which caused TS2739/TS2322
-        // wherever these items were later passed around as ProjectStatusList.
-        // Cast through `unknown` here (single, contained spot) rather than
-        // changing the shape of the data itself.
+       
         return data.map((item: StatusLookupItem) => ({
           StatusID: item.statusID,
           Statusname: item.statusname,
@@ -643,22 +642,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     formState: { isSubmitting, isDirty }
   } = useForm<FormValidateType>({ defaultValues: { Statusname: '', Colorcode: '' } })
 
-  // ============================================================
-  // FIXED: statusName / colorCode
-  // ------------------------------------------------------------
-  // The bug-list `row` objects come back with FLAT fields
-  // (row.StatusID, row.StatusName / row.statusname) instead of a
-  // nested `row.Status.Statusname` / `row.Status.Colorcode` object.
-  // The old code only ever read the nested shape, so for bug rows
-  // it always fell through to `null` -> UI showed "None" even
-  // though row.StatusID / row.statusname were populated correctly.
-  //
-  // Fix: keep the original nested-object read as the first check
-  // (so nothing changes for rows that DO have row.Status), then add
-  // fallbacks: flat StatusName/statusname fields, and finally a
-  // lookup by StatusID against statusList / dynamicStatus (for the
-  // color, since the bug row has no color field at all).
-  // ============================================================
+
   const statusName = useMemo(() => {
     if (!!dynamicValue || !!columnData) {
       if (dynamicValue?.Status?.StatusName) {
@@ -673,8 +657,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       return null
     }
 
-    // Original nested-object read (unchanged) — kept first so existing
-    // rows that DO have row.Status keep working exactly as before.
+  
     if (row?.Status?.Statusname) return row.Status.Statusname
 
     // FIX: fallback for flat bug-row shape (row.StatusName / row.statusname)
@@ -730,13 +713,9 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       return null;
     }
 
-    // Original nested-object read (unchanged) — kept first so existing
-    // rows that DO have row.Status keep working exactly as before.
     if (row?.Status?.Colorcode) return row.Status.Colorcode
 
-    // FIX: bug rows carry no color field at all (flat or nested), so the
-    // color has to be resolved by matching row.StatusID / row.statusID
-    // against statusList / dynamicStatus.
+
     const rowStatusID = (row as any)?.StatusID ?? (row as any)?.statusID
     if (rowStatusID !== undefined && rowStatusID !== null) {
       const found = [...(statusList || []), ...(dynamicStatus || [])].find(
@@ -772,9 +751,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     return false
   }
 
-  // FIX: parameter made optional (item?: ProjectStatusList) to match the
-  // StatusMenuItemProps.handleEdit signature it's assigned to, which allows
-  // being called with no argument.
+
   const handleEdit = (item?: ProjectStatusList) => {
     // FIX: item?.StatusID?.toString() can be `undefined`, but setIsEdit's
     // state type is `string | null` (no undefined). Fallback to null.
@@ -784,8 +761,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     setAnchorEl(null)
   }
 
-  // FIX: parameter made optional (item?: ProjectStatusList) to match the
-  // StatusMenuItemProps.handleDelete signature it's assigned to.
+
   const handleDeleteClick = (item?: ProjectStatusList) => {
     if (!item?.StatusID || item.StatusID === 0) return;
     setStatusToDelete(item);
@@ -796,9 +772,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     if (!statusToDelete?.StatusID) return;
     
     try {
-      // FIX: deleteStatus requires a 3rd `workspaceID` argument — pulling it
-      // from the workspace context (falling back to the `workspaceID` prop,
-      // then 0) since it wasn't being passed at all before.
+   
       const response = await deleteStatus(
         { StatusID: statusToDelete.StatusID },
         row,
@@ -825,10 +799,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
 
   const onSubmit = async (data: FormValidateType) => {
     if (isEdit) {
-      // FIX: `row` is typed as TaskListItemType | AdditionalSubTaskListItem,
-      // neither of which declares lowerCamelCase `taskID`/`taskGroupID` (only
-      // `TaskID`/`TaskGroupID`). Cast to `any` for the lowerCamelCase fallback
-      // lookups exactly as already done elsewhere in this file.
+   
       const taskID = (row as any)?.taskID || (row as any)?.TaskID;
       const groupID = (row as any)?.taskGroupID || (row as any)?.TaskGroupID;
       
@@ -848,8 +819,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
         handleFormClose()
       // }
     } else {
-      // FIXED: Use createTaskStatus with taskID and groupID from row data
-      // FIX: same (row as any) cast as above for the lowerCamelCase fallbacks.
+     
       const taskID = (row as any)?.taskID || (row as any)?.TaskID
       const groupID = (row as any)?.taskGroupID || (row as any)?.TaskGroupID
       const loginuserID = user?.id
@@ -872,10 +842,7 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   }
 
   const allStatusOptions = useMemo(() => {
-    // FIX: cast through `unknown` since the literal object below only has a
-    // subset of ProjectStatusList's shape (IsDefault/TaskgroupID types differ,
-    // and CreateDate/CreatedBy/IsDelete are absent) — same reasoning as the
-    // dynamicStatus `select` transform above.
+   
     const noneOption = {
       StatusID: 0,
       Statusname: 'None',
@@ -886,14 +853,12 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
-  // Get bug ID from row for BugList
-  // FIX: use ?? instead of || so a BugID/bugID of 0 is preserved instead of
-  // being coerced away, which previously caused the `bugId` truthy-check in
-  // handleStatusChange to fail for that edge case.
+
   const bugId = (row as any)?.BugID ?? (row as any)?.bugID;
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box
+      {rolename !=='Viewer' ? (
+ <Box
         component={'button'}
         className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
         bgcolor={colorCode}
@@ -914,6 +879,30 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
           </Typography>
         </Tooltip>
       </Box>
+      ):(
+ <Box
+        component={'button'}
+        className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
+        bgcolor={colorCode}
+        color={colorCode && getContrastingTextColor(colorCode)}
+  
+        sx={{ cursor:  'not-allowed' }}
+      >
+        <Tooltip title={statusName || 'None'}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            overflow={'hidden'}
+            color={'inherit'}
+            className='text-inherit'
+          >
+            {statusName ?? 'None'}
+          </Typography>
+        </Tooltip>
+      </Box>
+      )}
+     
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}

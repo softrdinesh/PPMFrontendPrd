@@ -185,7 +185,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
     )}
   </Box>
 ) : (
-  <Box sx={{ cursor: 'not-allowed' }}>
+  <Box  onClick={handleOpen} sx={{ cursor: 'pointer' }}>
     {dynamicValue?.length ? (
       <Box display={'flex'} alignItems={'center'} gap={2}>
         <Chip variant='tonal' size='small' label={dynamicValue?.[0]?.Dropdown?.Valuetxt} />
@@ -249,6 +249,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
               <Grid item xs={12} p={2}>
                 <Box display={'flex'} alignItems={'center'} mt={2} gap={2}>
                   <FormControl fullWidth>
+                    {role1?.RoleName !=='Viewer' &&
                     <Autocomplete
                       clearOnBlur
                       value={null}
@@ -268,6 +269,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
                         handleDropdownSelect(newValue)
                       }}
                     />
+}
                   </FormControl>
                 </Box>
               </Grid>
@@ -291,6 +293,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
                           <Typography lineHeight={1} fontSize={14}>
                             {i?.Dropdown?.Valuetxt}
                           </Typography>
+                          {role1?.RoleName !=='Viewer' &&
                           <IconButton
                             size='small'
                             sx={{ p: 0 }}
@@ -298,6 +301,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
                           >
                             <Icon icon={'ep:close-bold'} color='red' />
                           </IconButton>
+}
                         </Box>
                       ))}
                     </Box>
@@ -315,11 +319,13 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
                 </Box>
               </Grid>
               <Grid item xs={12}>
+                {role1?.RoleName !== 'Viewer' &&
                 <Box display={'flex'} alignItems={'center'} justifyContent={'end'} p={2}>
                   <CustomButton onClick={() => setCreateMenu(true)} size='small' variant='contained'>
                     {'Create new value'}
                   </CustomButton>
                 </Box>
+}
               </Grid>
             </Grid>
           </Box>

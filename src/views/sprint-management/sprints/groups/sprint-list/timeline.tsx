@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Button } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 
 import moment from 'moment'
 
@@ -36,7 +36,9 @@ const DatePickerDynamic = ({
 
 const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem; refetch: () => void }) => {
   const [startDate, setStartDate] = useState<Date | null>(null)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const [endDate, setEndDate] = useState<Date | null>(null)
   const { profile, user } = useAuth()
   const handleDateChange = async (dates: [Date | null, Date | null]) => {
@@ -99,22 +101,33 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
     }
   }, [original?.SprintTimelineStart, original?.SprintTimelineEnd, original])
   return (
-    <DatePickerDynamic
-      startDate={startDate}
-      endDate={endDate}
-      onChange={handleDateChange}
-      render={
-        <Button
-          size='small'
-          className='rounded-full p-1 leading-3 px-2'
-          variant={startDate && endDate ? 'contained' : 'outlined'}
-        >
-          {startDate && endDate
-            ? `${moment(startDate).format('MMM DD')} - ${moment(endDate).format('MMM DD')}`
-            : 'Add timeline'}
-        </Button>
-      }
-    />
+    <>
+ {rolename !== 'Viewer' ? (
+  <DatePickerDynamic
+    startDate={startDate}
+    endDate={endDate}
+    onChange={handleDateChange}
+    render={
+      <Button
+        size='small'
+        className='rounded-full p-1 leading-3 px-2'
+        variant={startDate && endDate ? 'contained' : 'outlined'}
+      >
+        {startDate && endDate
+          ? `${moment(startDate).format('MMM DD')} - ${moment(endDate).format('MMM DD')}`
+          : 'Add timeline'}
+      </Button>
+    }
+  />
+) : (
+  <Typography variant='body2' sx={{ marginRight: 2 }}>
+    {startDate && endDate 
+      ? `${moment(startDate).format('MMM DD')} - ${moment(endDate).format('MMM DD')}`
+      : '-'}
+  </Typography>
+)}
+   
+    </>
   )
 }
 

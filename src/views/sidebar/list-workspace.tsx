@@ -178,6 +178,10 @@ handleOpenClose()
 
 
 
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
+
 
 
 
@@ -275,6 +279,8 @@ handleOpenClose()
           >
             {workspaces?.WorkspaceName}
           </Typography>
+ 
+{rolename !== 'Viewer' &&
           <IconButton size='small' onClick={handleOpenMenu}>
             <Icon
               icon={'solar:menu-dots-bold'}
@@ -283,12 +289,15 @@ handleOpenClose()
               color={!isNavLinkActive() ? 'white' : 'black'}
             />
           </IconButton>
+}
           <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleOpenClose} TransitionComponent={Zoom}>
             <MenuItem onClick={handleCreateWorkspaceClick}>
+            {rolename !== 'Viewer' &&
               <Box display={'flex'} alignItems={'center'} gap={2}>
                 <Icon icon={'mdi:plus-circle-outline'} />
                 <Typography>Create WorkSpace</Typography>
               </Box>
+}
             </MenuItem>
             {profile === 'projects' && (
               <MenuItem onClick={handleCreateproject}>

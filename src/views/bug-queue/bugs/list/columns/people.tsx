@@ -237,11 +237,7 @@ const TaskPeople = ({
   // ** Combine context users with API users or use API users directly
   const users = apiUsers.length > 0 ? apiUsers : contextUsers || []
 
-  // ** processedDynamicValue
-  // Exact rowData shape: [{ colList, detailList, colvalueList: [...] }]
-  // colvalueList has ONE entry PER USER with same additionalColumnID repeated per user
-  // e.g. colvalueList[0] = { additionalColumnID:254, dynamicUserID:93, dynamicUserValueList:[{userID:93,...}] }
-  //      colvalueList[1] = { additionalColumnID:254, dynamicUserID:94, dynamicUserValueList:[{userID:94,...}] }
+
   const processedDynamicValue = React.useMemo(() => {
     if (!dynamicValue || !columnData?.additionalColumnID) return []
 
@@ -258,8 +254,7 @@ const TaskPeople = ({
       }
     }
 
-    // Helper: given a colvalueList array, extract all users for the target additionalColumnID
-    // Each item in colvalueList = one user assignment (same additionalColumnID repeated per user)
+    
     const processColvalueList = (colvalueList: any[]) => {
       if (!Array.isArray(colvalueList)) return
 
@@ -332,9 +327,7 @@ const TaskPeople = ({
       })
     }
 
-    // ── Shape A (YOUR EXACT SHAPE): Array of row wrapper objects ──────────────
-    // dynamicValue = [{ colList:[...], detailList:[...], colvalueList:[...] }]
-    // Check: is it an array whose first item has a colvalueList property?
+
     if (Array.isArray(dynamicValue)) {
       const firstItem = dynamicValue[0]
 
@@ -348,8 +341,7 @@ const TaskPeople = ({
         return flattenedUsers
       }
 
-      // Shape B: array items ARE colvalue entries directly
-      // [{ additionalColumnID, dynamicUserValueList }, ...]
+
       if (firstItem && 'additionalColumnID' in firstItem) {
         processColvalueList(dynamicValue)
         return flattenedUsers
@@ -370,6 +362,9 @@ const TaskPeople = ({
 
     return flattenedUsers
   }, [dynamicValue, users, columnData?.additionalColumnID])
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
 
   return (
     <Box display={'flex'} height={'100%'} width={'max-content'} alignItems={'center'}>
@@ -385,7 +380,7 @@ const TaskPeople = ({
                     </Tooltip>
 
                     {/* Small close button */}
-                    {canEdit && (
+                    {canEdit && rolename!=='Viewer' && (
                       <button
                         onClick={e => {
                           e.stopPropagation()
@@ -430,6 +425,7 @@ const TaskPeople = ({
           </Box>
 
           {/* Popover to show full user list */}
+          {rolename!=='Viewer' &&
           <Popover
             open={Boolean(userListAnchor)}
             anchorEl={userListAnchor}
@@ -529,11 +525,32 @@ const TaskPeople = ({
             </Box>
           </Popover>
 
-          {canEdit && (
-            <IconButton onClick={handleOpen}>
+              }
+          {/* {canEdit  &&  (
+            <>
+            {rolename !=='Viewer' ? (
+  <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />
             </IconButton>
-          )}
+            ):(
+              
+  <Icon icon={'ph:question-duotone'} fontSize={24} />
+
+            )}
+          
+            </>
+          )} */}
+          {canEdit && processedDynamicValue?.length === 0 && (
+  <>
+  {rolename !=='Viewer' ? (
+    <IconButton onClick={handleOpen}>
+      <Icon icon={'bi:plus-circle-dotted'} />
+    </IconButton>
+  ):(
+    <Icon icon={'ph:question-duotone'} fontSize={24} />
+  )}
+  </>
+)}
         </>
       ) : selectedOwner ? (
         <Box position={'relative'}>
@@ -542,19 +559,22 @@ const TaskPeople = ({
               <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
             </Tooltip>
           </AvatarGroup>
-          {role?.RoleName === 'Admin' && (
+          {rolename !== 'Viewer'  ? (
             <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
               <Icon icon={'icon-park-twotone:close-one'} color='red' />
             </IconButton>
+          ) : (
+            <Typography variant="body1">{"-"}</Typography>
+
           )}
         </Box>
-      ) : role?.RoleName === 'Admin' ? (
+      ) : canEdit && (
         <IconButton onClick={handleOpen}>
           <Icon icon={'bi:plus-circle-dotted'} />
         </IconButton>
-      ) : (
-        <Icon icon={'ph:question-duotone'} fontSize={24} />
-      )}
+  
+
+)}
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleClose} TransitionComponent={Zoom}>
         <Box width={280}>
           <Grid container spacing={4}>

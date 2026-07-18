@@ -469,7 +469,7 @@ const onSubmit = async (data: FormValidateType) => {
       const formData = new FormData()
       formData.append("file", data.file)
       
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
       
       // Use only UploadSprintDynamicDocument API
       const uploadEndpoint = `${BASE_URL}/UploadSprintDynamicDocument/${columnId}/${user?.id}/${rowData?.sprintID || rowData?.SprintID || ''}/${rowData?.sprintGroupID || rowData?.SprintGroupID || ''}/-/${encodeURIComponent(data?.displayText)}`
@@ -549,8 +549,7 @@ const onSubmit = async (data: FormValidateType) => {
   
   const handleclear = async () => {
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
-      
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
       // Use dynamic values instead of hardcoded ones
       const uploadEndpoint = `${BASE_URL}/SprintRemoveDynamicColumnValues?DynamicColumnID=${columnId}&LoginuserID=${user?.id}&SprintID=${rowData?.sprintID || rowData?.SprintID || ''}`
       
@@ -566,12 +565,14 @@ const onSubmit = async (data: FormValidateType) => {
 
   const displayText = getDisplayText(dynamicValue)
   const dynamicColumnValues = getDynamicColumnValues(dynamicValue)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <>
       <Box display={'flex'} height={'100%'} alignItems={'center'}>
         {!displayText ? (
-          canEdit ? (
+          canEdit &&  rolename!== 'Viewer' ? (
             <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />
             </IconButton>
@@ -588,6 +589,7 @@ const onSubmit = async (data: FormValidateType) => {
      
             <Box sx={{ position: 'relative' }}>
               {/* Close Icon - positioned absolutely on top */}
+            {rolename !=='Viewer' &&
               <IconButton 
                 size='small' 
                 sx={{ 
@@ -600,7 +602,7 @@ const onSubmit = async (data: FormValidateType) => {
               >
                 <Icon icon={'icon-park-twotone:close-one'} color='red' />
               </IconButton>
-              
+}
               {/* Share Icon */}
               <IconButton
                 size='small'

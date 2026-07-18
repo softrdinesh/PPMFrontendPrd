@@ -103,7 +103,7 @@ interface ProjectDetailsTabProps {
 const ProjectDetailsTab = ({ taskData, refetchTasks }: ProjectDetailsTabProps) => {
   const { project: projectData } = useProject()
   const lgBreakpoint = useMediaQuery(theme => theme.breakpoints.up('lg'))
-
+console.log(taskData,'data');
   const [value, setValue] = useState('')
 
   const handleChange = async (v: string) => {

@@ -68,7 +68,9 @@ const ReporterSelector = ({
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const fetchUsers = async () => {
     if (!user?.id) return
     setLoading(true)
@@ -199,13 +201,22 @@ const ReporterSelector = ({
 
   return (
     <Box display={'flex'} alignItems={'center'}>
-      {resolvedValue ? (
+      {resolvedValue  ? (
         <Box position={'relative'}>
+          
           <Tooltip title={tooltipLabel}>
-            <IconButton onClick={handleOpen} sx={{ p: 0 }}>
+            {rolename !=='Viewer' ? (
+ <IconButton onClick={handleOpen}  sx={{ p: 0 }}>
               <Avatar alt={resolvedValue.Name || ''} src={resolvedValue.ProfilePicture} sx={{ width: 32, height: 32 }} />
             </IconButton>
+            ):(
+ <IconButton   sx={{ p: 0 }}>
+              <Avatar alt={resolvedValue.Name || ''} src={resolvedValue.ProfilePicture} sx={{ width: 32, height: 32 }} />
+            </IconButton>
+            )}
+           
           </Tooltip>
+          {rolename !=='Viewer' &&
           <IconButton
             size='small'
             onClick={handleRemove}
@@ -223,13 +234,37 @@ const ReporterSelector = ({
           >
             <Icon icon={'icon-park-twotone:close-one'} width={16} height={16} color='red' />
           </IconButton>
+}
         </Box>
       ) : (
+    
+              
+     <>
+     
+   {rolename !== 'Viewer' ? (
         <Tooltip title="Click to assign reporter">
-          <IconButton onClick={handleOpen}>
+      
+        
+
+ <IconButton onClick={handleOpen}>
             <Icon icon={'bi:plus-circle-dotted'} />
           </IconButton>
+   
+
+   
+         
+
         </Tooltip>
+       
+   ):(
+    <>
+
+      <Icon icon={'ph:question-duotone'} fontSize={24} />
+{/* <Typography variant="body1">{"-"}</Typography> */}
+
+</>
+   )}
+    </>
       )}
 
       <Menu
@@ -494,7 +529,9 @@ const BugGroupTable = ({
   const [showSprintSelector, setShowSprintSelector] = useState(false)
 
   const selectedSprintTaskIDRef = useRef<number>(0)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   useEffect(() => {
     if (groupData && groupData.length > 0) {
       const firstWithSprint = groupData.find(
@@ -707,6 +744,7 @@ const BugGroupTable = ({
                   : <IconifyIcon icon={'line-md:chevron-right'} />}
               </IconButton>
             ) : null}
+            {rolename !== 'Viewer' &&
             <Checkbox
               {...{
                 checked: row.getIsSelected(),
@@ -715,6 +753,7 @@ const BugGroupTable = ({
                 onChange: row.getToggleSelectedHandler()
               }}
             />
+      }
           </div>
         )
       },
@@ -981,6 +1020,7 @@ const table = useReactTable({
           </TableBody>
         </Table>
       </TableContainer>
+      {rolename !=='Viewer' &&
       <div className='flex justify-between items-center gap-2 m-2'>
         <Button startIcon={<i className='ri-add-line' />} onClick={handleBugCreate}>
           {adding ? 'Adding...' : 'Add Bug'}
@@ -996,6 +1036,7 @@ const table = useReactTable({
           Add New Column
         </CustomButton>
       </div>
+}
       <CreateColumnMenu
         anchorEl={addColumnAnchor}
         refetch={refetchProject}

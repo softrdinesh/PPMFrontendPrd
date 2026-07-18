@@ -244,7 +244,9 @@ const checkPaymentStatus = () => {
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
   }
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <>
       <StyledVerticalMenuItem
@@ -257,6 +259,7 @@ const checkPaymentStatus = () => {
         menuItemStyles={getMenuItemStyles('root')}
         rootStyles={rootStyles}
       >
+         {rolename !== 'Viewer' &&
         <MenuButton
           className={classnames(menuClasses.button, { [menuClasses.active]: active }, !isCollapsed && 'gap-2')}
           component={component}
@@ -264,6 +267,7 @@ const checkPaymentStatus = () => {
           onClick={handleCreateWorkspaceClick}
         >
           {/* Menu Item Label */}
+        
           <StyledMenuLabel
             className={`text-white text-sm uppercase leading-1 ${active ? 'font-semibold' : 'font-normal'}`}
             rootStyles={getMenuItemStyles('label')}
@@ -273,6 +277,7 @@ const checkPaymentStatus = () => {
           </StyledMenuLabel>
 
           {/* Menu Item Icon */}
+        
           {renderMenuIcon({
             icon,
             level,
@@ -282,6 +287,7 @@ const checkPaymentStatus = () => {
             isBreakpointReached
           })}
         </MenuButton>
+}
       </StyledVerticalMenuItem>
       <CreateWorkspaceDialog
         open={isModalOpen}

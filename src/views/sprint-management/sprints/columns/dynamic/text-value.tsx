@@ -74,20 +74,65 @@ const SprintGroupID = (rowData as any)?.SprintGroupID;
     // setValue(initialValue?.dynamicColumnValues ?? '-')
     setValue((initialValue as any)?.dynamicColumnValues ?? '-')
   }, [initialValue])
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return canEdit ? (
     <TextField
       variant='standard'
-       style={{width:300}}
-      sx={{
-        border: 0,
-        '& .MuiInputBase-root::before': {
-          borderBottom: 0
-        },
-        '& .MuiInputBase-root:hover::before': {
-          borderBottom: 0
-        }
-      }}
+     multiline
+     disabled={rolename == 'Viewer'}
+        minRows={3}
+        maxRows={6}
+    //   sx={{
+    //     border: 0,
+    //     '& .MuiInputBase-root::before': {
+    //       borderBottom: 0
+    //     },
+    //     '& .MuiInputBase-root:hover::before': {
+    //       borderBottom: 0
+    //     },
+    //      '& .MuiInputBase-root.Mui-disabled': {
+    //   color: '#000000', // Dark mode color
+    //   '&:before': {
+    //     borderBottom: 0
+    //   }
+    // },
+    // '& .MuiInputBase-input.Mui-disabled': {
+    //   WebkitTextFillColor: '#000000', // Dark mode color
+    //   color: '#000000'
+    // },
+    // // Dark mode overrides
+    // '@media (prefers-color-scheme: dark)': {
+    //   '& .MuiInputBase-root.Mui-disabled': {
+    //     color: '#0000', // Light mode color for dark background
+    //   },
+    //   '& .MuiInputBase-input.Mui-disabled': {
+    //     WebkitTextFillColor: '#0000',
+    //     color: '#0000'
+    //   }
+    // }
+    //   }}
+    sx={{
+  border: 0,
+  '& .MuiInputBase-root::before': {
+    borderBottom: 0
+  },
+  '& .MuiInputBase-root:hover::before': {
+    borderBottom: 0
+  },
+  // Using theme for better dark/light mode support
+  '& .MuiInputBase-root.Mui-disabled': {
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    '&:before': {
+      borderBottom: 0
+    }
+  },
+  '& .MuiInputBase-input.Mui-disabled': {
+    WebkitTextFillColor: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000'
+  }
+}}
       placeholder='Please enter a value'
       // fullWidth
       value={value}

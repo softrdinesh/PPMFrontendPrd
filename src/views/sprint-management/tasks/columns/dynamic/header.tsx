@@ -38,7 +38,9 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
   const [columns, setColumns] = useState([])
   const [selectedColumn, setSelectedColumn] = useState(null)
   const [activeColumn, setActiveColumn] = useState(null)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // Update value when initialValue changes
   useEffect(() => {
     setValue(initialValue)
@@ -210,6 +212,7 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
           >
             {column?.colname || column?.ColumnName || column?.colName || 'Column'}
           </Typography>
+          {rolename !== 'Viewer' &&
           <IconButton 
             size='small' 
             onClick={(e) => handleMenuOpen(e, column)}
@@ -217,6 +220,7 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
           >
             <Icon icon={'lets-icons:meatballs-menu'} rotate={45} width={16} height={16} />
           </IconButton>
+}
         </Box>
       </Box>
 

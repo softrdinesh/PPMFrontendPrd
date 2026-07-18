@@ -100,7 +100,9 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID, onPriorityChange }: T
   const [formAnchor, setFormAnchor] = useState<any>(null)
   const [isEdit, setIsEdit] = useState<string | null>(null)
   const { priorityList = [] } = useWorkspace()
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const { data: dynamicPriority, refetch: refetchPriorityList } = useQuery({
     queryKey: ['project-priority', workspaceID],
     queryFn: () => fetchBugPriorityList({ workspaceID })
@@ -177,7 +179,8 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID, onPriorityChange }: T
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box
+      {rolename !=='Viewer' ? (
+  <Box
         component={'button'}
         className='flex items-center justify-center max-w-52 px-1 border border-divider h-[60%] rounded-md'
         bgcolor={currentColorCode}
@@ -198,6 +201,30 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID, onPriorityChange }: T
           </Typography>
         </Tooltip>
       </Box>
+      ):(
+  <Box
+        component={'button'}
+        className='flex items-center justify-center max-w-52 px-1 border border-divider h-[60%] rounded-md'
+        bgcolor={currentColorCode}
+        color={currentColorCode && getContrastingTextColor(currentColorCode)}
+        // onClick={handleOpen}
+        sx={{ cursor: 'not-allowed' }}
+      >
+        <Tooltip title={currentPriorityName}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            overflow={'hidden'}
+            color={'inherit'}
+            className='text-inherit'
+          >
+            {currentPriorityName}
+          </Typography>
+        </Tooltip>
+      </Box>
+      )} 
+    
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}

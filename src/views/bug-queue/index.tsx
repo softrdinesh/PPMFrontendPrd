@@ -113,7 +113,9 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
     setSearchTerm('')
   }
   // ─────────────────────────────────────────────────────────────────────────
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <BugQueueProvider workspaceID={workspaceID}>
       <Grid container spacing={6}>
@@ -271,8 +273,12 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
 
             {/* Buttons — untouched */}
             <div className='flex items-center gap-5 flex-wrap justify-center'>
-              {true && <NewBugQueue onBugGroupCreated={handleBugGroupCreated} />}
+              {rolename !=='Viewer' &&
+        <NewBugQueue onBugGroupCreated={handleBugGroupCreated} />
+              }
+               {rolename !=='Viewer' &&
               <Divider orientation='vertical' sx={{ borderColor: 'primary.main', height: 25, borderRightWidth: 1.5 }} />
+               }
               <ProjectFilterButton />
               <CustomButton
                 variant='outlined'

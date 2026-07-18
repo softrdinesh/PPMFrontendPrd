@@ -73,7 +73,9 @@ const DynamicFiles = ({
   const [errorAlert, setErrorAlert] = useState<string | null>(null)
   const [successAlert, setSuccessAlert] = useState<string | null>(null)
   const { profile,user } = useAuth()
-  
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // Helper function to safely get column ID regardless of casing
   const getColumnId = (column: any): string | number | undefined => {
     if (!column) return undefined;
@@ -623,7 +625,7 @@ const onSubmit = async (data: FormValidateType) => {
     <>
       <Box display={'flex'} height={'100%'} alignItems={'center'}>
         {!displayText ? (
-          canEdit ? (
+          canEdit && rolename !=='Viewer' ? (
             <IconButton onClick={handleOpen}>
               <Icon icon={'bi:plus-circle-dotted'} />
             </IconButton>
@@ -640,6 +642,7 @@ const onSubmit = async (data: FormValidateType) => {
      
             <Box sx={{ position: 'relative' }}>
               {/* Close Icon - positioned absolutely on top */}
+              {rolename !== 'Viewer' &&
               <IconButton 
                 size='small' 
                 sx={{ 
@@ -652,6 +655,7 @@ const onSubmit = async (data: FormValidateType) => {
               >
                 <Icon icon={'icon-park-twotone:close-one'} color='red' />
               </IconButton>
+}
               
               {/* Share Icon */}
               <IconButton
@@ -798,9 +802,11 @@ const onSubmit = async (data: FormValidateType) => {
                                   bgcolor={'error.main'}
                                   borderRadius={100}
                                 >
+                              {rolename !== 'Viewer'&&
                                   <IconButton size='small' onClick={() => field.onChange(null)}>
                                     <Icon icon={'mdi:close'} color='white' />
                                   </IconButton>
+                      }
                                 </Box>
                               </Box>
                               <Typography

@@ -58,11 +58,14 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const pathname = usePathname()
   const router = useRouter()
   const isDark = useMemo(() => theme.palette.mode === 'dark', [theme.palette.mode])
-const [boardSelected, setBoardSelected] = useState(false)
+  const [boardSelected, setBoardSelected] = useState(false)
+  const roleData = localStorage.getItem('Role');
+  const parsedData = JSON.parse((roleData)as any);
+  const rolename = parsedData.rolename;
 
-useEffect(() => {
-  setBoardSelected(false)
-}, [JSON.stringify(selected)])
+  useEffect(() => {
+    setBoardSelected(false)
+  }, [JSON.stringify(selected)])
 
   // Vars
   const { isBreakpointReached, transitionDuration } = verticalNavOptions
@@ -72,14 +75,12 @@ useEffect(() => {
     router.push(`${routes.profile}`)
   }
 
-const handleBoardClick = (boardId: string) => {
-     setBoardSelected(true)
-     router.push(routes.boardsview)
-   }
+  const handleBoardClick = (boardId: string) => {
+    setBoardSelected(true)
+    router.push(routes.boardsview)
+  }
 
   return (
-    // eslint-disable-next-line lines-around-comment
-    /* Custom scrollbar instead of browser scroll, remove if you want browser scroll only */
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
@@ -92,8 +93,6 @@ const handleBoardClick = (boardId: string) => {
             onScrollY: container => scrollMenu(container, true)
           })}
     >
-      {/* Incase you also want to scroll NavHeader to scroll with Vertical Menu, remove NavHeader from above and paste it below this comment */}
-      {/* Vertical Menu */}
       <Menu
         popoutMenuOffset={{ mainAxis: 17 }}
         className='py-3'
@@ -111,52 +110,57 @@ const handleBoardClick = (boardId: string) => {
         >
           Recent Activity
         </MenuItem>
-          {profile === 'projects' &&
- <MenuItem
-          href='/super-admin'
-          icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
-        >
-          Admin
-        </MenuItem>
-}
-{profile === 'projects' &&
- <MenuItem
-          href='/feedback'
-          icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
-        >
-          Feed Back
-        </MenuItem>
-}
+        {profile == 'projects' && rolename !== 'Viewer' &&
+          <MenuItem
+            href='/super-admin'
+            icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
+          >
+            Admin
+          </MenuItem>
+        }
+        {profile == 'projects' &&
+          <MenuItem
+            href='/feedback'
+            icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
+          >
+            Feed Back
+          </MenuItem>
+        }
         <Divider className='my-4 bg-white dark:bg-actionHover' />
         <CreateWorkspace icon={<Icon icon={'f7:plus-app'} className='h-6 w-6 text-white' />} />
 
         <ListWorkspaces />
         <Box sx={{ px: 2.25, py: 2 }}>
-             {profile == 'projects' &&
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)' }}>
-                
-            <Typography 
-              variant='caption' 
-              sx={{ 
-                color: 'rgba(255,255,255,0.7)',
-                px: 1,
-                fontSize: '0.75rem',
-                fontWeight: 400,
-                //opacity: isCollapsed && !isHovered ? 0 : 1,
-                transition: 'opacity .25s ease-in-out'
-              }}
-              
-            >
-              Boards
-              
-            </Typography>
-
-          </Divider>
+          {profile == 'projects' && rolename !== 'Viewer' &&
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+              <Typography 
+                variant='caption' 
+                sx={{ 
+                  color: 'rgba(255,255,255,0.7)',
+                  px: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 400,
+                  transition: 'opacity .25s ease-in-out'
+                }}
+              >
+                Boards
+              </Typography>
+            </Divider>
           }
         </Box>
-        {profile == 'projects' &&
-        <ListBoards onBoardClick={handleBoardClick} />}
-        {profile === 'projects' ? <ListProjects hideAddProject={boardSelected} /> : selected && <SprintNavItemsList />}
+        
+        {profile == 'projects' && rolename !== 'Viewer' &&
+          <ListBoards onBoardClick={handleBoardClick} />
+        }
+        
+        {/* FIX: Conditionally hide projects based on boardSelected */}
+        {profile == 'projects' && !boardSelected && (
+          <ListProjects hideAddProject={boardSelected} />
+        )}
+        
+        {profile != 'projects' && selected && (
+          <SprintNavItemsList />
+        )}
       </Menu>
     </ScrollWrapper>
   )

@@ -420,13 +420,13 @@ const TaskPeople = ({
               <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
             </Tooltip>
           </AvatarGroup>
-          {role?.RoleName === 'Admin' && (
+          {role?.RoleName == 'Admin' && (
             <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
               <Icon icon={'icon-park-twotone:close-one'} color='red' />
             </IconButton>
           )}
         </Box>
-      ) : role?.RoleName === 'Admin' ? (
+      ) : role?.RoleName == 'Admin' ? (
         <IconButton onClick={handleOpen}>
           <Icon icon={'bi:plus-circle-dotted'} />
         </IconButton>
@@ -462,7 +462,7 @@ const TaskPeople = ({
                             canEdit && debouncedClick(user?.User)
                           } else {
                             selectedOwner?.UserID !== user?.User?.UserID &&
-                              role?.RoleName === 'Admin' &&
+                              role?.RoleName == 'Admin' &&
                               debouncedOwnerClick(user?.User)
                           }
                         }}

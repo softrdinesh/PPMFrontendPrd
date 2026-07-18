@@ -49,7 +49,9 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const [anchorEl, setAnchorEl] = useState(null)
   const [createMenu, setCreateMenu] = useState(false)
   const { user } = useAuth();
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // Find the specific column data from dynamicValue array
   const currentColumnData = useMemo(() => {
     if (!dynamicValue || !columnData) return null;
@@ -267,7 +269,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
             {/* Show count of remaining values if more than one */}
             {selectedValues?.length > 1 && `+${selectedValues?.length - 1}`}
           </Box>
-        ) : canEdit ? (
+        ) : canEdit && rolename !=='Viewer' ? (
           <IconButton>
             <Icon icon={'bi:plus-circle-dotted'} />
           </IconButton>
@@ -330,6 +332,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
               <Grid item xs={12} p={2}>
                 <Box display={'flex'} alignItems={'center'} mt={2} gap={2}>
                   <FormControl fullWidth>
+                        {rolename !== 'Viewer' &&
                     <Autocomplete
                       clearOnBlur
                       value={null}
@@ -350,6 +353,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                         handleDropdownSelect(newValue)
                       }}
                     />
+}
                   </FormControl>
                 </Box>
               </Grid>
@@ -383,6 +387,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                               {valueText}
                             </Typography>
                             
+                            {rolename !== 'Viewer' &&
                             <IconButton
                               size='small'
                               sx={{ p: 0 }}
@@ -390,6 +395,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
                             >
                               <Icon icon={'ep:close-bold'} color='red' />
                             </IconButton>
+                      }
                           </Box>
                         );
                       })}
@@ -409,9 +415,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
               </Grid>
               <Grid item xs={12}>
                 <Box display={'flex'} alignItems={'center'} justifyContent={'end'} p={2}>
+              {rolename !== 'Viewer' &&
                   <CustomButton onClick={() => setCreateMenu(true)} size='small' variant='contained'>
                     {'Create new value'}
                   </CustomButton>
+}
                 </Box>
               </Grid>
             </Grid>

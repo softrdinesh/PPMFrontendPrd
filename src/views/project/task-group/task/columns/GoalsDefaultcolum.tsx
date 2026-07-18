@@ -31,11 +31,14 @@ export const GoalsTextfiled = ({ table, getValue, index, id, canEdit = true }: C
   }
 
   const valueLength = value?.length || 0
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return canEdit ? (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <TextField
         variant='standard'
+ disabled={rolename =='Viewer'}
         multiline
         minRows={3}
         maxRows={6}
@@ -45,11 +48,26 @@ export const GoalsTextfiled = ({ table, getValue, index, id, canEdit = true }: C
         onChange={handleChange}
         onBlur={onBlur}
         inputProps={{ maxLength: maxLength }} // ✅ This one stays
-        sx={{
-          border: 0,
-          '& .MuiInputBase-root::before': { borderBottom: 0 },
-          '& .MuiInputBase-root:hover::before': { borderBottom: 0 }
-        }}
+      sx={{
+  border: 0,
+  '& .MuiInputBase-root::before': {
+    borderBottom: 0
+  },
+  '& .MuiInputBase-root:hover::before': {
+    borderBottom: 0
+  },
+  // Using theme for better dark/light mode support
+  '& .MuiInputBase-root.Mui-disabled': {
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    '&:before': {
+      borderBottom: 0
+    }
+  },
+  '& .MuiInputBase-input.Mui-disabled': {
+    WebkitTextFillColor: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000'
+  }
+}}
       />
 
       {/* <Typography

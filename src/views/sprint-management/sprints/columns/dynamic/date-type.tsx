@@ -192,19 +192,21 @@ const DynamicDate = ({
   }
 
   const debouncedClick = debounce(handleSave, 600)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <div>
       {selectedDate ? (
         <Box display={'flex'} alignItems={'center'} gap={3} justifyContent={'space-between'} pr={2}>
           <Typography className='truncate'> {selectedDate}</Typography>
-          {canEdit && (
+          {canEdit  && rolename !== 'Viewer' && (
             <IconButton size='small' onClick={handleOpenDialog}>
               <Icon icon={'mdi:pencil-outline'} />
             </IconButton>
           )}
         </Box>
-      ) : canEdit ? (
+      ) : canEdit  && rolename !== 'Viewer' ? (
         <Chip label={'Pick a date'} size='small' variant='tonal' onClick={handleOpenDialog} />
       ) : (
         '-'

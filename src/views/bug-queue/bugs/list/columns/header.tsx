@@ -238,6 +238,9 @@ const DynamicTableHeader = ({
     return { totalBugs, bugsWithValues, bugsWithoutValues, uniqueValues }
   }, [allBugsData, groupData, colValueList, columnId])
 
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // For the new structure where column is a single dynamic column object
   if (!columns || columns.length === 0) {
     return (
@@ -247,10 +250,11 @@ const DynamicTableHeader = ({
           
           {/* Show groupID for debugging (optional - remove in production) */}
         
-         
+         {rolename !=='Viewer' &&
           <IconButton size='small' onClick={(e) => handleMenuOpen(e, column)}>
             <Icon icon={'lets-icons:meatballs-menu'} rotate={45} />
           </IconButton>
+  }
         </Box>
 
         <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleMenuClose} TransitionComponent={Grow}>
@@ -326,9 +330,11 @@ const DynamicTableHeader = ({
               </Box>
             )}
             
+            {rolename !=='Viewer' &&
             <IconButton size='small' onClick={(e) => handleMenuOpen(e, data)}>
               <Icon icon={'lets-icons:meatballs-menu'} rotate={45} />
             </IconButton>
+}
           </Box>
           {index < columns.length - 1 && <Box mx={1}>|</Box>}
         </React.Fragment>

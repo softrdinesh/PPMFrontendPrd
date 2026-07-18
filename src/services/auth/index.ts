@@ -25,7 +25,7 @@ export const userLogin = async (body: LoginBody) => {
         toast.success(res.message ?? '')
 
         paymentcheck(res.data?.userID || res.data?.id)
-
+Rolecheck(res.data?.userID || res.data?.id)
         return res
       } else {
         throw res
@@ -62,6 +62,41 @@ const paymentcheck = async (userId: number) => {
     console.error('Payment check error:', error)
   }
 }
+const Rolecheck = async (userId: number) => {
+  const Baseurl = process.env.NEXT_PUBLIC_API_URL1
+  try {
+    const res = await axios.get(`${Baseurl}/GetUserInfo?UserID=${userId}`)
+    
+   // if (res.data && res.data.length > 0) {
+     if (res.data && res.data.length > 0) {
+      const roledata = {
+       userID: res.data[0].userID,
+       name:res.data[0].name,
+       email:res.data[0].email,
+       profilepicture:res.data[0].profilepicture,
+       roleID:res.data[0].roleID,
+       rolename:res.data[0].rolename,
+       organizationName:res.data[0].organizationName,
+       amouorganizationIDnt:res.data[0].organizationID,
+       organizationSize:res.data[0].organizationSize
+            //  isExpired: true
+      }
+
+
+
+   
+      // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+            localStorage.setItem('Role', JSON.stringify(roledata))
+
+
+     }
+  } catch (error) {
+    console.error('Payment check error:', error)
+  }
+}
+
+
+
 export const userRegister = async (body: any) => {
   return callApi({ uriEndPoint: authentication.register, body, nextUrl: true })
     .then(res => {

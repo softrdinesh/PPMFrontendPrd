@@ -14,6 +14,7 @@ const NewSprintGroup = () => {
 
   return (
     <>
+ 
       <CustomButton
         variant='contained'
         startIcon={<Icon icon={'simple-line-icons:plus'} style={{ marginInline: 2 }} />}
@@ -23,6 +24,7 @@ const NewSprintGroup = () => {
       >
         New Group
       </CustomButton>
+
       <CreateSprintGroupDialog open={open} setOpen={setOpen} />
     </>
   )

@@ -134,11 +134,14 @@ const ListProjects = ({ hideAddProject = false }: { hideAddProject?: boolean }) 
   }
 
   const handleClose = () => setOpen(false)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return (
     <div className='space-y-3 py-3'>
      {!!selected && !hideAddProject && (
         <div className='flex items-center gap-1'>
+          {rolename!=='Viewer' &&
           <div className='flex-1'>
             <FormControl fullWidth>
               <TextField
@@ -165,6 +168,8 @@ const ListProjects = ({ hideAddProject = false }: { hideAddProject?: boolean }) 
               />
             </FormControl>
           </div>
+}
+   {rolename!=='Viewer' &&
           <ListItemIcon
             sx={{
               minWidth: 30,
@@ -185,6 +190,7 @@ const ListProjects = ({ hideAddProject = false }: { hideAddProject?: boolean }) 
             </Menu>
             <CreateProject open={open} onCloseModal={handleClose} />
           </ListItemIcon>
+}
         </div>
       )}
       <div className='space-y-1'>

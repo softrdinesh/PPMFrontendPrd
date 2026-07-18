@@ -54,7 +54,9 @@ const TaskPeople = ({
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(rowData?.Owner ?? null)
   const [searchText, setSearchText] = useState('')
   const { profile, user } = useAuth()
-  
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // ** State for API users
   const [apiUsers, setApiUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -237,11 +239,8 @@ const TaskPeople = ({
   // ** Combine context users with API users or use API users directly
   const users = apiUsers.length > 0 ? apiUsers : contextUsers || []
 
-  // ** processedDynamicValue
-  // Exact rowData shape: [{ colList, detailList, colvalueList: [...] }]
-  // colvalueList has ONE entry PER USER with same additionalColumnID repeated per user
-  // e.g. colvalueList[0] = { additionalColumnID:254, dynamicUserID:93, dynamicUserValueList:[{userID:93,...}] }
-  //      colvalueList[1] = { additionalColumnID:254, dynamicUserID:94, dynamicUserValueList:[{userID:94,...}] }
+
+
   const processedDynamicValue = React.useMemo(() => {
     if (!dynamicValue || !columnData?.additionalColumnID) return []
 
@@ -257,13 +256,9 @@ const TaskPeople = ({
         flattenedUsers.push(userToAdd)
       }
     }
-
-    // Helper: given a colvalueList array, extract all users for the target additionalColumnID
-    // Each item in colvalueList = one user assignment (same additionalColumnID repeated per user)
     const processColvalueList = (colvalueList: any[]) => {
       if (!Array.isArray(colvalueList)) return
 
-      // Filter ALL entries matching this column — one entry per assigned user
       const columnItems = colvalueList.filter(
         (item: any) => item.additionalColumnID === columnData.additionalColumnID
       )
@@ -332,9 +327,6 @@ const TaskPeople = ({
       })
     }
 
-    // ── Shape A (YOUR EXACT SHAPE): Array of row wrapper objects ──────────────
-    // dynamicValue = [{ colList:[...], detailList:[...], colvalueList:[...] }]
-    // Check: is it an array whose first item has a colvalueList property?
     if (Array.isArray(dynamicValue)) {
       const firstItem = dynamicValue[0]
 
@@ -348,8 +340,6 @@ const TaskPeople = ({
         return flattenedUsers
       }
 
-      // Shape B: array items ARE colvalue entries directly
-      // [{ additionalColumnID, dynamicUserValueList }, ...]
       if (firstItem && 'additionalColumnID' in firstItem) {
         processColvalueList(dynamicValue)
         return flattenedUsers
@@ -385,7 +375,7 @@ const TaskPeople = ({
                     </Tooltip>
 
                     {/* Small close button */}
-                    {canEdit && (
+                    {canEdit && rolename!=='Viewer' && (
                       <button
                         onClick={e => {
                           e.stopPropagation()
@@ -430,6 +420,7 @@ const TaskPeople = ({
           </Box>
 
           {/* Popover to show full user list */}
+          {rolename !== 'Viewer' &&
           <Popover
             open={Boolean(userListAnchor)}
             anchorEl={userListAnchor}
@@ -528,11 +519,17 @@ const TaskPeople = ({
               </List>
             </Box>
           </Popover>
-
-          {canEdit && (
-            <IconButton onClick={handleOpen}>
-              <Icon icon={'bi:plus-circle-dotted'} />
-            </IconButton>
+      }
+          {rolename !== 'Viewer' ? (
+            <>
+              {canEdit && (
+                <IconButton onClick={handleOpen}>
+                  <Icon icon={'bi:plus-circle-dotted'} />
+                </IconButton>
+              )}
+            </>
+          ) : (
+            processedDynamicValue?.length === 0 && <Icon icon={'ph:question-duotone'} fontSize={24} />
           )}
         </>
       ) : selectedOwner ? (

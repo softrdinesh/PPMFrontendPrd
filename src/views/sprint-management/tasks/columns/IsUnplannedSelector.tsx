@@ -10,7 +10,9 @@ interface IsUnplannedSelectorProps {
 export const IsUnplannedSelector = ({ value, canEdit, onUpdate }: IsUnplannedSelectorProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedValue, setSelectedValue] = useState<boolean>(value);
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   useEffect(() => {
     setSelectedValue(value);
   }, [value]);
@@ -36,7 +38,8 @@ export const IsUnplannedSelector = ({ value, canEdit, onUpdate }: IsUnplannedSel
   if (isEditing) {
     return (
       <FormControl size="small" sx={{ minWidth: 100 }}>
-        <Select
+        {rolename !== 'Viewer' ?(
+ <Select
           value={selectedValue ? 'true' : 'false'}
           onChange={(e) => handleChange(e.target.value === 'true')}
           onBlur={handleBlur}
@@ -53,6 +56,11 @@ export const IsUnplannedSelector = ({ value, canEdit, onUpdate }: IsUnplannedSel
           <MenuItem value={'true'}>Yes</MenuItem>
           <MenuItem value={'false'}>No</MenuItem>
         </Select>
+        ): (
+<Typography variant='body2' style={{cursor:'not-allowed'}}>
+  {selectedValue ? "Yes" : "No"}
+</Typography>        )}
+       
       </FormControl>
     );
   }

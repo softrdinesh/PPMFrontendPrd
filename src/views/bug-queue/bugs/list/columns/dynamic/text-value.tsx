@@ -90,10 +90,13 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
       }
     }
   }, [initialValue, dynamicValue, rowData?.BugID])
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   return canEdit ? (
     <TextField
       variant='standard'
+      disabled={rolename =='Viewer'}
       sx={{
         border: 0,
         '& .MuiInputBase-root::before': {
@@ -101,12 +104,25 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
         },
         '& .MuiInputBase-root:hover::before': {
           borderBottom: 0
-        }
+        },
+        // Using theme for better dark/light mode support
+  '& .MuiInputBase-root.Mui-disabled': {
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    '&:before': {
+      borderBottom: 0
+    }
+  },
+  '& .MuiInputBase-input.Mui-disabled': {
+    WebkitTextFillColor: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000',
+    color: theme => theme.palette.mode === 'dark' ? '#fafafa' : '#000000'
+  }
       }}
       placeholder='Please enter a value'
       // fullWidth
       value={value}
-      style={{width:300}}
+  multiline
+        minRows={3}
+        maxRows={6}
       inputProps={{ maxLength: 50 }}
       onChange={e => {
         let newValue = e.target.value;

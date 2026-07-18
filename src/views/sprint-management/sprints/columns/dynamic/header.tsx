@@ -42,7 +42,9 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
   // ✅ NEW: Separate state to preserve column data for delete/edit even after menu closes
   // const [activeColumn, setActiveColumn] = useState(null)
   const [activeColumn, setActiveColumn] = useState<any>(null)
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const handleMenuOpen = (e: any, columnData: any) => {
     setAnchorEl(e?.currentTarget)
     setSelectedColumn(columnData)
@@ -140,7 +142,7 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       }
       
       await axios.post(
-        `${Baseurl}/RemoveSprintDynamicColumnname?DynamicColumnID=${dynamicColumnId}&LoginuserID=${user?.id}`
+        `${process.env.NEXT_PUBLIC_API_URL1}/RemoveSprintDynamicColumnname?DynamicColumnID=${dynamicColumnId}&LoginuserID=${user?.id}`
       );
                   window.dispatchEvent(new Event('columnCreated'));
 
@@ -193,9 +195,10 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
       <Box display={'flex'} alignItems={'center'} width={'100%'} justifyContent={'space-between'}>
         <Box display={'flex'} alignItems={'center'}>
           <p style={{ whiteSpace: 'nowrap', marginRight: 15 }}>{column?.colname || column?.ColumnName || 'Column'}</p>
+      {rolename !== 'Viewer' &&
           <IconButton size='small' onClick={(e) => handleMenuOpen(e, column)}>
             <Icon icon={'lets-icons:meatballs-menu'} rotate={45} />
-          </IconButton>
+          </IconButton>}
         </Box>
 
         <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleMenuClose} TransitionComponent={Grow}>

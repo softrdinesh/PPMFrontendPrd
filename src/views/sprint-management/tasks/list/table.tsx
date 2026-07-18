@@ -307,7 +307,9 @@ const OwnerSelector = ({
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   const fetchUsers = async () => {
     if (!user?.id) return
     
@@ -398,7 +400,8 @@ const OwnerSelector = ({
     <Box display={'flex'} alignItems={'center'}>
       {value ? (
         <Box position={'relative'}>
-          <IconButton 
+            {rolename !== 'Viewer'  ? (
+   <IconButton 
             onClick={handleOpen}
             sx={{ p: 0 }}
           >
@@ -406,6 +409,19 @@ const OwnerSelector = ({
               <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
             </Tooltip>
           </IconButton>
+            ):(
+                 <IconButton 
+            // onClick={handleOpen}
+            sx={{ p: 0 }}
+          >
+            <Tooltip title={value.Email || value.Name}>
+              <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
+            </Tooltip>
+          </IconButton>
+
+            )}
+       
+          {rolename !== 'Viewer' &&
           <IconButton 
             size='small' 
             onClick={handleRemove} 
@@ -425,10 +441,13 @@ const OwnerSelector = ({
           >
             <Icon icon={'icon-park-twotone:close-one'} width={16} height={16} color='red' />
           </IconButton>
+}
         </Box>
       ) : (
-        <IconButton onClick={handleOpen}>
-          <Icon icon={'bi:plus-circle-dotted'} />
+        <IconButton >
+            <Icon icon={'ph:question-duotone'} fontSize={24} />
+
+          {/* <Icon icon={'bi:plus-circle-dotted'} /> */}
         </IconButton>
       )}
       
@@ -759,7 +778,9 @@ const handleRefetch = useCallback(() => {
     syncColvalueList(refetchResult?.data)
   });
 }, [sprintTaskInfoApi.refetch, taskGroupIds, currentTaskGroupId]);
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData.rolename;
   // Static columns definition
   const staticColumns: ColumnDef<any>[] = useMemo(
     () => [
@@ -771,22 +792,26 @@ const handleRefetch = useCallback(() => {
   header: function SelectHeader({ table }) {
     return (
       <div className='flex justify-start ml-1 !w-20'>
+      
         <Checkbox
           checked={table?.getIsAllRowsSelected?.() ?? false}
           indeterminate={table?.getIsSomeRowsSelected?.() ?? false}
           onChange={table?.getToggleAllRowsSelectedHandler?.()}
         />
+
       </div>
     )
   },
   cell: ({ row }) => (
     <div className='flex px-1 !w-20'>
+        {rolename !== 'Viewer' &&
       <Checkbox
         checked={row.getIsSelected() ?? false}
         disabled={!row.getCanSelect()}
         indeterminate={row.getIsSomeSelected?.() ?? false}
         onChange={row.getToggleSelectedHandler()}
       />
+        }
     </div>
   )
 },
@@ -1422,6 +1447,7 @@ const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key]
           </TableBody>
         </Table>
       </div>
+      {rolename !== 'Viewer' &&
       <div className='flex justify-between items-center gap-2 m-2'>
         <CustomButton
           variant='text'
@@ -1445,6 +1471,7 @@ const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key]
           Add New Column
         </CustomButton>
       </div>
+}
       {showCard &&
         <DeleteTasksComponent
           showCard={showCard}
