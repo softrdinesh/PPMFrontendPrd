@@ -87,8 +87,7 @@ const rolename = parsedData.rolename;
         return;
       }
 
-      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com'
-
+      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 
       const response = await axios.post(
         `${Baseurl}/SprintTaskChangeDynamicColumnName?Columnname=${(Columnname)}&AdditionalColumnID=${AdditionalColumnID}&LoginuserID=${user?.id}`
       );
@@ -134,7 +133,7 @@ const rolename = parsedData.rolename;
 
   const handleDelete = async () => {
     try {
-      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 
       const dynamicColumnId = (activeColumn as any)?.additionalColumnID?.toString() || column?.additionalColumnID?.toString();
       
       if (!dynamicColumnId) {

@@ -131,7 +131,7 @@ const rolename = parsedData.rolename;
 
   const handleDelete = async () => {
     try {
-      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 
       // ✅ Use activeColumn instead of selectedColumn (selectedColumn is null after menu closes)
       const dynamicColumnId = activeColumn?.additionalColumnID?.toString();
 

@@ -92,7 +92,7 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
 // Insert dynamic value for dynamic columns
 const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<InsertDynamicValueResponse> => {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
     const DynamicColumnID = payload.DynamicColumnID;
     const LoginuserID = payload.LoginuserID;
     const taskid = payload.SprintID;

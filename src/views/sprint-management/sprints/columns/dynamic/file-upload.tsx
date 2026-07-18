@@ -133,7 +133,7 @@ const DynamicFiles = ({
 
   // ** Constants
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB in bytes
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com'
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
   
   // Find the dynamic value from rowData if not provided as prop
   const getDynamicValue = (): AdditionalValue | undefined => {

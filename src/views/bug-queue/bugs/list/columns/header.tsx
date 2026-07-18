@@ -149,7 +149,7 @@ const DynamicTableHeader = ({
 
   const handleDelete = async () => {
     try {
-      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const Baseurl = process.env.NEXT_PUBLIC_API_URL1 
       
       // ✅ Use activeColumn for dynamicColumnId
       const dynamicColumnId = activeColumn?.additionalColumnID?.toString();

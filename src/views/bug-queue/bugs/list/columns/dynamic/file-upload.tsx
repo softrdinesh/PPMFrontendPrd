@@ -463,7 +463,7 @@ const onSubmit = async (data: FormValidateType) => {
     try {
       const formData = new FormData()
       
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
       
       // Use only UploadSprintDynamicDocument API
       const uploadEndpoint = `${BASE_URL}/UploadBugDynamicDocument/${columnId}/${user?.id}/${rowData?.bugID || rowData?.bugID || ''}/${rowData?.groupID}/${encodeURIComponent(data.value)}/${encodeURIComponent(data?.displayText)}`
@@ -521,7 +521,7 @@ const onSubmit = async (data: FormValidateType) => {
       const formData = new FormData()
       formData.append("file", data.file)
       
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
       
       // Use only UploadSprintDynamicDocument API
       const uploadEndpoint = `${BASE_URL}/UploadBugDynamicDocument/${columnId}/${user?.id}/${rowData?.bugID || rowData?.bugID || ''}/${rowData?.groupID}/-/${encodeURIComponent(data?.displayText)}`
@@ -601,7 +601,7 @@ const onSubmit = async (data: FormValidateType) => {
   
   const handleclear = async () => {
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 || 'https://uat.ppmbackend.projectpulse360.com';
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL1 
       // Use dynamic values instead of hardcoded ones
       const uploadEndpoint = `${BASE_URL}/BugRemoveDynamicColumnfileupload?BugID=${rowData?.BugID}&AdditionalColumnID=${columnId}&LoginuserID=${user?.id}`
       
