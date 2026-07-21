@@ -263,7 +263,6 @@ function TaskRow({ task }: { task: Task }) {
   const priorityIcon = priorityKey ? PRIORITY_CONFIG[priorityKey].icon : "mdi:flag-outline";
 
   const handleTaskClick = (task:any) => {
-   // console.log(task,'')
     router.push(`/project/${task?.projectID}`);
     
   };

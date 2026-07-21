@@ -199,7 +199,8 @@ const DynamicDate = ({
   const debouncedClick = useCallback(debounce(handleSave, 600), [selectedDate, columnData, user, rowData])
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <div>
       {selectedDate ? (

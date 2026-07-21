@@ -28,7 +28,8 @@ export const ColumnTextField = ({ table, getValue, index, id, canEdit = true }: 
   }, [initialValue])
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return canEdit ? (
     <TextField
       variant='standard'

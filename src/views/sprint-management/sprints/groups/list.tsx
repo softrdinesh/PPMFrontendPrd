@@ -81,7 +81,8 @@ const deleteSprintGroup = async () => {
 
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <Card className='rounded-lg'>
       <div className='py-2 px-3 flex items-center gap-2 justify-between'>

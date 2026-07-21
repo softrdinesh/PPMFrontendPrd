@@ -75,7 +75,8 @@ const DynamicFiles = ({
   const { profile,user } = useAuth()
   const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // Helper function to safely get column ID regardless of casing
   const getColumnId = (column: any): string | number | undefined => {
     if (!column) return undefined;

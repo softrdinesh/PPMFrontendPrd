@@ -12,7 +12,8 @@ export const IsUnplannedSelector = ({ value, canEdit, onUpdate }: IsUnplannedSel
   const [selectedValue, setSelectedValue] = useState<boolean>(value);
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   useEffect(() => {
     setSelectedValue(value);
   }, [value]);

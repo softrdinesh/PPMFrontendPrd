@@ -51,7 +51,8 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
   const { user } = useAuth();
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // Find the specific column data from dynamicValue array
   const currentColumnData = useMemo(() => {
     if (!dynamicValue || !columnData) return null;

@@ -38,7 +38,7 @@ const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem;
   const [startDate, setStartDate] = useState<Date | null>(null)
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const [endDate, setEndDate] = useState<Date | null>(null)
   const { profile, user } = useAuth()
   const handleDateChange = async (dates: [Date | null, Date | null]) => {
@@ -50,9 +50,12 @@ const rolename = parsedData.rolename;
     setEndDate(end)
 
     if (start && end) {
+      const normalizedStart = moment(start).format('YYYY-MM-DD')
+      const normalizedEnd = moment(end).format('YYYY-MM-DD')
+
       await updateSprint({
         id: original?.SprintID?.toString(),
-        body: { SprintTimelineStart: start, SprintTimelineEnd: end }
+        body: { SprintTimelineStart: normalizedStart, SprintTimelineEnd: normalizedEnd }
       })
 //        const value = localStorage.getItem('userData')
   

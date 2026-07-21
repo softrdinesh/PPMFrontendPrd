@@ -241,7 +241,8 @@ const filterDynamicValue = (columnId: string, colvalueList: any[], sprintId: num
   }, [localData, selectedSprint, sprintSearchTerm])
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // Define static columns
   const staticColumns: ColumnDef<any>[] = useMemo(
     () => [

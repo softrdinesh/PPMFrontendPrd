@@ -18,7 +18,7 @@ import type { ProjectListItem } from '@/services/modules/project/types'
 import { fetchSprintWorkspaceList } from '@/services/modules/sprint-workspace'
 import type { WorkspaceListItem } from '@/services/modules/workspace/type'
 import { useAuth } from 'src/hooks/useAuth'
-
+import axios from 'axios'
 interface WorkspaceContextType {
   workspace: WorkspaceListItem[]
   projects: ProjectListItem[]
@@ -60,13 +60,37 @@ const WorkspaceProvider: FC<WorkspaceProviderProps> = ({ children }) => {
   //   enabled: !!auth?.user
   // })
 
+const fetchworkspacelist = async (loginuserID: number) => {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetWorkspaceList`, {
+    params: {
+      UserID: loginuserID,
+     
+    }
+  })
+
+  // API returns camelCase keys (workspaceID, workspaceName, organizationID);
+  // normalize to the PascalCase shape (WorkspaceListItem) the rest of the app expects
+  return (response.data || []).map((item: any) => ({
+    ...item,
+    WorkspaceID: item.WorkspaceID ?? item.workspaceID,
+    WorkspaceName: item.WorkspaceName ?? item.workspaceName,
+    OrganizationID: item.OrganizationID ?? item.organizationID
+  }))
+}
+
+
+
+
+
   const { data, refetch } = useQuery({
   queryKey: ['workspaces', auth?.user?.userData?.UserID, auth?.profile],
   queryFn: () =>
-    (auth?.profile === 'projects'
+    (auth?.profile == 'projects'
       ? fetchWorkspaceList()
-      : fetchSprintWorkspaceList()) as Promise<WorkspaceListItem[]>,
-  enabled: !!auth?.user
+       : fetchworkspacelist(auth?.user?.userData?.UserID as number)) as Promise<WorkspaceListItem[]>,
+       //: fetchSprintWorkspaceList()) as Promise<WorkspaceListItem[]>,
+
+  enabled: !!auth?.user && (auth?.profile === 'projects' || !!auth?.user?.userData?.UserID)
 })
   // ** States
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceListItem | null>(null)

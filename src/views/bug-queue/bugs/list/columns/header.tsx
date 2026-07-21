@@ -130,7 +130,6 @@ const DynamicTableHeader = ({
         },
       });
     } catch (error) {
-      console.log('error :', error)
       toast.error('Failed to update column name');
     }
   }
@@ -240,7 +239,8 @@ const DynamicTableHeader = ({
 
   const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // For the new structure where column is a single dynamic column object
   if (!columns || columns.length === 0) {
     return (

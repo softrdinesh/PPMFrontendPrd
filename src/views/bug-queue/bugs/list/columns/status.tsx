@@ -607,7 +607,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
 
   const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // ✅ FIXED: Use GetBugStatusList API with WorkspaceID from props
   const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
     queryKey: ['bug-status-list', selected?.WorkspaceID],

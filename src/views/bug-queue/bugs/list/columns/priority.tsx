@@ -102,7 +102,8 @@ const BugPriority = ({ row, refetch, canEdit, workspaceID, onPriorityChange }: T
   const { priorityList = [] } = useWorkspace()
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const { data: dynamicPriority, refetch: refetchPriorityList } = useQuery({
     queryKey: ['project-priority', workspaceID],
     queryFn: () => fetchBugPriorityList({ workspaceID })

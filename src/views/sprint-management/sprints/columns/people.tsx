@@ -365,7 +365,7 @@ const TaskPeople = ({
   }, [dynamicValue, users, columnData?.additionalColumnID])
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <Box display={'flex'} height={'100%'} width={'max-content'} alignItems={'center'}>
       {!!columnData?.additionalColumnID ? (

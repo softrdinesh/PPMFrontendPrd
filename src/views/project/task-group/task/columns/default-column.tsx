@@ -21,7 +21,8 @@ export const ColumnTextField = ({ table, getValue, index, id, canEdit = true }: 
   }
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // If the initialValue is changed external, sync it up with our state
   useEffect(() => {
     setValue(initialValue)

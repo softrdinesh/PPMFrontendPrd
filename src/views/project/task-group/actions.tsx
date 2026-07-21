@@ -39,7 +39,6 @@ const {user} = useAuth()
   //         }
   //       })
   //   })
-  //   console.log(data,ProjectID,'isLoading1');
 
 
   // const role = useMemo(() => data?.userProjects?.Role, [data?.userProjects?.Role])

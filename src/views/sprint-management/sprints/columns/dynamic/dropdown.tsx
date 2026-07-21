@@ -261,7 +261,8 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
 
   const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
   

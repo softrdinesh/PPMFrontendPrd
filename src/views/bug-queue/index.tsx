@@ -115,7 +115,8 @@ const BugQueueComponent = ({ workspaceID }: { workspaceID: string }) => {
   // ─────────────────────────────────────────────────────────────────────────
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <BugQueueProvider workspaceID={workspaceID}>
       <Grid container spacing={6}>

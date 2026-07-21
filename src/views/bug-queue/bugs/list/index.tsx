@@ -70,7 +70,8 @@ const ReporterSelector = ({
   const { user } = useAuth()
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const fetchUsers = async () => {
     if (!user?.id) return
     setLoading(true)
@@ -531,7 +532,8 @@ const BugGroupTable = ({
   const selectedSprintTaskIDRef = useRef<number>(0)
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   useEffect(() => {
     if (groupData && groupData.length > 0) {
       const firstWithSprint = groupData.find(

@@ -115,16 +115,13 @@ const CreateWorkspace: ForwardRefRenderFunction<HTMLLIElement, MenuItemProps> = 
      
 //     const workspaceCount = workspace?.length ?? 0
 //     const projectCount = projects?.length ?? 0
-// console.log(workspaceCount,projectCount);
 //     if (workspaceCount > 0) {
-// console.log('ccc');
 //       const canOpen = checkPaymentStatus()
 
 //       if (canOpen) {
 //         setIsModalOpen(true)
 //       }
 //     } else {
-//       console.log('ccc222');
 
 //       setIsModalOpen(true)
 //     }
@@ -246,7 +243,8 @@ const checkPaymentStatus = () => {
   }
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <>
       <StyledVerticalMenuItem

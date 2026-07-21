@@ -92,7 +92,8 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
   }, [initialValue, dynamicValue, rowData?.BugID])
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return canEdit ? (
     <TextField
       variant='standard'

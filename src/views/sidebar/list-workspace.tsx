@@ -180,7 +180,7 @@ handleOpenClose()
 
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
 
 
 
@@ -337,7 +337,6 @@ const rolename = parsedData.rolename;
 
 const ListWorkspaces = () => {
   const { workspace: workspaceList } = useWorkspace()
-
   return (
     <div className='space-y-1 py-3'>
       {workspaceList?.map(workspace => <WorkspaceItem key={workspace?.WorkspaceID} workspaces={workspace} />)}

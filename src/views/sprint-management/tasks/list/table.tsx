@@ -293,6 +293,242 @@ interface TaskTableSprintProps {
 }
 
 // Owner Selector Component - Allows changing owner even when already selected
+// const OwnerSelector = ({ 
+//   value, 
+//   onUpdate, 
+//   canEdit = true 
+// }: { 
+//   value: { UserID?: number; Name?: string; Email?: string; ProfilePicture?: string } | null;
+//   onUpdate: (owner: { UserID: number; Name: string; Email: string; ProfilePicture?: string } | null) => Promise<void>;
+//   canEdit?: boolean;
+// }) => {
+//   const [anchorEl, setAnchorEl] = useState<any>(null)
+//   const [searchText, setSearchText] = useState('')
+//   const [users, setUsers] = useState<any[]>([])
+//   const [loading, setLoading] = useState(false)
+//   const { user } = useAuth()
+// const roleData = localStorage.getItem('Role');
+// const parsedData = JSON.parse((roleData)as any);
+// // const rolename = parsedData.rolename;
+// const rolename = parsedData?.rolename;
+//   const fetchUsers = async () => {
+//     if (!user?.id) return
+    
+//     setLoading(true)
+//     try {
+//       const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL1}`
+//       const response = await axios.get(`${BASE_URL}/GetUserList?LoginuserID=${user.id}`)
+      
+//       const mappedUsers = response.data.map((apiUser: any) => ({
+//         UserProjectID: apiUser.userID,
+//         User: {
+//           UserID: apiUser.userID,
+//           Name: apiUser.name,
+//           Email: apiUser.email?.toLowerCase() || '',
+//           ProfilePicture: apiUser.profilepicture || ''
+//         }
+//       }))
+      
+//       setUsers(mappedUsers)
+//     } catch (error) {
+//       console.error('Error fetching users:', error)
+//       toast.error('Failed to load users')
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+
+//   useEffect(() => {
+//     fetchUsers()
+//   }, [user?.id])
+
+//   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+//     setAnchorEl(event.currentTarget)
+//   }
+
+//   const handleClose = () => {
+//     setAnchorEl(null)
+//     setSearchText('')
+//   }
+
+//   const handleRemove = async (e: React.MouseEvent) => {
+//     e.stopPropagation()
+//     await onUpdate(null)
+//     handleClose()
+//   }
+
+//   const handleSelectUser = async (selected: any) => {
+//     await onUpdate({
+//       UserID: selected.User.UserID,
+//       Name: selected.User.Name,
+//       Email: selected.User.Email,
+//       ProfilePicture: selected.User.ProfilePicture
+//     })
+//     handleClose()
+//   }
+
+//   const userFilter = (userItem: any) => {
+//     return userItem?.User?.Name?.toLowerCase()?.includes(searchText?.toLowerCase()) ||
+//            userItem?.User?.Email?.toLowerCase()?.includes(searchText?.toLowerCase())
+//   }
+
+//   // Filter out currently selected user from the list to avoid selecting the same user
+//   const filteredUsers = useMemo(() => {
+//     return users.filter(userItem => {
+//       // Filter by search text
+//       const matchesSearch = userFilter(userItem)
+//       // Exclude currently selected user
+//       const isNotCurrentUser = value ? userItem?.User?.UserID !== value?.UserID : true
+//       return matchesSearch && isNotCurrentUser
+//     })
+//   }, [users, searchText, value])
+//   if (!canEdit) {
+//     return (
+//       <Box display={'flex'} alignItems={'center'}>
+//         {value ? (
+//           <Tooltip title={value.Email || value.Name}>
+//             <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
+//           </Tooltip>
+//         ) : (
+//           <Icon icon={'ph:question-duotone'} fontSize={24} />
+//         )}
+//       </Box>
+//     )
+//   }
+
+//   return (
+//     <Box display={'flex'} alignItems={'center'}>
+//       {value ? (
+//         <Box position={'relative'}>
+//             {rolename !== 'Viewer'  ? (
+//    <IconButton 
+//             onClick={handleOpen}
+//             sx={{ p: 0 }}
+//           >
+//             <Tooltip title={value.Email || value.Name}>
+//               <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
+//             </Tooltip>
+//           </IconButton>
+//             ):(
+//                  <IconButton 
+//              onClick={handleOpen}
+//             sx={{ p: 0 }}
+//           >
+//             <Tooltip title={value.Email || value.Name}>
+//               <Avatar alt={value.Name} src={value.ProfilePicture} sx={{ width: 32, height: 32 }} />
+//             </Tooltip>
+//           </IconButton>
+
+//             )}
+       
+//           {rolename !== 'Viewer' &&
+//           <IconButton 
+//             size='small' 
+//             onClick={handleRemove} 
+//             sx={{ 
+//               position: 'absolute', 
+//               top: -11, 
+//               right: -12,
+//               backgroundColor: 'white',
+//               '&:hover': {
+//                 backgroundColor: '#f5f5f5'
+//               },
+//               boxShadow: 1,
+//               width: 20,
+//               height: 20,
+//               p: 0
+//             }}
+//           >
+//             <Icon icon={'icon-park-twotone:close-one'} width={16} height={16} color='red' />
+//           </IconButton>
+// }
+//         </Box>
+//       ) : (
+//         <IconButton >
+//           {rolename!=='Viewer' ? (
+//                       <Icon icon={'bi:plus-circle-dotted'} />
+
+
+//           ):(
+//             <Icon             onClick={handleOpen}
+//  icon={'ph:question-duotone'} fontSize={24} /> 
+
+//           )}
+
+//         </IconButton>
+//       )}
+      
+//       <Menu 
+//         open={!!anchorEl} 
+//         anchorEl={anchorEl} 
+//         onClose={handleClose} 
+//         TransitionComponent={Zoom}
+//         PaperProps={{
+//           sx: {
+//             maxHeight: 400
+//           }
+//         }}
+//       >
+//         <Box width={280}>
+//           <Grid container spacing={2}>
+//             <Grid size={12}>
+//               <Box px={2} pt={1}>
+//                 <TextField
+//                   fullWidth
+//                   color='secondary'
+//                   value={searchText}
+//                   size='small'
+//                   autoComplete='off'
+//                   placeholder='Search User...'
+//                   onChange={e => setSearchText(e?.target?.value)}
+//                   InputProps={{ 
+//                     startAdornment: <Icon icon={'ion:search'} style={{ marginRight: 6 }} />,
+//                     sx: { fontSize: '0.875rem' }
+//                   }}
+//                 />
+//               </Box>
+//             </Grid>
+//             <Grid size={12}>
+//               <Box sx={{ maxHeight: 320, overflowY: 'auto' }}>
+//                 {loading ? (
+//                   <Box px={3} py={2} display={'flex'} justifyContent={'center'}>
+//                     <CircularProgress size={24} />
+//                   </Box>
+//                 ) : filteredUsers?.length !== 0 ? (
+//                   filteredUsers.map((userItem, index) => (
+//                     <MenuItem
+//                       onClick={() => handleSelectUser(userItem)}
+//                       key={`owner-menu-item-${userItem?.User?.UserID || userItem?.UserProjectID || index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`}
+//                       sx={{ py: 1 }}
+//                     >
+//                       <Box display={'flex'} alignItems={'center'} gap={2} overflow={'hidden'}>
+//                         <Avatar alt={userItem?.User?.Name} src={userItem?.User?.ProfilePicture} sx={{ width: 32, height: 32 }} />
+//                         <Box overflow={'hidden'}>
+//                           <Typography variant='body2' fontWeight={500} overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+//                             {userItem?.User?.Name}
+//                           </Typography>
+//                           <Typography variant='caption' color='text.secondary' overflow={'hidden'} textOverflow={'ellipsis'} whiteSpace={'nowrap'}>
+//                             {userItem?.User?.Email}
+//                           </Typography>
+//                         </Box>
+//                       </Box>
+//                     </MenuItem>
+//                   ))
+//                 ) : (
+//                   <Box px={3} py={2}>
+//                     <Typography variant='body2' color='text.secondary' textAlign={'center'}>
+//                       {searchText ? 'No users found' : 'No users available'}
+//                     </Typography>
+//                   </Box>
+//                 )}
+//               </Box>
+//             </Grid>
+//           </Grid>
+//         </Box>
+//       </Menu>
+//     </Box>
+//   )
+// }
 const OwnerSelector = ({ 
   value, 
   onUpdate, 
@@ -309,7 +545,8 @@ const OwnerSelector = ({
   const { user } = useAuth()
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const fetchUsers = async () => {
     if (!user?.id) return
     
@@ -381,7 +618,6 @@ const rolename = parsedData.rolename;
       return matchesSearch && isNotCurrentUser
     })
   }, [users, searchText, value])
-
   if (!canEdit) {
     return (
       <Box display={'flex'} alignItems={'center'}>
@@ -411,7 +647,7 @@ const rolename = parsedData.rolename;
           </IconButton>
             ):(
                  <IconButton 
-            // onClick={handleOpen}
+             onClick={handleOpen}
             sx={{ p: 0 }}
           >
             <Tooltip title={value.Email || value.Name}>
@@ -444,10 +680,12 @@ const rolename = parsedData.rolename;
 }
         </Box>
       ) : (
-        <IconButton >
+        <IconButton onClick={rolename !== 'Viewer' ? handleOpen : undefined}>
+          {rolename !== 'Viewer' ? (
+            <Icon icon={'bi:plus-circle-dotted'} />
+          ) : (
             <Icon icon={'ph:question-duotone'} fontSize={24} />
-
-          {/* <Icon icon={'bi:plus-circle-dotted'} /> */}
+          )}
         </IconButton>
       )}
       
@@ -780,7 +1018,8 @@ const handleRefetch = useCallback(() => {
 }, [sprintTaskInfoApi.refetch, taskGroupIds, currentTaskGroupId]);
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // Static columns definition
   const staticColumns: ColumnDef<any>[] = useMemo(
     () => [

@@ -561,7 +561,8 @@ const TaskPriority = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTa
   const { user } = useAuth()
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // Fetch priority lookup list with taskID and groupID from row
   const { data: dynamicPriority, refetch: refetchPriorityList } = useQuery({
     queryKey: ['priority-lookup-list', getTaskIdFromRow(row), getGroupIdFromRow(row), user?.id],

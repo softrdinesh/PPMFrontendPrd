@@ -16,7 +16,8 @@ export const DescriptionTextfiled = ({ table, getValue, index, id, canEdit = tru
   const maxLength = 2000
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const onBlur = () => {
     table.options.meta?.updateData(index, id, value)
   }

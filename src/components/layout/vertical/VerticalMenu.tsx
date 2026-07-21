@@ -61,7 +61,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const [boardSelected, setBoardSelected] = useState(false)
   const roleData = localStorage.getItem('Role');
   const parsedData = JSON.parse((roleData)as any);
-  const rolename = parsedData.rolename;
+  // const rolename = parsedData.rolename;
+  const rolename = parsedData?.rolename;
 
   useEffect(() => {
     setBoardSelected(false)

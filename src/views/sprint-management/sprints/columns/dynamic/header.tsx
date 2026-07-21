@@ -44,7 +44,8 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
   const [activeColumn, setActiveColumn] = useState<any>(null)
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const handleMenuOpen = (e: any, columnData: any) => {
     setAnchorEl(e?.currentTarget)
     setSelectedColumn(columnData)

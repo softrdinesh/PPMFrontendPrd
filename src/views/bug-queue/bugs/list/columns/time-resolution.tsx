@@ -32,7 +32,8 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   const [isOvertime, setIsOvertime] = useState<boolean>(false)
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const form = useForm<FormType>({ defaultValues: { TimeResolution: null } })
 
   const handleOpen = (e: any) => {

@@ -490,7 +490,8 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, statusName }: Dele
 };
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
 const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask = false }: TaskStatusProps) => {
   const [anchorEl, setAnchorEl] = useState<any>(null)
   const [formAnchor, setFormAnchor] = useState<any>(null)

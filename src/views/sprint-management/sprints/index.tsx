@@ -230,7 +230,8 @@ const SprintManagementPage = ({ workspaceID }: { workspaceID: string }) => {
   }
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
 
   return (
     <SprintManagementProvider workspaceID={workspaceID}>

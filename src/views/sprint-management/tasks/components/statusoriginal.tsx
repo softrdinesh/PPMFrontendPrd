@@ -597,8 +597,8 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
   const { user } = useAuth()
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
-
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   const safeRefetch = async () => {
     if (typeof refetch === 'function') {
       await refetch()
@@ -871,7 +871,6 @@ const rolename = parsedData.rolename;
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
-
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       {rolename !== 'Viewer' ? (
@@ -883,7 +882,9 @@ const rolename = parsedData.rolename;
         onClick={handleOpen}
         sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
       >
-        <Tooltip title={statusName || 'None'}>
+        {/* <Tooltip title={statusName || 'None'}> */}
+          <Tooltip title={statusName || '-'}>
+
           <Typography
             fontSize={'0.85rem'}
             textOverflow={'ellipsis'}
@@ -892,7 +893,8 @@ const rolename = parsedData.rolename;
             color={'inherit'}
             className='text-inherit'
           >
-            {statusName ?? 'None'}
+            {/* {statusName ?? 'None'} */}
+                 {statusName ?? '-'}
           </Typography>
         </Tooltip>
       </Box>
@@ -905,7 +907,7 @@ const rolename = parsedData.rolename;
         // onClick={handleOpen}
         sx={{ cursor: 'not-allowed' }}
       >
-        <Tooltip title={statusName || 'None'}>
+        <Tooltip title={statusName || '-'}>
           <Typography
             fontSize={'0.85rem'}
             textOverflow={'ellipsis'}
@@ -914,7 +916,7 @@ const rolename = parsedData.rolename;
             color={'inherit'}
             className='text-inherit'
           >
-            {statusName ?? 'None'}
+            {statusName ?? '-'}
           </Typography>
         </Tooltip>
       </Box>

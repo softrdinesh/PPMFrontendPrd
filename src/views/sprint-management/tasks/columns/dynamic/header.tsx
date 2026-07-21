@@ -40,7 +40,8 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
   const [activeColumn, setActiveColumn] = useState(null)
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // Update value when initialValue changes
   useEffect(() => {
     setValue(initialValue)
@@ -114,7 +115,6 @@ const rolename = parsedData.rolename;
         },
       });
     } catch (error) {
-      console.log('error :', error)
       toast.error('Failed to update column name');
     }
   }
@@ -168,7 +168,6 @@ const rolename = parsedData.rolename;
         },
       });
     } catch (error) {
-      console.log('error :', error)
       toast.error('Failed to delete column');
     }
   }

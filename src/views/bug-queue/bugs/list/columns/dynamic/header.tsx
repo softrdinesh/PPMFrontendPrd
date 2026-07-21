@@ -167,7 +167,6 @@ const DynamicTableHeader = ({ column, refetch, isSubTask = false }: DynamicTable
         },
       });
     } catch (error) {
-      console.log('error :', error)
       toast.error('Failed to delete column');
     }
   }

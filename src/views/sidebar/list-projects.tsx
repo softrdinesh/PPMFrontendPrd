@@ -136,7 +136,8 @@ const ListProjects = ({ hideAddProject = false }: { hideAddProject?: boolean }) 
   const handleClose = () => setOpen(false)
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return (
     <div className='space-y-3 py-3'>
      {!!selected && !hideAddProject && (

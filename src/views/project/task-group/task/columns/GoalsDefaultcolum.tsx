@@ -33,7 +33,8 @@ export const GoalsTextfiled = ({ table, getValue, index, id, canEdit = true }: C
   const valueLength = value?.length || 0
 const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+// const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   return canEdit ? (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <TextField
