@@ -8,8 +8,6 @@ import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import CustomButton from '@/components/button'
 import toast from 'react-hot-toast'
-import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
-import { useRazorpayPayment } from '../../paymentpopup/useRazorpayPayment'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 
@@ -27,13 +25,6 @@ import { addTaskGroup, updateTaskGroup } from '@/services/modules/task-group'
 import { useAuth } from '@/hooks/useAuth'
 import { viewProject } from '@/services/modules/project'
 
-// Extend Window interface for Razorpay
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 type FormFields = {
   groupName: string
   projectID?: number
@@ -46,43 +37,22 @@ interface NewTaskDialogProps {
   initialGroupName?: string
   isEdit?: boolean
   TaskGroupID?: string
+  projectLength?: any // Add this prop to receive project length
 }
 
-const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = false, TaskGroupID }: NewTaskDialogProps) => {
+const NewTaskDialog = ({ 
+  open, 
+  onCloseModal, 
+  initialGroupName = '', 
+  isEdit = false, 
+  TaskGroupID,
+  projectLength 
+}: NewTaskDialogProps) => {
   const { project, refetchTaskGroup } = useProject()
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
-  const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
   const router = useRouter()
-  const [paymentStatus, setPaymentStatus] = useState("")
-  const { profile,user } = useAuth()
-  const logoImage = "https://appsuresolutions.netlify.app/assets/header_logo-Bj3Dgdu3.svg" // Replace with your actual logo
-  // ** Use Payment Hook
-  const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
-    userId: Number(user?.id),
-    onPaymentSuccess: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-      setShowPaymentExpiredDialog(false)
-    },
-    onPaymentFailure: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-      setShowPaymentExpiredDialog(true)
-    }
-  })
-    // const { data, refetch } = useQuery({
-    //   queryKey: ['project-view', 8],
-    //   queryFn: () =>
-    //     viewProject("8").then(res => {
-    //       if (res?.statusCode === 403) {
-    //         router.replace('/401')
-    //         return undefined
-    //       } else {
-    //         return res?.data
-    //       }
-    //     })
-    // })
-   
+  const { profile, user } = useAuth()
+  
   const {
     handleSubmit,
     control,
@@ -95,50 +65,74 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
     }
   })
 
-  // Check payment status
-  const checkPaymentStatus = () => {
-    const paymentStatus = localStorage.getItem('paymentStatus')
-
+  // Check payment status and workspace count
+  const checkPaymentAndWorkspaceStatus = () => {
     try {
-      if (paymentStatus) {
-        const parsed = JSON.parse(paymentStatus)
-        // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-        if (parsed.isExpired === true) {
-          setShowPaymentExpiredDialog(true)
-          return false
+      const localStorageData = localStorage.getItem('paymentStatus')
+      const workspaceCount = projectLength?.projectlength?.length || 0
+      
+      if (localStorageData) {
+        const parsedData = JSON.parse(localStorageData)
+        
+        // If payment is expired
+        if (parsedData.isExpired === true) {
+          // Allow only if no workspaces exist (first workspace free)
+          if (workspaceCount === 0) {
+            setShowPaymentExpiredDialog(false)
+            return true
+          } else {
+            setShowPaymentExpiredDialog(true)
+            return false
+          }
         }
-        // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-        if (parsed.isExpired === false) {
+        
+        // If payment is active (isExpired === false)
+        if (parsedData.isExpired === false) {
+          // Allow creation regardless of workspace count
           setShowPaymentExpiredDialog(false)
           return true
         }
-        // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
-        setShowPaymentExpiredDialog(true)
-        return false
+        
+        // If payment status is undefined or unexpected
+        if (workspaceCount === 0) {
+          setShowPaymentExpiredDialog(false)
+          return true
+        } else {
+          setShowPaymentExpiredDialog(true)
+          return false
+        }
+      } else {
+        // No payment status found - first time user
+        // Allow first workspace creation for free
+        if (workspaceCount === 0) {
+          setShowPaymentExpiredDialog(false)
+          return true
+        } else {
+          setShowPaymentExpiredDialog(true)
+          return false
+        }
       }
-      // No stored status → treat as expired by default (user must renew)
-      setShowPaymentExpiredDialog(true)
-      return false
     } catch (error) {
-      console.error('Error parsing payment status:', error)
-      // On parse error, treat as expired to be safe
+      console.error('Error parsing localStorage:', error)
       setShowPaymentExpiredDialog(true)
       return false
     }
   }
 
-  // Check payment status when dialog opens
+  // Check status when dialog opens
   useEffect(() => {
     if (open) {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
+      const canOpen = checkPaymentAndWorkspaceStatus()
+      if (!canOpen) {
+        // If cannot open, show payment dialog and close the task dialog
+        onCloseModal()
+      }
     } else {
-      setShouldOpenDialog(false)
       setShowPaymentExpiredDialog(false)
       // Reset form when dialog closes
       reset({ groupName: '' })
     }
-  }, [open, reset])
+  }, [open, reset, onCloseModal, projectLength])
 
   // Set initial form values when dialog opens with edit mode
   useEffect(() => {
@@ -152,6 +146,13 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
   }, [open, initialGroupName, setValue, reset, isEdit])
 
   const onSubmit = async (values: FormFields) => {
+    // Check again before submission (in case status changed)
+    const canProceed = checkPaymentAndWorkspaceStatus()
+    if (!canProceed) {
+      toast.error('Please complete payment to create more task groups')
+      return
+    }
+
     values.projectID = project?.ID
     
     const body = {
@@ -162,37 +163,55 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
       if (TaskGroupID) {
         await updateTaskGroup({ id: TaskGroupID.toString(), body })
         refetchTaskGroup()
-        reset({ groupName: '' }) // Reset form after successful update
+        reset({ groupName: '' })
         onCloseModal()
+        toast.success('Task group updated successfully')
       } else {
         await addTaskGroup(values)
         refetchTaskGroup()
-        reset({ groupName: '' }) // Reset form after successful creation
+        reset({ groupName: '' })
         onCloseModal()
+        toast.success('Task group created successfully')
       }
     } catch (error) {
       console.error('Error submitting form:', error)
+      toast.error('Failed to save task group. Please try again.')
     }
   }
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
-    onCloseModal()
   }
 
   return (
     <>
-      {/* Payment Expired Dialog */}
-      <SubscriptionExpiredDialog
-        open={showPaymentExpiredDialog}
-        onClose={handleClosePaymentDialog}
-        onRenew={generateRazorPayOrder}
-        isLoading={isLoading}
-        razorpayLoaded={razorpayLoaded}
-      />
+      {/* Payment Expired Dialog - Optional, you can keep or remove this */}
+      {showPaymentExpiredDialog && (
+        <Dialog open={showPaymentExpiredDialog} onClose={handleClosePaymentDialog}>
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Payment Required
+            </Typography>
+            <Typography sx={{ mb: 3 }}>
+              You have reached the limit of free task groups. 
+              {projectLength?.projectlength?.length === 0 
+                ? ' Your first task group is free!' 
+                : ' Please complete payment to create more task groups.'}
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={handleClosePaymentDialog}
+              sx={{ mr: 2 }}
+            >
+              Close
+            </Button>
+          </Box>
+        </Dialog>
+      )}
+
       {/* Task Group Dialog */}
       <Dialog
-        open={shouldOpenDialog}
+        open={open}
         style={{
           padding: 0
         }}
@@ -218,7 +237,7 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
           <IconButton
             aria-label='close'
             onClick={() => {
-              reset({ groupName: '' }) // Reset form when closing
+              reset({ groupName: '' })
               onCloseModal()
             }}
             style={{
@@ -242,7 +261,9 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
                 paddingX: 5
               }}
             >
-              <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 3 }}>Task Group name *</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: '12px', marginBottom: 3 }}>
+                Task Group name *
+              </Typography>
 
               <Controller
                 name='groupName'
@@ -320,7 +341,7 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
                 variant='outlined'
                 size='small'
                 onClick={() => {
-                  reset({ groupName: '' }) // Reset form when canceling
+                  reset({ groupName: '' })
                   onCloseModal()
                 }}
               >

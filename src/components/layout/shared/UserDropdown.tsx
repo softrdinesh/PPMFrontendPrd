@@ -70,6 +70,7 @@ const UserDropdown = () => {
     // Redirect to login page
     auth.logout()
     localStorage.removeItem("paymentStatus")
+    localStorage.removeItem("Role")
     
   }
 

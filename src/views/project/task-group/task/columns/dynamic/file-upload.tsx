@@ -35,6 +35,7 @@ import type { AdditionalValue, TaskListItemType } from '@/services/modules/task/
 import type { TFileUploadMenuItems } from './dynamic-files-menu'
 import { menuItems } from './dynamic-files-menu'
   import { viewProject } from '@/services/modules/project'
+import toast from 'react-hot-toast'
 type FormValidateType = {
   value: string
   file: File | null
@@ -452,7 +453,8 @@ const onSubmit = async (data: FormValidateType) => {
           handleClose()
           setIsUploading(false)
           setUploadProgress(0)
-          setSuccessAlert('File uploaded successfully!')
+          // setSuccessAlert('File uploaded successfully!')
+          toast.success("File uploaded successfully!")
         }
       } catch (error) {
         console.error('File upload failed:', error)
@@ -484,7 +486,9 @@ const onSubmit = async (data: FormValidateType) => {
       }
       
       refetch()
-      setSuccessAlert('File removed successfully!')
+      // setSuccessAlert('File removed successfully!')
+                toast.success("File removed successfully!")
+
     } catch (error) {
       console.error('File removal failed:', error)
       setErrorAlert('Failed to remove file. Please try again.')

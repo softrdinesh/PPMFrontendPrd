@@ -41,6 +41,7 @@ import TaskStatus from '../columns/status'
 import TaskEffortCell from './effort'
 import DynamicTableHeader from '../columns/dynamic/header'
 import CreateColumnMenu from '../create-column'
+import toast from 'react-hot-toast'
 
 interface SubTableProps {
   taskRow: TaskListItemType
@@ -76,6 +77,8 @@ const SubTable = ({ taskRow, taskGroupData, canEdit }: SubTableProps) => {
   const handleAddTask = useCallback(async () => {
     setAdding(true)
     await addSubTask({ taskID: taskRow?.TaskID })
+              //  toast.success("Task Added Successfully!")
+
     refetchSubTask()
     setAdding(false)
   }, [refetchSubTask, taskRow?.TaskID])
@@ -91,6 +94,7 @@ const SubTable = ({ taskRow, taskGroupData, canEdit }: SubTableProps) => {
   const handleDelete = useCallback(async () => {
     if (deleteData?.SubTaskID) {
       const response = await deleteSubTask(deleteData?.SubTaskID?.toString())
+               toast.success("Task Deleted Successfully!")
 
       if (response?.status) {
         refetchSubTask()
@@ -356,7 +360,7 @@ const table = useReactTable({
             }
 
             const response = await updateSubTask({ id: subTaskList?.[rowIndex]?.SubTaskID?.toString(), body })
-
+toast.success("Task Updated successfully!")
             if (response) {
               refetchSubTask()
             }
@@ -368,6 +372,7 @@ const table = useReactTable({
         if (typeof value === 'object' && value?.AdditionalColumnID) {
           const body = { ...value, TaskID: taskRow?.TaskID }
           const response = await updateSubTask({ id: subTaskList?.[rowIndex]?.SubTaskID?.toString(), body })
+toast.success("Task Updated successfully!")
 
           if (response) {
             refetchSubTask()

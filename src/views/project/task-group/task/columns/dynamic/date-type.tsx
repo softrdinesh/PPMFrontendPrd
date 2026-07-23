@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth'
   import { useParams } from 'next/navigation'
   import { useQuery } from '@tanstack/react-query'
   import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 interface DynamicDateProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
   refetch: () => void
@@ -135,7 +136,8 @@ const handleSave = async () => {
       
       // Fixed: Properly await the axios call
       const response = await axios.post(`${BASE_URL}/UpdateDyanmicDateSubtask?TaskID=${taskRowData?.TaskID?.toString()}&LoginuserID=${user?.id}&Subtaskid=${subRowData?.SubTaskID?.toString()}&IsRemove=0&AdditionalColumnID=${columnData?.AdditionalColumnID}&DateValue=${moment(selectedDate).format('LLL')}`)
-      
+                            toast.success("Value Updated successfully!")
+
       
       if (response.data) { // Check if response has data
         refetch()
@@ -144,6 +146,8 @@ const handleSave = async () => {
     } else {
       const taskRowData = rowData as TaskListItemType
       const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+                      toast.success("Value Updated successfully!")
+
 
       if (response) {
         refetch()

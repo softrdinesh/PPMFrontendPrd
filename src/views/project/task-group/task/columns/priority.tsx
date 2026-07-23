@@ -21,6 +21,7 @@ import {
 } from '@/services/modules/project-priority'
 import { updateTasks } from '@/services/modules/task'
 import type { ProjectPriorityList } from '@/services/modules/project-priority/types'
+import toast from 'react-hot-toast'
 
 interface PriorityMenuItemProps {
   item: ProjectPriorityList
@@ -41,6 +42,8 @@ const PriorityMenuItem = ({ item, row, handleClose, handleEdit, refetch }: Prior
     }
 
     await updateTasks({ id: row?.TaskID?.toString(), body })
+            toast.success("Priority Updated Successfully!")
+    
     refetch()
   }
 

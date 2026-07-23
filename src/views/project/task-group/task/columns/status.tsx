@@ -27,6 +27,7 @@ import type { TaskListItemType } from '@/services/modules/task/types'
 import CustomButton from '@components/button'
 import { useWorkspace } from 'src/context/workspace-context'
 import { updateSubTask } from '@/services/modules/sub-task'
+import toast from 'react-hot-toast'
 
 interface StatusMenuItemProps {
   item: ProjectStatusList
@@ -38,6 +39,7 @@ interface StatusMenuItemProps {
   dynamicValue?: any
   isSubTask: boolean
 }
+
 
 const StatusMenuItem = ({
   item,
@@ -81,10 +83,13 @@ const StatusMenuItem = ({
 
         body.TaskID = subRowData?.TaskMasterID
         await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+                toast.success("Status Updated Successfully!")
+
       } else {
         const taskRowData = row as TaskListItemType
 
         await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+        toast.success("Status Updated Successfully!")
       }
     } else {
       if (isSubTask) {
@@ -99,6 +104,8 @@ const StatusMenuItem = ({
           NewState: item?.Statusname
         }
         await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+                toast.success("Status Updated Successfully!")
+
       } else {
         const taskRowData = row as TaskListItemType
 
@@ -109,7 +116,9 @@ const StatusMenuItem = ({
           PreviousState: taskRowData?.Status?.Statusname,
           NewState: item?.Statusname
         }
-        await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+        await updateTasks({ id: taskRowData?.TaskID?.toString(), body })     
+           toast.success("Status Updated Successfully!")
+
       }
     }
 
@@ -270,17 +279,22 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
       }
     }
   }
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData?.rolename;
 
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
-      <Box
+{rolename !=='Viewer' ?(
+ <Box
         component={'button'}
         className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
         bgcolor={colorCode}
         color={colorCode && getContrastingTextColor(colorCode)}
-        onClick={handleOpen}
-        sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
+        onClick={ handleOpen}
+        sx={{ cursor: canEdit && rolename!=='Viewer' ? 'pointer' : 'not-allowed' }}
       >
+        
         <Tooltip title={statusName}>
           <Typography
             fontSize={'0.85rem'}
@@ -294,6 +308,31 @@ const TaskStatus = ({ row, refetch, canEdit, dynamicValue, columnData, isSubTask
           </Typography>
         </Tooltip>
       </Box>
+): (
+ <Box
+        component={'button'}
+        className='flex items-center justify-center max-w-32 px-1 border border-divider h-[60%] rounded-md'
+        bgcolor={colorCode}
+        color={colorCode && getContrastingTextColor(colorCode)}
+        // onClick={ handleOpen}
+        sx={{ cursor: canEdit && rolename!=='Viewer' ? 'pointer' : 'not-allowed' }}
+      >
+        
+        <Tooltip title={statusName}>
+          <Typography
+            fontSize={'0.85rem'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            overflow={'hidden'}
+            color={'inherit'}
+            className='text-inherit'
+          >
+            {statusName ?? 'None'}
+          </Typography>
+        </Tooltip>
+      </Box>
+)}
+
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}

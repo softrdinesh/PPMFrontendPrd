@@ -18,6 +18,7 @@ import { dateFormatMomentTask } from '@/constants/formats'
 import AppReactDatepicker from '@/libs/styles/AppReactDatepicker'
 import { updateTasks } from '@/services/modules/task'
 import type { TaskListItemType } from '@/services/modules/task/types'
+import toast from 'react-hot-toast'
 
 interface TaskTimelineProps {
   row: TaskListItemType
@@ -69,7 +70,7 @@ const TaskTimeline = ({ row, refetch, canEdit }: TaskTimelineProps) => {
           }
         })
       }
-
+toast.success("Timeline Assigned Successfully!")
       handleClose()
     } catch {}
   }

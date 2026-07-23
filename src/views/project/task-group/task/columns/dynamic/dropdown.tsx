@@ -26,6 +26,7 @@ import type { AdditionalValue, TaskListItemType } from '@/services/modules/task/
 import CustomButton from '@components/button'
 import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 interface DynamicDropdownProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
   refetch: () => void
@@ -128,7 +129,9 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
 
         body.TaskID = subRowData?.TaskMasterID
         const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
-
+toast.success("Task Updated Successfully!")
+    setAnchorEl(null)
+handleClose()
         if (response) {
           refetch()
           handleClose()
@@ -137,6 +140,9 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
         const taskRowData = rowData as TaskListItemType
 
         const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+        handleClose()
+toast.success("Task Updated Successfully!")
+    setAnchorEl(null)
 
         if (response) {
           refetch()
@@ -149,6 +155,8 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
 
   const handleDeleteLabel = async (id: string) => {
     await deleteDynamicValue(id)
+    toast.success("Value Removed Successfully!")
+setAnchorEl(null)
     refetch()
   }
 

@@ -34,6 +34,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { viewProject } from '@/services/modules/project'
 import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 
 interface TaskPeopleProps {
   rowData: TaskListItemType | AdditionalSubTaskListItem
@@ -129,6 +130,7 @@ const TaskPeople = ({
         refetch()
         handleClose()
         setSelectedOwner(null)
+        toast.success("Owner Removed Successfully!")
       }
     } else {
       // For Task - use TaskID
@@ -140,6 +142,8 @@ const TaskPeople = ({
         refetch()
         handleClose()
         setSelectedOwner(null)
+                toast.success("Owner Removed Successfully!")
+
       }
     }
   } catch (error) {
@@ -165,6 +169,7 @@ const TaskPeople = ({
 
         body.TaskID = subRowData?.TaskMasterID
         const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+           toast.success("Owner Assigned Successfully!")
 
         if (response) {
           refetch()
@@ -183,6 +188,8 @@ const TaskPeople = ({
 
             refetch()
             handleClose()
+                    toast.success("User Assigned Successfully!")
+
           })
       }
     } catch (error) {
@@ -207,6 +214,7 @@ const TaskPeople = ({
         body.TaskID = subRowData?.TaskMasterID
 
         const response = await updateSubTask({ id: subRowData?.SubTaskID?.toString(), body })
+           toast.success("Owner Assigned Successfully!")
 
         if (response) {
           refetch()
@@ -223,6 +231,7 @@ const TaskPeople = ({
         }
 
         const response = await updateTasks({ id: taskRowData?.TaskID?.toString(), body })
+        toast.success("Owner Assigned Successfully!")
 
         if (response) {
           refetch()
@@ -255,6 +264,7 @@ const TaskPeople = ({
       .then(res => {
         refetch()
         handleClose()
+         toast.success("User Removed Successfully!")
       })
   }
 
@@ -420,13 +430,13 @@ const TaskPeople = ({
               <Avatar alt={selectedOwner?.Name} src={selectedOwner?.ProfilePicture} sx={{ width: 32, height: 32 }} />
             </Tooltip>
           </AvatarGroup>
-          {role?.RoleName == 'Admin' && (
+          {role?.RoleName !== 'Viewer' && (
             <IconButton size='small' onClick={handleClear} sx={{ position: 'absolute', top: -11, right: -12 }}>
               <Icon icon={'icon-park-twotone:close-one'} color='red' />
             </IconButton>
           )}
         </Box>
-      ) : role?.RoleName == 'Admin' ? (
+      ) : role?.RoleName !== 'Viewer' ? (
         <IconButton onClick={handleOpen}>
           <Icon icon={'bi:plus-circle-dotted'} />
         </IconButton>
@@ -462,7 +472,7 @@ const TaskPeople = ({
                             canEdit && debouncedClick(user?.User)
                           } else {
                             selectedOwner?.UserID !== user?.User?.UserID &&
-                              role?.RoleName == 'Admin' &&
+                              role?.RoleName !== 'Viewer' &&
                               debouncedOwnerClick(user?.User)
                           }
                         }}

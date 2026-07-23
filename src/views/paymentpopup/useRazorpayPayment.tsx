@@ -185,19 +185,25 @@ const paymentcheck = async () => {
       //   isExpired
       // }
 
-      paymentcheck()
+      // Only refresh/update the localStorage payment status on a successful
+      // payment. On Cancelled/Timeout/Failed we must not touch localStorage.
+      if (status === 'Success') {
+        paymentcheck()
+      }
       // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
 
       return { ok: resp.ok, status: resp.status, body: text }
     } catch (err) {
       console.error('Error calling UpdatePaymentconfirmation:', err)
-      const paymentData = {
-        isExpired: true
-      }
-      try {
-        localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
-      } catch (e) {
-        console.error('Error saving paymentStatus to localStorage on failure:', e)
+      if (status !== 'Cancelled' && status !== 'Timeout' && status !== 'Failed') {
+        const paymentData = {
+          isExpired: true
+        }
+        try {
+          localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+        } catch (e) {
+          console.error('Error saving paymentStatus to localStorage on failure:', e)
+        }
       }
       return { ok: false, error: err }
     }
@@ -260,12 +266,7 @@ const paymentcheck = async () => {
               })
               .catch(err => {
                 console.error('Error updating cancellation confirmation:', err)
-                try {
-                  localStorage.setItem('paymentStatus', JSON.stringify({ isExpired: true }))
-                  onPaymentFailure?.()
-                } catch (e) {
-                  console.error('Error writing cancel fallback to localStorage:', e)
-                }
+                onPaymentFailure?.()
               })
           } else if (reason === 'timeout') {
             setPaymentStatus('Payment Timed Out')
@@ -277,12 +278,7 @@ const paymentcheck = async () => {
               })
               .catch(err => {
                 console.error('Error updating timeout confirmation:', err)
-                try {
-                  localStorage.setItem('paymentStatus', JSON.stringify({ isExpired: true }))
-                  onPaymentFailure?.()
-                } catch (e) {
-                  console.error('Error writing timeout fallback to localStorage:', e)
-                }
+                onPaymentFailure?.()
               })
           } else {
             setPaymentStatus('Payment Failed')
@@ -294,12 +290,7 @@ const paymentcheck = async () => {
               })
               .catch(err => {
                 console.error('Error updating failure confirmation:', err)
-                try {
-                  localStorage.setItem('paymentStatus', JSON.stringify({ isExpired: true }))
-                  onPaymentFailure?.()
-                } catch (e) {
-                  console.error('Error writing failure fallback to localStorage:', e)
-                }
+                onPaymentFailure?.()
               })
           }
         }
@@ -331,12 +322,7 @@ const paymentcheck = async () => {
           })
           .catch(err => {
             console.error('Error updating failed payment confirmation:', err)
-            try {
-              localStorage.setItem('paymentStatus', JSON.stringify({ isExpired: true }))
-              onPaymentFailure?.()
-            } catch (e) {
-              console.error('Error writing failed fallback to localStorage:', e)
-            }
+            onPaymentFailure?.()
           })
       })
 

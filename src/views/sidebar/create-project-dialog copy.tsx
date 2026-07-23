@@ -47,7 +47,6 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
   const onSubmit = async (values: FormValues) => {
     values.WorkspaceID = selected?.WorkspaceID
 
-    console.log('values :', values)
     const res = await addProject(values)
 
     if (res?.status) {

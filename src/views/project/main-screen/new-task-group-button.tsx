@@ -1,95 +1,120 @@
-import React, { useState } from 'react'
-
+import React, { useState, useEffect } from 'react'
 import { Icon } from '@iconify/react'
-
 import CustomButton from '@components/button'
 import NewTaskDialog from './task-group-add-dialog'
 import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
 import { useRazorpayPayment } from '../../paymentpopup/useRazorpayPayment'
 import { useAuth } from '@/hooks/useAuth'
 
-const NewTask = (projectlength:any) => {
+const NewTask = (projectlength: any) => {
   const [open, setOpen] = useState(false)
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
-  const handleOpen = () => setOpen(true)
-
-  const handleClose = () => setOpen(false)
   const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
   const { profile, user } = useAuth()
 
+  const handleOpen = () => setOpen(true)
+  const handleClose = () => setOpen(false)
 
-  const handleCreateWorkspaceClick = () => {
+  // Check payment status and workspace count
+  const checkPaymentAndWorkspaceStatus = () => {
     try {
       const localStorageData = localStorage.getItem('paymentStatus')
       
       if (localStorageData) {
         const parsedData = JSON.parse(localStorageData)
-        
-        if (parsedData?.workspaceCount === 1 && projectlength?.projectlength?.length >= 1) {
+        const workspaceCount = projectlength?.projectlength?.length || 0
+
+        // If payment is expired, show payment dialog
+        if (parsedData.isExpired === true) {
           setShowPaymentExpiredDialog(true)
-        } else {
-          handleOpen()
+          return false
         }
-      } else {
+
+        // If payment is active (isExpired === false)
+        if (parsedData.isExpired === false) {
+          // Allow creation regardless of workspace count
+          setShowPaymentExpiredDialog(false)
+          return true
+        }
+
+        // If payment status is undefined or unexpected
         setShowPaymentExpiredDialog(true)
+        return false
+      } else {
+        // No payment status found - first time user
+        // Allow first workspace creation for free
+        const workspaceCount = projectlength?.projectlength?.length || 0
+        if (workspaceCount === 0) {
+          setShowPaymentExpiredDialog(false)
+          return true
+        } else {
+          setShowPaymentExpiredDialog(true)
+          return false
+        }
       }
     } catch (error) {
       console.error('Error parsing localStorage:', error)
       setShowPaymentExpiredDialog(true)
+      return false
     }
   }
 
-
+  const handleCreateWorkspaceClick = () => {
+    const canProceed = checkPaymentAndWorkspaceStatus()
+    if (canProceed) {
+      handleOpen()
+    }
+  }
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
   }
 
-
-
   const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
     userId: Number(user?.id),
     onPaymentSuccess: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
+      // Update payment status to active
+      const existingData = localStorage.getItem('paymentStatus')
+      if (existingData) {
+        try {
+          const parsed = JSON.parse(existingData)
+          parsed.isExpired = false
+          localStorage.setItem('paymentStatus', JSON.stringify(parsed))
+        } catch (error) {
+          console.error('Error updating payment status:', error)
+        }
+      } else {
+        // Create new payment status if not exists
+        localStorage.setItem('paymentStatus', JSON.stringify({
+          isExpired: false,
+          workspaceCount: 0
+        }))
+      }
+
       setShowPaymentExpiredDialog(false)
+      // After payment success, check if we should open dialog
+      const canOpen = checkPaymentAndWorkspaceStatus()
+      if (canOpen) {
+        handleOpen()
+      }
     },
     onPaymentFailure: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
       setShowPaymentExpiredDialog(true)
     }
   })
-  const checkPaymentStatus = () => {
-    const paymentStatus = localStorage.getItem('paymentStatus')
 
-    try {
-      if (paymentStatus) {
-        const parsed = JSON.parse(paymentStatus)
-        // If parsed explicitly says expired, show payment dialog and disallow opening the Task Group dialog
-        if (parsed.isExpired === true) {
-          setShowPaymentExpiredDialog(true)
-          return false
-        }
-        // If parsed explicitly says not expired, ensure payment dialog is hidden and allow opening Task Group dialog
-        if (parsed.isExpired === false) {
-          setShowPaymentExpiredDialog(false)
-          return true
-        }
-        // In case parsed.isExpired is missing or unexpected, be conservative: treat as expired
-        setShowPaymentExpiredDialog(true)
-        return false
-      }
-      // No stored status → treat as expired by default (user must renew)
-      setShowPaymentExpiredDialog(true)
-      return false
-    } catch (error) {
-      console.error('Error parsing payment status:', error)
-      // On parse error, treat as expired to be safe
-      setShowPaymentExpiredDialog(true)
-      return false
+  // Update dialog state when payment status changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      checkPaymentAndWorkspaceStatus()
     }
-  }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [])
+
   return (
     <>
       <CustomButton
@@ -101,7 +126,9 @@ const NewTask = (projectlength:any) => {
       >
         New Group
       </CustomButton>
+      
       <NewTaskDialog open={open} onCloseModal={handleClose} />
+      
       <SubscriptionExpiredDialog
         open={showPaymentExpiredDialog}
         onClose={handleClosePaymentDialog}

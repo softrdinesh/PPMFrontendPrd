@@ -14,7 +14,7 @@ import WorkspaceMen from '@public/images/cards/workspace-men.svg'
 import { useAuth } from '@/hooks/useAuth'
 import SubscriptionExpiredDialog from '@/views/paymentpopup/SubscriptionExpiredDialog'
 import { useRazorpayPayment } from '../paymentpopup/useRazorpayPayment'
-
+import axios from 'axios'
 
 const DashboardPage = () => {
   // ** State
@@ -161,6 +161,47 @@ const checkPaymentStatus = () => {
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
   }
+// useEffect(() => {
+//   paymentcheck()
+// }, [])
+const paymentcheck = async () => {
+  const Baseurl = process.env.NEXT_PUBLIC_API_URL1
+  const userid = localStorage.getItem('userData')
+  const value= JSON.parse(userid as string)
+  try {
+    const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userData?.UserID}`)
+
+    
+    if (res.data && res.data.length > 0) {
+      const paymentData = {
+       isExpired: res.data[0].isExpired,
+       projectCount:res.data[0].projectCount,
+       workspaceCount:res.data[0].workspaceCount,
+       taskGroupCount:res.data[0].taskGroupCount,
+       boardCount:res.data[0].boardCount,
+       boardsectionCount:res.data[0].boardsectionCount,
+       boardTaskCount:res.data[0].boardTaskCount,
+       amount:res.data[0].amount
+            //  isExpired: true
+      }
+      // localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+            localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+
+
+    }
+  } catch (error) {
+    console.error('Payment check error:', error)
+  }
+}
+
+
+
+
+
+
+  const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData?.rolename;
   return (
     <>
       <SubscriptionExpiredDialog
@@ -176,13 +217,24 @@ const checkPaymentStatus = () => {
         <div className='flex items-center justify-between rounded-4xl flex-wrap border border-bgDivider px-6 mt-4'>
           <Box py={6}>
             <Typography className='font-normal text-base lg:text-lg'>Welcome To</Typography>
-            <Typography className='font-bold text-lg lg:text-xl' my={1}>
+            {rolename !== 'Viewer' ? (
+ <Typography className='font-bold text-lg lg:text-xl' my={1}>
               Your Workspace Area
             </Typography>
-            <Typography className='font-normal text-base lg:text-lg'>Create your perfect workspace here</Typography>
-            <CustomButton circular size='small' className='mt-10 px-6' variant='contained' onClick={handleOpen}>
+            ):
+        (
+            <Typography className='font-bold text-lg lg:text-xl' my={1}>
+           Project Plus
+            </Typography>
+              )}
+                          {rolename !== 'Viewer' &&
+
+            <Typography className='font-normal text-base lg:text-lg'>Create your perfect workspace here</Typography> }
+          {rolename !=='Viewer' &&
+           <CustomButton circular size='small' className='mt-10 px-6' variant='contained' onClick={handleOpen}>
               Create
             </CustomButton>
+}
           </Box>
 
           <Image

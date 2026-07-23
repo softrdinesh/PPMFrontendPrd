@@ -26,14 +26,12 @@ type FormType = {
 const TimeResolutionColumn = ({ bug, refetch }: Props) => {
   const [open, setOpen] = useState<any>(null)
   const [countdown, setCountdown] = useState<string | null>(null)
-  // FIX: Use a ref for timerStartTime instead of state so changing it does NOT re-trigger the useEffect
   const timerStartTimeRef = useRef<number | null>(null)
   const [overtimeSeconds, setOvertimeSeconds] = useState<number>(0)
   const [isOvertime, setIsOvertime] = useState<boolean>(false)
-const roleData = localStorage.getItem('Role');
-const parsedData = JSON.parse((roleData)as any);
-// const rolename = parsedData.rolename;
-const rolename = parsedData?.rolename;
+  const roleData = localStorage.getItem('Role');
+  const parsedData = JSON.parse((roleData)as any);
+  const rolename = parsedData?.rolename;
   const form = useForm<FormType>({ defaultValues: { TimeResolution: null } })
 
   const handleOpen = (e: any) => {
@@ -60,11 +58,10 @@ const rolename = parsedData?.rolename;
 
         const body = {
           TimeResolution: formatted,
-          TimerStart: 0 // Changed from 1 to 0 to prevent auto-start
+          TimerStart: 0
         }
 
         await updateBug({ body, id: bug?.BugID?.toString() })
-        // Removed setTimerStartTime(Date.now()) to prevent auto-start
       } else {
         toast.error('TimeResolution is in the past.')
       }
@@ -95,14 +92,19 @@ const rolename = parsedData?.rolename;
     return `${h}h ${m}m ${s}s`
   }
 
-  // Function to update overtime in backend
   const updateOvertimeInBackend = async (overtimeSeconds: number) => {
     try {
       const formattedOvertime = formatCountdown(overtimeSeconds)
+      
+      if (bug?.BugID) {
+        const originalResolution = bug?.timeResolution || '0h 0m 0s'
+        localStorage.setItem(`originalResolution_${bug.BugID}`, originalResolution)
+      }
+      
       await updateBug({
         body: {
           TimeResolution: formattedOvertime,
-          TimerStart: 1 // Keep timer running
+          TimerStart: 1
         },
         id: bug?.BugID?.toString()
       })
@@ -113,7 +115,6 @@ const rolename = parsedData?.rolename;
 
   const handleTimerToggle = async () => {
     if (bug?.isTimerStart) {
-      // Pause timer - store current countdown including overtime
       const currentCountdown = countdown || bug?.timeResolution || '0h 0m 0s'
       const currentSeconds = parseResolutionToSeconds(currentCountdown)
 
@@ -124,63 +125,49 @@ const rolename = parsedData?.rolename;
         },
         id: bug?.BugID?.toString()
       })
-      // FIX: Clear ref instead of state
       timerStartTimeRef.current = null
 
-      // Save paused state so resume can reconstruct exact overtime moment
       if (bug?.BugID) {
         localStorage.setItem(`pausedCountdownSeconds_${bug.BugID}`, currentSeconds.toString())
         localStorage.setItem(`pausedMode_${bug.BugID}`, isOvertime ? 'overtime' : 'countdown')
 
-        // Remove active run start markers (we're paused)
         localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
         localStorage.removeItem(`timerStartTime_${bug.BugID}`)
+        localStorage.removeItem(`lastKnownCountdown_${bug.BugID}`)
       }
     } else {
-      // Resume timer
       const pausedSecondsStr = bug?.BugID ? localStorage.getItem(`pausedCountdownSeconds_${bug.BugID}`) : null
       const pausedMode = bug?.BugID ? localStorage.getItem(`pausedMode_${bug.BugID}`) : null
 
       if (pausedSecondsStr && pausedMode === 'overtime' && bug?.BugID) {
-        // Resuming from a paused overtime: reconstruct overtimeStartTime so elapsed calculation picks up where it left off
         const pausedSeconds = parseInt(pausedSecondsStr, 10)
         const overtimeStart = Date.now() - pausedSeconds * 1000
         localStorage.setItem(`overtimeStartTime_${bug.BugID}`, overtimeStart.toString())
 
-        // Inform backend timer is running again (we keep TimeResolution as-is; backend will get overtime updates)
         await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
 
-        // Clean up paused keys
         localStorage.removeItem(`pausedCountdownSeconds_${bug.BugID}`)
         localStorage.removeItem(`pausedMode_${bug.BugID}`)
 
-        // Do NOT set timerStartTime here — overtime path uses overtimeStartTime
         timerStartTimeRef.current = null
       } else if (pausedSecondsStr && pausedMode === 'countdown' && bug?.BugID) {
-        // Resuming from a paused countdown — reconstruct timerStartTime so remaining seconds are correct
         const pausedSeconds = parseInt(pausedSecondsStr, 10)
         const totalSeconds = parseResolutionToSeconds(bug?.timeResolution || '0h 0m 0s')
-        // elapsed = total - remaining; startTime = now - elapsed
         const elapsedAtPause = totalSeconds - pausedSeconds
         const reconstructedStart = Date.now() - elapsedAtPause * 1000
         localStorage.setItem(`timerStartTime_${bug.BugID}`, reconstructedStart.toString())
-        // FIX: Write to ref — does NOT re-trigger the effect
         timerStartTimeRef.current = reconstructedStart
 
         await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
 
-        // Clean up paused keys
         localStorage.removeItem(`pausedCountdownSeconds_${bug.BugID}`)
         localStorage.removeItem(`pausedMode_${bug.BugID}`)
       } else {
-        // Normal start/resume for countdown path
         await updateBug({ body: { TimerStart: 1 }, id: bug?.BugID?.toString() })
         const now = Date.now()
-        // FIX: Write to ref — does NOT re-trigger the effect
         timerStartTimeRef.current = now
         if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, now.toString())
 
-        // Clean up any paused markers
         if (bug?.BugID) {
           localStorage.removeItem(`pausedCountdownSeconds_${bug.BugID}`)
           localStorage.removeItem(`pausedMode_${bug.BugID}`)
@@ -197,14 +184,13 @@ const rolename = parsedData?.rolename;
     let overtimeInterval: NodeJS.Timeout
 
     if (bug?.timeResolution && bug?.isTimerStart) {
-      // Prefer overtimeStart when it exists (this fixes resume-from-overtime issues)
       const storedOvertimeStart = bug?.BugID ? localStorage.getItem(`overtimeStartTime_${bug.BugID}`) : null
       const storedStartTime = bug?.BugID ? localStorage.getItem(`timerStartTime_${bug.BugID}`) : null
+      const storedLastKnownCountdown = bug?.BugID ? localStorage.getItem(`lastKnownCountdown_${bug.BugID}`) : null
 
       const now = Date.now()
 
       if (storedOvertimeStart) {
-        // We are in overtime and have a stored overtime start time (resume or active overtime)
         const overtimeStartTime = parseInt(storedOvertimeStart, 10)
         let overtime = Math.floor((now - overtimeStartTime) / 1000)
         if (overtime < 0) overtime = 0
@@ -218,6 +204,11 @@ const rolename = parsedData?.rolename;
             const newSeconds = prev + 1
             const formatted = formatCountdown(newSeconds)
             setCountdown(formatted)
+            
+            // Store last known countdown value
+            if (bug?.BugID) {
+              localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, formatted)
+            }
 
             if (newSeconds % 10 === 0) {
               updateOvertimeInBackend(newSeconds)
@@ -227,52 +218,49 @@ const rolename = parsedData?.rolename;
           })
         }, 1000)
       } else {
-        // Normal countdown / not currently saved as overtime
-        const totalSeconds = parseResolutionToSeconds(bug.timeResolution)
+        // IMPORTANT: Use stored last known countdown or current time resolution
+        let currentTimeResolution = bug?.timeResolution || '0h 0m 0s'
+        
+        // If we have a stored last known countdown, use it
+        if (storedLastKnownCountdown) {
+          currentTimeResolution = storedLastKnownCountdown
+          // Also update the bug's timeResolution in localStorage for next time
+          if (bug?.BugID) {
+            localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, storedLastKnownCountdown)
+          }
+        }
+        
+        const totalSeconds = parseResolutionToSeconds(currentTimeResolution)
 
-        // FIX: Determine startTime strictly from localStorage first, then ref, then create new.
-        // Using a ref instead of state means this block does NOT cause an infinite re-render loop.
         let startTime: number
 
         if (storedStartTime) {
-          // Always prefer persisted localStorage value — survives re-renders and page refreshes
           startTime = parseInt(storedStartTime, 10)
           timerStartTimeRef.current = startTime
         } else if (timerStartTimeRef.current) {
-          // In-memory ref exists (set earlier this session) but not yet in localStorage — persist it
           startTime = timerStartTimeRef.current
           if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, startTime.toString())
         } else {
-          // No record at all — this is a brand-new timer start
           startTime = Date.now()
           timerStartTimeRef.current = startTime
           if (bug?.BugID) localStorage.setItem(`timerStartTime_${bug.BugID}`, startTime.toString())
         }
 
-        // FIX: Calculate remaining seconds from wall-clock elapsed time (not interval ticks).
-        // This means the countdown is always accurate even after re-renders, refetch, or tab switching.
         const elapsedSeconds = Math.floor((now - startTime) / 1000)
-
-        // Calculate remaining seconds
         let remainingSeconds = totalSeconds - elapsedSeconds
 
-        // Check if we're already in overtime
         const currentIsOvertime = remainingSeconds < 0
         setIsOvertime(currentIsOvertime)
 
         if (currentIsOvertime) {
-          // We're in overtime - set overtime start time (if not present) and switch to overtime handling
           let overtime: number
 
-          // If there's a leftover overtimeStart stored (shouldn't be here because we checked above),
-          // compute overtime using that. Otherwise, create one now based on when countdown hit zero.
           const storedOvertimeStartNow = bug?.BugID ? localStorage.getItem(`overtimeStartTime_${bug.BugID}`) : null
 
           if (storedOvertimeStartNow) {
             const overtimeStartValue = parseInt(storedOvertimeStartNow, 10)
             overtime = Math.floor((now - overtimeStartValue) / 1000)
           } else {
-            // First time entering overtime: compute start as the moment countdown reached zero
             const overtimeStartTime = now - Math.abs(remainingSeconds) * 1000
             if (bug?.BugID) localStorage.setItem(`overtimeStartTime_${bug.BugID}`, overtimeStartTime.toString())
             overtime = Math.abs(remainingSeconds)
@@ -281,14 +269,17 @@ const rolename = parsedData?.rolename;
           setOvertimeSeconds(overtime)
           setCountdown(formatCountdown(overtime))
 
-          // Start overtime counter
           overtimeInterval = setInterval(() => {
             setOvertimeSeconds(prev => {
               const newSeconds = prev + 1
               const formatted = formatCountdown(newSeconds)
               setCountdown(formatted)
+              
+              // Store last known countdown value
+              if (bug?.BugID) {
+                localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, formatted)
+              }
 
-              // Update backend every 10 seconds when in overtime
               if (newSeconds % 10 === 0) {
                 updateOvertimeInBackend(newSeconds)
               }
@@ -297,12 +288,17 @@ const rolename = parsedData?.rolename;
             })
           }, 1000)
         } else {
-          // FIX: Normal countdown — drive the display from wall-clock time on every tick,
-          // not a stale closure variable. This prevents the timer from freezing or jumping.
-          setCountdown(formatCountdown(remainingSeconds))
+          const initialDisplay = formatCountdown(remainingSeconds)
+          setCountdown(initialDisplay)
+          
+          // Store initial countdown value
+          if (bug?.BugID) {
+            localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, initialDisplay)
+          }
 
           countdownInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000)
+            const currentNow = Date.now()
+            const elapsed = Math.floor((currentNow - startTime) / 1000)
             const remaining = totalSeconds - elapsed
 
             if (remaining <= 0) {
@@ -312,20 +308,25 @@ const rolename = parsedData?.rolename;
               setIsOvertime(true)
               setOvertimeSeconds(0)
 
-              // Store overtime start time
-              if (bug?.BugID) localStorage.setItem(`overtimeStartTime_${bug.BugID}`, Date.now().toString())
+              if (bug?.BugID) {
+                localStorage.setItem(`overtimeStartTime_${bug.BugID}`, currentNow.toString())
+                localStorage.setItem(`originalResolution_${bug.BugID}`, bug.timeResolution)
+                localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, '0h 0m 0s')
+              }
 
-              // Update backend when timer reaches 0
               updateOvertimeInBackend(0)
 
-              // Start overtime counter when timer reaches 0
               overtimeInterval = setInterval(() => {
                 setOvertimeSeconds(prev => {
                   const newSeconds = prev + 1
                   const formatted = formatCountdown(newSeconds)
                   setCountdown(formatted)
+                  
+                  // Store last known countdown value
+                  if (bug?.BugID) {
+                    localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, formatted)
+                  }
 
-                  // Update backend every 10 seconds when in overtime
                   if (newSeconds % 10 === 0) {
                     updateOvertimeInBackend(newSeconds)
                   }
@@ -334,17 +335,28 @@ const rolename = parsedData?.rolename;
                 })
               }, 1000)
             } else {
-              setCountdown(formatCountdown(remaining))
+              const formatted = formatCountdown(remaining)
+              setCountdown(formatted)
+              
+              // Store last known countdown value on every tick
+              if (bug?.BugID) {
+                localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, formatted)
+              }
             }
           }, 1000)
 
-          // 🔄 Sync with backend every 10 seconds
           syncInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000)
+            const currentNow = Date.now()
+            const elapsed = Math.floor((currentNow - startTime) / 1000)
             const remaining = totalSeconds - elapsed
             if (remaining > 0) {
               const formatted = formatCountdown(remaining)
               updateBug({ body: { TimeResolution: formatted }, id: bug?.BugID?.toString() })
+              
+              // Also store in localStorage
+              if (bug?.BugID) {
+                localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, formatted)
+              }
             }
           }, 10000)
         }
@@ -357,6 +369,8 @@ const rolename = parsedData?.rolename;
       if (bug?.BugID) {
         localStorage.removeItem(`timerStartTime_${bug.BugID}`)
         localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
+        localStorage.removeItem(`originalResolution_${bug.BugID}`)
+        // Don't remove lastKnownCountdown - keep it for when timer restarts
       }
     }
 
@@ -364,19 +378,25 @@ const rolename = parsedData?.rolename;
       clearInterval(countdownInterval)
       clearInterval(syncInterval)
       clearInterval(overtimeInterval)
+      
+      // Save the current countdown value when component unmounts
+      if (bug?.BugID && countdown) {
+        localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, countdown)
+      }
     }
  
   }, [bug?.timeResolution, bug?.isTimerStart, bug?.BugID])
 
-  // Clean up localStorage on component unmount
-  useEffect(() => {
-    return () => {
-      if (bug?.BugID) {
-        localStorage.removeItem(`timerStartTime_${bug.BugID}`)
-        localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
-      }
+  const getDisplayTime = () => {
+    if (isOvertime && countdown) {
+      const originalResolution = bug?.BugID 
+        ? localStorage.getItem(`originalResolution_${bug.BugID}`) 
+        : null
+      const originalTime = originalResolution || bug?.timeResolution || '0h 0m 0s'
+      return `${originalTime} (+${countdown})`
     }
-  }, [bug?.BugID])
+    return countdown || bug?.timeResolution || 'Add Time'
+  }
 
   return (
     <div className='flex items-center gap-2'>
@@ -393,17 +413,14 @@ const rolename = parsedData?.rolename;
       {!!bug?.isTimerStart && bug?.timeResolution ? (
             rolename!='Viewer' ? (
         <div className='px-1'>
-          {/* <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}> */}
-                      <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
-
-            {countdown || bug?.timeResolution || 'Add Time'}
-          {/* //  {isOvertime && ' (overtime)'} */}
+          <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
+            {getDisplayTime()}
           </Typography>
         </div>
             ):
                <div className='px-1'>
            <Typography className={`text-sm font-medium ${isOvertime ? 'text-error' : 'text-primary'}`}>
-            {countdown || bug?.timeResolution || 'Add Time'}
+            {getDisplayTime()}
           </Typography>
         </div>
       ) : (

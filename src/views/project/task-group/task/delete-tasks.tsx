@@ -7,6 +7,7 @@ import IconifyIcon from '@/components/icon'
 import DeleteDialog from '@/components/dialog/delete-dialog'
 import type { TaskListItemType } from '@/services/modules/task/types'
 import { deleteMultipleTask } from '@/services/modules/task'
+import toast from 'react-hot-toast'
 
 interface DeleteTasksComponentProps {
   showCard: boolean
@@ -34,6 +35,7 @@ const DeleteTasksComponent = ({
       ?.map(t => t?.TaskID)
 
     await deleteMultipleTask(finalArray)
+    toast.success("Task Deleted Successfully!")
     await refetch()
     setDeleteOpen(false)
     setSelectedRows({})

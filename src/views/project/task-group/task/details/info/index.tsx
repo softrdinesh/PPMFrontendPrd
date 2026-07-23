@@ -172,7 +172,9 @@ const { profile,user } = useAuth()
       console.error('error :', error)
     }
   }
-
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData?.rolename;
 
 const handleSendUpdate = async () => {
   try {
@@ -282,12 +284,14 @@ toast.success('Project Details Updated Successfully!')
               ) : (
                 <p dangerouslySetInnerHTML={{ __html: value }} />
               )}
+              {rolename !=='Viewer' &&
               <Box textAlign={'end'} mt={4}>
                 {/* <CustomButton variant='contained' > */}
                 <CustomButton variant='contained' onClick={handleSendUpdate}>
                   Update
                 </CustomButton>
               </Box>
+              }
             </Grid>
           </Grid>
         </Grid>

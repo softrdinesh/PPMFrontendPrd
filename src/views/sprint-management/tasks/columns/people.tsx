@@ -56,7 +56,7 @@ const TaskPeople = ({
   const { profile, user } = useAuth()
   const roleData = localStorage.getItem('Role');
 const parsedData = JSON.parse((roleData)as any);
-const rolename = parsedData.rolename;
+const rolename = parsedData?.rolename;
   // ** State for API users
   const [apiUsers, setApiUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)

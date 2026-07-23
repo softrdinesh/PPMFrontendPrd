@@ -791,42 +791,42 @@ const fetchProjectTasks = async () => {
     }
   }
 
-  const checkTaskPaymentStatus = () => {
-    try {
-      const paymentStatus = localStorage.getItem('paymentStatus')
+  // const checkTaskPaymentStatus = () => {
+  //   try {
+  //     const paymentStatus = localStorage.getItem('paymentStatus')
       
-      if (!paymentStatus) {
-        setShowTaskPaymentDialog(true)
-        return false
-      }
+  //     if (!paymentStatus) {
+  //       setShowTaskPaymentDialog(true)
+  //       return false
+  //     }
       
-      const parsed = JSON.parse(paymentStatus)
+  //     const parsed = JSON.parse(paymentStatus)
       
-      if (parsed.isExpired === true) {
-        setShowTaskPaymentDialog(true)
-        return false
-      }
+  //     if (parsed.isExpired === true) {
+  //       setShowTaskPaymentDialog(true)
+  //       return false
+  //     }
       
-      let currentTaskCount = 0;
-      Object.values(tasks).forEach(columnTasks => {
-        currentTaskCount += columnTasks.length;
-      });
+  //     let currentTaskCount = 0;
+  //     Object.values(tasks).forEach(columnTasks => {
+  //       currentTaskCount += columnTasks.length;
+  //     });
       
-      if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
-        if (currentTaskCount >= parsed.boardTaskCount) {
-          setShowTaskPaymentDialog(true)
-          return false
-        }
-      }
+  //     if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
+  //       if (currentTaskCount >= parsed.boardTaskCount) {
+  //         setShowTaskPaymentDialog(true)
+  //         return false
+  //       }
+  //     }
       
-      setShowTaskPaymentDialog(false)
-      return true
-    } catch (error) {
-      console.error('Error checking payment status:', error)
-      setShowTaskPaymentDialog(true)
-      return false
-    }
-  }
+  //     setShowTaskPaymentDialog(false)
+  //     return true
+  //   } catch (error) {
+  //     console.error('Error checking payment status:', error)
+  //     setShowTaskPaymentDialog(true)
+  //     return false
+  //   }
+  // }
 
 const fetchTeamMembers = async () => {
   if (!user?.id) return;
@@ -1460,17 +1460,17 @@ useEffect(() => {
     // Your API call or logic here
   }
 
-  const handleNewTaskClick = () => {
+  // const handleNewTaskClick = () => {
  
-    const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
+  //   const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
 
 
-  if (totalTasks >= 10) {
-    setShowTaskPaymentDialog(true)
-    return
-  }
-    setOpenDialog(true)
-  }
+  // if (totalTasks >= 10) {
+  //   setShowTaskPaymentDialog(true)
+  //   return
+  // }
+  //   setOpenDialog(true)
+  // }
 
 
 
@@ -1510,18 +1510,45 @@ useEffect(() => {
 //     setCategoryValidationErrors({})
 //     setCreateCategoryDialog(true)
 //   }
-const handleOpenCreateCategory = () => {
-  // const canOpen = checkPaymentStatus()
-  
-  // if (!canOpen) {
-  //   return
-  // }
 
+
+// const handleOpenCreateCategory = () => {
+//   // const canOpen = checkPaymentStatus()
+  
+//   // if (!canOpen) {
+//   //   return
+//   // }
+
+//   const categoryCount = columns.length
+
+//   if (categoryCount >= 3) {
+//     setShowPaymentExpiredDialog(true)
+//     return
+//   }
+
+//   setNewCategoryName('')
+//   setSelectedColor('#2196F3')
+//   setCategoryValidationErrors({})
+//   setCreateCategoryDialog(true)
+// }
+
+
+const handleOpenCreateCategory = () => {
   const categoryCount = columns.length
 
-  if (categoryCount >= 3) {
-    setShowPaymentExpiredDialog(true)
-    return
+  try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.boardsectionCount !== undefined && parsed.boardsectionCount !== null) {
+        if (categoryCount >= parsed.boardsectionCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking payment status:', error)
   }
 
   setNewCategoryName('')
@@ -1532,6 +1559,33 @@ const handleOpenCreateCategory = () => {
 
 
 
+
+
+ const handleNewTaskClick = () => {
+ 
+     const totalTasks = Object.values(tasks).reduce((sum, columnTasks) => sum + columnTasks.length, 0)
+try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.boardTaskCount !== undefined && parsed.boardTaskCount !== null) {
+        if (totalTasks >= parsed.boardTaskCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking payment status:', error)
+  }
+  setOpenDialog(true)
+
+  // if (totalTasks >= 10) {
+  //   setShowTaskPaymentDialog(true)
+  //   return
+  // }
+  
+  }
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
