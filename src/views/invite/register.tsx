@@ -81,10 +81,10 @@ const RegisterOnInvite = ({ invitationID }: { invitationID: string }) => {
     const register = await registerWithInvitationApi(submitBody)
 
     if (register?.status) {
-      localStorage.setItem(authConfig.storageUID, register?.data?.userData?.UserID)
-      localStorage.setItem(authConfig.loginUserData, JSON.stringify(register.data))
-toast.success("Invitation accepted successfully! & User Register Successfully!")
-      auth.setUser(register?.data?.userData)
+     // localStorage.setItem(authConfig.storageUID, register?.data?.userData?.UserID)
+      //localStorage.setItem(authConfig.loginUserData, JSON.stringify(register.data))
+toast.success("Invitation accepted successfully! & User Register Successfully!",{duration:5000})
+      //auth.setUser(register?.data?.userData)
 
       await sleep(500)
 

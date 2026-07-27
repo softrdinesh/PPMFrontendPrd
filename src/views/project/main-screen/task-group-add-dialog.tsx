@@ -171,7 +171,7 @@ const NewTaskDialog = ({
         refetchTaskGroup()
         reset({ groupName: '' })
         onCloseModal()
-        toast.success('Task group created successfully')
+       // toast.success('Task group created successfully')
       }
     } catch (error) {
       console.error('Error submitting form:', error)

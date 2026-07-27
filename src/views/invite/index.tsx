@@ -55,11 +55,11 @@ const [accept, setaccept] = useState(false)
           refetchWorkspaces()
              if (response?.statusCode == 202) {
            
-  toast.success("The invitation has already been accepted", { duration: 3000 })
+  toast.success("The invitation has already been accepted", { duration: 5000 })
           }
               if (response?.statusCode == 200) {
    
-              toast.success(`Invitation accepted successfully!`,{ duration: 3000 })   
+              toast.success(`Invitation accepted successfully!`,{ duration: 5000 })   
           }
           router.replace(`/project/${response?.data?.projectID}`)
         } else {
@@ -87,7 +87,7 @@ const [accept, setaccept] = useState(false)
           }
               if (response?.statusCode == 200) {
    
-              toast.success(`Invitation accepted successfully!`,{ duration: 3000 })   
+              toast.success(`Invitation accepted successfully!`,{ duration: 5000 })   
           }
         
 
