@@ -43,3 +43,12 @@ export async function GET() {
     return res.json(error?.response?.data ?? { status: false, message: 'Session Timed Out' }, { status: 422 })
   }
 }
+
+
+export async function POST() {
+  const cookieStore = await cookies()
+
+  cookieStore.delete('jwt')
+
+  return res.json({ success: true })
+}

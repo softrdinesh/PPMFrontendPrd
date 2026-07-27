@@ -83,7 +83,7 @@ const RegisterOnInvite = ({ invitationID }: { invitationID: string }) => {
     if (register?.status) {
       localStorage.setItem(authConfig.storageUID, register?.data?.userData?.UserID)
       localStorage.setItem(authConfig.loginUserData, JSON.stringify(register.data))
-
+toast.success("Invitation accepted successfully! & User Register Successfully!")
       auth.setUser(register?.data?.userData)
 
       await sleep(500)

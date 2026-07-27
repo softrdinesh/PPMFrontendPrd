@@ -97,11 +97,11 @@ const LoginV2 = () => {
 
   const onSubmit = async (data: FormFields) => {
     // Check if remember me is checked
-    if (!data.rememberMe) {
-      // Show error message or prevent login
-      alert('Please check "Remember me" to proceed with login')
-      return
-    }
+    // if (!data.rememberMe) {
+    //   // Show error message or prevent login
+    //   alert('Please check "Remember me" to proceed with login')
+    //   return
+    // }
 
     const body = {
       email: data.email,
@@ -397,7 +397,7 @@ const LoginV2 = () => {
                     fullWidth 
                     variant='contained' 
                     type='submit' 
-                    disabled={isSubmitting || !rememberMe}
+                   // disabled={isSubmitting || !rememberMe}
                   >
                     {isSubmitting ? <CircularProgress size={22} color='secondary' /> : 'LOGIN'}
                   </Button>

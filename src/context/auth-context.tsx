@@ -83,11 +83,13 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       await fetch('/api/logout')
       await clearCookies()
       window.location.href = routes.login
+      
     } catch (error) {
       console.error(error)
     } finally {
       setUser(null)
       window.location.href = routes.login
+ 
     }
   }, [])
 

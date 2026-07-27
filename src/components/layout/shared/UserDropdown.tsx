@@ -71,6 +71,7 @@ const UserDropdown = () => {
     auth.logout()
     localStorage.removeItem("paymentStatus")
     localStorage.removeItem("Role")
+     localStorage.clear()
     
   }
 
