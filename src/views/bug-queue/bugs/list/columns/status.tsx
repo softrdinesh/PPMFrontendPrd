@@ -265,6 +265,8 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
     throw error;
   }
 }
+  // const { profile, user } = useAuth()
+
 
 // FIXED: Updated delete status function with TaskID and GroupID
 const deleteStatus = async (payload: DeleteStatusPayload, row: any,workspaceID: number): Promise<DeleteStatusResponse> => {
@@ -272,9 +274,11 @@ const deleteStatus = async (payload: DeleteStatusPayload, row: any,workspaceID: 
     // Get TaskID and GroupID from the row data
     const taskID = row?.taskID || row?.TaskID;
     const groupID = row?.taskGroupID || row?.TaskGroupID;
-    
+    const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const userID = parsedData.userID;
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL1}/RemoveBugStatus?StatusID=${payload.StatusID}&LoginuserID=${76}&WorkspaceID=${workspaceID}`,
+      `${process.env.NEXT_PUBLIC_API_URL1}/RemoveBugStatus?StatusID=${payload.StatusID}&LoginuserID=${userID}&WorkspaceID=${workspaceID}`,
       {},
       {
         headers: {
@@ -337,10 +341,7 @@ const StatusMenuItem = ({
   }
 
   const handleStatusChange = async () => {
-    // If this is from BugList component and has parent handler, use that
-    // FIX: use a strict null/undefined check instead of truthy check so that
-    // a bugId of 0 (or any other falsy-but-valid id) doesn't fall through
-    // to the generic SprintTaskUpdate branch below and silently no-op.
+ 
     if (isBugList && onStatusChangeFromParent && bugId !== undefined && bugId !== null) {
       await onStatusChangeFromParent(bugId, item?.StatusID);
       return;

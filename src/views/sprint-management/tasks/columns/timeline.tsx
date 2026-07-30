@@ -122,9 +122,14 @@ const rolename = parsedData?.rolename;
       }
     />
     ):(
-<Typography style={{cursor:"pointer"}}>{moment(startDate).format('MMM DD')} - {moment(endDate).format('MMM DD')}</Typography>
-    )}
-   
+  <Typography style={{cursor:"pointer"}}>
+  {startDate ? moment(startDate).format('MMM DD') :'-' }
+  {'/'}
+  {endDate ? moment(endDate).format('MMM DD') : '-'}
+</Typography>
+  )}
+   {/* <Typography style={{cursor:"pointer"}}>{moment(startDate).format('MMM DD')} - {moment(endDate).format('MMM DD')}</Typography> */}
+
     </>
   )
 }

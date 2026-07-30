@@ -1,5 +1,6 @@
 // ** API ,Redux Imports
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 import toast from 'react-hot-toast'
 
@@ -9,6 +10,7 @@ import type { ApiResponse } from '@/types/api-response'
 import { authentication } from './endpoint'
 
 import { callApi } from '@api-utils'
+import { routes } from '@/constants/routes'
 
 type LoginBody = {
   email: string
@@ -16,7 +18,6 @@ type LoginBody = {
   latitude: number
   longitude: number
 }
-
 export const userLogin = async (body: LoginBody) => {
   return callApi({ uriEndPoint: authentication?.login, body, nextUrl: true })
     .then((res: ApiResponse) => {
@@ -102,7 +103,10 @@ export const userRegister = async (body: any) => {
     .then(res => {
       if (res.statusCode === 201) {
         localStorage.setItem('userData', JSON.stringify(res.data))
-
+// toast.success("User Registered Successfully!")
+// setTimeout(() => {
+//   window.location.href = routes.login
+// }, 3000);
         return res
       } else {
         delete res.data

@@ -164,7 +164,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
       setUser(responseData?.userData)
 
-      res?.status && router.replace(routes.dashboard)
+      //res?.status && router.replace(routes.dashboard)
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? err?.message ?? 'Registeration Failed')
       if (errorCallback) errorCallback(err)

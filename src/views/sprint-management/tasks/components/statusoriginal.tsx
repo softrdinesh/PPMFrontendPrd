@@ -660,6 +660,12 @@ const rolename = parsedData?.rolename;
   // touching any of the existing dynamicValue/columnData branch logic.
   const parsedFlatStatus = useMemo(() => {
     const raw = (row as any)?.Statusname
+    // FIX: API sends literal '-' (not null/undefined) when no status is
+    // assigned, so `?? 'None'` never triggered downstream. Normalize '-'
+    // and '' to undefined here so the existing `?? 'None'` fallback works.
+    if (raw === '-' || raw === '') {
+      return { StatusID: (row as any)?.StatusID, Statusname: undefined }
+    }
     if (typeof raw === 'string' && raw.includes(';')) {
       const [idPart, ...nameParts] = raw.split(';')
       return { StatusID: Number(idPart), Statusname: nameParts.join(';') }
@@ -871,6 +877,7 @@ const rolename = parsedData?.rolename;
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
+  console.log(statusName,'InsertDynamicValues');
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       {rolename !== 'Viewer' ? (
@@ -882,9 +889,7 @@ const rolename = parsedData?.rolename;
         onClick={handleOpen}
         sx={{ cursor: canEdit ? 'pointer' : 'not-allowed' }}
       >
-        {/* <Tooltip title={statusName || 'None'}> */}
-          <Tooltip title={statusName || '-'}>
-
+        <Tooltip title={statusName || 'None'}>
           <Typography
             fontSize={'0.85rem'}
             textOverflow={'ellipsis'}
@@ -893,8 +898,7 @@ const rolename = parsedData?.rolename;
             color={'inherit'}
             className='text-inherit'
           >
-            {/* {statusName ?? 'None'} */}
-                 {statusName ?? '-'}
+            {statusName ?? 'None'}
           </Typography>
         </Tooltip>
       </Box>
@@ -907,7 +911,7 @@ const rolename = parsedData?.rolename;
         // onClick={handleOpen}
         sx={{ cursor: 'not-allowed' }}
       >
-        <Tooltip title={statusName || '-'}>
+        <Tooltip title={statusName || 'None'}>
           <Typography
             fontSize={'0.85rem'}
             textOverflow={'ellipsis'}
@@ -916,7 +920,7 @@ const rolename = parsedData?.rolename;
             color={'inherit'}
             className='text-inherit'
           >
-            {statusName ?? '-'}
+            {statusName ?? 'None'}
           </Typography>
         </Tooltip>
       </Box>

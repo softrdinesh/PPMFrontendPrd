@@ -171,7 +171,8 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
         }
       }
     );   
-    
+         fetchStatusLookupList()
+
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
@@ -193,9 +194,10 @@ const deleteStatus = async (payload: DeleteStatusPayload): Promise<DeleteStatusR
         }
       }
     );
-    
+     fetchStatusLookupList()
     toast.success('Status deleted successfully');
     return response.data;
+   
   } catch (error) {
     console.error('Error deleting status:', error);
     toast.error('Failed to delete status');
@@ -590,6 +592,7 @@ const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
     
     try {
       const response = await deleteStatus({ StatusID: statusToDelete.StatusID });
+              refetchStatusList();
       if (response?.status) {
         toast.success('Status Deleted Successfully');
         refetchStatusList();
@@ -624,13 +627,13 @@ const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
         Colorcode: data.Colorcode
       });
 
-      if (response?.status) {
+     // if (response?.status) {
         refetchStatusList()
         refetch()
         reset({ Statusname: '', Colorcode: '' })
         // FIXED: Close the form after successful update
         handleFormClose()
-      }
+     // }
     } else {
       // Use the new createStatus function instead of addProjectStatus
       const response = await createStatus({
@@ -729,8 +732,8 @@ const rolename = parsedData?.rolename;
         transformOrigin={{ horizontal: 'center', vertical: 'top' }}
         sx={{ '& .MuiList-root': { p: 0 } }}
       >
-        <Box maxWidth={'400px'} p={4}>
-          <Grid container spacing={3}>
+        <Box maxWidth={'400px'} p={5}>
+          <Grid container spacing={5}>
             <Grid size={6}>
               <Box pb={2}>
                 <Typography fontWeight={700} fontSize={14}>
@@ -748,10 +751,10 @@ const rolename = parsedData?.rolename;
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={6}>
+            <Grid size={5}>
               <Grid
                 container
-                spacing={4}
+                spacing={9}
                 maxHeight={'200px'}
                 pr={1}
                 sx={{
