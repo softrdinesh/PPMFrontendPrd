@@ -11,7 +11,7 @@ const NewTask = (projectlength: any) => {
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
   const { profile, user } = useAuth()
-
+console.log(projectlength,'fdf');
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
@@ -59,12 +59,39 @@ const NewTask = (projectlength: any) => {
     }
   }
 
-  const handleCreateWorkspaceClick = () => {
-    const canProceed = checkPaymentAndWorkspaceStatus()
-    if (canProceed) {
-      handleOpen()
+  // const handleCreateWorkspaceClick = () => {
+  //   // const canProceed = checkPaymentAndWorkspaceStatus()
+  //   // if (canProceed) {
+  //     handleOpen()
+  //   // }
+  // }
+const handleCreateWorkspaceClick = () => {
+const categoryCount = projectlength.projectlength?.length || 0;
+
+  console.log(categoryCount, 'categoryCount');
+
+  try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.taskGroupCount !== undefined && parsed.taskGroupCount !== null) {
+        console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
+        if (categoryCount >= parsed.taskGroupCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
     }
+  } catch (error) {
+    console.error('Error checking payment status:', error)
   }
+      handleOpen()
+
+
+}
+
+
+
 
   const handleClosePaymentDialog = () => {
     setShowPaymentExpiredDialog(false)
