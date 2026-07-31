@@ -108,7 +108,7 @@ const DynamicTableHeader = ({
       const Baseurl = process.env.NEXT_PUBLIC_API_URL1
 
       const response = await axios.post(
-        `${Baseurl}/UpdateBugDynamicColumn?WorkspaceID=${selected?.WorkspaceID}&Columname=${encodeURIComponent(Columnname)}&GroupID=${groupID}&LoginuserID=${user?.id}&AdditionalColumnID=${AdditionalColumnID}`
+        `${Baseurl}/UpdateBugDynamicColumn?WorkspaceID=${selected?.WorkspaceID}&Columnname=${encodeURIComponent(Columnname)}&GroupID=${groupID}&LoginuserID=${user?.id}&AdditionalColumnID=${AdditionalColumnID}`
       );
       window.dispatchEvent(new Event('columnCreated'));
       
