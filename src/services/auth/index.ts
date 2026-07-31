@@ -102,7 +102,7 @@ export const userRegister = async (body: any) => {
   return callApi({ uriEndPoint: authentication.register, body, nextUrl: true })
     .then(res => {
       if (res.statusCode === 201) {
-     //   localStorage.setItem('userData', JSON.stringify(res.data))
+        localStorage.setItem('userData', JSON.stringify(res.data))
 toast.success("User Registered Successfully!")
 setTimeout(() => {
   window.location.href = routes.login
