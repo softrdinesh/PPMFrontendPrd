@@ -161,7 +161,6 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     try {
       const res = await userRegister(params)
       const responseData = res?.data
-
       setUser(responseData?.userData)
 
       //res?.status && router.replace(routes.dashboard)
@@ -179,6 +178,8 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   // ** Change Profiles
   const changeProfiles = (val?: Profiles) => {
     const currentProfile = val || window.localStorage.getItem('profile') || 'projects'
+console.log(user,'responseData');
+
 
     if (currentProfile === 'projects') {
       handleProfileChange('sprints')
@@ -206,6 +207,11 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     changeProfiles,
     logout: handleLogout
   }
+
+
+
+
+
 
   return (
     <AuthContext.Provider value={values}>

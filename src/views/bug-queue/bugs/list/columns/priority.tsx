@@ -176,8 +176,7 @@ const rolename = parsedData?.rolename;
 
   // Get the current priority name and color code with proper fallbacks
   const currentPriorityName = row?.Priority?.PriorityName || (row as any)?.priorityname || 'None'
-  const currentColorCode = row?.Priority?.Colorcode || (row as any)?.colorcode || '#E0E0E0'
-
+  const currentColorCode = row?.Priority?.Colorcode || (row as any)?.Colorcode || '#E0E0E0'
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       {rolename !=='Viewer' ? (

@@ -1194,6 +1194,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID, searc
         createdBy: reporterInfo,
         reporterID: bug.reporterID || 0,
         groupID: bug.groupID,
+        Colorcode:bug.prioritycolorcode,
         reporterinfo: bug.reporterinfo || ''
       }
     })

@@ -102,7 +102,10 @@ export const userRegister = async (body: any) => {
   return callApi({ uriEndPoint: authentication.register, body, nextUrl: true })
     .then(res => {
       if (res.statusCode === 201) {
-        localStorage.setItem('userData', JSON.stringify(res.data))
+    getUserInfoByEmail(res.data.email)
+
+   localStorage.setItem('userData', JSON.stringify(res.data))
+   
 toast.success("User Registered Successfully!")
 setTimeout(() => {
   window.location.href = routes.login
@@ -119,6 +122,22 @@ setTimeout(() => {
     })
 }
 
+const getUserInfoByEmail= async(email: any)=>{
+  try {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetUserInfobyemail?Email=${email}` );
+
+    const userId = response?.data?.[0]?.userID || response?.data?.[0]?.id
+    Rolecheck(userId)
+    paymentcheck(userId)
+
+    console.log('User info:', response.data);
+    return response.data;
+
+  } catch (error) {
+   
+    throw error; // re-throw if the caller needs to handle it too
+  }
+}
 export const userLogout = (id: string) => {
   return callApi({
     uriEndPoint: authentication.logout,
