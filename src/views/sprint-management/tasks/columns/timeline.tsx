@@ -1,0 +1,137 @@
+import { useEffect, useState } from 'react'
+
+import { Button, Typography } from '@mui/material'
+
+import moment from 'moment'
+
+import type { SprintItem } from '@/services/modules/sprint-item/types'
+import AppReactDatepicker from '@/libs/styles/AppReactDatepicker'
+import { updateSprint } from '@/services/modules/sprint-item'
+import { UpdateSrpintItem } from '@/services/modules/sprint-item'
+import { useAuth } from '@/hooks/useAuth'
+
+const DatePickerDynamic = ({
+  startDate,
+  endDate,
+  onChange,
+  render
+}: {
+  startDate: Date | null
+  endDate: Date | null
+  onChange: (v: [Date | null, Date | null]) => void
+  render: any
+}) => {
+  return (
+    <AppReactDatepicker
+      monthsShown={2}
+      selectsRange
+      selected={startDate}
+      startDate={startDate}
+      endDate={endDate}
+      onChange={onChange}
+      customInput={render}
+    />
+  )
+}
+
+const SprintTimelineManagement = ({ original, refetch }: { original: SprintItem; refetch: () => void }) => {
+  const [startDate, setStartDate] = useState<Date | null>(null)
+const roleData = localStorage.getItem('Role');
+const parsedData = JSON.parse((roleData)as any);
+const rolename = parsedData?.rolename;
+  const [endDate, setEndDate] = useState<Date | null>(null)
+  const { profile, user } = useAuth()
+  const handleDateChange = async (dates: [Date | null, Date | null]) => {
+    if (!dates) return
+
+    const [start, end] = dates
+
+    setStartDate(start)
+    setEndDate(end)
+
+    if (start && end) {
+      const normalizedStart = moment(start).format('YYYY-MM-DD')
+      const normalizedEnd = moment(end).format('YYYY-MM-DD')
+
+      await updateSprint({
+        id: original?.SprintID?.toString(),
+        body: { SprintTimelineStart: normalizedStart, SprintTimelineEnd: normalizedEnd }
+      })
+//        const value = localStorage.getItem('userData')
+  
+
+//  const bodyvalue = {
+//               Sprintname:original.Name,
+//               Goals:"-",
+//               startdate: moment(start).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+//               endate:moment(end).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+//               LoginuserID:user?.id,
+//               SprintgroupID:original.SprintGroupID,
+//               WorkspaceID:original.WorkSpaceID,
+//               sprintID:original?.SprintID?.toString()
+//             }
+
+            //    //const response = await UpdateSrpintItem(bodyvalue
+            //   // id: filteredSprintData?.[rowIndex]?.SprintID?.toString(),
+            //   // body: { Name: value }
+            // )
+
+      await refetch()
+
+      if (original?.SprintTimelineStart) {
+        const start = moment.parseZone(original.SprintTimelineStart)
+        if (start.isValid()) setStartDate(start.toDate())
+      }
+      if (original?.SprintTimelineEnd) {
+        const end = moment.parseZone(original.SprintTimelineEnd)
+        if (end.isValid()) setEndDate(end.toDate())
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (original?.SprintTimelineStart) {
+      const start = moment.parseZone(original.SprintTimelineStart)
+      if (start.isValid()) setStartDate(start.toDate())
+    } else {
+      setStartDate(null)
+    }
+    if (original?.SprintTimelineEnd) {
+      const end = moment.parseZone(original.SprintTimelineEnd)
+      if (end.isValid()) setEndDate(end.toDate())
+    } else {
+      setEndDate(null)
+    }
+  }, [original?.SprintTimelineStart, original?.SprintTimelineEnd, original])
+  return (<>
+    {rolename !== 'Viewer' ? (
+ <DatePickerDynamic
+      startDate={startDate}
+      endDate={endDate}
+      onChange={handleDateChange}
+      render={
+        <Button
+          size='small'
+          className='rounded-full p-1 leading-3 px-2'
+          variant={startDate && endDate ? 'contained' : 'outlined'}
+        >
+          {startDate && endDate
+            ? `${moment(startDate).format('MMM DD')} - ${moment(endDate).format('MMM DD')}`
+            : 'Add timeline'}
+        </Button>
+      }
+    />
+    ):(
+  <Typography style={{cursor:"pointer"}}>
+  {startDate ? moment(startDate).format('MMM DD') :'-' }
+  {'/'}
+  {endDate ? moment(endDate).format('MMM DD') : '-'}
+</Typography>
+  )}
+   {/* <Typography style={{cursor:"pointer"}}>{moment(startDate).format('MMM DD')} - {moment(endDate).format('MMM DD')}</Typography> */}
+
+    </>
+  )
+}
+
+export default SprintTimelineManagement
