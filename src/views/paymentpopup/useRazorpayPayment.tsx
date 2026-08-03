@@ -298,7 +298,7 @@ const paymentcheck = async () => {
       prefill: {
         name: 'Customer Name',
         email: 'customer@example.com',
-        contact: '9042531799'
+        contact: ''
       },
       theme: {
         color: '#e59722'
