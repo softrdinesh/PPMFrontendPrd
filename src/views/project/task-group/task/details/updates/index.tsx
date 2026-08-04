@@ -203,7 +203,7 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount, s
     try {
       setValue(v)
     } catch (error) {
-      console.error('error :', error)
+     // console.error('error :', error)
     }
   }
 
@@ -235,10 +235,10 @@ const WriteUpdate = ({ taskID, setWriteUpdate, refetch, onRefreshMessageCount, s
     toast.success("Image Uploaded Successfully!")
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error('Upload failed:', error.response?.data || error.message);
+     // console.error('Upload failed:', error.response?.data || error.message);
       //setUploadError(error.response?.data?.message || 'File upload failed');
     } else {
-      console.error('Unexpected error:', error);
+     // console.error('Unexpected error:', error);
      // setUploadError('Something went wrong');
     }
   } finally {
@@ -311,7 +311,7 @@ const handleSendUpdate = async () => {
       }
     }
   } catch (error) {
-    console.error('Error sending update:', error)
+  //  console.error('Error sending update:', error)
     toast.error('Failed to send update. Please try again.')
   }
 }
@@ -368,7 +368,7 @@ const { data,   } = useQuery({
       await likeTaskUpdate(message?.UpdateID?.toString())
       refetch()
     } catch (error) {
-      console.error('Error liking update:', error)
+   //   console.error('Error liking update:', error)
       toast.error('Failed to like update')
     }
   }
@@ -392,7 +392,7 @@ const { data,   } = useQuery({
       setGiveReply(false)
       toast.success('Reply added successfully')
     } catch (error) {
-      console.error('Error replying:', error)
+    //  console.error('Error replying:', error)
       toast.error('Failed to add reply')
     }
   }
@@ -591,7 +591,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
           try {
             parsedData = JSON.parse(raw)
           } catch (err) {
-            console.error('Error parsing WebSocket message JSON:', err)
+         //   console.error('Error parsing WebSocket message JSON:', err)
             return
           }
 
@@ -604,12 +604,12 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
           refetch()
 
         } catch (error) {
-          console.error('Error handling WebSocket message:', error)
+      //    console.error('Error handling WebSocket message:', error)
         }
       }
 
       ws.onerror = (error) => {
-        console.error('ProjectUpdates WebSocket error:', error)
+     //   console.error('ProjectUpdates WebSocket error:', error)
         isConnectingRef.current = false
 
         // Attempt to close on error if not already closed
@@ -641,7 +641,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
 
       socketRef.current = ws
     } catch (error) {
-      console.error('Failed to create WebSocket:', error)
+    //  console.error('Failed to create WebSocket:', error)
       isConnectingRef.current = false
 
       // Retry connection after delay
@@ -665,7 +665,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       try {
         socketRef.current.close(1000, 'Component unmounting')
       } catch (error) {
-        console.error('Error closing WebSocket:', error)
+   //     console.error('Error closing WebSocket:', error)
       }
       socketRef.current = null
     }
@@ -683,7 +683,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
 
           socketRef.current.send(JSON.stringify(message))
         } catch (sendError) {
-          console.error('Error sending WebSocket message:', sendError)
+      //    console.error('Error sending WebSocket message:', sendError)
         }
       } else {
         console.warn('WebSocket is not connected. Attempting to reconnect...')

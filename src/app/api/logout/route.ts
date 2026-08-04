@@ -37,7 +37,7 @@ export async function GET() {
       return res.json({ status: false, message: 'Session Timed Out' }, { status: 202 })
     }
   } catch (error: any) {
-    console.error('error :', error)
+    //console.error('error :', error)
     ;(await cookies()).delete('jwt')
 
     return res.json(error?.response?.data ?? { status: false, message: 'Session Timed Out' }, { status: 422 })

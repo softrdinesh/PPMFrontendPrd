@@ -524,7 +524,7 @@ const {user}= useAuth()
           setProjects(response.data);
         }
       } catch (error) {
-        console.error('Error fetching projects:', error);
+       //console.error('Error fetching projects:', error);
       } finally {
         setProjectsLoading(false);
       }
@@ -574,7 +574,7 @@ const {user}= useAuth()
           setAllUsers(Array.from(uniqueUsersMap.values()));
         }
       } catch (error) {
-        console.error('Error fetching users or tasks:', error);
+      //  console.error('Error fetching users or tasks:', error);
         setAllUsers([]);
         setUserTasks([]);
       } finally {

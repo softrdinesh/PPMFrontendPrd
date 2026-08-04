@@ -183,7 +183,7 @@ const DynamicDate = ({
         toast.success('Value updated successfully');
       }
     } catch (error) {
-      console.error('error :', error)
+    //  console.error('error :', error)
       toast.error('Failed to update value');
     } finally {
       setIsSubmitting(false)

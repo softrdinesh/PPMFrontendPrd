@@ -24,7 +24,7 @@ export function getLuminance(hex: string) {
 
     return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
   } catch (error) {
-    console.error('getLuminance: error :', error)
+   //console.error('getLuminance: error :', error)
 
     return 0
   }

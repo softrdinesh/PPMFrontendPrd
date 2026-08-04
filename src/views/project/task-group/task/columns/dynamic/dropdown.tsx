@@ -109,7 +109,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
         }
       }
     } catch (error) {
-      console.error('error :', error)
+     // console.error('error :', error)
     }
   }
 
@@ -149,7 +149,7 @@ toast.success("Task Updated Successfully!")
         }
       }
     } catch (error) {
-      console.error('error select ddl :', error)
+     // console.error('error select ddl :', error)
     }
   }
 

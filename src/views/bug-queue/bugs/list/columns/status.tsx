@@ -152,11 +152,11 @@ const fetchBugStatusList = async (workspaceID: number): Promise<StatusLookupItem
     } else if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data.data;
     } else {
-      console.error('Unexpected response format:', response.data);
+     //console.error('Unexpected response format:', response.data);
       return [];
     }
   } catch (error) {
-    console.error('Error fetching bug status list:', error);
+  //  console.error('Error fetching bug status list:', error);
     throw error;
   }
 }
@@ -184,7 +184,7 @@ const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<Sprin
       
     return { status: true, data: response.data };
   } catch (error) {
-    console.error('API call failed:', error);
+  //  console.error('API call failed:', error);
     toast.error('Failed to update status');
     throw error;
   }
@@ -207,7 +207,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
       
     return { status: true, data: response.data };
   } catch (error) {
-    console.error('API call failed:', error);
+   // console.error('API call failed:', error);
     toast.error('Failed to update value');
     throw error;
   }
@@ -235,7 +235,7 @@ const createTaskStatus = async (payload: CreateTaskStatusPayload,workspaceID: nu
     toast.success("Task Status Created Successfully");
     return response.data;
   } catch (error) {
-    console.error('Error creating task status:', error);
+   // console.error('Error creating task status:', error);
     toast.error('Failed to create task status');
     throw error;
   }
@@ -260,7 +260,7 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
-    console.error('Error updating status:', error);
+   // console.error('Error updating status:', error);
     toast.error('Failed to update status');
     throw error;
   }
@@ -290,7 +290,7 @@ const userID = parsedData.userID;
     toast.success('Status deleted successfully');
     return response.data;
   } catch (error) {
-    console.error('Error deleting status:', error);
+   // console.error('Error deleting status:', error);
     toast.error('Failed to delete status');
     throw error;
   }
@@ -384,16 +384,16 @@ const StatusMenuItem = ({
           // FIX: the referenced names were `BugID`/`GroupID` (undefined,
           // TS2552 "Cannot find name") — corrected to the actual in-scope
           // variables `bugid`/`groupid` declared just above.
-          console.error('Missing required values for dynamic value insertion:', {
-            dynamicColumnID,
-            loginuserID,
-            bugid,
-            groupid,
+          // console.error('Missing required values for dynamic value insertion:', {
+          //   dynamicColumnID,
+          //   loginuserID,
+          //   bugid,
+          //   groupid,
             
-          });
+          // });
         }
       } catch (error) {
-        console.error('Failed to insert dynamic value:', error);
+        //console.error('Failed to insert dynamic value:', error);
       }
     } else {
       // For non-dynamic columns, update task status using SprintTaskUpdate API
@@ -440,13 +440,13 @@ const StatusMenuItem = ({
             }
           }
         } else {
-          console.error('Missing required values for SprintTaskUpdate:', {
-            taskID
-          });
+          // console.error('Missing required values for SprintTaskUpdate:', {
+          //   taskID
+          // });
         }
 
       } catch (error) {
-        console.error('Failed to update task status:', error);
+       // console.error('Failed to update task status:', error);
       }
     }
   }
@@ -787,7 +787,7 @@ const rolename = parsedData?.rolename;
         handleFormClose();
       // }
     } catch (error) {
-      console.error('Failed to delete status:', error);
+      //console.error('Failed to delete status:', error);
     } finally {
       setDeleteDialogOpen(false);
       setStatusToDelete(null);

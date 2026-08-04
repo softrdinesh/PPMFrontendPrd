@@ -228,7 +228,7 @@ const TaskDetailsDialog = ({
         },
       });
     } catch (error) {
-      console.error('Download error:', error);
+   //   console.error('Download error:', error);
       window.open(task.attachmentLink, '_blank');
       
       toast.success('Opening file in new tab', {
@@ -723,7 +723,7 @@ const fetchProjectTasks = async () => {
       setProjectTasks(formattedTasks);
     }
   } catch (error: any) {
-    console.error('Error fetching project tasks:', error);
+   // console.error('Error fetching project tasks:', error);
     toast.error('Failed to load project tasks from API', {
       position: 'top-center',
       duration: 4000,
@@ -785,7 +785,7 @@ const fetchProjectTasks = async () => {
       setShowTaskPaymentDialog(false)
       return true
     } catch (error) {
-      console.error('Error checking payment status:', error)
+    //  console.error('Error checking payment status:', error)
       setShowPaymentExpiredDialog(true)
       return false
     }
@@ -852,7 +852,7 @@ const fetchTeamMembers = async () => {
 
     }
   } catch (error: any) {
-    console.error('Error fetching team members:', error);
+   // console.error('Error fetching team members:', error);
     toast.error('Failed to load team members from API', {
       position: 'top-center',
       duration: 4000,
@@ -983,7 +983,7 @@ const fetchTeamMembers = async () => {
         setPriorities(response.data)
       }
     } catch (error: any) {
-      console.error('Error fetching priorities:', error)
+     // console.error('Error fetching priorities:', error)
       toast.error('Failed to load priorities from API', {
         position: 'top-center',
         duration: 4000,
@@ -1059,7 +1059,7 @@ const fetchTeamMembers = async () => {
         
       }
     } catch (error: any) {
-      console.error('Error fetching tasks:', error)
+     // console.error('Error fetching tasks:', error)
       toast.error('Failed to load tasks from API', {
         position: 'top-center',
         duration: 4000,
@@ -1117,7 +1117,7 @@ const fetchTeamMembers = async () => {
         throw new Error('Invalid API response format')
       }
     } catch (error: any) {
-      console.error('Error fetching categories:', error)
+    //  console.error('Error fetching categories:', error)
       setError('Failed to load categories from API')
       
       toast.error('Failed to load categories from API', {
@@ -1331,7 +1331,7 @@ useEffect(() => {
           setFilteredByUserTasks(userTasks);
         }
       } catch (error) {
-        console.error('Error filtering data by user:', error);
+       // console.error('Error filtering data by user:', error);
         toast.error('Failed to load user data', {
           position: 'top-center',
           duration: 4000,
@@ -1417,7 +1417,7 @@ useEffect(() => {
       throw new Error('Failed to move task')
     }
   } catch (error: any) {
-    console.error('Error moving task:', error)
+   //sconsole.error('Error moving task:', error)
 
     let errorMessage = 'Failed to move task'
 
@@ -1548,7 +1548,7 @@ const handleOpenCreateCategory = () => {
       }
     }
   } catch (error) {
-    console.error('Error checking payment status:', error)
+  //  console.error('Error checking payment status:', error)
   }
 
   setNewCategoryName('')
@@ -1576,7 +1576,7 @@ try {
       }
     }
   } catch (error) {
-    console.error('Error checking payment status:', error)
+    //('Error checking payment status:', error)
   }
   setOpenDialog(true)
 
@@ -1659,7 +1659,7 @@ try {
         throw new Error('Failed to create category')
       }
     } catch (error: any) {
-      console.error('Error creating category:', error)
+    //  console.error('Error creating category:', error)
       
       let errorMessage = 'Failed to create category'
       
@@ -1838,7 +1838,7 @@ try {
           throw new Error('Failed to delete category')
         }
       } catch (error: any) {
-        console.error('Error deleting category:', error)
+       // console.error('Error deleting category:', error)
         
         let errorMessage = 'Failed to delete category'
         
@@ -2040,7 +2040,7 @@ try {
           throw new Error('Failed to update task');
         }
       } catch (error: any) {
-        console.error('Error updating task:', error);
+        //console.error('Error updating task:', error);
         
         let errorMessage = 'Failed to update task';
         
@@ -2103,7 +2103,7 @@ try {
         throw new Error('Failed to delete task');
       }
     } catch (error: any) {
-      console.error('Error deleting task:', error);
+    //  console.error('Error deleting task:', error);
       
       let errorMessage = 'Failed to delete task';
       

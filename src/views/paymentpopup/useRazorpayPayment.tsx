@@ -86,7 +86,7 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
       }
       
       script.onerror = () => {
-        console.error('Failed to load Razorpay SDK')
+      //  console.error('Failed to load Razorpay SDK')
         // Remove failed script
         if (script.parentNode) {
           script.parentNode.removeChild(script)
@@ -119,7 +119,7 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
           setRazorpayLoaded(true)
         }
       } catch (error) {
-        console.error('Failed to initialize Razorpay:', error)
+    //    console.error('Failed to initialize Razorpay:', error)
         if (mounted) {
           setRazorpayLoaded(false)
         }
@@ -158,7 +158,7 @@ const paymentcheck = async () => {
 
     }
   } catch (error) {
-    console.error('Payment check error:', error)
+   // console.error('Payment check error:', error)
   }
 }
   const updatePaymentConfirmation = async (
@@ -194,7 +194,7 @@ const paymentcheck = async () => {
 
       return { ok: resp.ok, status: resp.status, body: text }
     } catch (err) {
-      console.error('Error calling UpdatePaymentconfirmation:', err)
+  //    console.error('Error calling UpdatePaymentconfirmation:', err)
       if (status !== 'Cancelled' && status !== 'Timeout' && status !== 'Failed') {
         const paymentData = {
           isExpired: true
@@ -202,7 +202,7 @@ const paymentcheck = async () => {
         try {
           localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
         } catch (e) {
-          console.error('Error saving paymentStatus to localStorage on failure:', e)
+          //console.error('Error saving paymentStatus to localStorage on failure:', e)
         }
       }
       return { ok: false, error: err }
@@ -217,7 +217,7 @@ const paymentcheck = async () => {
         setIsLoading(true)
         await loadRazorpayScript()
       } catch (error) {
-        console.error('Failed to load Razorpay SDK:', error)
+     //   console.error('Failed to load Razorpay SDK:', error)
         alert('Unable to load payment gateway. Please check your internet connection and try again.')
         setIsLoading(false)
         return
@@ -242,12 +242,12 @@ const paymentcheck = async () => {
             onPaymentSuccess?.()
           })
           .catch(err => {
-            console.error('Error updating payment confirmation after success:', err)
+          //  console.error('Error updating payment confirmation after success:', err)
             try {
               localStorage.setItem('paymentStatus', JSON.stringify({ isExpired: false }))
               onPaymentSuccess?.()
             } catch (e) {
-              console.error('Failed to write local payment status after success fallback:', e)
+            //  console.error('Failed to write local payment status after success fallback:', e)
             }
           })
       },
@@ -265,7 +265,7 @@ const paymentcheck = async () => {
                 onPaymentFailure?.()
               })
               .catch(err => {
-                console.error('Error updating cancellation confirmation:', err)
+               // console.error('Error updating cancellation confirmation:', err)
                 onPaymentFailure?.()
               })
           } else if (reason === 'timeout') {
@@ -277,7 +277,7 @@ const paymentcheck = async () => {
                 onPaymentFailure?.()
               })
               .catch(err => {
-                console.error('Error updating timeout confirmation:', err)
+             //   console.error('Error updating timeout confirmation:', err)
                 onPaymentFailure?.()
               })
           } else {
@@ -289,7 +289,7 @@ const paymentcheck = async () => {
                 onPaymentFailure?.()
               })
               .catch(err => {
-                console.error('Error updating failure confirmation:', err)
+              //  console.error('Error updating failure confirmation:', err)
                 onPaymentFailure?.()
               })
           }
@@ -321,14 +321,14 @@ const paymentcheck = async () => {
             onPaymentFailure?.()
           })
           .catch(err => {
-            console.error('Error updating failed payment confirmation:', err)
+         //('Error updating failed payment confirmation:', err)
             onPaymentFailure?.()
           })
       })
 
       rzp1.open()
     } catch (error) {
-      console.error('Error opening Razorpay:', error)
+    //  console.error('Error opening Razorpay:', error)
       toast.error('Error initializing payment gateway. Please try again.')
     }
   }
@@ -340,7 +340,7 @@ const paymentcheck = async () => {
         setIsLoading(true)
         await loadRazorpayScript()
       } catch (error) {
-        console.error('Failed to load Razorpay SDK:', error)
+       // console.error('Failed to load Razorpay SDK:', error)
         toast.error('Unable to load payment gateway. Please check your internet connection.')
         setIsLoading(false)
         return
@@ -376,7 +376,7 @@ const paymentcheck = async () => {
         throw new Error('Invalid response from server')
       }
     } catch (error) {
-      console.error('generateRazorPayOrder Error:', error)
+      //console.error('generateRazorPayOrder Error:', error)
       setPaymentStatus('Error generating order')
       setIsLoading(false)
       toast.error('Failed to create payment order. Please try again.')

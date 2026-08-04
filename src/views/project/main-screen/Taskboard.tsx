@@ -154,7 +154,7 @@ const fetchProjectTasks = async () => {
       setProjectTasks(formattedTasks);
     }
   } catch (error: any) {
-    console.error('Error fetching project tasks:', error);
+    //console.error('Error fetching project tasks:', error);
     toast.error('Failed to load project tasks from API', {
       position: 'top-center',
       duration: 4000,
@@ -242,7 +242,7 @@ const fetchProjectTasks = async () => {
         }
       }
     } catch (error) {
-      console.error('Error fetching priorities:', error);
+   //   console.error('Error fetching priorities:', error);
     }
   };
 
@@ -269,7 +269,7 @@ const fetchProjectTasks = async () => {
         }
       }
     } catch (error: any) {
-      console.error('Error fetching categories:', error);
+    //  console.error('Error fetching categories:', error);
       toast.error('Failed to load categories from API', {
         position: 'top-center',
         duration: 4000,
@@ -400,7 +400,7 @@ const fetchProjectTasks = async () => {
         onPriorityCreated();
       }
     } catch (error) {
-      console.error('Error creating priority:', error);
+      //console.error('Error creating priority:', error);
       if (axios.isAxiosError(error)) {
         if (error.response) {
           toast.error(`Error: ${error.response.status} - ${error.response.data?.message || 'Failed to create priority'}`);
@@ -438,7 +438,7 @@ const fetchProjectTasks = async () => {
         onPriorityCreated();
       }
     } catch (error) {
-      console.error('Error updating priority:', error);
+    //  console.error('Error updating priority:', error);
       if (axios.isAxiosError(error)) {
         if (error.response) {
           toast.error(`Error: ${error.response.status} - ${error.response.data?.message || 'Failed to update priority'}`);
@@ -483,7 +483,7 @@ const fetchProjectTasks = async () => {
         onPriorityCreated();
       }
     } catch (error) {
-      console.error('Error deleting priority:', error);
+     // console.error('Error deleting priority:', error);
       if (axios.isAxiosError(error)) {
         if (error.response) {
           toast.error(`Error: ${error.response.status} - ${error.response.data?.message || 'Failed to delete priority'}`);
@@ -702,7 +702,7 @@ const projectTaskID = formData.projectTask || '';
         throw new Error('Failed to create task');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+    //  console.error('Error submitting form:', error);
       
       // Show error message
       if (axios.isAxiosError(error)) {

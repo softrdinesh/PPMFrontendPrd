@@ -52,7 +52,7 @@ const DeleteTasksComponent = ({
       setDeleteOpen(false)
       setSelectedRows({})
     } catch (error) {
-      console.error('Error deleting tasks:', error)
+    //  console.error('Error deleting tasks:', error)
     }
   }
   

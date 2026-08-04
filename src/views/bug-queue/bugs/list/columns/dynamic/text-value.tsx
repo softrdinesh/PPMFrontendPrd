@@ -42,7 +42,7 @@ const TaskTextValues = ({ table, rowData, getValue, index, id, columnData, dynam
       // Show success toaster
       toast.success('Value updated successfully');
     } catch (error) {
-      console.error('API call failed:', error);
+     // console.error('API call failed:', error);
       // Show error toaster
       toast.error('Failed to update value');
     }

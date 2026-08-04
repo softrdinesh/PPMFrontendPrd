@@ -96,7 +96,7 @@ const ForgotPassword = () => {
         }
       })
       .catch(err => {
-        console.error('ERROR', err)
+      //  console.error('ERROR', err)
       })
     setIsLoggingIn(false)
   }

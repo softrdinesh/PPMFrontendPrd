@@ -120,7 +120,7 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
       setShowPaymentExpiredDialog(false)
       return true
     } catch (error) {
-      console.error('Error parsing payment status:', error)
+   //   console.error('Error parsing payment status:', error)
       setShowPaymentExpiredDialog(true)
       return false
     }

@@ -85,7 +85,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       window.location.href = routes.login
       
     } catch (error) {
-      console.error(error)
+    //  console.error(error)
     } finally {
       setUser(null)
       window.location.href = routes.login

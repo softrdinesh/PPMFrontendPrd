@@ -233,7 +233,7 @@ const checkPaymentStatus = () => {
     setShowPaymentExpiredDialog(true)
     return false
   } catch (error) {
-    console.error('Error parsing payment status:', error)
+//    console.error('Error parsing payment status:', error)
     setShowPaymentExpiredDialog(true)
     return false
   }

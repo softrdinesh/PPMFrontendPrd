@@ -137,7 +137,7 @@ const SprintTaskFilterButton = ({ workspaceID }: { workspaceID: string }) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching task dynamic columns:', error)
+    //  console.error('Error fetching task dynamic columns:', error)
     } finally {
       setLoading(false)
     }

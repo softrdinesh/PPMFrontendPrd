@@ -94,7 +94,7 @@ const rolename = parsedData?.rolename;
       })
       setUsers(Array.from(uniqueUsersMap.values()))
     } catch (error) {
-      console.error('Error fetching users:', error)
+     // console.error('Error fetching users:', error)
       toast.error('Failed to load users')
     } finally {
       setLoading(false)
@@ -366,8 +366,8 @@ const SprintTaskSelectorDialog = ({
       
       setSprintTasks(availableTasks)
     } catch (error) {
-      console.error('Error fetching sprint tasks:', error)
-      toast.error('Failed to load sprint tasks')
+     // console.error('Error fetching sprint tasks:', error)
+     toast.error('Failed to load sprint tasks')
     } finally {
       setLoading(false)
     }
@@ -412,7 +412,7 @@ const SprintTaskSelectorDialog = ({
       onClose()
     } catch (error) {
       toast.error('Failed to create bug. Please try again.')
-      console.error('Error creating bug:', error)
+      //console.error('Error creating bug:', error)
     }
   }
 
@@ -591,7 +591,7 @@ const rolename = parsedData?.rolename;
       await fetchBugList()
       if (refetch) refetch()
     } catch (error) {
-      console.error('Error updating bug name:', error)
+    //  console.error('Error updating bug name:', error)
       toast.error('Failed to update bug name')
     }
   }
@@ -619,7 +619,7 @@ const rolename = parsedData?.rolename;
       await fetchBugList()
       if (refetch) refetch()
     } catch (error) {
-      console.error('Error updating bug description:', error)
+    //  console.error('Error updating bug description:', error)
       toast.error('Failed to update bug description')
     }
   }
@@ -647,7 +647,7 @@ const rolename = parsedData?.rolename;
       await fetchBugList()
       if (refetch) refetch()
     } catch (error) {
-      console.error('Error updating priority:', error)
+    // console.error('Error updating priority:', error)
       toast.error('Failed to update priority')
     }
   }
@@ -676,7 +676,7 @@ const rolename = parsedData?.rolename;
       await fetchBugList()
       if (refetch) refetch()
     } catch (error) {
-      console.error('Error updating reporter:', error)
+     // console.error('Error updating reporter:', error)
       toast.error('Failed to update reporter')
     }
   }
@@ -705,7 +705,7 @@ const rolename = parsedData?.rolename;
       await fetchBugList()
       if (refetch) refetch()
     } catch (error) {
-      console.error('Error updating status:', error)
+     // console.error('Error updating status:', error)
       toast.error('Failed to update status')
     }
   }
@@ -1109,7 +1109,7 @@ const BugList = ({ selectedRows, setSelectedRows, workspaceID, bugGroupID, searc
       
       setAllSprintTasks(tasksWithStatus)
     } catch (error) {
-      console.error('Error fetching bug list:', error)
+     // console.error('Error fetching bug list:', error)
       toast.error('Failed to fetch bug list')
       setAllGroups([])
     } finally {

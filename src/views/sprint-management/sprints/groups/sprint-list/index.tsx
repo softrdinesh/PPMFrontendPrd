@@ -97,7 +97,7 @@ const fetchSprintInfoList = async (sprintGroupId: number) => {
     // The API returns data in the format: [{ colList: [...], detailList: [...], colvalueList: [...] }]
     return response.data || [];
   } catch (error) {
-    console.error('Error fetching sprint info list:', error);
+   // console.error('Error fetching sprint info list:', error);
     throw error;
   }
 };
@@ -450,7 +450,7 @@ const rolename = parsedData?.rolename;
               sprintListApi?.refetch()
             }
           } catch (error) {
-            console.error('error :', error)
+         //   console.error('error :', error)
           }
         }
 
@@ -490,7 +490,7 @@ const rolename = parsedData?.rolename;
               sprintListApi?.refetch()
             }
           } catch (error) {
-            console.error('error :', error)
+           // console.error('error :', error)
           }
         }
 
@@ -513,7 +513,7 @@ const rolename = parsedData?.rolename;
               sprintListApi?.refetch()
             }
           } catch (error) {
-            console.error('error :', error)
+          //  console.error('error :', error)
           }
         }
       }

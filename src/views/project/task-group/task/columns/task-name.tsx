@@ -100,7 +100,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
         if (ws.readyState !== WebSocket.OPEN) {
           ws.close()
           isConnectingRef.current = false
-          console.error('TaskNameCell: WebSocket connection timeout')
+        //  console.error('TaskNameCell: WebSocket connection timeout')
         }
       }, 10000)
 
@@ -133,7 +133,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
           try {
             data = JSON.parse(raw)
           } catch (err) {
-            console.error('Error parsing WebSocket message JSON:', err)
+     //       console.error('Error parsing WebSocket message JSON:', err)
             return
           }
 
@@ -177,13 +177,13 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
           // Always refetch when update is received
           refetch()
         } catch (error) {
-          console.error('Error handling WebSocket message:', error)
+          //console.error('Error handling WebSocket message:', error)
         }
       }
 
       ws.onerror = (error) => {
         clearTimeout(connectionTimeout)
-        console.error('TaskNameCell WebSocket error:', error)
+      //  console.error('TaskNameCell WebSocket error:', error)
         isConnectingRef.current = false
         // Only attempt reconnect if not manually closed
         if (ws.readyState !== WebSocket.CLOSED) {
@@ -211,13 +211,13 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
             connectWebSocket()
           }, delay)
         } else {
-          console.error('TaskNameCell: Max reconnection attempts reached')
+      //    console.error('TaskNameCell: Max reconnection attempts reached')
         }
       }
 
       socketRef.current = ws
     } catch (error) {
-      console.error('Failed to create WebSocket:', error)
+     // console.error('Failed to create WebSocket:', error)
       isConnectingRef.current = false
     }
     // FIX: removed `openTaskView` from deps. It's now read via
@@ -238,7 +238,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
       try {
         socketRef.current.close(1000, 'Component unmounting')
       } catch (error) {
-        console.error('Error closing WebSocket:', error)
+       // console.error('Error closing WebSocket:', error)
       }
       socketRef.current = null
     }
@@ -362,7 +362,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
         }
       }
     } catch (err) {
-      console.error('TaskNameCell: Error in handleRefreshMessageCount', err)
+   //   console.error('TaskNameCell: Error in handleRefreshMessageCount', err)
     } finally {
       // ensure websocket active
       if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {

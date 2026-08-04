@@ -208,7 +208,7 @@ const target = join(__dirname, 'generated-icons.css')
           await runSVGO(svg)
         } catch (err) {
           // Invalid icon
-          console.error(`Error parsing ${name} from ${source.dir}:`, err)
+         // console.error(`Error parsing ${name} from ${source.dir}:`, err)
           iconSet.remove(name)
 
           return
@@ -232,7 +232,7 @@ const target = join(__dirname, 'generated-icons.css')
   await fs.writeFile(target, cssContent, 'utf8')
 
 })().catch(err => {
-  console.error(err)
+  //console.error(err)
 })
 
 /**

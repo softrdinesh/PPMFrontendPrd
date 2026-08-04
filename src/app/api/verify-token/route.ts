@@ -51,7 +51,7 @@ const checkTokenExpiration = async (verifiedToken: CookieEncData, secret: string
 
     return res.json({ status: false, message: 'Invalid Token' }, { status: 403 })
   } catch (error) {
-    console.error('error :', error)
+  //  console.error('error :', error)
 
     return verifiedToken?.token
   }

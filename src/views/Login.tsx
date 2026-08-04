@@ -120,7 +120,7 @@ const LoginV2 = () => {
       // Validate environment variables
       const baseUrl = process.env.NEXT_PUBLIC_API_URL
       if (!baseUrl) {
-        console.error('NEXT_PUBLIC_API_URL is not defined')
+        //console.error('NEXT_PUBLIC_API_URL is not defined')
         throw new Error('Google login configuration error. Please contact support.')
       }
 

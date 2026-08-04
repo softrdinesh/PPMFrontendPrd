@@ -86,7 +86,7 @@ const NewTaskDialog = forwardRef<BugQueueGroupRef, {
       
       onCloseModal()
     } catch (error) {
-      console.error('Failed to create bug group:', error)
+    //  console.error('Failed to create bug group:', error)
       toast.error('An error occurred while creating the bug group')
     }
   }

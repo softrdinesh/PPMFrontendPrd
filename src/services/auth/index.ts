@@ -60,7 +60,7 @@ const paymentcheck = async (userId: number) => {
 
     }
   } catch (error) {
-    console.error('Payment check error:', error)
+  //  console.error('Payment check error:', error)
   }
 }
 const Rolecheck = async (userId: number) => {
@@ -92,7 +92,7 @@ const Rolecheck = async (userId: number) => {
 
      }
   } catch (error) {
-    console.error('Payment check error:', error)
+   // console.error('Payment check error:', error)
   }
 }
 

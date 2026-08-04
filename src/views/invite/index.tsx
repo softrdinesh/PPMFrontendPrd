@@ -93,7 +93,7 @@ const [accept, setaccept] = useState(false)
 
         }
       } catch (error) {
-        console.error('Invitation Accept Error :', error)
+      //  console.error('Invitation Accept Error :', error)
         setResponse(null)
       }
     }

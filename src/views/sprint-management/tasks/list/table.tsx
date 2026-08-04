@@ -567,7 +567,7 @@ const rolename = parsedData?.rolename;
       
       setUsers(mappedUsers)
     } catch (error) {
-      console.error('Error fetching users:', error)
+     // console.error('Error fetching users:', error)
       toast.error('Failed to load users')
     } finally {
       setLoading(false)
@@ -1146,7 +1146,7 @@ const rolename = parsedData?.rolename;
               // Update the table data
               table.options.meta?.updateData?.(index, 'Owner', newOwner ? JSON.stringify(newOwner) : '');
             } catch (error) {
-              console.error('Error updating owner:', error);
+              //console.error('Error updating owner:', error);
               toast.error("Failed to update owner");
             }
           };
@@ -1202,7 +1202,7 @@ const rolename = parsedData?.rolename;
               
               table.options.meta?.updateData?.(index, 'IsUnplanned', String(newValue));
             } catch (error) {
-              console.error('Error updating IsUnplanned:', error);
+              //console.error('Error updating IsUnplanned:', error);
               toast.error("Failed to update task status");
             }
           };
@@ -1429,7 +1429,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-            console.error('Error updating task name:', error);
+         //   console.error('Error updating task name:', error);
             toast.error("Failed to update task name");
           }
         }
@@ -1458,7 +1458,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-            console.error('Error updating task description:', error);
+           // console.error('Error updating task description:', error);
             toast.error("Failed to update task description");
           }
         }
@@ -1489,7 +1489,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-            console.error('Error updating actual SP:', error);
+           // console.error('Error updating actual SP:', error);
             toast.error("Failed to update actual SP");
           }
         }
@@ -1520,7 +1520,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-            console.error('Error updating estimated SP:', error);
+           // console.error('Error updating estimated SP:', error);
             toast.error("Failed to update estimated SP");
           }
         }
@@ -1551,7 +1551,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-            console.error('Error updating IsUnplanned:', error);
+           // console.error('Error updating IsUnplanned:', error);
             toast.error("Failed to update task status");
           }
         }
@@ -1562,7 +1562,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-            console.error('error updating dynamic column:', error);
+          //  console.error('error updating dynamic column:', error);
           }
         }
       }
@@ -1574,7 +1574,7 @@ const rolename = parsedData?.rolename;
 
     try {
       if (!currentTaskGroupId) {
-        console.error('No current task group ID available to create task');
+      //  console.error('No current task group ID available to create task');
         setAdding(false);
         return;
       }
@@ -1605,7 +1605,7 @@ const rolename = parsedData?.rolename;
       syncColvalueList(refetchResult?.data)
       
     } catch (error) {
-      console.error('Error creating task:', error)
+     // console.error('Error creating task:', error)
     } finally {
       setAdding(false)
     }

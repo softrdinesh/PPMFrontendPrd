@@ -110,7 +110,7 @@ const CreateColumnMenu = ({
       )
       return response.data
     } catch (error) {
-      console.error('Error fetching updated columns:', error)
+    //  console.error('Error fetching updated columns:', error)
       throw error
     }
   }
@@ -162,7 +162,7 @@ const CreateColumnMenu = ({
       setSelectedColumnType(null)
       reset()
     } catch (error) {
-      console.error('Error creating dynamic column:', error)
+    //  console.error('Error creating dynamic column:', error)
       toast.error("Failed to create column")
     }
   }

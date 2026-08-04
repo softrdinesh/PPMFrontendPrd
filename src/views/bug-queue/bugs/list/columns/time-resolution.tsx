@@ -109,7 +109,7 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         id: bug?.BugID?.toString()
       })
     } catch (error) {
-      console.error('Failed to update overtime in backend:', error)
+  //    console.error('Failed to update overtime in backend:', error)
     }
   }
 

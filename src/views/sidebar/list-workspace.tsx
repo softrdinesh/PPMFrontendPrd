@@ -126,7 +126,7 @@ const WorkspaceItem = ({ workspaces }: { workspaces: WorkspaceListItem }) => {
         }
       }
     } catch (error) {
-      console.error('Delete Workspace Error :', error)
+      //console.error('Delete Workspace Error :', error)
     }
   }
 
@@ -219,7 +219,7 @@ const rolename = parsedData?.rolename;
     setShowPaymentExpiredDialog(true)
     return false
   } catch (error) {
-    console.error('Error parsing payment status:', error)
+ //   console.error('Error parsing payment status:', error)
     setShowPaymentExpiredDialog(true)
     return false
   }

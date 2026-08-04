@@ -103,7 +103,7 @@ const fetchStatusLookupList = async (): Promise<StatusLookupItem[]> => {
     // Return the array directly since your API returns an array
     return response.data;
   } catch (error) {
-    console.error('Error fetching status lookup list:', error);
+   // console.error('Error fetching status lookup list:', error);
     throw error;
   }
 }
@@ -126,7 +126,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
       
     return { status: true, data: response.data };
   } catch (error) {
-    console.error('API call failed:', error);
+  //  console.error('API call failed:', error);
     // Show error toaster
     toast.error('Failed to update value');
     throw error;
@@ -152,7 +152,7 @@ const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusR
     // FIXED: Return the response data directly
     return response.data;
   } catch (error) {
-    console.error('Error creating status:', error);
+  //  console.error('Error creating status:', error);
     throw error;
   }
 }
@@ -176,7 +176,7 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
-    console.error('Error updating status:', error);
+   // console.error('Error updating status:', error);
     toast.error('Failed to update status');
     throw error;
   }
@@ -199,7 +199,7 @@ const deleteStatus = async (payload: DeleteStatusPayload): Promise<DeleteStatusR
     return response.data;
    
   } catch (error) {
-    console.error('Error deleting status:', error);
+   // console.error('Error deleting status:', error);
     toast.error('Failed to delete status');
     throw error;
   }
@@ -283,16 +283,16 @@ const sprintGroupID = (row as any).SprintGroupID
             refetch();
           }
         } else {
-          console.error('Missing required values for dynamic value insertion:', {
-            dynamicColumnID,
-            loginuserID,
-            sprintID,
-            sprintGroupID
-          });
+          // console.error('Missing required values for dynamic value insertion:', {
+          //   dynamicColumnID,
+          //   loginuserID,
+          //   sprintID,
+          //   sprintGroupID
+          // });
         }
       } catch (error) {
-        console.error('Failed to insert dynamic value:', error);
-        // Don't throw error to not break the flow
+       // console.error('Failed to insert dynamic value:', error);
+      // Don't throw error to not break the flow
       }
     } else {
       // If not a dynamic column, just refetch
@@ -600,7 +600,7 @@ const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
         handleFormClose();
       }
     } catch (error) {
-      console.error('Failed to delete status:', error);
+     // console.error('Failed to delete status:', error);
     } finally {
       setDeleteDialogOpen(false);
       setStatusToDelete(null);

@@ -137,10 +137,10 @@ const RegisterComponent = () => {
           setLocation({ latitude, longitude })
         },
         error => {
-          console.error('Error getting location:', {
-            code: error.code,
-            message: error.message
-          })
+        //  // console.error('Error getting location:', {
+        //     code: error.code,
+        //     message: error.message
+        //   })
           
           // Set location to null if error occurs
           // This allows the form to still be submitted without location data

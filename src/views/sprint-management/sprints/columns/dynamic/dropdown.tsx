@@ -87,7 +87,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       toast.success('Value created successfully');
       return response.data;
     } catch (error) {
-      console.error('API call failed:', error);
+     // console.error('API call failed:', error);
       toast.error('Failed to create value');
       throw error;
     }
@@ -176,7 +176,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
         handleClose();
       }
     } catch (error) {
-      console.error('error selecting dropdown value :', error)
+    //  console.error('error selecting dropdown value :', error)
       toast.error('Failed to select value');
     }
   }
@@ -221,7 +221,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       await refetchSprintValues();
     }
   } catch (error) {
-    console.error('error deleting value :', error);
+   // console.error('error deleting value :', error);
     toast.error('Failed to delete value');
   }
 }
@@ -255,7 +255,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
         setCreateMenu(false);
       }
     } catch (error) {
-      console.error('error creating dropdown value :', error);
+   //   console.error('error creating dropdown value :', error);
     }
   };
 

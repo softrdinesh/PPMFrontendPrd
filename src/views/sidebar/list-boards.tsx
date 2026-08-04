@@ -108,7 +108,7 @@ const WorkspaceItem = ({ workspace, onBoardClick }: { workspace: WorkspaceListIt
         }
       }
     } catch (error) {
-      console.error('Delete Workspace Error :', error)
+  //    console.error('Delete Workspace Error :', error)
     }
   }
 

@@ -118,7 +118,7 @@ const CreateColumnMenu = ({
       handleClose()
       
     } catch (error) {
-      console.error('Failed to create dynamic column:', error)
+    //  console.error('Failed to create dynamic column:', error)
       // You can add error handling here (show toast, etc.)
     }
   }

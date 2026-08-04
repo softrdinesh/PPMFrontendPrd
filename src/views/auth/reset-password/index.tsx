@@ -95,7 +95,7 @@ const ResetPasswordPage = ({ email }: { email: string }) => {
         }
       })
       .catch(err => {
-        console.error('ERROR', err)
+    //    console.error('ERROR', err)
       })
     setIsLoggingIn(false)
   }

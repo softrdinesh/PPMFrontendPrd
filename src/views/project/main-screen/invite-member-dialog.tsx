@@ -79,7 +79,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
         
 
       } catch (error) {
-        console.error('Error parsing user data:', error);
+       // console.error('Error parsing user data:', error);
       }
     }
   }, []);

@@ -89,7 +89,7 @@ const rolename = parsedData?.rolename;
       toast.success('Value created successfully');
       return response.data;
     } catch (error) {
-      console.error('API call failed:', error);
+   //   console.error('API call failed:', error);
       toast.error('Failed to create value');
       throw error;
     }
@@ -178,7 +178,7 @@ const rolename = parsedData?.rolename;
         handleClose();
       // }
     } catch (error) {
-      console.error('error selecting dropdown value :', error)
+      //console.error('error selecting dropdown value :', error)
       toast.error('Failed to select value');
     }
   }
@@ -222,7 +222,7 @@ const rolename = parsedData?.rolename;
       await refetchSprintValues();
     }
   } catch (error) {
-    console.error('error deleting value :', error);
+  //  console.error('error deleting value :', error);
     toast.error('Failed to delete value');
   }
 }
@@ -256,7 +256,7 @@ const rolename = parsedData?.rolename;
         setCreateMenu(false);
       }
     } catch (error) {
-      console.error('error creating dropdown value :', error);
+  //    console.error('error creating dropdown value :', error);
     }
   };
 

@@ -113,7 +113,7 @@ const NewTaskDialog = ({
         }
       }
     } catch (error) {
-      console.error('Error parsing localStorage:', error)
+     // console.error('Error parsing localStorage:', error)
       setShowPaymentExpiredDialog(true)
       return false
     }
@@ -174,7 +174,7 @@ const NewTaskDialog = ({
        // toast.success('Task group created successfully')
       }
     } catch (error) {
-      console.error('Error submitting form:', error)
+     // console.error('Error submitting form:', error)
       toast.error('Failed to save task group. Please try again.')
     }
   }

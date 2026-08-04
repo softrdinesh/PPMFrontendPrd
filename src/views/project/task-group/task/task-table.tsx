@@ -337,7 +337,7 @@ toast.success('Task Updated Successfully!')
               refetch()
             }
           } catch (error) {
-            console.error('error :', error)
+      //      console.error('error :', error)
           }
         }
 

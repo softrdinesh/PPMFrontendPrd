@@ -47,7 +47,7 @@ const SprintGroupID = (rowData as any)?.SprintGroupID;
       // Show success toaster
       toast.success('Value updated successfully');
     } catch (error) {
-      console.error('API call failed:', error);
+    //  console.error('API call failed:', error);
       // Show error toaster
       toast.error('Failed to update value');
     }
