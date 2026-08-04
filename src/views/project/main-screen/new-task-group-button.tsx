@@ -53,7 +53,7 @@ console.log(projectlength,'fdf');
         }
       }
     } catch (error) {
-      console.error('Error parsing localStorage:', error)
+     // console.error('Error parsing localStorage:', error)
       setShowPaymentExpiredDialog(true)
       return false
     }
@@ -83,7 +83,7 @@ const categoryCount = projectlength.projectlength?.length || 0;
       }
     }
   } catch (error) {
-    console.error('Error checking payment status:', error)
+   // console.error('Error checking payment status:', error)
   }
       handleOpen()
 
@@ -108,7 +108,7 @@ const categoryCount = projectlength.projectlength?.length || 0;
           parsed.isExpired = false
           localStorage.setItem('paymentStatus', JSON.stringify(parsed))
         } catch (error) {
-          console.error('Error updating payment status:', error)
+        //  console.error('Error updating payment status:', error)
         }
       } else {
         // Create new payment status if not exists
