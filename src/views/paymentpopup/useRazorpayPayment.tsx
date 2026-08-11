@@ -228,7 +228,7 @@ const paymentcheck = async () => {
     setPaymentStatus('')
 
     const options = {
-      key: 'rzp_test_S2PQXDlmtoFOad',
+      key: 'rzp_live_SbmuGIVwR7SoUR',
       name: 'Your Company Name',
       description: 'Subscription Payment',
       image: logoImage,
