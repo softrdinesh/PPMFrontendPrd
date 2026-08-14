@@ -146,14 +146,36 @@ const WorkspaceItem = ({ workspaces }: { workspaces: WorkspaceListItem }) => {
    const handleCreateWorkspaceClick = () => {
      const workspaceCount = workspace?.length ?? 0
 
-    if (workspaceCount >= 1) {
-    const canOpen = checkPaymentStatus()
-handleOpenClose()
-        if (canOpen) {
-      setIsModalOpen(true)
+//     if (workspaceCount >= 1) {
+//     const canOpen = checkPaymentStatus()
+// handleOpenClose()
+//         if (canOpen) {
+//       setIsModalOpen(true)
+//     }
+//       return
+//     }
+
+ try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.workspaceCount !== undefined && parsed.workspaceCount !== null) {
+     //   console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
+        if (workspaceCount >= parsed.workspaceCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
     }
-      return
-    }
+  } catch (error) {
+   // console.error('Error checking payment status:', error)
+  }
+
+
+
+
+
+
 
     setIsModalOpen(true)
     handleOpenClose()
@@ -163,17 +185,41 @@ handleOpenClose()
    const handleCreateproject= () => {
      const projectcount = projects?.length ?? 0
 
-    if (projectcount >= 1) {
-    const canOpen = checkPaymentStatus()
-handleOpenClose()
-        if (canOpen) {
-      setOpen1(true)
-    }
-      return
-    }
 
-    setOpen1(true)
-    handleOpenClose()
+  try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.projectCount !== undefined && parsed.projectCount !== null) {
+     //   console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
+        if (projectcount >= parsed.projectCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
+    }
+  } catch (error) {
+   // console.error('Error checking payment status:', error)
+  }
+
+  setOpen1(true)
+   handleOpenClose()
+
+
+
+
+
+//     if (projectcount >= 1) {
+//     const canOpen = checkPaymentStatus()
+// handleOpenClose()
+//         if (canOpen) {
+//       setOpen1(true)
+//     }
+//       return
+//     }
+
+//     setOpen1(true)
+//     handleOpenClose()
   }
 
 

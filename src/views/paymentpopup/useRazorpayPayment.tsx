@@ -134,10 +134,10 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
   }, [loadRazorpayScript])
 const paymentcheck = async () => {
   const Baseurl = process.env.NEXT_PUBLIC_API_URL1
-  const userid = localStorage.getItem('userData')
+  const userid = localStorage.getItem('Role')
   const value= JSON.parse(userid as string)
   try {
-    const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userData?.UserID}`)
+    const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userID}`)
 
     
     if (res.data && res.data.length > 0) {
@@ -199,6 +199,7 @@ const paymentcheck = async () => {
         const paymentData = {
           isExpired: true
         }
+        console.log(paymentData,'paymentData');
         try {
           localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
         } catch (e) {
@@ -229,6 +230,7 @@ const paymentcheck = async () => {
 
     const options = {
      key: 'rzp_test_TPWMZTWN2kapgX',
+      //key: `${process.env.NEXT_PUBLIC_API_Razorkey}`,
 
       
       name: 'Your Company Name',
@@ -261,23 +263,22 @@ const paymentcheck = async () => {
           if (reason === undefined) {
             setPaymentStatus('Payment Cancelled')
             toast.error('Payment cancelled. Please complete the payment to activate your subscription.')
-                onPaymentFailure?.()
+               onPaymentFailure?.()
 
-           // updatePaymentConfirmation(userId, '', 'Cancelled')
-              // .then(res => {
-              //   onPaymentFailure?.()
-              // })
-              // .catch(err => {
-              //  // console.error('Error updating cancellation confirmation:', err)
-              //   onPaymentFailure?.()
-              // })
+            // updatePaymentConfirmation(userId, '', 'Cancelled')
+            //   .then(res => {
+            //     onPaymentFailure?.()
+            //   })
+            //   .catch(err => {
+            //    // console.error('Error updating cancellation confirmation:', err)
+            //     onPaymentFailure?.()
+            //   })
           } else if (reason === 'timeout') {
             setPaymentStatus('Payment Timed Out')
             toast.error('Payment timed out. Please try again.')
-           onPaymentFailure?.()
-         
-         
-           // updatePaymentConfirmation(userId, '', 'Timeout')
+                 onPaymentFailure?.()
+
+            // updatePaymentConfirmation(userId, '', 'Timeout')
             //   .then(res => {
             //     onPaymentFailure?.()
             //   })
@@ -288,7 +289,8 @@ const paymentcheck = async () => {
           } else {
             setPaymentStatus('Payment Failed')
             toast.error('Payment failed. Please check your payment details and try again.')
-  onPaymentFailure?.()
+                 onPaymentFailure?.()
+
             // updatePaymentConfirmation(userId, '', 'Failed')
             //   .then(res => {
             //     onPaymentFailure?.()
@@ -320,7 +322,8 @@ const paymentcheck = async () => {
 
         const failedPaymentId =
           response?.error?.metadata?.payment_id ?? response?.error?.metadata?.paymentId ?? ''
-   onPaymentFailure?.()
+                onPaymentFailure?.()
+
         // updatePaymentConfirmation(userId, failedPaymentId, 'Failed')
         //   .then(res => {
         //     onPaymentFailure?.()

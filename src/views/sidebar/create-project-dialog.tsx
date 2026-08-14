@@ -49,19 +49,7 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
   const [paymentStatus, setPaymentStatus] = useState("")
   const { profile,user } = useAuth()
   const logoImage = "https://appsuresolutions.netlify.app/assets/header_logo-Bj3Dgdu3.svg" // Replace with your actual logo
-  const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
-    userId: Number(user?.id),
-    onPaymentSuccess: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-      setShowPaymentExpiredDialog(false)
-    },
-    onPaymentFailure: () => {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
-      setShowPaymentExpiredDialog(true)
-    }
-  })
+
   const {
     handleSubmit,
     control,
@@ -87,78 +75,59 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
     }
   }
 
-  const checkPaymentStatus = () => {
-    const paymentStatus = localStorage.getItem('paymentStatus')
+  // const checkPaymentStatus = () => {
+  //   const paymentStatus = localStorage.getItem('paymentStatus')
     
-    // Projects length 0 -> allow creating one project (no payment popup)
-    if ((projects?.length ?? 0) === 0) {
-      setShowPaymentExpiredDialog(false)
-      return true
-    }
+  //   // Projects length 0 -> allow creating one project (no payment popup)
+  //   if ((projects?.length ?? 0) === 0) {
+  //     setShowPaymentExpiredDialog(false)
+  //     return true
+  //   }
 
-    // Projects length >= 1 -> block and show payment popup
-    if ((projects?.length ?? 0) >= 1) {
-      setShowPaymentExpiredDialog(true)
-      return false
-    }
+  //   // Projects length >= 1 -> block and show payment popup
+  //   if ((projects?.length ?? 0) >= 1) {
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
 
-    try {
-      if (paymentStatus) {
-        const parsed = JSON.parse(paymentStatus)
-        if (parsed.isExpired === true) {
-          setShowPaymentExpiredDialog(true)
-          return false
-        }
+  //   try {
+  //     if (paymentStatus) {
+  //       const parsed = JSON.parse(paymentStatus)
+  //       if (parsed.isExpired === true) {
+  //         setShowPaymentExpiredDialog(true)
+  //         return false
+  //       }
         
-        if (parsed.isExpired === false) {
-          setShowPaymentExpiredDialog(false)
-          return true
-        }
-        setShowPaymentExpiredDialog(true)
-        return false
-      }
-      setShowPaymentExpiredDialog(false)
-      return true
-    } catch (error) {
-   //   console.error('Error parsing payment status:', error)
-      setShowPaymentExpiredDialog(true)
-      return false
-    }
-  }
+  //       if (parsed.isExpired === false) {
+  //         setShowPaymentExpiredDialog(false)
+  //         return true
+  //       }
+  //       setShowPaymentExpiredDialog(true)
+  //       return false
+  //     }
+  //     setShowPaymentExpiredDialog(false)
+  //     return true
+  //   } catch (error) {
+  //  //   console.error('Error parsing payment status:', error)
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
+  // }
 
   // Use useEffect to check payment status when 'open' changes
   useEffect(() => {
     if (open) {
-      const canOpen = checkPaymentStatus()
-      setShouldOpenDialog(canOpen)
+     // const canOpen = checkPaymentStatus()
+      setShouldOpenDialog(open)
     } else {
       setShouldOpenDialog(false)
-      setShowPaymentExpiredDialog(false)
     }
   }, [open, projects?.length])
 
-  const handleClosePaymentDialog = () => {
-    setShowPaymentExpiredDialog(false)
-    onCloseModal()
-  }
-
-  const handleRenewSubscription = () => {
-    // Add your navigation logic here
-    // Example: router.push('/subscription') or window.location.href = '/subscription'
-    setShowPaymentExpiredDialog(false)
-    onCloseModal()
-  }
 
   return (
     <>
-       <SubscriptionExpiredDialog
-        open={showPaymentExpiredDialog}
-        onClose={handleClosePaymentDialog}
-        onRenew={generateRazorPayOrder}
-        isLoading={isLoading}
-        razorpayLoaded={razorpayLoaded}
-      />
-
+       
     <Dialog open={shouldOpenDialog} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
       <Box
         bgcolor={'background.default'}
