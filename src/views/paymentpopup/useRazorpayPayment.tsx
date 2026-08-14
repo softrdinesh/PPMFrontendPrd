@@ -263,14 +263,9 @@ const paymentcheck = async () => {
     setPaymentStatus('')
 
     const options = {
-<<<<<<< HEAD
-      key: 'rzp_live_TOlQ9r9Ls0G6G8',
-=======
-     key: 'rzp_test_TPWMZTWN2kapgX',
-      //key: `${process.env.NEXT_PUBLIC_API_Razorkey}`,
 
-      
->>>>>>> source-link/main
+      key: 'rzp_live_TOlQ9r9Ls0G6G8',
+
       name: 'Your Company Name',
       description: 'Subscription Payment',
       image: logoImage,
