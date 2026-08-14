@@ -85,7 +85,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
 
     // Check if we have required data
     if (!rowData?.TaskID || !user?.id) {
-      console.warn('TaskNameCell: Missing required data for WebSocket connection')
+    //  console.warn('TaskNameCell: Missing required data for WebSocket connection')
       return
     }
 
@@ -108,7 +108,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
         clearTimeout(connectionTimeout)
         isConnectingRef.current = false
         reconnectAttemptsRef.current = 0
-        console.log('TaskNameCell: WebSocket connected successfully')
+      //  console.log('TaskNameCell: WebSocket connected successfully')
       }
 
       ws.onmessage = async (event) => {
@@ -205,7 +205,7 @@ const TaskNameCell = ({ renderTextField, rowData, refetch }: TaskNameCellProps) 
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1
           const delay = Math.min(reconnectInterval * Math.pow(1.5, reconnectAttemptsRef.current - 1), 30000)
-          console.log(`TaskNameCell: Attempting to reconnect in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`)
+        //  console.log(`TaskNameCell: Attempting to reconnect in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`)
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connectWebSocket()

@@ -155,7 +155,7 @@ const DynamicTableHeader = ({
       
       // ✅ Validate groupID
       if (!groupID) {
-        toast.error('Group ID not found. Please refresh the page and try again.');
+        toast.error('Bug detail not found. Please add Bug detail and delete the Column.');
         //console.error('Group ID is missing:', { groupData, column });
         return;
       }

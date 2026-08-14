@@ -39,7 +39,7 @@ const ProjectInvitePeople = ({ IsOpen, users = [] }: { IsOpen: boolean; users?: 
             <Typography variant='h6' fontWeight={800}>
               Users
             </Typography>
-            {role?.RoleName === 'Admin' && (
+            {role?.RoleName == 'Admin' && (
               <CustomButton
                 onClick={handleInviteUser}
                 variant='contained'

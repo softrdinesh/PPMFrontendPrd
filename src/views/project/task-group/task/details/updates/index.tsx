@@ -619,7 +619,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
       }
 
       ws.onclose = (event) => {
-        console.log(`ProjectUpdates WebSocket closed with code: ${event.code}, reason: ${event.reason}`)
+       // console.log(`ProjectUpdates WebSocket closed with code: ${event.code}, reason: ${event.reason}`)
         isConnectingRef.current = false
         socketRef.current = null
 
@@ -679,7 +679,7 @@ const ProjectUpdates = ({ taskData, onRefreshMessageCount }: ProjectUpdatesProps
     (message: any) => {
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
         try {
-              console.log('Sending WebSocket message:', message) // ADDED
+            //  console.log('Sending WebSocket message:', message) // ADDED
 
           socketRef.current.send(JSON.stringify(message))
         } catch (sendError) {

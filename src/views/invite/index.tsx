@@ -28,9 +28,8 @@ const InvitationManagementPage = ({ invitationID }: { invitationID: string }) =>
 const [accept, setaccept] = useState(false)
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [showAccessDeniedPopup, setShowAccessDeniedPopup] = useState(false)
-
   const auth = useAuth()
-
+const [acceptemail, setacceptemail] = useState(false)
 
   const handleUserLogout = async () => {
     // Redirect to login page
@@ -54,14 +53,15 @@ const [accept, setaccept] = useState(false)
         if (response?.data?.projectID) {
           refetchWorkspaces()
              if (response?.statusCode == 202) {
-           
-  toast.success("The invitation has already been accepted", { duration: 5000 })
+           setaccept(true)
+     //toast.success("The invitation has already been accepted", { duration: 5000 })
           }
               if (response?.statusCode == 200) {
-   
+                 setacceptemail(true)
               toast.success(`Invitation accepted successfully!`,{ duration: 5000 })   
+                      //  router.replace(`/project/${response?.data?.projectID}`)
+
           }
-          router.replace(`/project/${response?.data?.projectID}`)
         } else {
           if (response?.statusCode === 307) {
             if (response?.data?.redirect === '/register') {
@@ -156,7 +156,7 @@ const [accept, setaccept] = useState(false)
       {/* // ) : {
      
       // )} */}
-
+{/* already accept popup */}
 <Dialog
      open={accept} onClose={() => setaccept(false)}
       TransitionComponent={Zoom}
@@ -195,26 +195,21 @@ const [accept, setaccept] = useState(false)
 
           {/* Message */}
           <Typography variant="body2" className="text-center mb-8" color="text.secondary" sx={{ maxWidth: 360 }}>
-            This invitation has already been accepted. You can head over to your dashboard to continue.
-          </Typography>
+This invitation has already been accepted. You can head over to the project page to continue.          </Typography>
 
           {/* Buttons */}
           <Box className="flex gap-3 w-full">
-            {/* <CustomButton
-              circular
-              variant="outlined"
-              size="large"
-              fullWidth
-              onClick={() => setShowAccessDeniedPopup(false)}
-            >
-              Cancel
-            </CustomButton> */}
+          
             <CustomButton
               circular
               variant="contained"
               size="large"
               fullWidth
-onClick={redirect}
+
+onClick={() => {
+  setaccept(false)
+  router.replace(`/project/${response?.data?.projectID}`)
+}}
               sx={{
                 backgroundColor: 'primary.main',
                 fontWeight: 700,
@@ -231,6 +226,84 @@ onClick={redirect}
         </Box>
       </Box>
     </Dialog>
+
+{/* accept */}
+<Dialog
+     open={acceptemail} onClose={() => setacceptemail(false)}
+      TransitionComponent={Zoom}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        backdrop: {
+          sx: { backdropFilter: 'blur(4px)', backgroundColor: 'rgba(15,15,20,0.55)' }
+        }
+      }}
+      PaperProps={{
+        sx: {
+          borderRadius: 5,
+          boxShadow: '0 24px 70px rgba(0,0,0,0.25)',
+          overflow: 'hidden'
+        }
+      }}
+    >
+      <Box bgcolor={'background.default'}>
+        <Box className="flex flex-col items-center justify-center px-10 py-12">
+          {/* Illustration */}
+          <Box className="mb-2" sx={{ width: '100%', maxWidth: 220 }}>
+            <Image
+              src={acceptedInvite}
+              alt='Invitation already accepted'
+              width={220}
+              height={220}
+              style={{ width: '100%', height: 'auto' }}
+            />
+          </Box>
+
+          {/* Title */}
+          <Typography variant='h5' fontWeight={800} className="mb-2 text-center">
+            Invitation Accepted
+          </Typography>
+
+          {/* Message */}
+          <Typography variant="body2" className="text-center mb-8" color="text.secondary" sx={{ maxWidth: 360 }}>
+This invitation has already been successfully accepted.
+
+
+        </Typography>
+
+          {/* Buttons */}
+          <Box className="flex gap-3 w-full">
+          
+            <CustomButton
+              circular
+              variant="contained"
+              size="large"
+              fullWidth
+
+onClick={() => {
+  setacceptemail(false)
+  router.replace(`/project/${response?.data?.projectID}`)
+}}
+              sx={{
+                backgroundColor: 'primary.main',
+                fontWeight: 700,
+                py: 1.4,
+                boxShadow: '0 8px 20px rgba(25,118,210,0.35)',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                  boxShadow: '0 10px 24px rgba(25,118,210,0.45)'
+                }
+              }}
+            >Okay
+            </CustomButton>
+          </Box>
+        </Box>
+      </Box>
+    </Dialog>
+
+
+
+
 
 
 <Dialog
@@ -271,20 +344,11 @@ onClick={redirect}
 
           {/* Message */}
           <Typography variant="body2" className="text-center mb-8" color="text.secondary" sx={{ maxWidth: 360 }}>
-            You already have an account. Please log in to accept this invitation.
-          </Typography>
+You already have an account. Please log in with the correct account and accept the invitation.          </Typography>
 
           {/* Buttons */}
           <Box className="flex gap-3 w-full">
-            {/* <CustomButton
-              circular
-              variant="outlined"
-              size="large"
-              fullWidth
-              onClick={() => setShowAccessDeniedPopup(false)}
-            >
-              Cancel
-            </CustomButton> */}
+            
             <CustomButton
               circular
               variant="contained"

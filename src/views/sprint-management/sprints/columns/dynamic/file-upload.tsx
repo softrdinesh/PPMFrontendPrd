@@ -407,7 +407,6 @@ const DynamicFiles = ({
   }
   
 const onSubmit = async (data: FormValidateType) => {
-  console.log(data,'f');
   if (!data?.file) {
     try {
       const formData = new FormData()

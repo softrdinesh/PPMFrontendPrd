@@ -1396,6 +1396,8 @@ const rolename = parsedData?.rolename;
     state: {
     rowSelection: rowSelection  // <-- CHANGED
     },
+        getRowId: (row) => (row?.SprintTaskID ?? row?.taskID)?.toString(),
+
     getRowCanExpand: () => true,
     enableRowSelection: true,
   onRowSelectionChange: setRowSelection,  // <-- CHANGED
@@ -1622,6 +1624,10 @@ const rolename = parsedData?.rolename;
     }
   }, [enabled, taskGroupIds.join(','), currentTaskGroupId]);
 
+    const selectedRowIds = useMemo(
+    () => Object.keys(rowSelection).filter(key => rowSelection[key]),
+    [rowSelection]
+  )
   if (sprintTaskInfoApi?.isLoading || sprintTaskGroupInfoApi?.isLoading) {
     return (
       <div className='w-full flex justify-center'>
@@ -1636,7 +1642,7 @@ const rolename = parsedData?.rolename;
 
   // FIX: Convert Record<string, boolean> to string[] for DeleteTasksComponent
   // const selectedRowIds = Object.keys(selectedRows).filter(key => selectedRows[key])
-const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key])
+// const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key])
 
   return (
     <div className='px-3'>

@@ -111,10 +111,10 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         >
           Recent Activity
         </MenuItem>
-        {profile == 'projects' && rolename !== 'Viewer' &&
+        {profile == 'projects' && rolename !== 'Viewer' && rolename !== 'Member'&&
           <MenuItem
             href='/super-admin'
-            icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
+icon={<Icon icon={'mage:security-shield'} className='h-6 w-6 text-white' />}
           >
             Admin
           </MenuItem>
@@ -122,9 +122,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         {profile == 'projects' &&
           <MenuItem
             href='/feedback'
-            icon={<Icon icon={'mage:dashboard-4'} className='h-6 w-6 text-white' />}
+icon={<Icon icon={'solar:clipboard-check-outline'} className='h-6 w-6 text-white' />}
           >
-            Feed Back
+            Feedback
           </MenuItem>
         }
         <Divider className='my-4 bg-white dark:bg-actionHover' />

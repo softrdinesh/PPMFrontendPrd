@@ -178,7 +178,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   // ** Change Profiles
   const changeProfiles = (val?: Profiles) => {
     const currentProfile = val || window.localStorage.getItem('profile') || 'projects'
-console.log(user,'responseData');
+// console.log(user,'responseData');
 
 
     if (currentProfile === 'projects') {

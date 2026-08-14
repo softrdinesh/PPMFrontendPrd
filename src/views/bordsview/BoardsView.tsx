@@ -724,21 +724,21 @@ const fetchProjectTasks = async () => {
     }
   } catch (error: any) {
    // console.error('Error fetching project tasks:', error);
-    toast.error('Failed to load project tasks from API', {
-      position: 'top-center',
-      duration: 4000,
-      style: {
-        background: 'white',
-        color: 'black',
-        padding: '12px 20px',
-        borderRadius: '12px',
-        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-        border: '1px solid rgba(0, 0, 0, 0.08)',
-        maxWidth: '400px',
-        fontSize: '14px',
-        fontWeight: 500,
-      },
-    });
+    // toast.error('Failed to load project tasks from API', {
+    //   position: 'top-center',
+    //   duration: 4000,
+    //   style: {
+    //     background: 'white',
+    //     color: 'black',
+    //     padding: '12px 20px',
+    //     borderRadius: '12px',
+    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+    //     maxWidth: '400px',
+    //     fontSize: '14px',
+    //     fontWeight: 500,
+    //   },
+    // });
   }
 };
 
@@ -853,21 +853,21 @@ const fetchTeamMembers = async () => {
     }
   } catch (error: any) {
    // console.error('Error fetching team members:', error);
-    toast.error('Failed to load team members from API', {
-      position: 'top-center',
-      duration: 4000,
-      style: {
-        background: 'white',
-        color: 'black',
-        padding: '12px 20px',
-        borderRadius: '12px',
-        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-        border: '1px solid rgba(0, 0, 0, 0.08)',
-        maxWidth: '400px',
-        fontSize: '14px',
-        fontWeight: 500,
-      },
-    });
+    // toast.error('Failed to load team members from API', {
+    //   position: 'top-center',
+    //   duration: 4000,
+    //   style: {
+    //     background: 'white',
+    //     color: 'black',
+    //     padding: '12px 20px',
+    //     borderRadius: '12px',
+    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+    //     maxWidth: '400px',
+    //     fontSize: '14px',
+    //     fontWeight: 500,
+    //   },
+    // });
     setTeamMembers([]);
   } finally {
     setTeamMembersLoading(false);
@@ -984,21 +984,21 @@ const fetchTeamMembers = async () => {
       }
     } catch (error: any) {
      // console.error('Error fetching priorities:', error)
-      toast.error('Failed to load priorities from API', {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      })
+      // toast.error('Failed to load priorities from API', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
     } finally {
       setPriorityLoading(false)
     }
@@ -1060,21 +1060,21 @@ const fetchTeamMembers = async () => {
       }
     } catch (error: any) {
      // console.error('Error fetching tasks:', error)
-      toast.error('Failed to load tasks from API', {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      })
+      // toast.error('Failed to load tasks from API', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
     }
   }
 
@@ -1120,21 +1120,21 @@ const fetchTeamMembers = async () => {
     //  console.error('Error fetching categories:', error)
       setError('Failed to load categories from API')
       
-      toast.error('Failed to load categories from API', {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      })
+      // toast.error('Failed to load categories from API', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
       
       const defaultColumns: Column[] = [
         { 
@@ -1332,21 +1332,21 @@ useEffect(() => {
         }
       } catch (error) {
        // console.error('Error filtering data by user:', error);
-        toast.error('Failed to load user data', {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        });
+        // toast.error('Failed to load user data', {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // });
       }
     };
 
@@ -1396,21 +1396,21 @@ useEffect(() => {
       updatedTasks[columnId] = [...updatedTasks[columnId], movingTask] // FIX: use movingTask instead of taskToMove
       setTasks(updatedTasks)
 
-      toast.success('Task moved successfully', {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      })
+      // toast.success('Task moved successfully', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
 
       await fetchCategories()
     } else {
@@ -1429,21 +1429,21 @@ useEffect(() => {
       errorMessage = error.message || 'Unknown error occurred'
     }
 
-    toast.error(errorMessage, {
-      position: 'top-center',
-      duration: 4000,
-      style: {
-        background: 'white',
-        color: 'black',
-        padding: '12px 20px',
-        borderRadius: '12px',
-        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-        border: '1px solid rgba(0, 0, 0, 0.08)',
-        maxWidth: '400px',
-        fontSize: '14px',
-        fontWeight: 500,
-      },
-    })
+    // toast.error(errorMessage, {
+    //   position: 'top-center',
+    //   duration: 4000,
+    //   style: {
+    //     background: 'white',
+    //     color: 'black',
+    //     padding: '12px 20px',
+    //     borderRadius: '12px',
+    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+    //     maxWidth: '400px',
+    //     fontSize: '14px',
+    //     fontWeight: 500,
+    //   },
+    // })
   }
 }
   }
@@ -1640,21 +1640,21 @@ try {
         setSelectedColor('#2196F3')
         setCategoryValidationErrors({})
         
-        toast.success('Category created successfully', {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        })
+        // toast.success('Category created successfully', {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
       } else {
         throw new Error('Failed to create category')
       }
@@ -1676,21 +1676,21 @@ try {
       }
       
       if (!categoryValidationErrors.name) {
-        toast.error(errorMessage, {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        })
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
       }
     } finally {
       setCategoryLoading(false)
@@ -1755,21 +1755,21 @@ try {
           errorMessage = error.message || 'Unknown error occurred'
         }
         
-        toast.error(errorMessage, {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        })
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
       }
     }
   }
@@ -1784,21 +1784,21 @@ try {
       const tasksInCategory = tasks[categoryToDelete.id] || []
       
       if (tasksInCategory.length > 0) {
-        toast.error(`Cannot delete category with ${tasksInCategory.length} task(s). Move or delete tasks first.`, {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        })
+        // toast.error(`Cannot delete category with ${tasksInCategory.length} task(s). Move or delete tasks first.`, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
         setDeleteCategoryDialog(false)
         setCategoryToDelete(null)
         return
@@ -1850,21 +1850,21 @@ try {
           errorMessage = error.message || 'Unknown error occurred'
         }
         
-        toast.error(errorMessage, {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        })
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
       }
     }
   }
@@ -1895,21 +1895,21 @@ try {
     if (editingTask && editingTaskColumn && user?.id) {
       try {
         if (!editingTask.title || !editingTask.assigneeId) {
-          toast.error('Please fill in all required fields', {
-            position: 'top-center',
-            duration: 4000,
-            style: {
-              background: 'white',
-              color: 'black',
-              padding: '12px 20px',
-              borderRadius: '12px',
-              boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              maxWidth: '400px',
-              fontSize: '14px',
-              fontWeight: 500,
-            },
-          });
+          // toast.error('Please fill in all required fields', {
+          //   position: 'top-center',
+          //   duration: 4000,
+          //   style: {
+          //     background: 'white',
+          //     color: 'black',
+          //     padding: '12px 20px',
+          //     borderRadius: '12px',
+          //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+          //     border: '1px solid rgba(0, 0, 0, 0.08)',
+          //     maxWidth: '400px',
+          //     fontSize: '14px',
+          //     fontWeight: 500,
+          //   },
+          // });
           return;
         }
 
@@ -1917,21 +1917,21 @@ try {
           const maxSize = 5 * 1024 * 1024;
           
           if (selectedFile.size > maxSize) {
-            toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
-              position: 'top-center',
-              duration: 4000,
-              style: {
-                background: 'white',
-                color: 'black',
-                padding: '12px 20px',
-                borderRadius: '12px',
-                boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
-                maxWidth: '400px',
-                fontSize: '14px',
-                fontWeight: 500,
-              },
-            });
+            // toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
+            //   position: 'top-center',
+            //   duration: 4000,
+            //   style: {
+            //     background: 'white',
+            //     color: 'black',
+            //     padding: '12px 20px',
+            //     borderRadius: '12px',
+            //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            //     border: '1px solid rgba(0, 0, 0, 0.08)',
+            //     maxWidth: '400px',
+            //     fontSize: '14px',
+            //     fontWeight: 500,
+            //   },
+            // });
             return;
           }
           
@@ -1952,21 +1952,21 @@ try {
           ];
           
           if (!allowedTypes.includes(selectedFile.type) && !selectedFile.type.startsWith('image/')) {
-            toast.error('File type not supported. Please upload PDF, Word, Excel, PowerPoint, Image, or ZIP files.', {
-              position: 'top-center',
-              duration: 4000,
-              style: {
-                background: 'white',
-                color: 'black',
-                padding: '12px 20px',
-                borderRadius: '12px',
-                boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
-                maxWidth: '400px',
-                fontSize: '14px',
-                fontWeight: 500,
-              },
-            });
+            // toast.error('File type not supported. Please upload PDF, Word, Excel, PowerPoint, Image, or ZIP files.', {
+            //   position: 'top-center',
+            //   duration: 4000,
+            //   style: {
+            //     background: 'white',
+            //     color: 'black',
+            //     padding: '12px 20px',
+            //     borderRadius: '12px',
+            //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            //     border: '1px solid rgba(0, 0, 0, 0.08)',
+            //     maxWidth: '400px',
+            //     fontSize: '14px',
+            //     fontWeight: 500,
+            //   },
+            // });
             return;
           }
         }
@@ -2052,21 +2052,21 @@ try {
           errorMessage = error.message || 'Unknown error occurred';
         }
         
-        toast.error(errorMessage, {
-          position: 'top-center',
-          duration: 4000,
-          style: {
-            background: 'white',
-            color: 'black',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            maxWidth: '400px',
-            fontSize: '14px',
-            fontWeight: 500,
-          },
-        });
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // });
       }
     }
   };
@@ -2115,21 +2115,21 @@ try {
         errorMessage = error.message || 'Unknown error occurred';
       }
       
-      toast.error(errorMessage, {
-        position: 'top-center',
-        duration: 4000,
-        style: {
-          background: 'white',
-          color: 'black',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          maxWidth: '400px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-      });
+      // toast.error(errorMessage, {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // });
     }
   };
 
@@ -2517,21 +2517,21 @@ const rolename = parsedData?.rolename;
                   
                   if (selectedValue) {
                     const selectedMember = teamMembers.find(member => member.value === selectedValue);
-                    toast.success(`Showing: ${selectedMember?.label}`, {
-                      position: 'top-center',
-                      duration: 3000,
-                      style: {
-                        background: 'white',
-                        color: 'black',
-                        padding: '12px 20px',
-                        borderRadius: '12px',
-                        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-                        border: '1px solid rgba(0, 0, 0, 0.08)',
-                        maxWidth: '400px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                      },
-                    });
+                    // toast.success(`Showing: ${selectedMember?.label}`, {
+                    //   position: 'top-center',
+                    //   duration: 3000,
+                    //   style: {
+                    //     background: 'white',
+                    //     color: 'black',
+                    //     padding: '12px 20px',
+                    //     borderRadius: '12px',
+                    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+                    //     maxWidth: '400px',
+                    //     fontSize: '14px',
+                    //     fontWeight: 500,
+                    //   },
+                    // });
                   } else {
                     setFilteredByUserColumns(columns);
                     setFilteredByUserTasks(tasks);

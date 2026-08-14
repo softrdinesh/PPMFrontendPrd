@@ -385,7 +385,7 @@ const rolename = parsedData?.rolename;
                             alignItems={'center'}
                             gap={2.5}
                           >
-                            <Typography lineHeight={1} fontSize={14}>
+                            <Typography style={{color:'black'}} lineHeight={1} fontSize={14}>
                               {valueText}
                             </Typography>
                                  {rolename !=='Viewer' &&

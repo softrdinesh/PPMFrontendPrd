@@ -228,7 +228,9 @@ const paymentcheck = async () => {
     setPaymentStatus('')
 
     const options = {
-      key: 'rzp_test_S2PQXDlmtoFOad',
+     key: 'rzp_test_TPWMZTWN2kapgX',
+
+      
       name: 'Your Company Name',
       description: 'Subscription Payment',
       image: logoImage,
@@ -259,39 +261,42 @@ const paymentcheck = async () => {
           if (reason === undefined) {
             setPaymentStatus('Payment Cancelled')
             toast.error('Payment cancelled. Please complete the payment to activate your subscription.')
+                onPaymentFailure?.()
 
-            updatePaymentConfirmation(userId, '', 'Cancelled')
-              .then(res => {
-                onPaymentFailure?.()
-              })
-              .catch(err => {
-               // console.error('Error updating cancellation confirmation:', err)
-                onPaymentFailure?.()
-              })
+           // updatePaymentConfirmation(userId, '', 'Cancelled')
+              // .then(res => {
+              //   onPaymentFailure?.()
+              // })
+              // .catch(err => {
+              //  // console.error('Error updating cancellation confirmation:', err)
+              //   onPaymentFailure?.()
+              // })
           } else if (reason === 'timeout') {
             setPaymentStatus('Payment Timed Out')
             toast.error('Payment timed out. Please try again.')
-
-            updatePaymentConfirmation(userId, '', 'Timeout')
-              .then(res => {
-                onPaymentFailure?.()
-              })
-              .catch(err => {
-             //   console.error('Error updating timeout confirmation:', err)
-                onPaymentFailure?.()
-              })
+           onPaymentFailure?.()
+         
+         
+           // updatePaymentConfirmation(userId, '', 'Timeout')
+            //   .then(res => {
+            //     onPaymentFailure?.()
+            //   })
+            //   .catch(err => {
+            //  //   console.error('Error updating timeout confirmation:', err)
+            //     onPaymentFailure?.()
+            //   })
           } else {
             setPaymentStatus('Payment Failed')
             toast.error('Payment failed. Please check your payment details and try again.')
-
-            updatePaymentConfirmation(userId, '', 'Failed')
-              .then(res => {
-                onPaymentFailure?.()
-              })
-              .catch(err => {
-              //  console.error('Error updating failure confirmation:', err)
-                onPaymentFailure?.()
-              })
+  onPaymentFailure?.()
+            // updatePaymentConfirmation(userId, '', 'Failed')
+            //   .then(res => {
+            //     onPaymentFailure?.()
+            //   })
+            //   .catch(err => {
+            //   //  console.error('Error updating failure confirmation:', err)
+            //     onPaymentFailure?.()
+            //   })
           }
         }
       },
@@ -315,15 +320,15 @@ const paymentcheck = async () => {
 
         const failedPaymentId =
           response?.error?.metadata?.payment_id ?? response?.error?.metadata?.paymentId ?? ''
-
-        updatePaymentConfirmation(userId, failedPaymentId, 'Failed')
-          .then(res => {
-            onPaymentFailure?.()
-          })
-          .catch(err => {
-         //('Error updating failed payment confirmation:', err)
-            onPaymentFailure?.()
-          })
+   onPaymentFailure?.()
+        // updatePaymentConfirmation(userId, failedPaymentId, 'Failed')
+        //   .then(res => {
+        //     onPaymentFailure?.()
+        //   })
+        //   .catch(err => {
+        //  //('Error updating failed payment confirmation:', err)
+        //     onPaymentFailure?.()
+        //   })
       })
 
       rzp1.open()

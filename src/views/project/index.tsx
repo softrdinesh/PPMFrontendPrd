@@ -444,7 +444,7 @@ const filteredTasks = currentTasks.filter((task: any) => {
       {data?.TaskGroupName ?? '-'}
     </Typography>
     {role?.RoleName !=='Viewer'&&
-      <TaskGroupActions groupName={data?.TaskGroupName} id={data?.TaskGroupID} ProjectID={data.ProjectID} refetch={()=>{}}  />}
+      <TaskGroupActions groupName={data?.TaskGroupName} id={data?.TaskGroupID} ProjectID={data.ProjectID} refetch={refetchTaskGroup}  />}
     {/* <TaskGroupActions groupName={data?.TaskGroupName} id={data?.TaskGroupID} ProjectID={data.ProjectID} refetch={fetchTaskGroupList}  /> */}
 
   </div>

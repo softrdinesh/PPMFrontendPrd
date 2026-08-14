@@ -218,19 +218,26 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
           })
         }, 1000)
       } else {
-        // IMPORTANT: Use stored last known countdown or current time resolution
-        let currentTimeResolution = bug?.timeResolution || '0h 0m 0s'
-        
-        // If we have a stored last known countdown, use it
-        if (storedLastKnownCountdown) {
-          currentTimeResolution = storedLastKnownCountdown
-          // Also update the bug's timeResolution in localStorage for next time
+        // FIX: totalSeconds must represent the ORIGINAL full duration for this
+        // run, anchored ONCE (per BugID) when the timer starts. Previously this
+        // was recomputed from storedLastKnownCountdown / bug.timeResolution on
+        // every effect re-run — but both of those get overwritten with the
+        // ALREADY-REDUCED remaining time by the periodic backend sync (and by a
+        // refetch() triggered from starting/pausing the timer on ANOTHER row).
+        // That caused elapsed time to be subtracted twice, making the countdown
+        // run down too fast / jump backwards (the "2 min reduce" you saw).
+        const storedTotalSeconds = bug?.BugID ? localStorage.getItem(`totalSeconds_${bug.BugID}`) : null
+
+        let totalSeconds: number
+
+        if (storedTotalSeconds) {
+          totalSeconds = parseInt(storedTotalSeconds, 10)
+        } else {
+          totalSeconds = parseResolutionToSeconds(bug?.timeResolution || '0h 0m 0s')
           if (bug?.BugID) {
-            localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, storedLastKnownCountdown)
+            localStorage.setItem(`totalSeconds_${bug.BugID}`, totalSeconds.toString())
           }
         }
-        
-        const totalSeconds = parseResolutionToSeconds(currentTimeResolution)
 
         let startTime: number
 
@@ -370,6 +377,10 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         localStorage.removeItem(`timerStartTime_${bug.BugID}`)
         localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
         localStorage.removeItem(`originalResolution_${bug.BugID}`)
+        // FIX: also clear the total-duration anchor whenever the timer is not
+        // actively running, so the next start/resume recomputes it cleanly
+        // instead of reusing a stale anchor from a previous run.
+        localStorage.removeItem(`totalSeconds_${bug.BugID}`)
         // Don't remove lastKnownCountdown - keep it for when timer restarts
       }
     }

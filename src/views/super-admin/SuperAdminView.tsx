@@ -186,8 +186,14 @@ function convertApiUserToUser(apiUser: UserProject, index: number, userTasks: Ta
 
   const statuses: ("online" | "offline" | "away")[] = ["online", "offline", "away"];
   const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-  
-  const email = `${apiUser.userName.toLowerCase().replace(/\s/g, '')}_${apiUser.userID}@company.io`;
+//console.log(apiUser,'d');
+  //const email = `${apiUser.userName.toLowerCase().replace(/\s/g, '')}_${apiUser.userID}@company.io`;
+
+      const em = localStorage.getItem('userData')
+      const parsed = JSON.parse(em as string)
+//console.log(parsed.userData.Email,'parsed');
+  const email = `${parsed?.userData?.Email} ` || "-";
+
   const initials = apiUser.userName
     .split(' ')
     .map(word => word[0])
@@ -198,7 +204,7 @@ function convertApiUserToUser(apiUser: UserProject, index: number, userTasks: Ta
   return {
     id: `user_${apiUser.userID}_${index}`,
     name: apiUser.userName,
-    email: email,
+    email: email.toLocaleLowerCase(),
     role: "Team Member",
     avatar: initials,
     status: randomStatus,
@@ -404,11 +410,11 @@ function UserCard({ user, defaultOpen = false, searchTerm = "", selectedProject 
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
               <Typography sx={{ fontWeight: 700, fontSize: { xs: 13.5, md: 14.5 }, color: "text.primary" }}>{user.name}</Typography>
-              <Chip
+              {/* <Chip
                 label={user.role}
                 size="small"
                 sx={{ bgcolor: "action.selected", color: "text.secondary", fontSize: 11, height: 20, borderRadius: "5px" }}
-              />
+              /> */}
             </Box>
             <Typography sx={{ fontSize: 12, color: "text.disabled", mt: 0.2 }}>{user.email}</Typography>
           </Box>

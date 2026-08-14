@@ -130,7 +130,7 @@ const getUserInfoByEmail= async(email: any)=>{
     Rolecheck(userId)
     paymentcheck(userId)
 
-    console.log('User info:', response.data);
+    // console.log('User info:', response.data);
     return response.data;
 
   } catch (error) {

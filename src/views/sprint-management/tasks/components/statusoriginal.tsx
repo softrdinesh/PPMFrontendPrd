@@ -877,7 +877,6 @@ const rolename = parsedData?.rolename;
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
-  console.log(statusName,'InsertDynamicValues');
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       {rolename !== 'Viewer' ? (
