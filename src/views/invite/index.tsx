@@ -195,7 +195,7 @@ const [accept, setaccept] = useState(false)
 
           {/* Message */}
           <Typography variant="body2" className="text-center mb-8" color="text.secondary" sx={{ maxWidth: 360 }}>
-            This invitation has already been accepted. You can head over to your dashboard to continue.
+            This Invitation Accepted Successfully.
           </Typography>
 
           {/* Buttons */}
