@@ -126,7 +126,11 @@ const WorkspaceItem = ({ workspaces }: { workspaces: WorkspaceListItem }) => {
         }
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Delete Workspace Error :', error)
+=======
+      //console.error('Delete Workspace Error :', error)
+>>>>>>> source-link/main
     }
   }
 
@@ -146,6 +150,7 @@ const WorkspaceItem = ({ workspaces }: { workspaces: WorkspaceListItem }) => {
    const handleCreateWorkspaceClick = () => {
      const workspaceCount = workspace?.length ?? 0
 
+<<<<<<< HEAD
     if (workspaceCount >= 1) {
     const canOpen = checkPaymentStatus()
 handleOpenClose()
@@ -154,6 +159,38 @@ handleOpenClose()
     }
       return
     }
+=======
+//     if (workspaceCount >= 1) {
+//     const canOpen = checkPaymentStatus()
+// handleOpenClose()
+//         if (canOpen) {
+//       setIsModalOpen(true)
+//     }
+//       return
+//     }
+
+ try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.workspaceCount !== undefined && parsed.workspaceCount !== null) {
+     //   console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
+        if (workspaceCount >= parsed.workspaceCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
+    }
+  } catch (error) {
+   // console.error('Error checking payment status:', error)
+  }
+
+
+
+
+
+
+>>>>>>> source-link/main
 
     setIsModalOpen(true)
     handleOpenClose()
@@ -163,6 +200,7 @@ handleOpenClose()
    const handleCreateproject= () => {
      const projectcount = projects?.length ?? 0
 
+<<<<<<< HEAD
     if (projectcount >= 1) {
     const canOpen = checkPaymentStatus()
 handleOpenClose()
@@ -174,6 +212,43 @@ handleOpenClose()
 
     setOpen1(true)
     handleOpenClose()
+=======
+
+  try {
+    const paymentStatus = localStorage.getItem('paymentStatus')
+    if (paymentStatus) {
+      const parsed = JSON.parse(paymentStatus)
+      if (parsed.projectCount !== undefined && parsed.projectCount !== null) {
+     //   console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
+        if (projectcount >= parsed.projectCount) {
+          setShowPaymentExpiredDialog(true)
+          return
+        }
+      }
+    }
+  } catch (error) {
+   // console.error('Error checking payment status:', error)
+  }
+
+  setOpen1(true)
+   handleOpenClose()
+
+
+
+
+
+//     if (projectcount >= 1) {
+//     const canOpen = checkPaymentStatus()
+// handleOpenClose()
+//         if (canOpen) {
+//       setOpen1(true)
+//     }
+//       return
+//     }
+
+//     setOpen1(true)
+//     handleOpenClose()
+>>>>>>> source-link/main
   }
 
 
@@ -219,7 +294,11 @@ const rolename = parsedData?.rolename;
     setShowPaymentExpiredDialog(true)
     return false
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error parsing payment status:', error)
+=======
+ //   console.error('Error parsing payment status:', error)
+>>>>>>> source-link/main
     setShowPaymentExpiredDialog(true)
     return false
   }

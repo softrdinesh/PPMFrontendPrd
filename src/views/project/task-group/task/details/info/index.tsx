@@ -169,7 +169,11 @@ const { profile,user } = useAuth()
     try {
       setValue(v)
     } catch (error) {
+<<<<<<< HEAD
       console.error('error :', error)
+=======
+    //  console.error('error :', error)
+>>>>>>> source-link/main
     }
   }
 const roleData = localStorage.getItem('Role');
@@ -211,7 +215,11 @@ toast.success('Project Details Updated Successfully!')
     setValue(value)
       }
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error sending update:', error)
+=======
+   // console.error('Error sending update:', error)
+>>>>>>> source-link/main
     toast.error('Failed to send update. Please try again.')
   }
 }
@@ -247,10 +255,17 @@ toast.success('Project Details Updated Successfully!')
     toast.success("Image Uploaded Successfully!")
   } catch (error) {
     if (axios.isAxiosError(error)) {
+<<<<<<< HEAD
       console.error('Upload failed:', error.response?.data || error.message);
       //setUploadError(error.response?.data?.message || 'File upload failed');
     } else {
       console.error('Unexpected error:', error);
+=======
+    //  console.error('Upload failed:', error.response?.data || error.message);
+      //setUploadError(error.response?.data?.message || 'File upload failed');
+    } else {
+     // console.error('Unexpected error:', error);
+>>>>>>> source-link/main
      // setUploadError('Something went wrong');
     }
   } finally {

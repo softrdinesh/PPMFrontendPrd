@@ -189,7 +189,11 @@ const { profile,user } = useAuth()
           }
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('error :', error)
+=======
+      //  console.error('error :', error)
+>>>>>>> source-link/main
         setErrorAlert('Failed to update. Please try again.')
       }
     } else {
@@ -259,7 +263,11 @@ const { profile,user } = useAuth()
           setSuccessAlert('File uploaded successfully!')
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('File upload failed:', error)
+=======
+     //   console.error('File upload failed:', error)
+>>>>>>> source-link/main
         setErrorAlert('File upload failed. Please try again.')
         setIsUploading(false)
         setUploadProgress(0)

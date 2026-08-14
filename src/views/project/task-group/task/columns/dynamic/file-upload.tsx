@@ -386,7 +386,11 @@ const onSubmit = async (data: FormValidateType) => {
           }
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('error :', error)
+=======
+      //  console.error('error :', error)
+>>>>>>> source-link/main
         setErrorAlert('Failed to update. Please try again.')
       }
     } else {
@@ -457,7 +461,11 @@ const onSubmit = async (data: FormValidateType) => {
           toast.success("File uploaded successfully!")
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('File upload failed:', error)
+=======
+      //  console.error('File upload failed:', error)
+>>>>>>> source-link/main
         setErrorAlert('File upload failed. Please try again.')
         setIsUploading(false)
         setUploadProgress(0)
@@ -490,7 +498,11 @@ const onSubmit = async (data: FormValidateType) => {
                 toast.success("File removed successfully!")
 
     } catch (error) {
+<<<<<<< HEAD
       console.error('File removal failed:', error)
+=======
+     // console.error('File removal failed:', error)
+>>>>>>> source-link/main
       setErrorAlert('Failed to remove file. Please try again.')
     }
   }

@@ -114,7 +114,11 @@ const { data,  refetch } = useQuery({
   const hasTaskGroups = useMemo(() => {
     return taskGroups && Array.isArray(taskGroups) && taskGroups.length > 0
   }, [taskGroups])
+<<<<<<< HEAD
 
+=======
+const {  refetchTaskGroup: refetchTaskGroupContext } = useProject()
+>>>>>>> source-link/main
   // Combined refetch function for both task list and task groups
   const handleRefetchAll = async () => {
     await Promise.all([
@@ -168,7 +172,11 @@ const { data,  refetch } = useQuery({
                 groupName={groupData.TaskGroupName} 
                 id={groupData.TaskGroupID} 
                 ProjectID={groupData.ProjectID} 
+<<<<<<< HEAD
                 refetch={refetchTaskGroup}  
+=======
+                refetch={refetchTaskGroupContext}  
+>>>>>>> source-link/main
               />}
             </div>
           </AccordionSummary>

@@ -16,7 +16,11 @@ export const inviteMember = async (body: any) => {
       useSecondApi: true  // Add this parameter
  })
     .then(res => {
+<<<<<<< HEAD
       toast.success(res?.message ?? 'Invitation sent successfully')
+=======
+      //toast.success(res?.message ?? 'Invitation sent successfully')
+>>>>>>> source-link/main
 
       return res
     })

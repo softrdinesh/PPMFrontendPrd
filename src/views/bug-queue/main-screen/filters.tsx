@@ -75,7 +75,11 @@ const ProjectFilterButton = () => {
           setGroups(groupsData)
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error fetching groups:', error)
+=======
+     //   console.error('Error fetching groups:', error)
+>>>>>>> source-link/main
       }
     }
 
@@ -163,7 +167,11 @@ const ProjectFilterButton = () => {
       }
       
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error fetching dynamic columns for groups:', error)
+=======
+   //   console.error('Error fetching dynamic columns for groups:', error)
+>>>>>>> source-link/main
       setDynamicColumns([])
     } finally {
       setIsFetching(false)

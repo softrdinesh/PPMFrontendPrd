@@ -154,7 +154,11 @@ const fetchProjectTasks = async () => {
       setProjectTasks(formattedTasks);
     }
   } catch (error: any) {
+<<<<<<< HEAD
     console.error('Error fetching project tasks:', error);
+=======
+    //console.error('Error fetching project tasks:', error);
+>>>>>>> source-link/main
     toast.error('Failed to load project tasks from API', {
       position: 'top-center',
       duration: 4000,
@@ -242,7 +246,11 @@ const fetchProjectTasks = async () => {
         }
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error fetching priorities:', error);
+=======
+   //   console.error('Error fetching priorities:', error);
+>>>>>>> source-link/main
     }
   };
 
@@ -269,7 +277,11 @@ const fetchProjectTasks = async () => {
         }
       }
     } catch (error: any) {
+<<<<<<< HEAD
       console.error('Error fetching categories:', error);
+=======
+    //  console.error('Error fetching categories:', error);
+>>>>>>> source-link/main
       toast.error('Failed to load categories from API', {
         position: 'top-center',
         duration: 4000,
@@ -400,7 +412,11 @@ const fetchProjectTasks = async () => {
         onPriorityCreated();
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error creating priority:', error);
+=======
+      //console.error('Error creating priority:', error);
+>>>>>>> source-link/main
       if (axios.isAxiosError(error)) {
         if (error.response) {
           toast.error(`Error: ${error.response.status} - ${error.response.data?.message || 'Failed to create priority'}`);
@@ -438,7 +454,11 @@ const fetchProjectTasks = async () => {
         onPriorityCreated();
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error updating priority:', error);
+=======
+    //  console.error('Error updating priority:', error);
+>>>>>>> source-link/main
       if (axios.isAxiosError(error)) {
         if (error.response) {
           toast.error(`Error: ${error.response.status} - ${error.response.data?.message || 'Failed to update priority'}`);
@@ -483,7 +503,11 @@ const fetchProjectTasks = async () => {
         onPriorityCreated();
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error deleting priority:', error);
+=======
+     // console.error('Error deleting priority:', error);
+>>>>>>> source-link/main
       if (axios.isAxiosError(error)) {
         if (error.response) {
           toast.error(`Error: ${error.response.status} - ${error.response.data?.message || 'Failed to delete priority'}`);
@@ -702,7 +726,11 @@ const projectTaskID = formData.projectTask || '';
         throw new Error('Failed to create task');
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error submitting form:', error);
+=======
+    //  console.error('Error submitting form:', error);
+>>>>>>> source-link/main
       
       // Show error message
       if (axios.isAxiosError(error)) {

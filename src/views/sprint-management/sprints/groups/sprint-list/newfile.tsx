@@ -273,7 +273,11 @@ const SprintList = ({
               sprintListApi?.refetch()
             }
           } catch (error) {
+<<<<<<< HEAD
             console.error('error :', error)
+=======
+        //    console.error('error :', error)
+>>>>>>> source-link/main
           }
         }
       }

@@ -49,6 +49,7 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
   const [paymentStatus, setPaymentStatus] = useState("")
   const { profile,user } = useAuth()
   const logoImage = "https://appsuresolutions.netlify.app/assets/header_logo-Bj3Dgdu3.svg" // Replace with your actual logo
+<<<<<<< HEAD
   const { isLoading, razorpayLoaded, generateRazorPayOrder } = useRazorpayPayment({
     userId: Number(user?.id),
     onPaymentSuccess: () => {
@@ -62,6 +63,9 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
       setShowPaymentExpiredDialog(true)
     }
   })
+=======
+
+>>>>>>> source-link/main
   const {
     handleSubmit,
     control,
@@ -87,6 +91,7 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
     }
   }
 
+<<<<<<< HEAD
   const checkPaymentStatus = () => {
     const paymentStatus = localStorage.getItem('paymentStatus')
     
@@ -125,10 +130,51 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
       return false
     }
   }
+=======
+  // const checkPaymentStatus = () => {
+  //   const paymentStatus = localStorage.getItem('paymentStatus')
+    
+  //   // Projects length 0 -> allow creating one project (no payment popup)
+  //   if ((projects?.length ?? 0) === 0) {
+  //     setShowPaymentExpiredDialog(false)
+  //     return true
+  //   }
+
+  //   // Projects length >= 1 -> block and show payment popup
+  //   if ((projects?.length ?? 0) >= 1) {
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
+
+  //   try {
+  //     if (paymentStatus) {
+  //       const parsed = JSON.parse(paymentStatus)
+  //       if (parsed.isExpired === true) {
+  //         setShowPaymentExpiredDialog(true)
+  //         return false
+  //       }
+        
+  //       if (parsed.isExpired === false) {
+  //         setShowPaymentExpiredDialog(false)
+  //         return true
+  //       }
+  //       setShowPaymentExpiredDialog(true)
+  //       return false
+  //     }
+  //     setShowPaymentExpiredDialog(false)
+  //     return true
+  //   } catch (error) {
+  //  //   console.error('Error parsing payment status:', error)
+  //     setShowPaymentExpiredDialog(true)
+  //     return false
+  //   }
+  // }
+>>>>>>> source-link/main
 
   // Use useEffect to check payment status when 'open' changes
   useEffect(() => {
     if (open) {
+<<<<<<< HEAD
       const canOpen = checkPaymentStatus()
       setShouldOpenDialog(canOpen)
     } else {
@@ -159,6 +205,19 @@ const CreateProject = ({ open, onCloseModal }: CreateProjectProps) => {
         razorpayLoaded={razorpayLoaded}
       />
 
+=======
+     // const canOpen = checkPaymentStatus()
+      setShouldOpenDialog(open)
+    } else {
+      setShouldOpenDialog(false)
+    }
+  }, [open, projects?.length])
+
+
+  return (
+    <>
+       
+>>>>>>> source-link/main
     <Dialog open={shouldOpenDialog} onClose={onCloseModal} TransitionComponent={Zoom} fullWidth maxWidth='md'>
       <Box
         bgcolor={'background.default'}

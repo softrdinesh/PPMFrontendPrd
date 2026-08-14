@@ -74,7 +74,11 @@ function CollapsibleSprintList({ sp, selectedTask }: { sp: SprintItem; selectedT
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL1}/GetSprintTaskGroupInfoList?WorkspaceID=${sp.WorkSpaceID}`)
       setTaskGroupData(response.data) // Store the data in state
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error fetching task groups:', error)
+=======
+     // console.error('Error fetching task groups:', error)
+>>>>>>> source-link/main
       setTaskGroupData([]) // Set empty array on error
     }
   }

@@ -109,8 +109,13 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
 
       return { ok: resp.ok, status: resp.status, body: text }
     } catch (err) {
+<<<<<<< HEAD
       console.error('Error calling UpdatePaymentconfirmation:', err)
       // On error, be conservative: treat as expired so user is prompted to renew.
+=======
+    //  console.error('Error calling UpdatePaymentconfirmation:', err)
+     // // On error, be conservative: treat as expired so user is prompted to renew.
+>>>>>>> source-link/main
       const paymentData = {
         isExpired: true,
         // paymentId: paymentId ?? '',
@@ -119,7 +124,11 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
       try {
         localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
       } catch (e) {
+<<<<<<< HEAD
         console.error('Error saving paymentStatus to localStorage on failure:', e)
+=======
+    //    console.error('Error saving paymentStatus to localStorage on failure:', e)
+>>>>>>> source-link/main
       }
       return { ok: false, error: err }
     }
@@ -151,7 +160,11 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
       setShowPaymentExpiredDialog(true)
       return false
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error parsing payment status:', error)
+=======
+     // console.error('Error parsing payment status:', error)
+>>>>>>> source-link/main
       // On parse error, treat as expired to be safe
       setShowPaymentExpiredDialog(true)
       return false
@@ -195,7 +208,11 @@ const NewTaskDialog = ({ open, onCloseModal, initialGroupName = '', isEdit = fal
         onCloseModal()
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error submitting form:', error)
+=======
+     // console.error('Error submitting form:', error)
+>>>>>>> source-link/main
     }
   }
 

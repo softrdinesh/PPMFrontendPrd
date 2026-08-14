@@ -84,7 +84,11 @@ const deletegroup = async() => {
     toast.success('Task Group Deleted Successfully');
     refetch();
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error deleting task group:', error);
+=======
+   // console.error('Error deleting task group:', error);
+>>>>>>> source-link/main
     toast.error('Failed to delete Task Group');
   }
 }

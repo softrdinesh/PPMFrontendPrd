@@ -38,6 +38,10 @@ import ImgInviteBg from '@public/images/cards/invite-bg.png'
 import { inviteMember } from '@/services/modules/invite'
 import { useWorkspace } from '@/context/workspace-context'
 import { fetchRolesList } from '@/services/modules/role'
+<<<<<<< HEAD
+=======
+import toast from 'react-hot-toast'
+>>>>>>> source-link/main
 
 const defaultValue = {
   email: '',
@@ -79,7 +83,11 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
         
 
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error parsing user data:', error);
+=======
+       // console.error('Error parsing user data:', error);
+>>>>>>> source-link/main
       }
     }
   }, []);
@@ -109,6 +117,7 @@ const InviteMember = ({ openInviteModal, setOpenInviteModal, projectID, IsOpen }
     name: 'invitations'
   })
 
+<<<<<<< HEAD
   const onSubmit = async (values: FormField) => {
 
 
@@ -128,6 +137,47 @@ const body ={
     } catch {}
   }
 
+=======
+//   const onSubmit = async (values: FormField) => {
+
+
+// const body ={
+//   inviteEmailAddress: values.invitations.map(inv => inv.email).join(', '), // Join all emails with comma
+
+//   inviteBy: userId, 
+//   workspaceid:Number(selected?.WorkspaceID),
+//   roleID: values.invitations[0].roleID,
+//   projectID:Number(projectID),
+//   isMultiple: false
+// }
+
+//     try {
+//       await inviteMember(body)
+//       handleClose()
+//     } catch {}
+//   }
+const onSubmit = async (values: FormField) => {
+  try {
+    await Promise.all(
+      values.invitations.map(inv =>
+        inviteMember({
+          inviteEmailAddress: inv.email,
+          inviteBy: userId,
+          workspaceid: Number(selected?.WorkspaceID),
+          roleID: inv.roleID,
+          projectID: Number(projectID),
+          isMultiple: false
+        }).then(()=>{
+
+        })
+      )
+    )
+              toast.success('Invitation sent successfully')
+
+    handleClose()
+  } catch {}
+}
+>>>>>>> source-link/main
   const inviteLink = useMemo(() => 'https://figma.com/users/sign_up?invitationId=2690444112...', [])
 
   return (

@@ -103,7 +103,11 @@ const fetchStatusLookupList = async (): Promise<StatusLookupItem[]> => {
     // Return the array directly since your API returns an array
     return response.data;
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error fetching status lookup list:', error);
+=======
+   // console.error('Error fetching status lookup list:', error);
+>>>>>>> source-link/main
     throw error;
   }
 }
@@ -126,7 +130,11 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
       
     return { status: true, data: response.data };
   } catch (error) {
+<<<<<<< HEAD
     console.error('API call failed:', error);
+=======
+  //  console.error('API call failed:', error);
+>>>>>>> source-link/main
     // Show error toaster
     toast.error('Failed to update value');
     throw error;
@@ -152,7 +160,11 @@ const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusR
     // FIXED: Return the response data directly
     return response.data;
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error creating status:', error);
+=======
+  //  console.error('Error creating status:', error);
+>>>>>>> source-link/main
     throw error;
   }
 }
@@ -176,7 +188,11 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error updating status:', error);
+=======
+   // console.error('Error updating status:', error);
+>>>>>>> source-link/main
     toast.error('Failed to update status');
     throw error;
   }
@@ -199,7 +215,11 @@ const deleteStatus = async (payload: DeleteStatusPayload): Promise<DeleteStatusR
     return response.data;
    
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error deleting status:', error);
+=======
+   // console.error('Error deleting status:', error);
+>>>>>>> source-link/main
     toast.error('Failed to delete status');
     throw error;
   }
@@ -283,6 +303,7 @@ const sprintGroupID = (row as any).SprintGroupID
             refetch();
           }
         } else {
+<<<<<<< HEAD
           console.error('Missing required values for dynamic value insertion:', {
             dynamicColumnID,
             loginuserID,
@@ -293,6 +314,18 @@ const sprintGroupID = (row as any).SprintGroupID
       } catch (error) {
         console.error('Failed to insert dynamic value:', error);
         // Don't throw error to not break the flow
+=======
+          // console.error('Missing required values for dynamic value insertion:', {
+          //   dynamicColumnID,
+          //   loginuserID,
+          //   sprintID,
+          //   sprintGroupID
+          // });
+        }
+      } catch (error) {
+       // console.error('Failed to insert dynamic value:', error);
+      // Don't throw error to not break the flow
+>>>>>>> source-link/main
       }
     } else {
       // If not a dynamic column, just refetch
@@ -600,7 +633,11 @@ const { data: dynamicStatus, refetch: refetchStatusList } = useQuery({
         handleFormClose();
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Failed to delete status:', error);
+=======
+     // console.error('Failed to delete status:', error);
+>>>>>>> source-link/main
     } finally {
       setDeleteDialogOpen(false);
       setStatusToDelete(null);

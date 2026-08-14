@@ -53,7 +53,11 @@ function DeleteWorkspaceDialog({ open, setOpen, onConfirm }: DeleteWorkspaceDial
       }
       return false
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error parsing payment status:', error)
+=======
+   //   console.error('Error parsing payment status:', error)
+>>>>>>> source-link/main
       return false
     }
   }

@@ -65,7 +65,11 @@ const DeleteBugsComponent = ({ showCard, groupid, workspaceid, selectedRows, set
       await refetch()
       setSelectedRows({})
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error deleting bug(s):', error)
+=======
+  //    console.error('Error deleting bug(s):', error)
+>>>>>>> source-link/main
       toast.error('Failed to delete bug(s)')
     } finally {
       setDeleteOpen(false)

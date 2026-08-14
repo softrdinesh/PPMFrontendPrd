@@ -228,7 +228,11 @@ const TaskDetailsDialog = ({
         },
       });
     } catch (error) {
+<<<<<<< HEAD
       console.error('Download error:', error);
+=======
+   //   console.error('Download error:', error);
+>>>>>>> source-link/main
       window.open(task.attachmentLink, '_blank');
       
       toast.success('Opening file in new tab', {
@@ -723,6 +727,7 @@ const fetchProjectTasks = async () => {
       setProjectTasks(formattedTasks);
     }
   } catch (error: any) {
+<<<<<<< HEAD
     console.error('Error fetching project tasks:', error);
     toast.error('Failed to load project tasks from API', {
       position: 'top-center',
@@ -739,6 +744,24 @@ const fetchProjectTasks = async () => {
         fontWeight: 500,
       },
     });
+=======
+   // console.error('Error fetching project tasks:', error);
+    // toast.error('Failed to load project tasks from API', {
+    //   position: 'top-center',
+    //   duration: 4000,
+    //   style: {
+    //     background: 'white',
+    //     color: 'black',
+    //     padding: '12px 20px',
+    //     borderRadius: '12px',
+    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+    //     maxWidth: '400px',
+    //     fontSize: '14px',
+    //     fontWeight: 500,
+    //   },
+    // });
+>>>>>>> source-link/main
   }
 };
 
@@ -785,7 +808,11 @@ const fetchProjectTasks = async () => {
       setShowTaskPaymentDialog(false)
       return true
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error checking payment status:', error)
+=======
+    //  console.error('Error checking payment status:', error)
+>>>>>>> source-link/main
       setShowPaymentExpiredDialog(true)
       return false
     }
@@ -852,6 +879,7 @@ const fetchTeamMembers = async () => {
 
     }
   } catch (error: any) {
+<<<<<<< HEAD
     console.error('Error fetching team members:', error);
     toast.error('Failed to load team members from API', {
       position: 'top-center',
@@ -868,6 +896,24 @@ const fetchTeamMembers = async () => {
         fontWeight: 500,
       },
     });
+=======
+   // console.error('Error fetching team members:', error);
+    // toast.error('Failed to load team members from API', {
+    //   position: 'top-center',
+    //   duration: 4000,
+    //   style: {
+    //     background: 'white',
+    //     color: 'black',
+    //     padding: '12px 20px',
+    //     borderRadius: '12px',
+    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+    //     maxWidth: '400px',
+    //     fontSize: '14px',
+    //     fontWeight: 500,
+    //   },
+    // });
+>>>>>>> source-link/main
     setTeamMembers([]);
   } finally {
     setTeamMembersLoading(false);
@@ -983,6 +1029,7 @@ const fetchTeamMembers = async () => {
         setPriorities(response.data)
       }
     } catch (error: any) {
+<<<<<<< HEAD
       console.error('Error fetching priorities:', error)
       toast.error('Failed to load priorities from API', {
         position: 'top-center',
@@ -999,6 +1046,24 @@ const fetchTeamMembers = async () => {
           fontWeight: 500,
         },
       })
+=======
+     // console.error('Error fetching priorities:', error)
+      // toast.error('Failed to load priorities from API', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
+>>>>>>> source-link/main
     } finally {
       setPriorityLoading(false)
     }
@@ -1059,6 +1124,7 @@ const fetchTeamMembers = async () => {
         
       }
     } catch (error: any) {
+<<<<<<< HEAD
       console.error('Error fetching tasks:', error)
       toast.error('Failed to load tasks from API', {
         position: 'top-center',
@@ -1075,6 +1141,24 @@ const fetchTeamMembers = async () => {
           fontWeight: 500,
         },
       })
+=======
+     // console.error('Error fetching tasks:', error)
+      // toast.error('Failed to load tasks from API', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
+>>>>>>> source-link/main
     }
   }
 
@@ -1117,6 +1201,7 @@ const fetchTeamMembers = async () => {
         throw new Error('Invalid API response format')
       }
     } catch (error: any) {
+<<<<<<< HEAD
       console.error('Error fetching categories:', error)
       setError('Failed to load categories from API')
       
@@ -1135,6 +1220,26 @@ const fetchTeamMembers = async () => {
           fontWeight: 500,
         },
       })
+=======
+    //  console.error('Error fetching categories:', error)
+      setError('Failed to load categories from API')
+      
+      // toast.error('Failed to load categories from API', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
+>>>>>>> source-link/main
       
       const defaultColumns: Column[] = [
         { 
@@ -1331,6 +1436,7 @@ useEffect(() => {
           setFilteredByUserTasks(userTasks);
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error filtering data by user:', error);
         toast.error('Failed to load user data', {
           position: 'top-center',
@@ -1347,6 +1453,24 @@ useEffect(() => {
             fontWeight: 500,
           },
         });
+=======
+       // console.error('Error filtering data by user:', error);
+        // toast.error('Failed to load user data', {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // });
+>>>>>>> source-link/main
       }
     };
 
@@ -1396,6 +1520,7 @@ useEffect(() => {
       updatedTasks[columnId] = [...updatedTasks[columnId], movingTask] // FIX: use movingTask instead of taskToMove
       setTasks(updatedTasks)
 
+<<<<<<< HEAD
       toast.success('Task moved successfully', {
         position: 'top-center',
         duration: 4000,
@@ -1411,13 +1536,34 @@ useEffect(() => {
           fontWeight: 500,
         },
       })
+=======
+      // toast.success('Task moved successfully', {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // })
+>>>>>>> source-link/main
 
       await fetchCategories()
     } else {
       throw new Error('Failed to move task')
     }
   } catch (error: any) {
+<<<<<<< HEAD
     console.error('Error moving task:', error)
+=======
+   //sconsole.error('Error moving task:', error)
+>>>>>>> source-link/main
 
     let errorMessage = 'Failed to move task'
 
@@ -1429,6 +1575,7 @@ useEffect(() => {
       errorMessage = error.message || 'Unknown error occurred'
     }
 
+<<<<<<< HEAD
     toast.error(errorMessage, {
       position: 'top-center',
       duration: 4000,
@@ -1444,6 +1591,23 @@ useEffect(() => {
         fontWeight: 500,
       },
     })
+=======
+    // toast.error(errorMessage, {
+    //   position: 'top-center',
+    //   duration: 4000,
+    //   style: {
+    //     background: 'white',
+    //     color: 'black',
+    //     padding: '12px 20px',
+    //     borderRadius: '12px',
+    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+    //     maxWidth: '400px',
+    //     fontSize: '14px',
+    //     fontWeight: 500,
+    //   },
+    // })
+>>>>>>> source-link/main
   }
 }
   }
@@ -1548,7 +1712,11 @@ const handleOpenCreateCategory = () => {
       }
     }
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error checking payment status:', error)
+=======
+  //  console.error('Error checking payment status:', error)
+>>>>>>> source-link/main
   }
 
   setNewCategoryName('')
@@ -1576,7 +1744,11 @@ try {
       }
     }
   } catch (error) {
+<<<<<<< HEAD
     console.error('Error checking payment status:', error)
+=======
+    //('Error checking payment status:', error)
+>>>>>>> source-link/main
   }
   setOpenDialog(true)
 
@@ -1640,6 +1812,7 @@ try {
         setSelectedColor('#2196F3')
         setCategoryValidationErrors({})
         
+<<<<<<< HEAD
         toast.success('Category created successfully', {
           position: 'top-center',
           duration: 4000,
@@ -1655,11 +1828,32 @@ try {
             fontWeight: 500,
           },
         })
+=======
+        // toast.success('Category created successfully', {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
+>>>>>>> source-link/main
       } else {
         throw new Error('Failed to create category')
       }
     } catch (error: any) {
+<<<<<<< HEAD
       console.error('Error creating category:', error)
+=======
+    //  console.error('Error creating category:', error)
+>>>>>>> source-link/main
       
       let errorMessage = 'Failed to create category'
       
@@ -1676,6 +1870,7 @@ try {
       }
       
       if (!categoryValidationErrors.name) {
+<<<<<<< HEAD
         toast.error(errorMessage, {
           position: 'top-center',
           duration: 4000,
@@ -1691,6 +1886,23 @@ try {
             fontWeight: 500,
           },
         })
+=======
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
+>>>>>>> source-link/main
       }
     } finally {
       setCategoryLoading(false)
@@ -1755,6 +1967,7 @@ try {
           errorMessage = error.message || 'Unknown error occurred'
         }
         
+<<<<<<< HEAD
         toast.error(errorMessage, {
           position: 'top-center',
           duration: 4000,
@@ -1770,6 +1983,23 @@ try {
             fontWeight: 500,
           },
         })
+=======
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
+>>>>>>> source-link/main
       }
     }
   }
@@ -1784,6 +2014,7 @@ try {
       const tasksInCategory = tasks[categoryToDelete.id] || []
       
       if (tasksInCategory.length > 0) {
+<<<<<<< HEAD
         toast.error(`Cannot delete category with ${tasksInCategory.length} task(s). Move or delete tasks first.`, {
           position: 'top-center',
           duration: 4000,
@@ -1799,6 +2030,23 @@ try {
             fontWeight: 500,
           },
         })
+=======
+        // toast.error(`Cannot delete category with ${tasksInCategory.length} task(s). Move or delete tasks first.`, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
+>>>>>>> source-link/main
         setDeleteCategoryDialog(false)
         setCategoryToDelete(null)
         return
@@ -1838,7 +2086,11 @@ try {
           throw new Error('Failed to delete category')
         }
       } catch (error: any) {
+<<<<<<< HEAD
         console.error('Error deleting category:', error)
+=======
+       // console.error('Error deleting category:', error)
+>>>>>>> source-link/main
         
         let errorMessage = 'Failed to delete category'
         
@@ -1850,6 +2102,7 @@ try {
           errorMessage = error.message || 'Unknown error occurred'
         }
         
+<<<<<<< HEAD
         toast.error(errorMessage, {
           position: 'top-center',
           duration: 4000,
@@ -1865,6 +2118,23 @@ try {
             fontWeight: 500,
           },
         })
+=======
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // })
+>>>>>>> source-link/main
       }
     }
   }
@@ -1895,6 +2165,7 @@ try {
     if (editingTask && editingTaskColumn && user?.id) {
       try {
         if (!editingTask.title || !editingTask.assigneeId) {
+<<<<<<< HEAD
           toast.error('Please fill in all required fields', {
             position: 'top-center',
             duration: 4000,
@@ -1910,6 +2181,23 @@ try {
               fontWeight: 500,
             },
           });
+=======
+          // toast.error('Please fill in all required fields', {
+          //   position: 'top-center',
+          //   duration: 4000,
+          //   style: {
+          //     background: 'white',
+          //     color: 'black',
+          //     padding: '12px 20px',
+          //     borderRadius: '12px',
+          //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+          //     border: '1px solid rgba(0, 0, 0, 0.08)',
+          //     maxWidth: '400px',
+          //     fontSize: '14px',
+          //     fontWeight: 500,
+          //   },
+          // });
+>>>>>>> source-link/main
           return;
         }
 
@@ -1917,6 +2205,7 @@ try {
           const maxSize = 5 * 1024 * 1024;
           
           if (selectedFile.size > maxSize) {
+<<<<<<< HEAD
             toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
               position: 'top-center',
               duration: 4000,
@@ -1932,6 +2221,23 @@ try {
                 fontWeight: 500,
               },
             });
+=======
+            // toast.error('File size exceeds 5MB limit. Please choose a smaller file.', {
+            //   position: 'top-center',
+            //   duration: 4000,
+            //   style: {
+            //     background: 'white',
+            //     color: 'black',
+            //     padding: '12px 20px',
+            //     borderRadius: '12px',
+            //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            //     border: '1px solid rgba(0, 0, 0, 0.08)',
+            //     maxWidth: '400px',
+            //     fontSize: '14px',
+            //     fontWeight: 500,
+            //   },
+            // });
+>>>>>>> source-link/main
             return;
           }
           
@@ -1952,6 +2258,7 @@ try {
           ];
           
           if (!allowedTypes.includes(selectedFile.type) && !selectedFile.type.startsWith('image/')) {
+<<<<<<< HEAD
             toast.error('File type not supported. Please upload PDF, Word, Excel, PowerPoint, Image, or ZIP files.', {
               position: 'top-center',
               duration: 4000,
@@ -1967,6 +2274,23 @@ try {
                 fontWeight: 500,
               },
             });
+=======
+            // toast.error('File type not supported. Please upload PDF, Word, Excel, PowerPoint, Image, or ZIP files.', {
+            //   position: 'top-center',
+            //   duration: 4000,
+            //   style: {
+            //     background: 'white',
+            //     color: 'black',
+            //     padding: '12px 20px',
+            //     borderRadius: '12px',
+            //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+            //     border: '1px solid rgba(0, 0, 0, 0.08)',
+            //     maxWidth: '400px',
+            //     fontSize: '14px',
+            //     fontWeight: 500,
+            //   },
+            // });
+>>>>>>> source-link/main
             return;
           }
         }
@@ -2040,7 +2364,11 @@ try {
           throw new Error('Failed to update task');
         }
       } catch (error: any) {
+<<<<<<< HEAD
         console.error('Error updating task:', error);
+=======
+        //console.error('Error updating task:', error);
+>>>>>>> source-link/main
         
         let errorMessage = 'Failed to update task';
         
@@ -2052,6 +2380,7 @@ try {
           errorMessage = error.message || 'Unknown error occurred';
         }
         
+<<<<<<< HEAD
         toast.error(errorMessage, {
           position: 'top-center',
           duration: 4000,
@@ -2067,6 +2396,23 @@ try {
             fontWeight: 500,
           },
         });
+=======
+        // toast.error(errorMessage, {
+        //   position: 'top-center',
+        //   duration: 4000,
+        //   style: {
+        //     background: 'white',
+        //     color: 'black',
+        //     padding: '12px 20px',
+        //     borderRadius: '12px',
+        //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+        //     border: '1px solid rgba(0, 0, 0, 0.08)',
+        //     maxWidth: '400px',
+        //     fontSize: '14px',
+        //     fontWeight: 500,
+        //   },
+        // });
+>>>>>>> source-link/main
       }
     }
   };
@@ -2103,7 +2449,11 @@ try {
         throw new Error('Failed to delete task');
       }
     } catch (error: any) {
+<<<<<<< HEAD
       console.error('Error deleting task:', error);
+=======
+    //  console.error('Error deleting task:', error);
+>>>>>>> source-link/main
       
       let errorMessage = 'Failed to delete task';
       
@@ -2115,6 +2465,7 @@ try {
         errorMessage = error.message || 'Unknown error occurred';
       }
       
+<<<<<<< HEAD
       toast.error(errorMessage, {
         position: 'top-center',
         duration: 4000,
@@ -2130,6 +2481,23 @@ try {
           fontWeight: 500,
         },
       });
+=======
+      // toast.error(errorMessage, {
+      //   position: 'top-center',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'white',
+      //     color: 'black',
+      //     padding: '12px 20px',
+      //     borderRadius: '12px',
+      //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+      //     border: '1px solid rgba(0, 0, 0, 0.08)',
+      //     maxWidth: '400px',
+      //     fontSize: '14px',
+      //     fontWeight: 500,
+      //   },
+      // });
+>>>>>>> source-link/main
     }
   };
 
@@ -2517,6 +2885,7 @@ const rolename = parsedData?.rolename;
                   
                   if (selectedValue) {
                     const selectedMember = teamMembers.find(member => member.value === selectedValue);
+<<<<<<< HEAD
                     toast.success(`Showing: ${selectedMember?.label}`, {
                       position: 'top-center',
                       duration: 3000,
@@ -2532,6 +2901,23 @@ const rolename = parsedData?.rolename;
                         fontWeight: 500,
                       },
                     });
+=======
+                    // toast.success(`Showing: ${selectedMember?.label}`, {
+                    //   position: 'top-center',
+                    //   duration: 3000,
+                    //   style: {
+                    //     background: 'white',
+                    //     color: 'black',
+                    //     padding: '12px 20px',
+                    //     borderRadius: '12px',
+                    //     boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+                    //     border: '1px solid rgba(0, 0, 0, 0.08)',
+                    //     maxWidth: '400px',
+                    //     fontSize: '14px',
+                    //     fontWeight: 500,
+                    //   },
+                    // });
+>>>>>>> source-link/main
                   } else {
                     setFilteredByUserColumns(columns);
                     setFilteredByUserTasks(tasks);

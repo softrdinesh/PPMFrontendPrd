@@ -86,7 +86,11 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
       }
       
       script.onerror = () => {
+<<<<<<< HEAD
         console.error('Failed to load Razorpay SDK')
+=======
+      //  console.error('Failed to load Razorpay SDK')
+>>>>>>> source-link/main
         // Remove failed script
         if (script.parentNode) {
           script.parentNode.removeChild(script)
@@ -119,7 +123,11 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
           setRazorpayLoaded(true)
         }
       } catch (error) {
+<<<<<<< HEAD
         console.error('Failed to initialize Razorpay:', error)
+=======
+    //    console.error('Failed to initialize Razorpay:', error)
+>>>>>>> source-link/main
         if (mounted) {
           setRazorpayLoaded(false)
         }
@@ -134,10 +142,17 @@ export const useRazorpayPayment = ({ userId, onPaymentSuccess, onPaymentFailure 
   }, [loadRazorpayScript])
 const paymentcheck = async () => {
   const Baseurl = process.env.NEXT_PUBLIC_API_URL1
+<<<<<<< HEAD
   const userid = localStorage.getItem('userData')
   const value= JSON.parse(userid as string)
   try {
     const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userData?.UserID}`)
+=======
+  const userid = localStorage.getItem('Role')
+  const value= JSON.parse(userid as string)
+  try {
+    const res = await axios.post(`${Baseurl}/CheckAccountExpiry/${value?.userID}`)
+>>>>>>> source-link/main
 
     
     if (res.data && res.data.length > 0) {
@@ -158,7 +173,11 @@ const paymentcheck = async () => {
 
     }
   } catch (error) {
+<<<<<<< HEAD
     console.error('Payment check error:', error)
+=======
+   // console.error('Payment check error:', error)
+>>>>>>> source-link/main
   }
 }
   const updatePaymentConfirmation = async (
@@ -194,15 +213,27 @@ const paymentcheck = async () => {
 
       return { ok: resp.ok, status: resp.status, body: text }
     } catch (err) {
+<<<<<<< HEAD
       console.error('Error calling UpdatePaymentconfirmation:', err)
+=======
+  //    console.error('Error calling UpdatePaymentconfirmation:', err)
+>>>>>>> source-link/main
       if (status !== 'Cancelled' && status !== 'Timeout' && status !== 'Failed') {
         const paymentData = {
           isExpired: true
         }
+<<<<<<< HEAD
         try {
           localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
         } catch (e) {
           console.error('Error saving paymentStatus to localStorage on failure:', e)
+=======
+        console.log(paymentData,'paymentData');
+        try {
+          localStorage.setItem('paymentStatus', JSON.stringify(paymentData))
+        } catch (e) {
+          //console.error('Error saving paymentStatus to localStorage on failure:', e)
+>>>>>>> source-link/main
         }
       }
       return { ok: false, error: err }
@@ -217,7 +248,11 @@ const paymentcheck = async () => {
         setIsLoading(true)
         await loadRazorpayScript()
       } catch (error) {
+<<<<<<< HEAD
         console.error('Failed to load Razorpay SDK:', error)
+=======
+     //   console.error('Failed to load Razorpay SDK:', error)
+>>>>>>> source-link/main
         alert('Unable to load payment gateway. Please check your internet connection and try again.')
         setIsLoading(false)
         return
@@ -228,7 +263,14 @@ const paymentcheck = async () => {
     setPaymentStatus('')
 
     const options = {
+<<<<<<< HEAD
       key: 'rzp_live_TOlQ9r9Ls0G6G8',
+=======
+     key: 'rzp_test_TPWMZTWN2kapgX',
+      //key: `${process.env.NEXT_PUBLIC_API_Razorkey}`,
+
+      
+>>>>>>> source-link/main
       name: 'Your Company Name',
       description: 'Subscription Payment',
       image: logoImage,
@@ -242,12 +284,20 @@ const paymentcheck = async () => {
             onPaymentSuccess?.()
           })
           .catch(err => {
+<<<<<<< HEAD
             console.error('Error updating payment confirmation after success:', err)
+=======
+          //  console.error('Error updating payment confirmation after success:', err)
+>>>>>>> source-link/main
             try {
               localStorage.setItem('paymentStatus', JSON.stringify({ isExpired: false }))
               onPaymentSuccess?.()
             } catch (e) {
+<<<<<<< HEAD
               console.error('Failed to write local payment status after success fallback:', e)
+=======
+            //  console.error('Failed to write local payment status after success fallback:', e)
+>>>>>>> source-link/main
             }
           })
       },
@@ -259,6 +309,7 @@ const paymentcheck = async () => {
           if (reason === undefined) {
             setPaymentStatus('Payment Cancelled')
             toast.error('Payment cancelled. Please complete the payment to activate your subscription.')
+<<<<<<< HEAD
 
             updatePaymentConfirmation(userId, '', 'Cancelled')
               .then(res => {
@@ -292,6 +343,44 @@ const paymentcheck = async () => {
                 console.error('Error updating failure confirmation:', err)
                 onPaymentFailure?.()
               })
+=======
+               onPaymentFailure?.()
+
+            // updatePaymentConfirmation(userId, '', 'Cancelled')
+            //   .then(res => {
+            //     onPaymentFailure?.()
+            //   })
+            //   .catch(err => {
+            //    // console.error('Error updating cancellation confirmation:', err)
+            //     onPaymentFailure?.()
+            //   })
+          } else if (reason === 'timeout') {
+            setPaymentStatus('Payment Timed Out')
+            toast.error('Payment timed out. Please try again.')
+                 onPaymentFailure?.()
+
+            // updatePaymentConfirmation(userId, '', 'Timeout')
+            //   .then(res => {
+            //     onPaymentFailure?.()
+            //   })
+            //   .catch(err => {
+            //  //   console.error('Error updating timeout confirmation:', err)
+            //     onPaymentFailure?.()
+            //   })
+          } else {
+            setPaymentStatus('Payment Failed')
+            toast.error('Payment failed. Please check your payment details and try again.')
+                 onPaymentFailure?.()
+
+            // updatePaymentConfirmation(userId, '', 'Failed')
+            //   .then(res => {
+            //     onPaymentFailure?.()
+            //   })
+            //   .catch(err => {
+            //   //  console.error('Error updating failure confirmation:', err)
+            //     onPaymentFailure?.()
+            //   })
+>>>>>>> source-link/main
           }
         }
       },
@@ -315,6 +404,7 @@ const paymentcheck = async () => {
 
         const failedPaymentId =
           response?.error?.metadata?.payment_id ?? response?.error?.metadata?.paymentId ?? ''
+<<<<<<< HEAD
 
         updatePaymentConfirmation(userId, failedPaymentId, 'Failed')
           .then(res => {
@@ -324,11 +414,27 @@ const paymentcheck = async () => {
             console.error('Error updating failed payment confirmation:', err)
             onPaymentFailure?.()
           })
+=======
+                onPaymentFailure?.()
+
+        // updatePaymentConfirmation(userId, failedPaymentId, 'Failed')
+        //   .then(res => {
+        //     onPaymentFailure?.()
+        //   })
+        //   .catch(err => {
+        //  //('Error updating failed payment confirmation:', err)
+        //     onPaymentFailure?.()
+        //   })
+>>>>>>> source-link/main
       })
 
       rzp1.open()
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error opening Razorpay:', error)
+=======
+    //  console.error('Error opening Razorpay:', error)
+>>>>>>> source-link/main
       toast.error('Error initializing payment gateway. Please try again.')
     }
   }
@@ -340,7 +446,11 @@ const paymentcheck = async () => {
         setIsLoading(true)
         await loadRazorpayScript()
       } catch (error) {
+<<<<<<< HEAD
         console.error('Failed to load Razorpay SDK:', error)
+=======
+       // console.error('Failed to load Razorpay SDK:', error)
+>>>>>>> source-link/main
         toast.error('Unable to load payment gateway. Please check your internet connection.')
         setIsLoading(false)
         return
@@ -376,7 +486,11 @@ const paymentcheck = async () => {
         throw new Error('Invalid response from server')
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('generateRazorPayOrder Error:', error)
+=======
+      //console.error('generateRazorPayOrder Error:', error)
+>>>>>>> source-link/main
       setPaymentStatus('Error generating order')
       setIsLoading(false)
       toast.error('Failed to create payment order. Please try again.')

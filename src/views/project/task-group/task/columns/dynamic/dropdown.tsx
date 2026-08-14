@@ -109,7 +109,11 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, isSubTask
         }
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('error :', error)
+=======
+     // console.error('error :', error)
+>>>>>>> source-link/main
     }
   }
 
@@ -149,7 +153,11 @@ toast.success("Task Updated Successfully!")
         }
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('error select ddl :', error)
+=======
+     // console.error('error select ddl :', error)
+>>>>>>> source-link/main
     }
   }
 
@@ -298,7 +306,11 @@ setAnchorEl(null)
                           alignItems={'center'}
                           gap={2.5}
                         >
+<<<<<<< HEAD
                           <Typography lineHeight={1} fontSize={14}>
+=======
+                          <Typography style={{color:'black'}}  lineHeight={1} fontSize={14}>
+>>>>>>> source-link/main
                             {i?.Dropdown?.Valuetxt}
                           </Typography>
                           {role1?.RoleName !=='Viewer' &&
