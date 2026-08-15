@@ -153,11 +153,7 @@ const checkPaymentStatus = () => {
     setShowPaymentExpiredDialog(true)
     return false
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error parsing payment status:', error)
-=======
    // console.error('Error parsing payment status:', error)
->>>>>>> source-link/main
     setShowPaymentExpiredDialog(true)
     return false
   }
@@ -194,11 +190,7 @@ const paymentcheck = async () => {
 
     }
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Payment check error:', error)
-=======
    // console.error('Payment check error:', error)
->>>>>>> source-link/main
   }
 }
 

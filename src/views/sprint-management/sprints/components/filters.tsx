@@ -94,11 +94,7 @@ const SprintFilterButton = () => {
         }
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error fetching dynamic columns:', error)
-=======
    //   console.error('Error fetching dynamic columns:', error)
->>>>>>> source-link/main
     } finally {
       setLoading(false)
     }

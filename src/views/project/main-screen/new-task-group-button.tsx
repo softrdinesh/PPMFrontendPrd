@@ -11,10 +11,6 @@ const NewTask = (projectlength: any) => {
   const [showPaymentExpiredDialog, setShowPaymentExpiredDialog] = useState(false)
   const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
   const { profile, user } = useAuth()
-<<<<<<< HEAD
-console.log(projectlength,'fdf');
-=======
->>>>>>> source-link/main
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
@@ -56,11 +52,7 @@ console.log(projectlength,'fdf');
         }
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error parsing localStorage:', error)
-=======
      // console.error('Error parsing localStorage:', error)
->>>>>>> source-link/main
       setShowPaymentExpiredDialog(true)
       return false
     }
@@ -75,22 +67,14 @@ console.log(projectlength,'fdf');
 const handleCreateWorkspaceClick = () => {
 const categoryCount = projectlength.projectlength?.length || 0;
 
-<<<<<<< HEAD
-  console.log(categoryCount, 'categoryCount');
-=======
   // console.log(categoryCount, 'categoryCount');
->>>>>>> source-link/main
 
   try {
     const paymentStatus = localStorage.getItem('paymentStatus')
     if (paymentStatus) {
       const parsed = JSON.parse(paymentStatus)
       if (parsed.taskGroupCount !== undefined && parsed.taskGroupCount !== null) {
-<<<<<<< HEAD
-        console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
-=======
      //   console.log(categoryCount >= parsed.taskGroupCount,'categoryCount >= parsed.taskGroupCount');
->>>>>>> source-link/main
         if (categoryCount >= parsed.taskGroupCount) {
           setShowPaymentExpiredDialog(true)
           return
@@ -98,11 +82,7 @@ const categoryCount = projectlength.projectlength?.length || 0;
       }
     }
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error checking payment status:', error)
-=======
    // console.error('Error checking payment status:', error)
->>>>>>> source-link/main
   }
       handleOpen()
 
@@ -127,11 +107,7 @@ const categoryCount = projectlength.projectlength?.length || 0;
           parsed.isExpired = false
           localStorage.setItem('paymentStatus', JSON.stringify(parsed))
         } catch (error) {
-<<<<<<< HEAD
-          console.error('Error updating payment status:', error)
-=======
         //  console.error('Error updating payment status:', error)
->>>>>>> source-link/main
         }
       } else {
         // Create new payment status if not exists

@@ -95,11 +95,7 @@ const ResetPasswordPage = ({ email }: { email: string }) => {
         }
       })
       .catch(err => {
-<<<<<<< HEAD
-        console.error('ERROR', err)
-=======
     //    console.error('ERROR', err)
->>>>>>> source-link/main
       })
     setIsLoggingIn(false)
   }

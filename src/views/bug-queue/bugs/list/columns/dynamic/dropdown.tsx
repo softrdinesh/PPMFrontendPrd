@@ -86,11 +86,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
       toast.success('Value created successfully');
       return response.data;
     } catch (error) {
-<<<<<<< HEAD
-      console.error('API call failed:', error);
-=======
      // console.error('API call failed:', error);
->>>>>>> source-link/main
       toast.error('Failed to create value');
       throw error;
     }
@@ -202,11 +198,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
         handleClose();
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('error selecting dropdown value :', error)
-=======
    //   console.error('error selecting dropdown value :', error)
->>>>>>> source-link/main
       toast.error('Failed to select value');
     }
   }
@@ -230,11 +222,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
         await refetchSprintValues();
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('error deleting value :', error);
-=======
      //console.error('error deleting value :', error);
->>>>>>> source-link/main
       toast.error('Failed to delete value');
     }
   }
@@ -266,11 +254,7 @@ const DynamicDropdown = ({ columnData, rowData, dynamicValue, refetch, canEdit }
         setCreateMenu(false);
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('error creating dropdown value :', error);
-=======
      // console.error('error creating dropdown value :', error);
->>>>>>> source-link/main
     }
   };
 const roleData = localStorage.getItem('Role');
@@ -401,11 +385,7 @@ const rolename = parsedData?.rolename;
                             alignItems={'center'}
                             gap={2.5}
                           >
-<<<<<<< HEAD
-                            <Typography lineHeight={1} fontSize={14}>
-=======
                             <Typography style={{color:'black'}} lineHeight={1} fontSize={14}>
->>>>>>> source-link/main
                               {valueText}
                             </Typography>
                                  {rolename !=='Viewer' &&

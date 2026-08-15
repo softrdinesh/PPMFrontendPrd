@@ -41,11 +41,7 @@ const NewBoard = (projectlength: any) => {
         setShowPaymentExpiredDialog(true)
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error parsing localStorage:', error)
-=======
     //  console.error('Error parsing localStorage:', error)
->>>>>>> source-link/main
       setShowPaymentExpiredDialog(true)
     }
   }
@@ -96,11 +92,7 @@ const NewBoard = (projectlength: any) => {
       setShowPaymentExpiredDialog(true)
       return false
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error parsing payment status:', error)
-=======
       //console.error('Error parsing payment status:', error)
->>>>>>> source-link/main
 
       // On parse error, treat as expired to be safe
       setShowPaymentExpiredDialog(true)

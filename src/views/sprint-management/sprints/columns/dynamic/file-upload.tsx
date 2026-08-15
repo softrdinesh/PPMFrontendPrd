@@ -292,11 +292,7 @@ const DynamicFiles = ({
             return cleanValue(decodeURIComponent(fileNamePart));
           }
         } catch (e) {
-<<<<<<< HEAD
-          console.error('Error extracting filename from URL:', e);
-=======
          // console.error('Error extracting filename from URL:', e);
->>>>>>> source-link/main
         }
       }
       return cleanValue(dynamicValues || '');
@@ -411,10 +407,6 @@ const DynamicFiles = ({
   }
   
 const onSubmit = async (data: FormValidateType) => {
-<<<<<<< HEAD
-  console.log(data,'f');
-=======
->>>>>>> source-link/main
   if (!data?.file) {
     try {
       const formData = new FormData()
@@ -454,11 +446,7 @@ const onSubmit = async (data: FormValidateType) => {
         setSuccessAlert('Text updated successfully!')
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error updating text:', error)
-=======
   //    console.error('Error updating text:', error)
->>>>>>> source-link/main
       setErrorAlert('Failed to update. Please try again.')
       setIsUploading(false)
       setUploadProgress(0)
@@ -550,11 +538,7 @@ const onSubmit = async (data: FormValidateType) => {
         setSuccessAlert('File uploaded successfully!')
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('File upload failed:', error)
-=======
      // console.error('File upload failed:', error)
->>>>>>> source-link/main
       setErrorAlert('File upload failed. Please try again.')
       setIsUploading(false)
       setUploadProgress(0)
@@ -574,11 +558,7 @@ const onSubmit = async (data: FormValidateType) => {
       refetch()
       setSuccessAlert('File removed successfully!')
     } catch (error) {
-<<<<<<< HEAD
-      console.error('File removal failed:', error)
-=======
      // console.error('File removal failed:', error)
->>>>>>> source-link/main
       setErrorAlert('Failed to remove file. Please try again.')
     }
   }

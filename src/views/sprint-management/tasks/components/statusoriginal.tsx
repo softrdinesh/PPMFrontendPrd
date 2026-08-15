@@ -139,11 +139,7 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
 
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error fetching status lookup list:', error);
-=======
    // console.error('Error fetching status lookup list:', error);
->>>>>>> source-link/main
     throw error;
   }
 }
@@ -171,11 +167,7 @@ const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<Sprin
       
     return { status: true, data: response.data };
   } catch (error) {
-<<<<<<< HEAD
-    console.error('API call failed:', error);
-=======
   //  console.error('API call failed:', error);
->>>>>>> source-link/main
     toast.error('Failed to update status');
     throw error;
   }
@@ -198,11 +190,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
       
     return { status: true, data: response.data };
   } catch (error) {
-<<<<<<< HEAD
-    console.error('API call failed:', error);
-=======
    // console.error('API call failed:', error);
->>>>>>> source-link/main
     toast.error('Failed to update value');
     throw error;
   }
@@ -224,11 +212,7 @@ const createStatus = async (payload: CreateStatusPayload): Promise<CreateStatusR
     toast.success("Status Created Successfully")
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error creating status:', error);
-=======
  //   console.error('Error creating status:', error);
->>>>>>> source-link/main
     throw error;
   }
 }
@@ -253,11 +237,7 @@ const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<Creat
     toast.success("Task Status Created Successfully");
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error creating task status:', error);
-=======
    // console.error('Error creating task status:', error);
->>>>>>> source-link/main
     toast.error('Failed to create task status');
     throw error;
   }
@@ -282,11 +262,7 @@ const updateStatus = async (payload: UpdateStatusPayload): Promise<UpdateStatusR
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error updating status:', error);
-=======
    // console.error('Error updating status:', error);
->>>>>>> source-link/main
     toast.error('Failed to update status');
     throw error;
   }
@@ -312,11 +288,7 @@ const deleteStatus = async (payload: DeleteStatusPayload, row: any): Promise<Del
     toast.success('Status deleted successfully');
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error deleting status:', error);
-=======
    // console.error('Error deleting status:', error);
->>>>>>> source-link/main
     toast.error('Failed to delete status');
     throw error;
   }
@@ -410,17 +382,6 @@ const StatusMenuItem = ({
             
           }
         } else {
-<<<<<<< HEAD
-          console.error('Missing required values for dynamic value insertion:', {
-            dynamicColumnID,
-            loginuserID,
-            taskID,
-            groupID
-          });
-        }
-      } catch (error) {
-        console.error('Failed to insert dynamic value:', error);
-=======
         // /  console.error('Missing required values for dynamic value insertion:', {
         //     dynamicColumnID,
         //     loginuserID,
@@ -430,7 +391,6 @@ const StatusMenuItem = ({
         }
       } catch (error) {
     //    console.error('Failed to insert dynamic value:', error);
->>>>>>> source-link/main
       }
     } else {
       // For non-dynamic columns, update task status using SprintTaskUpdate API
@@ -477,15 +437,6 @@ const StatusMenuItem = ({
             await safeRefetch();
           }
         } else {
-<<<<<<< HEAD
-          console.error('Missing required values for SprintTaskUpdate:', {
-            taskID
-          });
-        }
-
-      } catch (error) {
-        console.error('Failed to update task status:', error);
-=======
         // //  console.error('Missing required values for SprintTaskUpdate:', {
         //     taskID
         //   });
@@ -493,7 +444,6 @@ const StatusMenuItem = ({
 
       } catch (error) {
      //   console.error('Failed to update task status:', error);
->>>>>>> source-link/main
       }
     }
   }
@@ -850,11 +800,7 @@ const rolename = parsedData?.rolename;
         handleFormClose();
    //   }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Failed to delete status:', error);
-=======
      // console.error('Failed to delete status:', error);
->>>>>>> source-link/main
     } finally {
       setDeleteDialogOpen(false);
       setStatusToDelete(null);
@@ -931,10 +877,6 @@ const rolename = parsedData?.rolename;
     
     return [noneOption, ...(statusList || [])]
   }, [statusList])
-<<<<<<< HEAD
-  console.log(statusName,'InsertDynamicValues');
-=======
->>>>>>> source-link/main
   return (
     <Box display={'flex'} alignItems={'center'} height={'100%'}>
       {rolename !== 'Viewer' ? (

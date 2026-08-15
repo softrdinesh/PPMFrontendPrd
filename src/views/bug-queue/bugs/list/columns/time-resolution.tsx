@@ -109,11 +109,7 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         id: bug?.BugID?.toString()
       })
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Failed to update overtime in backend:', error)
-=======
   //    console.error('Failed to update overtime in backend:', error)
->>>>>>> source-link/main
     }
   }
 
@@ -222,21 +218,6 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
           })
         }, 1000)
       } else {
-<<<<<<< HEAD
-        // IMPORTANT: Use stored last known countdown or current time resolution
-        let currentTimeResolution = bug?.timeResolution || '0h 0m 0s'
-        
-        // If we have a stored last known countdown, use it
-        if (storedLastKnownCountdown) {
-          currentTimeResolution = storedLastKnownCountdown
-          // Also update the bug's timeResolution in localStorage for next time
-          if (bug?.BugID) {
-            localStorage.setItem(`lastKnownCountdown_${bug.BugID}`, storedLastKnownCountdown)
-          }
-        }
-        
-        const totalSeconds = parseResolutionToSeconds(currentTimeResolution)
-=======
         // FIX: totalSeconds must represent the ORIGINAL full duration for this
         // run, anchored ONCE (per BugID) when the timer starts. Previously this
         // was recomputed from storedLastKnownCountdown / bug.timeResolution on
@@ -257,7 +238,6 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
             localStorage.setItem(`totalSeconds_${bug.BugID}`, totalSeconds.toString())
           }
         }
->>>>>>> source-link/main
 
         let startTime: number
 
@@ -397,13 +377,10 @@ const TimeResolutionColumn = ({ bug, refetch }: Props) => {
         localStorage.removeItem(`timerStartTime_${bug.BugID}`)
         localStorage.removeItem(`overtimeStartTime_${bug.BugID}`)
         localStorage.removeItem(`originalResolution_${bug.BugID}`)
-<<<<<<< HEAD
-=======
         // FIX: also clear the total-duration anchor whenever the timer is not
         // actively running, so the next start/resume recomputes it cleanly
         // instead of reusing a stale anchor from a previous run.
         localStorage.removeItem(`totalSeconds_${bug.BugID}`)
->>>>>>> source-link/main
         // Don't remove lastKnownCountdown - keep it for when timer restarts
       }
     }

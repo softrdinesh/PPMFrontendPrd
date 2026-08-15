@@ -147,11 +147,7 @@ const TaskPeople = ({
       }
     }
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error removing owner:', error)
-=======
   //  console.error('Error removing owner:', error)
->>>>>>> source-link/main
   }
 }
   const handleSelectUser = async (selected: User) => {
@@ -197,11 +193,7 @@ const TaskPeople = ({
           })
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('error :', error)
-=======
     //  console.error('error :', error)
->>>>>>> source-link/main
     }
   }
 

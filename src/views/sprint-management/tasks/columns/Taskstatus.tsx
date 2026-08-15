@@ -84,11 +84,7 @@ const fetchStatusLookupList = async (taskID: number, groupID: number, loginuserI
     )
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error fetching status lookup list:', error);
-=======
    // console.error('Error fetching status lookup list:', error);
->>>>>>> source-link/main
     throw error;
   }
 }
@@ -110,11 +106,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
       
     return { status: true, data: response.data };
   } catch (error) {
-<<<<<<< HEAD
-    console.error('API call failed:', error);
-=======
  //   console.error('API call failed:', error);
->>>>>>> source-link/main
     toast.error('Failed to update value');
     throw error;
   }
@@ -140,11 +132,7 @@ const createTaskStatus = async (payload: CreateTaskStatusPayload): Promise<any> 
     toast.success("Task Status Created Successfully");
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error creating task status:', error);
-=======
  //   console.error('Error creating task status:', error);
->>>>>>> source-link/main
     toast.error('Failed to create task status');
     throw error;
   }
@@ -169,11 +157,7 @@ const updateStatus = async (payload: any): Promise<any> => {
     toast.success("Status Updated Successfully")
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error updating status:', error);
-=======
   //  console.error('Error updating status:', error);
->>>>>>> source-link/main
     toast.error('Failed to update status');
     throw error;
   }
@@ -288,11 +272,7 @@ const StatusMenuItem = ({
           }
         }
       } catch (error) {
-<<<<<<< HEAD
-        console.error('Failed to insert dynamic value:', error);
-=======
   //      console.error('Failed to insert dynamic value:', error);
->>>>>>> source-link/main
       }
     } else {
       // For non-dynamic columns, update the task status using SprintTaskUpdate API
@@ -332,11 +312,7 @@ const StatusMenuItem = ({
           refetch();
         }
       } catch (error) {
-<<<<<<< HEAD
-        console.error('Failed to update task status:', error);
-=======
     //    console.error('Failed to update task status:', error);
->>>>>>> source-link/main
         toast.error("Failed to update status");
       }
     }
@@ -588,11 +564,7 @@ const TaskStatus = ({
       }
       handleFormClose();
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Failed to delete status:', error);
-=======
     //  console.error('Failed to delete status:', error);
->>>>>>> source-link/main
     } finally {
       setDeleteDialogOpen(false);
       setStatusToDelete(null);

@@ -337,11 +337,7 @@ toast.success('Task Updated Successfully!')
               refetch()
             }
           } catch (error) {
-<<<<<<< HEAD
-            console.error('error :', error)
-=======
       //      console.error('error :', error)
->>>>>>> source-link/main
           }
         }
 

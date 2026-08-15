@@ -60,11 +60,7 @@ const paymentcheck = async (userId: number) => {
 
     }
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Payment check error:', error)
-=======
   //  console.error('Payment check error:', error)
->>>>>>> source-link/main
   }
 }
 const Rolecheck = async (userId: number) => {
@@ -96,11 +92,7 @@ const Rolecheck = async (userId: number) => {
 
      }
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Payment check error:', error)
-=======
    // console.error('Payment check error:', error)
->>>>>>> source-link/main
   }
 }
 
@@ -138,11 +130,7 @@ const getUserInfoByEmail= async(email: any)=>{
     Rolecheck(userId)
     paymentcheck(userId)
 
-<<<<<<< HEAD
-    console.log('User info:', response.data);
-=======
     // console.log('User info:', response.data);
->>>>>>> source-link/main
     return response.data;
 
   } catch (error) {

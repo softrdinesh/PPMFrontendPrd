@@ -30,15 +30,6 @@ const DeleteTasksComponent = ({
   const { profile, user } = useAuth()
 
   // ** Memos
-<<<<<<< HEAD
-  const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
-
-  const handleDelete = async () => {
-    // Get the selected tasks with SprintTaskID
-    const finalArray = sprintlist
-      ?.filter((i, idx) => Object?.keys(selectedRows)?.some(k => +k === +idx))
-      ?.map(t => (t as any)?.SprintTaskID) // Changed from SprintID to SprintTaskID
-=======
   // const showSelected = useMemo(() => Object?.keys(selectedRows)?.length !== 0, [selectedRows])
 const showSelected = useMemo(() => selectedRows?.length !== 0, [selectedRows])
   const handleDelete = async () => {
@@ -53,7 +44,6 @@ const finalArray = sprintlist
 
 
 console.log(finalArray);
->>>>>>> source-link/main
 
     // Delete using SprintTaskID
     try {
@@ -69,11 +59,7 @@ console.log(finalArray);
       setDeleteOpen(false)
       setSelectedRows({})
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error deleting tasks:', error)
-=======
     //  console.error('Error deleting tasks:', error)
->>>>>>> source-link/main
     }
   }
   

@@ -104,19 +104,11 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected, bugSearchTerm
         onRefetch()
       } else {
         toast.error('Failed to update bug group')
-<<<<<<< HEAD
-        console.error('Failed to update bug group')
-      }
-    } catch (err) {
-      toast.error('Error updating bug group')
-      console.error('Error updating bug group:', err)
-=======
        // console.error('Failed to update bug group')
       }
     } catch (err) {
       toast.error('Error updating bug group')
      // console.error('Error updating bug group:', err)
->>>>>>> source-link/main
     } finally {
       setIsSubmitting(false)
     }
@@ -148,19 +140,11 @@ const BugGroupItem = ({ group, workspaceID, onRefetch, isSelected, bugSearchTerm
         onRefetch()
       } else {
         toast.error('Failed to delete bug group')
-<<<<<<< HEAD
-        console.error('Failed to delete bug group')
-      }
-    } catch (err) {
-      toast.error('Error deleting bug group')
-      console.error('Error deleting bug group:', err)
-=======
       //  console.error('Failed to delete bug group')
       }
     } catch (err) {
       toast.error('Error deleting bug group')
       //console.error('Error deleting bug group:', err)
->>>>>>> source-link/main
     } finally {
       setIsSubmitting(false)
     }
@@ -314,11 +298,7 @@ const BugQueueGroup = forwardRef<BugQueueGroupRef, BugQueueGroupProps>((props, r
       const data = await res.json()
       setBugGroups(data)
     } catch (err) {
-<<<<<<< HEAD
-      console.error('Failed to fetch bug groups', err)
-=======
    //   console.error('Failed to fetch bug groups', err)
->>>>>>> source-link/main
       toast.error('Failed to fetch bug groups')
     } finally {
       setLoading(false)

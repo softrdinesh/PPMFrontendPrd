@@ -10,11 +10,7 @@ export async function GET() {
 
     return res.json({ status: true, message: 'Cookies Cleared' }, { status: 200 })
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Cookie Clear Error :', error)
-=======
    // console.error('Cookie Clear Error :', error)
->>>>>>> source-link/main
 
     return res.json({ status: true, message: 'Failed To Clear Cookies' }, { status: 422 })
   }

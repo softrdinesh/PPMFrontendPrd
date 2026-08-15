@@ -73,11 +73,7 @@ const deleteSprintGroup = async () => {
     toast.success(`Sprint group deleted successfully`)
 
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error deleting sprint group:', error);
-=======
     //console.error('Error deleting sprint group:', error);
->>>>>>> source-link/main
     // Optional: throw or handle error
     throw error;
   }

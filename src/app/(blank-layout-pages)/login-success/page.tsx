@@ -48,11 +48,7 @@ const LoginSuccessRedirect = () => {
           }
         })
         .catch(err => {
-<<<<<<< HEAD
-          console.error('err :', err)
-=======
        //   console.error('err :', err)
->>>>>>> source-link/main
           localStorage.removeItem(authConfig.loginWithGoogle)
         })
     } catch (error) {

@@ -127,11 +127,7 @@ const fetchPriorityLookupList = async (taskID: number, groupID: number, loginuse
 
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error fetching priority lookup list:', error);
-=======
  //   console.error('Error fetching priority lookup list:', error);
->>>>>>> source-link/main
     throw error;
   }
 }
@@ -153,11 +149,7 @@ const insertDynamicValue = async (payload: InsertDynamicValuePayload): Promise<I
       
     return { status: true, data: response.data };
   } catch (error) {
-<<<<<<< HEAD
-    console.error('API call failed:', error);
-=======
     //console.error('API call failed:', error);
->>>>>>> source-link/main
     toast.error('Failed to update value');
     throw error;
   }
@@ -186,11 +178,7 @@ const sprintTaskUpdate = async (payload: SprintTaskUpdatePayload): Promise<Sprin
       
     return { status: true, data: response.data };
   } catch (error) {
-<<<<<<< HEAD
-    console.error('API call failed:', error);
-=======
    // console.error('API call failed:', error);
->>>>>>> source-link/main
     toast.error('Failed to update priority');
     throw error;
   }
@@ -212,11 +200,7 @@ const createPriority = async (payload: CreatePriorityPayload): Promise<CreatePri
     toast.success("Priority Created Successfully")
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error creating priority:', error);
-=======
    // console.error('Error creating priority:', error);
->>>>>>> source-link/main
     throw error;
   }
 }
@@ -240,11 +224,7 @@ const createTaskPriority = async (payload: CreateTaskPriorityPayload): Promise<C
     toast.success("Task Priority Created Successfully");
     return response.data;
   } catch (error) {
-<<<<<<< HEAD
-    console.error('Error creating task priority:', error);
-=======
    // console.error('Error creating task priority:', error);
->>>>>>> source-link/main
     toast.error('Failed to create task priority');
     throw error;
   }
@@ -369,17 +349,6 @@ const PriorityMenuItem = ({
             }
           }
         } else {
-<<<<<<< HEAD
-          console.error('Missing required values for dynamic value insertion:', {
-            dynamicColumnID,
-            loginuserID,
-            taskID,
-            groupID
-          });
-        }
-      } catch (error) {
-        console.error('Failed to insert dynamic value:', error);
-=======
           // console.error('Missing required values for dynamic value insertion:', {
           //   dynamicColumnID,
           //   loginuserID,
@@ -389,7 +358,6 @@ const PriorityMenuItem = ({
         }
       } catch (error) {
       //  console.error('Failed to insert dynamic value:', error);
->>>>>>> source-link/main
       }
     } else {
       // For non-dynamic columns, update task priority using SprintTaskUpdate API
@@ -436,15 +404,6 @@ const PriorityMenuItem = ({
             }
           }
         } else {
-<<<<<<< HEAD
-          console.error('Missing required values for SprintTaskUpdate:', {
-            taskID
-          });
-        }
-
-      } catch (error) {
-        console.error('Failed to update task priority:', error);
-=======
         //  // console.error('Missing required values for SprintTaskUpdate:', {
         //     taskID
         //   });
@@ -452,7 +411,6 @@ const PriorityMenuItem = ({
 
       } catch (error) {
         //console.error('Failed to update task priority:', error);
->>>>>>> source-link/main
       }
     }
   }
@@ -787,11 +745,7 @@ const rolename = parsedData?.rolename;
         handleFormClose();
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Failed to delete priority:', error);
-=======
      // console.error('Failed to delete priority:', error);
->>>>>>> source-link/main
     } finally {
       setDeleteDialogOpen(false);
       setPriorityToDelete(null);
@@ -869,11 +823,7 @@ const rolename = parsedData?.rolename;
         }
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error in priority submission:', error);
-=======
     //  console.error('Error in priority submission:', error);
->>>>>>> source-link/main
     }
   }
 

@@ -85,11 +85,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       window.location.href = routes.login
       
     } catch (error) {
-<<<<<<< HEAD
-      console.error(error)
-=======
     //  console.error(error)
->>>>>>> source-link/main
     } finally {
       setUser(null)
       window.location.href = routes.login
@@ -182,11 +178,7 @@ const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   // ** Change Profiles
   const changeProfiles = (val?: Profiles) => {
     const currentProfile = val || window.localStorage.getItem('profile') || 'projects'
-<<<<<<< HEAD
-console.log(user,'responseData');
-=======
 // console.log(user,'responseData');
->>>>>>> source-link/main
 
 
     if (currentProfile === 'projects') {

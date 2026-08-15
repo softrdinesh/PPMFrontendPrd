@@ -567,11 +567,7 @@ const rolename = parsedData?.rolename;
       
       setUsers(mappedUsers)
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error fetching users:', error)
-=======
      // console.error('Error fetching users:', error)
->>>>>>> source-link/main
       toast.error('Failed to load users')
     } finally {
       setLoading(false)
@@ -1150,11 +1146,7 @@ const rolename = parsedData?.rolename;
               // Update the table data
               table.options.meta?.updateData?.(index, 'Owner', newOwner ? JSON.stringify(newOwner) : '');
             } catch (error) {
-<<<<<<< HEAD
-              console.error('Error updating owner:', error);
-=======
               //console.error('Error updating owner:', error);
->>>>>>> source-link/main
               toast.error("Failed to update owner");
             }
           };
@@ -1210,11 +1202,7 @@ const rolename = parsedData?.rolename;
               
               table.options.meta?.updateData?.(index, 'IsUnplanned', String(newValue));
             } catch (error) {
-<<<<<<< HEAD
-              console.error('Error updating IsUnplanned:', error);
-=======
               //console.error('Error updating IsUnplanned:', error);
->>>>>>> source-link/main
               toast.error("Failed to update task status");
             }
           };
@@ -1408,11 +1396,8 @@ const rolename = parsedData?.rolename;
     state: {
     rowSelection: rowSelection  // <-- CHANGED
     },
-<<<<<<< HEAD
-=======
         getRowId: (row) => (row?.SprintTaskID ?? row?.taskID)?.toString(),
 
->>>>>>> source-link/main
     getRowCanExpand: () => true,
     enableRowSelection: true,
   onRowSelectionChange: setRowSelection,  // <-- CHANGED
@@ -1446,11 +1431,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-<<<<<<< HEAD
-            console.error('Error updating task name:', error);
-=======
          //   console.error('Error updating task name:', error);
->>>>>>> source-link/main
             toast.error("Failed to update task name");
           }
         }
@@ -1479,11 +1460,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-<<<<<<< HEAD
-            console.error('Error updating task description:', error);
-=======
            // console.error('Error updating task description:', error);
->>>>>>> source-link/main
             toast.error("Failed to update task description");
           }
         }
@@ -1514,11 +1491,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-<<<<<<< HEAD
-            console.error('Error updating actual SP:', error);
-=======
            // console.error('Error updating actual SP:', error);
->>>>>>> source-link/main
             toast.error("Failed to update actual SP");
           }
         }
@@ -1549,11 +1522,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-<<<<<<< HEAD
-            console.error('Error updating estimated SP:', error);
-=======
            // console.error('Error updating estimated SP:', error);
->>>>>>> source-link/main
             toast.error("Failed to update estimated SP");
           }
         }
@@ -1584,11 +1553,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-<<<<<<< HEAD
-            console.error('Error updating IsUnplanned:', error);
-=======
            // console.error('Error updating IsUnplanned:', error);
->>>>>>> source-link/main
             toast.error("Failed to update task status");
           }
         }
@@ -1599,11 +1564,7 @@ const rolename = parsedData?.rolename;
             const refetchResult = await sprintTaskInfoApi?.refetch();
             syncColvalueList(refetchResult?.data)
           } catch (error) {
-<<<<<<< HEAD
-            console.error('error updating dynamic column:', error);
-=======
           //  console.error('error updating dynamic column:', error);
->>>>>>> source-link/main
           }
         }
       }
@@ -1615,11 +1576,7 @@ const rolename = parsedData?.rolename;
 
     try {
       if (!currentTaskGroupId) {
-<<<<<<< HEAD
-        console.error('No current task group ID available to create task');
-=======
       //  console.error('No current task group ID available to create task');
->>>>>>> source-link/main
         setAdding(false);
         return;
       }
@@ -1650,11 +1607,7 @@ const rolename = parsedData?.rolename;
       syncColvalueList(refetchResult?.data)
       
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error creating task:', error)
-=======
      // console.error('Error creating task:', error)
->>>>>>> source-link/main
     } finally {
       setAdding(false)
     }
@@ -1671,13 +1624,10 @@ const rolename = parsedData?.rolename;
     }
   }, [enabled, taskGroupIds.join(','), currentTaskGroupId]);
 
-<<<<<<< HEAD
-=======
     const selectedRowIds = useMemo(
     () => Object.keys(rowSelection).filter(key => rowSelection[key]),
     [rowSelection]
   )
->>>>>>> source-link/main
   if (sprintTaskInfoApi?.isLoading || sprintTaskGroupInfoApi?.isLoading) {
     return (
       <div className='w-full flex justify-center'>
@@ -1692,11 +1642,7 @@ const rolename = parsedData?.rolename;
 
   // FIX: Convert Record<string, boolean> to string[] for DeleteTasksComponent
   // const selectedRowIds = Object.keys(selectedRows).filter(key => selectedRows[key])
-<<<<<<< HEAD
-const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key])
-=======
 // const selectedRowIds = Object.keys(rowSelection).filter(key => rowSelection[key])
->>>>>>> source-link/main
 
   return (
     <div className='px-3'>

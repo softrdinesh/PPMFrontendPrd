@@ -9,11 +9,7 @@ export const fetchBugQueueList = async (workspaceID: string): Promise<BugQueueLi
       return res?.data
     })
     .catch(err => {
-<<<<<<< HEAD
-      console.log('err :', err)
-=======
      // console.log('err :', err)
->>>>>>> source-link/main
 
       return []
     })

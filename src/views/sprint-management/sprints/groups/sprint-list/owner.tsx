@@ -86,11 +86,7 @@ const TaskPeople = ({
       
       setApiUsers(mappedUsers)
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error fetching users:', error)
-=======
     //  console.error('Error fetching users:', error)
->>>>>>> source-link/main
       toast.error('Failed to load users')
     } finally {
       setLoading(false)
@@ -163,11 +159,7 @@ const TaskPeople = ({
         }
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error removing owner:', error)
-=======
      // console.error('Error removing owner:', error)
->>>>>>> source-link/main
       toast.error('Failed to remove owner')
     }
   }
@@ -212,11 +204,7 @@ const TaskPeople = ({
         }
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error in handleSelectUser:', error)
-=======
     //  console.error('Error in handleSelectUser:', error)
->>>>>>> source-link/main
       toast.error('Failed to assign user')
     }
   }
@@ -258,11 +246,7 @@ const TaskPeople = ({
         }
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error removing user:', error)
-=======
     //  console.error('Error removing user:', error)
->>>>>>> source-link/main
       toast.error('Failed to remove user')
     }
   }

@@ -28,14 +28,8 @@ const InvitationManagementPage = ({ invitationID }: { invitationID: string }) =>
 const [accept, setaccept] = useState(false)
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [showAccessDeniedPopup, setShowAccessDeniedPopup] = useState(false)
-<<<<<<< HEAD
-
-  const auth = useAuth()
-
-=======
   const auth = useAuth()
 const [acceptemail, setacceptemail] = useState(false)
->>>>>>> source-link/main
 
   const handleUserLogout = async () => {
     // Redirect to login page
@@ -59,16 +53,6 @@ const [acceptemail, setacceptemail] = useState(false)
         if (response?.data?.projectID) {
           refetchWorkspaces()
              if (response?.statusCode == 202) {
-<<<<<<< HEAD
-           
-  toast.success("The invitation has already been accepted", { duration: 5000 })
-          }
-              if (response?.statusCode == 200) {
-   
-              toast.success(`Invitation accepted successfully!`,{ duration: 5000 })   
-          }
-          router.replace(`/project/${response?.data?.projectID}`)
-=======
            setaccept(true)
      //toast.success("The invitation has already been accepted", { duration: 5000 })
           }
@@ -78,7 +62,6 @@ const [acceptemail, setacceptemail] = useState(false)
                       //  router.replace(`/project/${response?.data?.projectID}`)
 
           }
->>>>>>> source-link/main
         } else {
           if (response?.statusCode === 307) {
             if (response?.data?.redirect === '/register') {
@@ -110,11 +93,7 @@ const [acceptemail, setacceptemail] = useState(false)
 
         }
       } catch (error) {
-<<<<<<< HEAD
-        console.error('Invitation Accept Error :', error)
-=======
       //  console.error('Invitation Accept Error :', error)
->>>>>>> source-link/main
         setResponse(null)
       }
     }
@@ -177,11 +156,7 @@ const [acceptemail, setacceptemail] = useState(false)
       {/* // ) : {
      
       // )} */}
-<<<<<<< HEAD
-
-=======
 {/* already accept popup */}
->>>>>>> source-link/main
 <Dialog
      open={accept} onClose={() => setaccept(false)}
       TransitionComponent={Zoom}
@@ -220,42 +195,21 @@ const [acceptemail, setacceptemail] = useState(false)
 
           {/* Message */}
           <Typography variant="body2" className="text-center mb-8" color="text.secondary" sx={{ maxWidth: 360 }}>
-<<<<<<< HEAD
-            This Invitation Accepted Successfully.
-          </Typography>
-
-          {/* Buttons */}
-          <Box className="flex gap-3 w-full">
-            {/* <CustomButton
-              circular
-              variant="outlined"
-              size="large"
-              fullWidth
-              onClick={() => setShowAccessDeniedPopup(false)}
-            >
-              Cancel
-            </CustomButton> */}
-=======
 This invitation has already been accepted. You can head over to the project page to continue.          </Typography>
 
           {/* Buttons */}
           <Box className="flex gap-3 w-full">
           
->>>>>>> source-link/main
             <CustomButton
               circular
               variant="contained"
               size="large"
               fullWidth
-<<<<<<< HEAD
-onClick={redirect}
-=======
 
 onClick={() => {
   setaccept(false)
   router.replace(`/project/${response?.data?.projectID}`)
 }}
->>>>>>> source-link/main
               sx={{
                 backgroundColor: 'primary.main',
                 fontWeight: 700,
@@ -273,8 +227,6 @@ onClick={() => {
       </Box>
     </Dialog>
 
-<<<<<<< HEAD
-=======
 {/* accept */}
 <Dialog
      open={acceptemail} onClose={() => setacceptemail(false)}
@@ -353,7 +305,6 @@ onClick={() => {
 
 
 
->>>>>>> source-link/main
 
 <Dialog
      open={showAccessDeniedPopup} onClose={() => setShowAccessDeniedPopup(false)}
@@ -393,28 +344,11 @@ onClick={() => {
 
           {/* Message */}
           <Typography variant="body2" className="text-center mb-8" color="text.secondary" sx={{ maxWidth: 360 }}>
-<<<<<<< HEAD
-            You already have an account. Please log in to accept this invitation.
-          </Typography>
-
-          {/* Buttons */}
-          <Box className="flex gap-3 w-full">
-            {/* <CustomButton
-              circular
-              variant="outlined"
-              size="large"
-              fullWidth
-              onClick={() => setShowAccessDeniedPopup(false)}
-            >
-              Cancel
-            </CustomButton> */}
-=======
 You already have an account. Please log in with the correct account and accept the invitation.          </Typography>
 
           {/* Buttons */}
           <Box className="flex gap-3 w-full">
             
->>>>>>> source-link/main
             <CustomButton
               circular
               variant="contained"

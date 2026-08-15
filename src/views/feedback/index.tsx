@@ -98,11 +98,7 @@ const submitFeedbackToAPI = async (message: string, file: File | null, userId: s
     )
     return response.data
   } catch (error) {
-<<<<<<< HEAD
-    console.error('API Error:', error)
-=======
    // console.error('API Error:', error)
->>>>>>> source-link/main
     throw error
   }
 }
@@ -197,23 +193,14 @@ const FeedbackScreen = ({ onSubmit, userId }: FeedbackScreenProps) => {
         iconTheme: { primary: theme.palette.success.main, secondary: theme.palette.background.paper }
       })
     } catch (error: any) {
-<<<<<<< HEAD
-      console.error('Error submitting feedback:', error)
-=======
       //console.error('Error submitting feedback:', error)
->>>>>>> source-link/main
       
       // Enhanced error handling
       let errorMessage = 'Failed to send feedback. Please try again.'
       
       if (error.response) {
-<<<<<<< HEAD
-        console.error('Error response:', error.response.data)
-        console.error('Error status:', error.response.status)
-=======
        // console.error('Error response:', error.response.data)
        // console.error('Error status:', error.response.status)
->>>>>>> source-link/main
         
         if (error.response.status === 401) {
           errorMessage = 'Authentication failed. Please log in again.'
